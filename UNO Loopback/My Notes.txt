@@ -1,0 +1,6 @@
+The loopback code is in the library.
+
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\libraries
+or
+[old location] C:\Users\Richard\Documents\Arduino\libraries
+

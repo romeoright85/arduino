@@ -1,0 +1,9 @@
+Located here:
+C:\Users\Richard\Documents\Arduino\
+
+i.e.
+
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\libraries
+or
+[old location] C:\Users\Richard\Documents\Arduino\libraries
+
