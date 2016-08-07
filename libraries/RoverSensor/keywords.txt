@@ -1,1 +1,2 @@
-Sensor	KEYWORD1
+RoverSensor KEYWORD1
+PirSensor KEYWORD2
