@@ -52,7 +52,7 @@ void loop() {
 		motionDetected = sensor2.readSensor();
 		if (motionDetected)
 		{
-			Serial.println(motionDetected);
+			Serial.println("motion detected");
 		}
 		else
 		{
