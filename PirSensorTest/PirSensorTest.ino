@@ -2,11 +2,10 @@
 #include <RoverPinConfig.h>
 
 
-
 void InterruptDispatch1();
 
 //Global Variables
-PirSensor pirSensor001 = PirSensor(PIR_PIN, INTRPT_1, &InterruptDispatch1);
+PirSensor pirSensor001 = PirSensor(PIR_PIN, &InterruptDispatch1);//Note: This is my custom function and not attachInterrupt (though it calls it)
 
 
 // the setup function runs once when you press reset or power the board

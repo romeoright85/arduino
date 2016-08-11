@@ -1,9 +1,10 @@
 #include <PirSensor.h>
 
-PirSensor::PirSensor(byte pin, byte interruptChannel, voidFuncPtr interruptDispatch)
+PirSensor::PirSensor(byte pin, voidFuncPtr interruptDispatch )
 {
 	pinMode(pin, INPUT);
-	attachInterrupt(interruptChannel, interruptDispatch, RISING);
+	byte interruptChannel = digitalPinToInterrupt(pin); //calling an arduino function
+	attachInterrupt(interruptChannel, interruptDispatch, RISING); //calling an arduino function
 }
 
 PirSensor::~PirSensor()
