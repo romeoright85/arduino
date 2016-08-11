@@ -3,13 +3,13 @@
 #define _PIRSENSOR_H
 
 #include <Arduino.h>
-#include <RoverSensor.h>
+#define _ARD_4_COMM_H //define Arduino 4: COMM in order to use it's config pins
 
 
 typedef void (*voidFuncPtr)(void);//defining the type voidFuncPtr
 
 
-		class PirSensor : public RoverSensor {
+		class PirSensor {
 		public:
 			PirSensor(byte, byte, voidFuncPtr );//constructor. (pin, interrupt, interrupt_service_routine)
 			~PirSensor();//destructor
