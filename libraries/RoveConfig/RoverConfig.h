@@ -1,8 +1,10 @@
-//RoverPinConfig.h
-#ifndef _ROVER_PIN_CONFIG_H
-#define _ROVER_PIN_CONFIG_H
-	
+//RoverConfig.h
+#ifndef _ROVER_CONFIG_H
+#define _ROVER_CONFIG_H
 
+		
+		
+		
 	//Pinouts for Arduino 4: COMM
 	#ifdef _ARD_4_COMM_H
 
@@ -21,7 +23,7 @@
 
 	//Pinouts for Arduino 3: MAIN
 	#ifdef _ARD_3_MAIN_H
-		
+
 		#define COMM_WAKEUP_CTRL_PIN			2
 		#define NAVI_WAKEUP_CTRL_PIN			4
 		#define AUXI_WAKEUP_CTRL_PIN			5
@@ -32,7 +34,7 @@
 		#define MTR_ENABLE_STATUS				22
 		#define ENCODER_6_PIN					23
 		#define ENCODER_8_PIN					24
-		
+
 	#endif
 
 	//Pinouts for Arduino 2: AUXI
@@ -56,7 +58,6 @@
 		#define OP_AMP_6						5
 		#define OP_AMP_7						6
 		#define OP_AMP_8						7
-
 	#endif
 
 
@@ -125,6 +126,15 @@
 		#define SIDE_RIGHT_ULTSNC_ECHO_PIN			15
 
 	#endif
+
+
+	//Used for	 distance sensors like ultrasonic or infrared sensors
+	#ifdef _DISTANCE_UNITS_MODES
+		#define UNIT_CM	 0
+		#define UNIT_M	 1
+		#define UNIT_IN  2
+		#define UNIT_FT	 3
+	#endif	
 
 
 

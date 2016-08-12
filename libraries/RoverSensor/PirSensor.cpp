@@ -14,10 +14,10 @@ PirSensor::~PirSensor()
 
 boolean PirSensor::readSensor()
 {
-	return motionDetected;
+	return this->motionDetected;
 }
 
 void PirSensor::isrUpdate()//this will be called by interruptDispatch
 {
-  motionDetected = true;
+	this->motionDetected = true;
 }
