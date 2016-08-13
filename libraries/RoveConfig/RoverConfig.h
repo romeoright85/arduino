@@ -1,9 +1,7 @@
 //RoverConfig.h
-#ifndef _ROVER_CONFIG_H
-#define _ROVER_CONFIG_H
-
-		
-		
+//Note: Don't do a #ifndef as you want the user to do a #include <RoverConfig.h> with newly updated flags for each .h or .cpp class which will append to the current config like with cascading style sheets (CSS).
+//For the flags in this RoverConfig.h, use #ifdef _SOME_FLAG_NAME in order to only "turn on"/enable that code if that flag name was defined then #include <RoverConfig.h> was called after
+//The order of defining the flag then calling #include <RoverConfig.h> matters. You have to define the flags first, then call #include <RoverConfig.h>
 		
 	//Pinouts for Arduino 4: COMM
 	#ifdef _ARD_4_COMM_H
@@ -136,6 +134,3 @@
 		#define UNIT_FT	 3
 	#endif	
 
-
-
-#endif 

@@ -1,2 +1,0 @@
-PirSensor KEYWORD1
-UltrasonicSensor KEYWORD2

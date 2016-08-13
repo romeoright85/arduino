@@ -1,52 +1,54 @@
 #include <UltrasonicSensor.h>
 
-	
+
+
+
 UltrasonicSensor::UltrasonicSensor(byte triggerPin, byte echoPin)
 {
 	
 	//Trigger setup
 	this->triggerPin = triggerPin;
-	pinMode(this->triggerPin, OUTPUT);
+	pinMode(triggerPin, OUTPUT);
 
 	//Echo setup
 	this->echoPin = echoPin;
-	pinMode(this->echoPin, INPUT);
+	pinMode(echoPin, INPUT);
 }
 UltrasonicSensor::~UltrasonicSensor()
 {
 	//do nothing
 }
 
-int UltrasonicSensor::readSensor(byte mode)
+int UltrasonicSensor::getDistance(byte mode)
 {
 		
 	//initialize variables
 	unsigned long prevMicros5uS;//used to read the 1st timestamp to detect timeout
 	unsigned long postMicros5uS;//used to read the 2nd timestamp to detect timeout
-	int distance = 0;
+	distance = 0;//Inherited from DistanceSensor.h
 	int pulseWidth = 0;
 
 	//start with the trigger pin low
-	digitalWrite(this->triggerPin, LOW);
+	digitalWrite(triggerPin, LOW);
 
 	//wait 50mS between sensor enables  
 	delay(50);
 	
 	//pulse trigger pin high
-	digitalWrite(this->triggerPin, HIGH);
+	digitalWrite(triggerPin, HIGH);
 	
 	//wait 10uS
 	delayMicroseconds(10);
 
 	//pulse trigger pin low, this will yield a negative edge. This is where the timing starts.
-	digitalWrite(this->triggerPin, LOW);
+	digitalWrite(triggerPin, LOW);
 	
 
 	//get the 1st reading of the current timestamp
 	prevMicros5uS = micros();
 
 	//distance is actually in two-way uS (measured the two way speed of sound)
-	pulseWidth = pulseIn(this->echoPin, HIGH, USON_TIMEOUT);
+	pulseWidth = pulseIn(echoPin, HIGH, USON_TIMEOUT);
 
 	//get the 2nd reading of the current timestamp
 	postMicros5uS = micros();

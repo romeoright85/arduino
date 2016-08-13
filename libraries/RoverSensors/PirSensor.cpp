@@ -12,7 +12,7 @@ PirSensor::~PirSensor()
 	//do nothing
 }
 
-boolean PirSensor::readSensor()
+boolean PirSensor::monitorMotion()
 {
 	return this->motionDetected;
 }

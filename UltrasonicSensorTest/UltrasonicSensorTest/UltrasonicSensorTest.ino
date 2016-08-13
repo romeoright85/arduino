@@ -1,8 +1,7 @@
 #include <UltrasonicSensor.h>
 
+
 //Global Variables
-
-
 UltrasonicSensor uSon_FwdLeft = UltrasonicSensor(FORWARD_LEFT_ULTSNC_TRIG_PIN, FORWARD_LEFT_ULTSNC_ECHO_PIN);
 UltrasonicSensor uSon_FwdCenter = UltrasonicSensor(FORWARD_CENTER_ULTSNC_TRIG_PIN, FORWARD_CENTER_ULTSNC_ECHO_PIN);
 UltrasonicSensor uSon_FwdRight = UltrasonicSensor(FORWARD_RIGHT_ULTSNC_TRIG_PIN, FORWARD_RIGHT_ULTSNC_ECHO_PIN);
@@ -11,16 +10,16 @@ UltrasonicSensor uSon_RearCenter = UltrasonicSensor(REAR_CENTER_ULTSNC_TRIG_PIN,
 UltrasonicSensor uSon_SideLeft = UltrasonicSensor(SIDE_LEFT_ULTSNC_TRIG_PIN, SIDE_LEFT_ULTSNC_ECHO_PIN);
 
 
-int distanceOfUSon;
+int distanceMeasured;
 
-UltrasonicSensor uSonSensorArray[6] =
+UltrasonicSensor * uSonSensors[6] =
 {
-	uSon_FwdLeft,
-	uSon_FwdCenter,
-	uSon_FwdRight,
-	uSon_SideRight,
-	uSon_RearCenter,
-	uSon_SideLeft
+	&uSon_FwdLeft,
+	&uSon_FwdCenter,
+	&uSon_FwdRight,
+	&uSon_SideRight,
+	&uSon_RearCenter,
+	&uSon_SideLeft
 };
 
 
@@ -34,7 +33,7 @@ void setup()
 void loop()
 {
 
-
+	
 		
 	for (byte i = 0; i <= 5; i++)
 	{
@@ -59,11 +58,12 @@ void loop()
 				Serial.print("uSon_SideLeft: ");
 				break;
 		}
-		distanceOfUSon = uSonSensorArray[i].readSensor(UNIT_CM);
-		Serial.print(distanceOfUSon);
+		distanceMeasured = uSonSensors[i]->getDistance(UNIT_CM);
+		Serial.print(distanceMeasured);
 		Serial.println(" cm");
 		delay(1000);
 	}//end for
 	
 		
-}
+}//end loop
+

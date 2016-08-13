@@ -1,0 +1,4 @@
+DistanceSensor KEYWORD1
+PirSensor KEYWORD2
+UltrasonicSensor KEYWORD3
+IrDistanceSensor KEYWORD4
