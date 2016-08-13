@@ -1,12 +1,15 @@
-//FoglightAssembly.h
-#ifndef _FOGLIGHT_ASSEMBLY_H
-#define _FOGLIGHT_ASSEMBLY_H
+//SignalLightAssembly.h
+#ifndef _SIGNALLIGHT_ASSEMBLY_H
+#define _SIGNALLIGHT_ASSEMBLY_H
 
 #include <DigitalLed.h>
 
-//Foglight types
-#define LEFT_FOG 0
-#define RIGHT_FOG 1
+//Signal light types
+#define FRONT_RIGHT_SIGNAL_PIN 0
+#define FRONT_LEFT_SIGNAL_PIN 1
+#define SIDE_RIGHT_SIGNAL_PIN 2
+#define SIDE_LEFT_SIGNAL_PIN 3
+
 
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
@@ -20,25 +23,35 @@ Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
 #include <RoverConfig.h>
 
-class FoglightAssembly {
+
+
+
+class SignalLightAssembly {
 	public:
-		FoglightAssembly(byte, byte);//constructor. (right fog led pin, left fog led pin)
-		~FoglightAssembly();//destructor
+		SignalLightAssembly(byte, byte, byte, byte);//constructor. (signal light pins: front right, front left, side right, side left)
+		~SignalLightAssembly();//destructor
 		//Note: For any LED assemblies, don't add blink options/patterns as it may hold up the main program flow as you're using delays. Instead only have parallel or singular off/on patterns.
 		//overloaded on functions
 		void turnOn(byte);
 		void turnOn(byte, byte);
+		void turnOn(byte, byte, byte);
+		void turnOn(byte, byte, byte, byte);
 		//overloaded off functions
 		void turnOff(byte);
 		void turnOff(byte, byte);
+		void turnOff(byte, byte, byte);
+		void turnOff(byte, byte, byte, byte);
 		//returns status of that led
 		boolean isOn(byte);
 	private:
 		//have to declare them here in order to have "access of"/"scope to" these objects in all the methods of the class
 		//use a pointer since they will not be created yet until the constructor of this class is called
-		DigitalLed* rightFogLight;
-		DigitalLed* leftFogLight;
+		DigitalLed* frontRightSignal;
+		DigitalLed* frontLeftSignal;
+		DigitalLed* sideRightSignal;
+		DigitalLed* sideLeftSignal;
 };
 
 
 #endif 
+

@@ -16,89 +16,70 @@ FoglightAssembly::~FoglightAssembly()
 {
 	//do nothing
 }
-void FoglightAssembly::allOn()
-{
-	rightFogLight->ledOn();
-	leftFogLight->ledOn();
-}
-void FoglightAssembly::allOff()
-{
-	rightFogLight->ledOff();
-	leftFogLight->ledOff();
-}
-void FoglightAssembly::leftOn()
-{
-	leftFogLight->ledOn();
-}
-void FoglightAssembly::leftOff()
-{
-	leftFogLight->ledOff();
-}
-void FoglightAssembly::rightOn()
-{
-	rightFogLight->ledOn();
-}
-void FoglightAssembly::rightOff()
-{
-	rightFogLight->ledOff();
-}
-boolean FoglightAssembly::isRightFogOn()
-{
-	return rightFogLight->isLedOn();
-}
-boolean FoglightAssembly::isLeftFogOn()
-{
-	return leftFogLight->isLedOn();
-}
 
-
-
+//overloaded turn on functions
 void FoglightAssembly::turnOn(byte foglightType)
 {	
-	if (RIGHT_FOG)
+	switch (foglightType)
 	{
-		rightFogLight->ledOn();
-	}
-	else if(LEFT_FOG)
-	{
-		leftFogLight->ledOn();
-	}
-	else
-	{
-		//do nothing. invalid value.
-	}
+		case RIGHT_FOG:
+			rightFogLight->ledOn();
+		break;
+		case LEFT_FOG:
+			leftFogLight->ledOn();
+		break;
+		default:
+			//do nothing. invalid value.
+		break;
+	}//end switch
 }
 void FoglightAssembly::turnOn(byte foglightType1, byte foglightType2)
 {
 	
-	byte fogLightTypes[2] = { foglightType1, foglightType2 };
+	byte fogLightTypes[] = { foglightType1, foglightType2 };
 	for (byte i = 0; i <= 1; i++)
 	{
-		this->turnOn(fogLightTypes[i]);//using delegation. Passing the fog light type (i.e. LEFT_FOG or RIGHT_FOG)
+		this->turnOn(fogLightTypes[i]);//using delegation. Passing the fog light type.
 	}
 	
 }
+//overloaded turn off functions
 void FoglightAssembly::turnOff(byte foglightType)
 {
-	if (RIGHT_FOG)
+	switch (foglightType)
 	{
+	case RIGHT_FOG:
 		rightFogLight->ledOff();
-	}
-	else if (LEFT_FOG)
-	{
+		break;
+	case LEFT_FOG:
 		leftFogLight->ledOff();
-	}
-	else
-	{
+		break;
+	default:
 		//do nothing. invalid value.
-	}
+		break;
+	}//end switch
 }
 void FoglightAssembly::turnOff(byte foglightType1, byte foglightType2)
 {
 	byte fogLightTypes[2] = { foglightType1, foglightType2 };
 	for (byte i = 0; i <= 1; i++)
 	{
-		this->turnOff(fogLightTypes[i]);//using delegation. Passing the foglight type (i.e. LEFT_FOG or RIGHT_FOG)
+		this->turnOff(fogLightTypes[i]);//using delegation. Passing the foglight type.
 	}
 
+}
+boolean FoglightAssembly::isOn(byte foglightType)
+{
+	switch (foglightType)
+	{
+		case RIGHT_FOG:
+			rightFogLight->isLedOn();
+			break;
+		case LEFT_FOG:
+			leftFogLight->isLedOn();
+			break;
+		default:
+			//do nothing. invalid value.
+			break;
+	}//end switch
 }
