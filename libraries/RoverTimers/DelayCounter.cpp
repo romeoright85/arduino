@@ -3,12 +3,13 @@
 #include <Arduino.h>
 
 
-
 DelayCounter::DelayCounter(unsigned int stopValue)
+{
+	this->initializeCounter(0, stopValue);//set the default start value as 0 and pass the stopValue		
+}
+DelayCounter::DelayCounter(unsigned int startValue, unsigned int stopValue)
 {		
-
-	this->stopValue = stopValue;//no need to check for negative values since using unsigned int
-	this->count = 0;//initialize counter
+	this->initializeCounter(startValue, stopValue);//pass the start and stop values
 }
 DelayCounter::~DelayCounter()
 {
@@ -18,26 +19,42 @@ void DelayCounter::incCounter()
 {
 	if (this->count < 4294967295)//4294967295 is the max value of unsigned in
 	{
-		this->count++;//increment the counter		
+		if (this->count == stopValue)
+		{
+			//stop counting as the stop value has been reached. It will only increment again after a reset
+			this->counterDone = true;
+		}
+		else
+		{
+			this->count++;//increment the counter
+			this->counterDone = false;
+		}
 	}
 	else
 	{
 		this->count = 0;//reset the count since there is overflow
-	}
-	
+	}	
 }
 void DelayCounter::decCounter()
 {
-	if (this->count > 0)//0 is the min value of unsigned in
+	if (this->count >= 0)//0 is the min value of unsigned in
 	{
-		this->count--;//decrement the counter		
+		if (this->count == stopValue)
+		{
+			//stop counting as the stop value has been reached. It will only decrement again after a reset
+			this->counterDone = true;
+		}
+		else
+		{
+			this->count--;//decrement the counter		
+			this->counterDone = false;
+		}
 	}
 	else
 	{
-		this->count = 0;//reset the count since there is overflow
+		this->count = 0;//reset the count since it's at the min value and you don't want wrap around.
 	}
 }
-
 unsigned int DelayCounter::getCnt()
 {
 	return this->count;
@@ -45,20 +62,46 @@ unsigned int DelayCounter::getCnt()
 
 boolean DelayCounter::countReached()
 {
-	if (this->count >= stopValue)//use >= just in case there is a glitch and it goes over the stopValue
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return this->counterDone;
 }
 void DelayCounter::counterReset()
 {
-	this->count = 0;//reset the count
+	this->count = this->startValue;//reset the count
+	this->counterDone = false;//reset counter done flag
 }
 void DelayCounter::setStopValue(unsigned int stopValue)
 {
-	this->stopValue = stopValue;//no need to check for negative values since using unsigned int
+	this->stopValue = stopValue;
 }
+void DelayCounter::setStartValue(unsigned int startValue)
+{
+	this->startValue = startValue;
+}
+void DelayCounter::initializeCounter(unsigned int startValue, unsigned int stopValue)
+{
+
+	//shouldn't have to check for negative values since it's an unsigned int. But just in case this gets changed later, add this if statement as a guard
+	if (startValue < 0)
+	{
+		this->startValue = 0;
+		this->counterReset();//reset the counter with the startValue to initialize it
+	}
+	else
+	{
+		//the value is positive or 0 so it's okay.		
+		this->counterReset();//reset the counter with the startValue to initialize it
+	}
+
+	//either increment or decrement can be used
+	//shouldn't have to check for negative values since it's an unsigned int. But just in case this gets changed later, add this if statement as a guard
+	if (stopValue < 0)
+	{
+		this->stopValue = 0;
+	}
+	else
+	{
+		//the value is positive or 0 so it's okay.		
+		this->stopValue = stopValue;
+	}
+}
+
