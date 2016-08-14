@@ -19,16 +19,16 @@ DigitalLed::~DigitalLed()
 
 void DigitalLed::ledOn()
 {
-	this->ledIsOn = true;
+	ledIsOn = true;
 	digitalWrite(ledPin, HIGH);
 }
 void DigitalLed::ledOff()
 {
-	this->ledIsOn = false;
+	ledIsOn = false;
 	digitalWrite(ledPin, LOW);
 }
 boolean DigitalLed::isLedOn()
 {
-	return this->ledIsOn;
+	return ledIsOn;
 }
 

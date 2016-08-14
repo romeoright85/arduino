@@ -4,7 +4,7 @@
 
 	#include <Arduino.h>
 
-
+//You will need to create a class to configure RoverConfig.h to use the defined constant for the pin
 
 	class DigitalLed {
 	public:

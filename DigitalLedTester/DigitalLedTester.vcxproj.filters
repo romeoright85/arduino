@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="LedTester.ino" />
+    <None Include="DigitalLedTester.ino" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="__vm\.LedTester.vsarduino.h">
+    <ClInclude Include="__vm\.DigitalLedTester.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

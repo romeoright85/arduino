@@ -49,7 +49,7 @@ void SignalLightAssembly::turnOn(byte signalLightType1, byte signalLightType2)
 	for (byte i = 0; i <= 1; i++)
 	{
 		this->turnOn(signalLightTypes[i]);//using delegation. Passing the signal light type.
-	}	
+	}
 }
 void SignalLightAssembly::turnOn(byte signalLightType1, byte signalLightType2, byte signalLightType3)
 {
@@ -141,6 +141,6 @@ boolean SignalLightAssembly::isOn(byte signalLightType)
 		//do nothing. invalid value.
 		break;
 	}//end switch
-		
+
 
 }

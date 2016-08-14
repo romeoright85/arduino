@@ -3,7 +3,7 @@
 //For the flags in this RoverConfig.h, use #ifdef _SOME_FLAG_NAME in order to only "turn on"/enable that code if that flag name was defined then #include <RoverConfig.h> was called after
 //The order of defining the flag then calling #include <RoverConfig.h> matters. You have to define the flags first, then call #include <RoverConfig.h>
 		
-	//Pinouts for Arduino 4: COMM
+	//Pinouts for Arduino 4: COMM (UNO)
 	#ifdef _ARD_4_COMM_H
 
 		#define UNO_WAKEUP_CTRL_PIN_0			0
@@ -19,7 +19,7 @@
 
 	#endif
 
-	//Pinouts for Arduino 3: MAIN
+	//Pinouts for Arduino 3: MAIN (MEGA)
 	#ifdef _ARD_3_MAIN_H
 
 		#define COMM_WAKEUP_CTRL_PIN			2
@@ -35,7 +35,7 @@
 
 	#endif
 
-	//Pinouts for Arduino 2: AUXI
+	//Pinouts for Arduino 2: AUXI (MEGA)
 	#ifdef _ARD_2_AUXI_H
 
 		#define LEFT_LASER_CTRL_PIN				4
@@ -59,7 +59,7 @@
 	#endif
 
 
-	//Pinouts for Arduino 1: NAVI
+	//Pinouts for Arduino 1: NAVI (MEGA)
 	#ifdef _ARD_1_NAVI_H
 
 		#define NAVI_WAKEUP_CTRL_PIN				2
