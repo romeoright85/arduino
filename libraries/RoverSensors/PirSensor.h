@@ -18,7 +18,7 @@
 	#include <RoverConfig.h>
 	
 	
-	typedef void (*voidFuncPtr)(void);//defining the type voidFuncPtr that is a function pointer that takes no arguements and returns void. It is used later on by PirSensor
+	typedef void (*voidFuncPtr)(void);//defining the type voidFuncPtr that is a function pointer that takes no arguments and returns void. It is used later on for the interrupt service routine.
 	
 	class PirSensor {
 		public:

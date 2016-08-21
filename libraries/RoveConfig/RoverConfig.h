@@ -3,11 +3,21 @@
 //For the flags in this RoverConfig.h, use #ifdef _SOME_FLAG_NAME in order to only "turn on"/enable that code if that flag name was defined then #include <RoverConfig.h> was called after
 //The order of defining the flag then calling #include <RoverConfig.h> matters. You have to define the flags first, then call #include <RoverConfig.h>
 		
+		
+		
+	//Serial Communications
+	#define PC_USB_BAUD_RATE	9600
+	#define COMM_BAUD_RATE 9600
+	#define AUXI_BAUD_RATE 115200
+	#define NAVI_BAUD_RATE 115200
+	#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
+		
+		
 	//Pinouts for Arduino 4: COMM (UNO)
 	#ifdef _ARD_4_COMM_H
 
-		#define UNO_WAKEUP_CTRL_PIN_0			0
-		#define UNO_WAKEUP_CTRL_PIN_2			2
+		#define COMM_WAKEUP_SOURCE_PIN			0
+		#define COMM_WAKEUP_CTRL_PIN	2
 		#define PIR_PIN							3		
 		#define MAIN_WAKEUP_CTRL_PIN			4
 		#define MAIN_HW_RESET_CTRL_PIN			8
@@ -22,7 +32,7 @@
 	//Pinouts for Arduino 3: MAIN (MEGA)
 	#ifdef _ARD_3_MAIN_H
 
-		#define COMM_WAKEUP_CTRL_PIN			2
+		#define MAIN_WAKEUP_CTRL_PIN			2
 		#define NAVI_WAKEUP_CTRL_PIN			4
 		#define AUXI_WAKEUP_CTRL_PIN			5
 		#define COMM_HW_RESET_CTRL_PIN			12
@@ -38,6 +48,8 @@
 	//Pinouts for Arduino 2: AUXI (MEGA)
 	#ifdef _ARD_2_AUXI_H
 
+	
+		#define AUXI_WAKEUP_CTRL_PIN			2
 		#define LEFT_LASER_CTRL_PIN				4
 		#define RIGHT_LASER_CTRL_PIN			5
 		#define CURRENT_SENSOR_RESET_PIN		11
@@ -134,3 +146,9 @@
 		#define UNIT_FT	 3
 	#endif	
 
+	
+	
+	
+	
+
+	
