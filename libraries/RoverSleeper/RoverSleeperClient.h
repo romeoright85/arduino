@@ -11,10 +11,14 @@
 	
 	class RoverSleeperClient {
 	public:
-		RoverSleeperClient(RoverSerial, RoverCommand );//constructor. (RoverSerial Object in order to send the remote wakeup and sleep commands, character array aka string that holds the command to sleep the server)
+		RoverSleeperClient(byte);//constructor. (wakeup pin)
 		~RoverSleeperClient();//destructor
-		void wakeup();
-		void goToSleep();
+		void goToSleep();//To go to sleep, just send the command the Sleeper Server is expecting. This function just updates the flag variable
+		void wakeUp();
+		boolean isAwake();
+	private:
+		byte wakeUpPin;
+		boolean awake;
 	};
 
 

@@ -8,7 +8,7 @@ RoverSleeperLocal::RoverSleeperLocal(byte wakeUpPin, voidFuncPtr interruptDispat
 	this->interruptDispatch = interruptDispatch;
 	this->interruptChannel = digitalPinToInterrupt(this->wakeUpPin); //calling an Arduino function
 	pinMode(this->wakeUpPin, INPUT);
-	this->awake = true;	
+	this->awake = true;//initialize variable
 }
 RoverSleeperLocal::~RoverSleeperLocal()
 {
@@ -17,6 +17,8 @@ RoverSleeperLocal::~RoverSleeperLocal()
 
 void RoverSleeperLocal::goToSleep()
 {
+   
+   
    //NOTE: Make sure to stop any software serials before calling this function or it won't go to sleep.
    
    
@@ -62,7 +64,10 @@ void RoverSleeperLocal::goToSleep()
    
   */  	
    
-	 return;
+   
+   //NOTE: Make sure to start any software serials right after this function to have that capability again
+   
+	return;
 	
 	
 }
@@ -84,7 +89,10 @@ void RoverSleeperLocal::isrUpdate()
 	return;	
 }
 
-
+boolean RoverSleeperLocal::isAwake()
+{
+	return this->awake;
+}
 
 
 

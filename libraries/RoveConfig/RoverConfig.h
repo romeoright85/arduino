@@ -24,8 +24,8 @@
 		#define HEART_LED_PIN					9
 		#define AUXI_HW_RESET_CTRL_PIN			10
 		#define NAVI_HW_RESET_CTRL_PIN			11
-		#define SW_UART_RX_PIN					12
-		#define SW_UART_TX_PIN					13
+		#define COMM_SW_UART_RX_PIN					12
+		#define COMM_SW_UART_TX_PIN					13
 
 	#endif
 

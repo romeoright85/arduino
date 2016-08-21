@@ -29,6 +29,7 @@
 		void hasAwoken();//interrupt service routine (ISR)
 		void goToSleep();
 		void isrUpdate();//updates the awake variable when the interrupt service routine (ISR) is called. (can't do much else because the isr has to happen fast or the program will not work)
+		boolean isAwake();
 	private:
 		byte wakeUpPin;
 		byte interruptChannel;
