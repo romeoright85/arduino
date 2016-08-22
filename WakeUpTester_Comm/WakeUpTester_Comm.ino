@@ -1,5 +1,7 @@
+//Note: Make sure to set the IDE to UNO.
+
 #include <SoftwareSerial.h>
-#include <RoverSleeperLocal.h>
+#include <RoverSleeperServer.h>
 #include <RoverSleeperClient.h>
 
 char rxData;
@@ -33,7 +35,7 @@ SoftwareSerial comm2MainSerial(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX,
 
 
 //Controls the self wakeup of COMM
-RoverSleeperLocal sleeperCOMM(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch1);//COMM Wakeup Pin Control
+RoverSleeperServer sleeperCOMM(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch1);//COMM Wakeup Pin Control
 RoverSleeperClient sleeperMAIN(MAIN_WAKEUP_CTRL_PIN);
 
 
@@ -50,33 +52,33 @@ void loop()
 {
 
 
-	//The Computer puts MAIN to Sleep or Wakes it up. It can also put COMM to sleep  (by using MAIN to command the sleep) as well.
+	//The Computer puts COMM to Sleep or Wakes it up. It can also puts MAIN, AUXI, and NAVI to sleep  (by using COMM to command the sleep) as well.
 	if (Serial.available() > 0)
 	{
 		
 		
 		rxData = Serial.read();//Get data from the computer
-		if (rxData == 's')//MAIN sleep
+		if (rxData == 's')//Sleep all Megas
 		{
-			goToSleepMAIN();
+			goToSleepMegas();
 		}//end if
-		else if (rxData == 'w')//MAIN wakeup
+		else if (rxData == 'w')//Wake up all Megas
 		{
-			wakeUpMAIN();
+			wakeUpMegas();
 		}//end else if
 		else if (rxData == 'u')//COMM sleep (any UART/Xbee character will generate a low/rising/or falling signal (depending on the attach interrupt mode)
 		{
 			goToSleepCOMM();
 
-			//The program will go to sleep and then resume below once it's awoken
+			//The COMM will go to sleep here. Then it will resume below once it's awoken.
 
 			wakeUpCOMM();
 			
 		}//end else if
 		else if (rxData == 'a')//Uno and Mega sleep (any UART/Xbee character will generate a low/rising/or falling signal (depending on the attach interrupt mode)
 		{
-			//Put the MAIN to sleep (remotely)
-			goToSleepMAIN();
+			//Put the Megas to sleep (remotely)
+			goToSleepMegas();
 
 			//Then put the COMM to sleep (locally)
 			goToSleepCOMM();
@@ -85,8 +87,8 @@ void loop()
 			//Wake up the COMM (locally)
 			wakeUpCOMM();
 
-			//Wake up the MAIN (remotely)
-			wakeUpMAIN();
+			//Wake up the Megas (remotely)
+			wakeUpMegas();
 
 		}//end else if 
 
@@ -137,30 +139,30 @@ void wakeUpCOMM() {
 }
 
 
-void goToSleepMAIN() {
+void goToSleepMegas() {
 	//Pre sleep tasks
-	Serial.println(F("MAIN Sleeping..."));
+	Serial.println(F("Megas Sleeping..."));
 
 	//Go to sleep
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
 	sleeperMAIN.goToSleep();//update awake flag status
-	//Send command over software serial to shutdown the MAIN
+	//Send command over software serial to shutdown the MAIN, AUXI, and NAVI
 	comm2MainSerial.println('s');//send 's' to the MAIN
 
 }
-void wakeUpMAIN() {
+void wakeUpMegas() {
 	
 	if (!sleeperMAIN.isAwake())
 	{
 		//Wake Up
-		sleeperMAIN.wakeUp();//Creates a rising edge on the interrupt pin to wake up MAIN
+		sleeperMAIN.wakeUp();//Creates a rising edge on the interrupt pin to wake up MAIN, which then wakes up all others
 
 		//Post Wake Up tasks
-		Serial.println(F("MAIN Awoken!"));
+		Serial.println(F("Megas Awoken!"));
 	}
 	else
 	{
-		Serial.println(F("MAIN already awoken."));
+		Serial.println(F("Megas already awoken."));
 	}
 
 }

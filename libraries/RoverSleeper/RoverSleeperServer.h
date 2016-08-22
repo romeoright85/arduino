@@ -4,20 +4,55 @@
 
 	#include <Arduino.h>
 
+	/*******************************************************************
+	Configure (define) flags before calling #include <RoverConfig.h>
+	/********************************************************************/
+	
+	//Since all the Arduinos use this class, define/activate them all
+		
+	//define Arduino 1: AUXI in order to use it's config pins
+	#ifndef _ARD_2_AUXI_H
+		#define _ARD_2_AUXI_H		
+	#endif
+		
+	//define Arduino 2: NAVI in order to use it's config pins
+	#ifndef _ARD_1_NAVI_H
+		#define _ARD_1_NAVI_H		
+	#endif
+		
+	//define Arduino 3: MAIN in order to use it's config pins
+	#ifndef _ARD_3_MAIN_H
+		#define _ARD_3_MAIN_H		
+	#endif
+		
+	//define Arduino 4: COMM in order to use it's config pins
+	#ifndef _ARD_4_COMM_H
+		#define _ARD_4_COMM_H		
+	#endif
+	
+	/********************************************************************/
+
+	#include <RoverConfig.h>
+
 //The sleeper local is used to locally control the sleep and wakeup of itself
 //The sleeper server is used to control the sleep and wakeup of itself, controlled remotely
 //The sleeper client is used to remotely control the sleep and wakeup on a server
 
+	typedef void (*voidFuncPtr)(void);//defining the type voidFuncPtr that is a function pointer that takes no arguments and returns void. It is used later on for the interrupt service routine.
 	
 	class RoverSleeperServer {
 	public:
-		RoverSleeperServer(RoverSerial *, byte);//constructor. (RoverSerial object pointer to establish communications with the client, wakeup control pin). Use for remote wakeup/sleeping.
+		RoverSleeperServer(byte, voidFuncPtr);//constructor. Used for self wakeup/sleeping. (wakeup control pin, interrupt_service_routine)
 		~RoverSleeperServer();//destructor
-		void wakingUp();
-		void goingToSleep();
+		void hasAwoken();//interrupt service routine (ISR)
+		void goToSleep();
+		void isrUpdate();//updates the awake variable when the interrupt service routine (ISR) is called. (can't do much else because the isr has to happen fast or the program will not work)
+		boolean isAwake();
 	private:
-		char[] sleepCommand;//holds the command to check in order to sleep (a specially formatted string)
-		char[] wakeupCommand;//holds the command to check in order to sleep (a specially formatted string)
+		byte wakeUpPin;
+		byte interruptChannel;
+		voidFuncPtr interruptDispatch;
+		boolean awake;		
 	};
 
 
