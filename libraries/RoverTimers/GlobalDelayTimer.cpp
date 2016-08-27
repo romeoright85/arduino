@@ -6,8 +6,8 @@
 
 GlobalDelayTimer::GlobalDelayTimer(byte delayInterval, DelayCounter * counterPtr)
 {
-	this->delayInterval = delayInterval;
-	this->counterPtr = counterPtr;//take the passed counter pointer in the constructor argument and save it to the object member counter pointer
+	this->_delayInterval = delayInterval;
+	this->_counterPtr = counterPtr;//take the passed counter pointer in the constructor argument and save it to the object member counter pointer
 }
 
 GlobalDelayTimer::~GlobalDelayTimer()
@@ -18,11 +18,11 @@ GlobalDelayTimer::~GlobalDelayTimer()
 void GlobalDelayTimer::Running()
 {
 		
-	if (millis() - prevMillis >= this->delayInterval)
+	if (millis() - this->_prevMillis >= this->_delayInterval)
 	{
 
-		prevMillis = millis();//reset the start time once the delay interval has reached (since the clock is relative and not absolute time)
-		counterPtr->incCounter();//increment the counter for each delay interval reached
+		this->_prevMillis = millis();//reset the start time once the delay interval has reached (since the clock is relative and not absolute time)
+		this->_counterPtr->incCounter();//increment the counter for each delay interval reached
 	}//end if
 }
 

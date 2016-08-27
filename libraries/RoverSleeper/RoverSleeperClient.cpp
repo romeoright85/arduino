@@ -6,8 +6,8 @@
 
 RoverSleeperClient::RoverSleeperClient(byte wakeUpPin)
 {
-	this->wakeUpPin = wakeUpPin;
-	this->awake = true;//initialize variable
+	this->_wakeUpPin = wakeUpPin;
+	this->_awake = true;//initialize variable
 }
 RoverSleeperClient::~RoverSleeperClient()
 {
@@ -15,21 +15,21 @@ RoverSleeperClient::~RoverSleeperClient()
 }
 void RoverSleeperClient::goToSleep()
 {
-	this->awake = false;//update the awake flag to reflect current status
+	this->_awake = false;//update the awake flag to reflect current status
 }
 boolean RoverSleeperClient::isAwake()
 {
-	return this->awake;
+	return this->_awake;
 }
 void RoverSleeperClient::wakeUp()
 {
   //Toggle the wakeup pin to create a rising edge for the interrupt
-  digitalWrite(this->wakeUpPin,HIGH);//make sure it starts high
+  digitalWrite(this->_wakeUpPin,HIGH);//make sure it starts high
   delay(100);
-  digitalWrite(this->wakeUpPin,LOW);//make a low level
+  digitalWrite(this->_wakeUpPin,LOW);//make a low level
   delay(100);
-  digitalWrite(this->wakeUpPin,HIGH);//reset back to high
-  this->awake = true;//update the awake flag to reflect current status
+  digitalWrite(this->_wakeUpPin,HIGH);//reset back to high
+  this->_awake = true;//update the awake flag to reflect current status
 }
 void RoverSleeperClient::reset()
 {

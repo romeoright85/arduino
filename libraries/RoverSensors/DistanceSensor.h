@@ -25,7 +25,7 @@
 		virtual int getDistance(byte) = 0;//pure virtual function, returns distance (mode: UNIT_CM, UNIT_M, UNIT_FT, UNIT_IN). Also see RoverConfig.h
 		virtual void reset() = 0;//pure virtual function, software resets everything
 	protected:
-		int distance;
+		int _distance;
 	};
 
 

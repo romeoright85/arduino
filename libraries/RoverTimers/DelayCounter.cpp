@@ -17,65 +17,65 @@ DelayCounter::~DelayCounter()
 }
 void DelayCounter::incCounter()
 {
-	if (this->count < 4294967295)//4294967295 is the max value of unsigned in
+	if (this->_count < 4294967295)//4294967295 is the max value of unsigned in
 	{
-		if (this->count == stopValue)
+		if (this->_count == this->_stopValue)
 		{
 			//stop counting as the stop value has been reached. It will only increment again after a reset
-			this->counterDone = true;
+			this->_counterDone = true;
 		}
 		else
 		{
-			this->count++;//increment the counter
-			this->counterDone = false;
+			this->_count++;//increment the counter
+			this->_counterDone = false;
 		}
 	}
 	else
 	{
-		this->count = 0;//reset the count since there is overflow
+		this->_count = 0;//reset the count since there is overflow
 	}	
 }
 void DelayCounter::decCounter()
 {
-	if (this->count >= 0)//0 is the min value of unsigned in
+	if (this->_count >= 0)//0 is the min value of unsigned in
 	{
-		if (this->count == stopValue)
+		if (this->_count == this->_stopValue)
 		{
 			//stop counting as the stop value has been reached. It will only decrement again after a reset
-			this->counterDone = true;
+			this->_counterDone = true;
 		}
 		else
 		{
-			this->count--;//decrement the counter		
-			this->counterDone = false;
+			this->_count--;//decrement the counter		
+			this->_counterDone = false;
 		}
 	}
 	else
 	{
-		this->count = 0;//reset the count since it's at the min value and you don't want wrap around.
+		this->_count = 0;//reset the count since it's at the min value and you don't want wrap around.
 	}
 }
 unsigned int DelayCounter::getCnt()
 {
-	return this->count;
+	return this->_count;
 }
 
 boolean DelayCounter::countReached()
 {
-	return this->counterDone;
+	return this->_counterDone;
 }
 void DelayCounter::counterReset()
 {
-	this->count = this->startValue;//reset the count
-	this->counterDone = false;//reset counter done flag
+	this->_count = this->_startValue;//reset the count
+	this->_counterDone = false;//reset counter done flag
 }
 void DelayCounter::setStopValue(unsigned int stopValue)
 {
-	this->stopValue = stopValue;
+	this->_stopValue = stopValue;
 }
 void DelayCounter::setStartValue(unsigned int startValue)
 {
-	this->startValue = startValue;
+	this->_startValue = startValue;
 }
 void DelayCounter::initializeCounter(unsigned int startValue, unsigned int stopValue)
 {
@@ -83,7 +83,7 @@ void DelayCounter::initializeCounter(unsigned int startValue, unsigned int stopV
 	//shouldn't have to check for negative values since it's an unsigned int. But just in case this gets changed later, add this if statement as a guard
 	if (startValue < 0)
 	{
-		this->startValue = 0;
+		this->_startValue = 0;
 		this->counterReset();//reset the counter with the startValue to initialize it
 	}
 	else
@@ -96,12 +96,12 @@ void DelayCounter::initializeCounter(unsigned int startValue, unsigned int stopV
 	//shouldn't have to check for negative values since it's an unsigned int. But just in case this gets changed later, add this if statement as a guard
 	if (stopValue < 0)
 	{
-		this->stopValue = 0;
+		this->_stopValue = 0;
 	}
 	else
 	{
 		//the value is positive or 0 so it's okay.		
-		this->stopValue = stopValue;
+		this->_stopValue = stopValue;
 	}
 }
 void DelayCounter::reset()

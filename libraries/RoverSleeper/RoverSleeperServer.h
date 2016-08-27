@@ -51,10 +51,10 @@
 		boolean isAwake();
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	private:
-		byte wakeUpPin;
-		byte interruptChannel;
-		voidFuncPtr interruptDispatch;
-		boolean awake;		
+		byte _wakeUpPin;
+		byte _interruptChannel;
+		voidFuncPtr _interruptDispatch;
+		boolean _awake;		
 	};
 
 

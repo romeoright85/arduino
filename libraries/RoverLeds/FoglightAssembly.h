@@ -38,8 +38,8 @@ class FoglightAssembly : public virtual RoverReset {
 	private:
 		//have to declare them here in order to have "access of"/"scope to" these objects in all the methods of the class
 		//use a pointer since they will not be created yet until the constructor of this class is called
-		DigitalLed* rightFogLight;
-		DigitalLed* leftFogLight;
+		DigitalLed* _rightFogLight;
+		DigitalLed* _leftFogLight;
 };
 
 

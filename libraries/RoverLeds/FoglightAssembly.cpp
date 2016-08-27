@@ -6,11 +6,11 @@
 
 FoglightAssembly::FoglightAssembly(byte rightLedPin, byte leftLedPin)
 {
-	this->rightFogLight = new DigitalLed(rightLedPin);
-	this->leftFogLight = new DigitalLed(leftLedPin);
+	this->_rightFogLight = new DigitalLed(rightLedPin);
+	this->_leftFogLight = new DigitalLed(leftLedPin);
 	//initialize them as off
-	rightFogLight->ledOff();
-	leftFogLight->ledOff();
+	this->_rightFogLight->ledOff();
+	this->_leftFogLight->ledOff();
 }
 FoglightAssembly::~FoglightAssembly()
 {
@@ -23,10 +23,10 @@ void FoglightAssembly::turnOn(byte foglightType)
 	switch (foglightType)
 	{
 		case RIGHT_FOG:
-			rightFogLight->ledOn();
+			this->_rightFogLight->ledOn();
 		break;
 		case LEFT_FOG:
-			leftFogLight->ledOn();
+			this->_leftFogLight->ledOn();
 		break;
 		default:
 			//do nothing. invalid value.
@@ -49,10 +49,10 @@ void FoglightAssembly::turnOff(byte foglightType)
 	switch (foglightType)
 	{
 	case RIGHT_FOG:
-		rightFogLight->ledOff();
+		this->_rightFogLight->ledOff();
 		break;
 	case LEFT_FOG:
-		leftFogLight->ledOff();
+		this->_leftFogLight->ledOff();
 		break;
 	default:
 		//do nothing. invalid value.
@@ -73,10 +73,10 @@ boolean FoglightAssembly::isOn(byte foglightType)
 	switch (foglightType)
 	{
 		case RIGHT_FOG:
-			rightFogLight->isLedOn();
+			this->_rightFogLight->isLedOn();
 			break;
 		case LEFT_FOG:
-			leftFogLight->isLedOn();
+			this->_leftFogLight->isLedOn();
 			break;
 		default:
 			//do nothing. invalid value.

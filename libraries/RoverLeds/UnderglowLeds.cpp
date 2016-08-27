@@ -3,9 +3,9 @@
 #include <Arduino.h>
 
 
-UnderglowLeds::UnderglowLeds(byte ledPin) : DigitalLed(baseClassPin)
+UnderglowLeds::UnderglowLeds(byte ledPin) : DigitalLed(_baseClassPin)
 {
-	baseClassPin = ledPin;
+	_baseClassPin = ledPin;
 }
 
 UnderglowLeds::~UnderglowLeds()

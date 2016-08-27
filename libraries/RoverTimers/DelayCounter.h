@@ -41,10 +41,10 @@ Use DelayCounter::counterReset() to reset the counter to the startValue and clea
 		void counterReset();//resets the counter to the startValue and clears the counterDone flag
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	private:
-		unsigned int count;//counter
-		unsigned int stopValue;//the value to stop counting at	
-		unsigned int startValue;//will store the start value and be used when it's reset
-		boolean counterDone;//is true when the stopValue is reached
+		unsigned int _count;//counter
+		unsigned int _stopValue;//the value to stop counting at	
+		unsigned int _startValue;//will store the start value and be used when it's reset
+		boolean _counterDone;//is true when the stopValue is reached
 		void initializeCounter(unsigned int, unsigned int);//helper function used by the overloaded constructors to create the initial object (start value, and stop value)
 	};
 

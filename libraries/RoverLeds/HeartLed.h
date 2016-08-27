@@ -39,12 +39,12 @@ public:
 	void resetHeartLed();//reset the delay pattern index
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
-	byte baseClassPin;//this parameter is passed to the base class's constructor
-	byte ledPatternIndex = 0;//index of the pattern array
-	byte ledPatternArray_Breathe[38] = { 0, 0, 1, 6, 12, 22, 34, 49, 65, 84, 105, 128, 151, 176, 202, 228, 255, 255, 255, 255, 228, 202, 176, 151, 128, 105, 84, 65, 49, 34, 22, 12, 6, 1, 0, 0 };//1-sin(x) modified pattern (has extra 0's and 255's)
-	DelayCounter * counterPtr;//delay counter pointer
-	unsigned int periodsForShortDelay;//holds the number of periods for the short delay
-	unsigned int periodsForLongDelay;//holds the number of periods for the long delay
+	byte _baseClassPin;//this parameter is passed to the base class's constructor
+	byte _ledPatternIndex = 0;//index of the pattern array
+	byte _ledPatternArray_Breathe[38] = { 0, 0, 1, 6, 12, 22, 34, 49, 65, 84, 105, 128, 151, 176, 202, 228, 255, 255, 255, 255, 228, 202, 176, 151, 128, 105, 84, 65, 49, 34, 22, 12, 6, 1, 0, 0 };//1-sin(x) modified pattern (has extra 0's and 255's)
+	DelayCounter * _counterPtr;//delay counter pointer
+	unsigned int _periodsForShortDelay;//holds the number of periods for the short delay
+	unsigned int _periodsForLongDelay;//holds the number of periods for the long delay
 };
 
 

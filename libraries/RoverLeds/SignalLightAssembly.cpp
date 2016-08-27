@@ -4,15 +4,15 @@
 
 SignalLightAssembly::SignalLightAssembly(byte frontRightPin, byte frontLeftPin, byte sideRightPin, byte sideLeftPin)
 {
-	this->frontRightSignal = new DigitalLed(frontRightPin);
-	this->frontLeftSignal = new DigitalLed(frontLeftPin);
-	this->sideRightSignal = new DigitalLed(sideRightPin);
-	this->sideLeftSignal = new DigitalLed(sideLeftPin);
+	this->_frontRightSignal = new DigitalLed(frontRightPin);
+	this->_frontLeftSignal = new DigitalLed(frontLeftPin);
+	this->_sideRightSignal = new DigitalLed(sideRightPin);
+	this->_sideLeftSignal = new DigitalLed(sideLeftPin);
 	//initialize them as off
-	frontRightSignal->ledOff();
-	frontLeftSignal->ledOff();
-	sideRightSignal->ledOff();
-	sideLeftSignal->ledOff();
+	this->_frontRightSignal->ledOff();
+	this->_frontLeftSignal->ledOff();
+	this->_sideRightSignal->ledOff();
+	this->_sideLeftSignal->ledOff();
 }
 SignalLightAssembly::~SignalLightAssembly()
 {
@@ -26,16 +26,16 @@ void SignalLightAssembly::turnOn(byte signalLightType)
 	switch (signalLightType)
 	{
 	case FRONT_RIGHT_SIGNAL_PIN:
-		frontRightSignal->ledOn();
+		this->_frontRightSignal->ledOn();
 		break;
 	case FRONT_LEFT_SIGNAL_PIN:
-		frontLeftSignal->ledOn();
+		this->_frontLeftSignal->ledOn();
 		break;
 	case SIDE_RIGHT_SIGNAL_PIN:
-		sideRightSignal->ledOn();
+		this->_sideRightSignal->ledOn();
 		break;
 	case SIDE_LEFT_SIGNAL_PIN:
-		sideLeftSignal->ledOn();
+		this->_sideLeftSignal->ledOn();
 		break;
 	default:
 		//do nothing. invalid value.
@@ -77,16 +77,16 @@ void SignalLightAssembly::turnOff(byte signalLightType)
 	switch (signalLightType)
 	{
 	case FRONT_RIGHT_SIGNAL_PIN:
-		frontRightSignal->ledOff();
+		this->_frontRightSignal->ledOff();
 		break;
 	case FRONT_LEFT_SIGNAL_PIN:
-		frontLeftSignal->ledOff();
+		this->_frontLeftSignal->ledOff();
 		break;
 	case SIDE_RIGHT_SIGNAL_PIN:
-		sideRightSignal->ledOff();
+		this->_sideRightSignal->ledOff();
 		break;
 	case SIDE_LEFT_SIGNAL_PIN:
-		sideLeftSignal->ledOff();
+		this->_sideLeftSignal->ledOff();
 		break;
 	default:
 		//do nothing. invalid value.
@@ -126,16 +126,16 @@ boolean SignalLightAssembly::isOn(byte signalLightType)
 	switch (signalLightType)
 	{
 	case FRONT_RIGHT_SIGNAL_PIN:
-		return frontRightSignal->isLedOn();
+		return this->_frontRightSignal->isLedOn();
 		break;
 	case FRONT_LEFT_SIGNAL_PIN:
-		return frontLeftSignal->isLedOn();
+		return this->_frontLeftSignal->isLedOn();
 		break;
 	case SIDE_RIGHT_SIGNAL_PIN:
-		return sideRightSignal->isLedOn();
+		return this->_sideRightSignal->isLedOn();
 		break;
 	case SIDE_LEFT_SIGNAL_PIN:
-		return sideLeftSignal->isLedOn();
+		return this->_sideLeftSignal->isLedOn();
 		break;
 	default:
 		//do nothing. invalid value.

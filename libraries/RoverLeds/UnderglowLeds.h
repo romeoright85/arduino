@@ -28,7 +28,7 @@ class UnderglowLeds : public DigitalLed, public virtual RoverReset {
 		~UnderglowLeds();//destructor
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	private:
-		byte baseClassPin;//this parameter is passed to the base class's constructor
+		byte _baseClassPin;//this parameter is passed to the base class's constructor
 };
 
 

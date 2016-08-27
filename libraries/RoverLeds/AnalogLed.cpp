@@ -6,9 +6,9 @@
 
 AnalogLed::AnalogLed(byte ledPin)
 {
-	this->ledPin = ledPin;
-	pinMode(ledPin, OUTPUT);
-	analogWrite(ledPin, 0);//initialize off
+	this->_ledPin = ledPin;
+	pinMode(this->_ledPin, OUTPUT);
+	analogWrite(this->_ledPin, 0);//initialize off
 }
 
 AnalogLed::~AnalogLed()
@@ -18,8 +18,8 @@ AnalogLed::~AnalogLed()
 
 void AnalogLed::ledOn()
 {
-	ledIsOn = true;
-	analogWrite(ledPin, 255);
+	this->_ledIsOn = true;
+	analogWrite(this->_ledPin, 255);
 	
 }
 
@@ -27,24 +27,24 @@ void AnalogLed::ledSetLevel(byte level)
 {
 	if (level > 0)
 	{
-		ledIsOn = true;
-		analogWrite(ledPin, level);
+		this->_ledIsOn = true;
+		analogWrite(this->_ledPin, level);
 	}
 	else
 	{
-		ledIsOn = false;
-		analogWrite(ledPin, level);//byte is already a range from 0 to 255 so no need to check for negatives
+		this->_ledIsOn = false;
+		analogWrite(this->_ledPin, level);//byte is already a range from 0 to 255 so no need to check for negatives
 	}
 	
 }
 void AnalogLed::ledOff()
 {
-	ledIsOn = false;
-	analogWrite(ledPin, 0);
+	this->_ledIsOn = false;
+	analogWrite(this->_ledPin, 0);
 }
 boolean AnalogLed::isLedOn()
 {
-	return ledIsOn;
+	return this->_ledIsOn;
 }
 
 void AnalogLed::reset()

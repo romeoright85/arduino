@@ -48,10 +48,10 @@ class SignalLightAssembly: public virtual RoverReset {
 	private:
 		//have to declare them here in order to have "access of"/"scope to" these objects in all the methods of the class
 		//use a pointer since they will not be created yet until the constructor of this class is called
-		DigitalLed* frontRightSignal;
-		DigitalLed* frontLeftSignal;
-		DigitalLed* sideRightSignal;
-		DigitalLed* sideLeftSignal;
+		DigitalLed* _frontRightSignal;
+		DigitalLed* _frontLeftSignal;
+		DigitalLed* _sideRightSignal;
+		DigitalLed* _sideLeftSignal;
 };
 
 

@@ -13,7 +13,8 @@ RoverSleeperClient sleeperNAVI(NAVI_WAKEUP_CTRL_PIN);
 
 
 
-//Holds all custom objects created by this sketch
+
+//Holds all custom objects created by this sketch
 
 RoverReset * resetArray[] = { &sleeperMAIN , &sleeperAUXI, &sleeperNAVI };
 

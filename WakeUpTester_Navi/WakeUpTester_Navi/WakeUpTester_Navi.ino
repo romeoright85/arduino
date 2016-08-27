@@ -7,7 +7,8 @@ void InterruptDispatch1();
 
 //Controls the self wakeup of NAVI
 RoverSleeperServer sleeperNAVI(NAVI_WAKEUP_CTRL_PIN, &InterruptDispatch1);//NAVI Wakeup Pin Control
-//Holds all custom objects created by this sketch
+
+//Holds all custom objects created by this sketch
 RoverReset * resetArray[] = { &sleeperNAVI };
 
 

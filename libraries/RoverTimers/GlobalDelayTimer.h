@@ -28,9 +28,9 @@ public:
 	void Running();//activates the clock
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
-	unsigned long prevMillis;//holds the previous counter value
-	byte delayInterval;//holds the delay interval size
-	DelayCounter * counterPtr;//delay counter pointer
+	unsigned long _prevMillis;//holds the previous counter value
+	byte _delayInterval;//holds the delay interval size
+	DelayCounter * _counterPtr;//delay counter pointer
 };
 
 

@@ -14,17 +14,17 @@ PirSensor::~PirSensor()
 
 boolean PirSensor::monitorMotion()
 {
-	return this->motionDetected;
+	return this->_motionDetected;
 }
 
 void PirSensor::isrUpdate()//this will be called by an interruptDispatch
 {
-	this->motionDetected = true;
+	this->_motionDetected = true;
 }
 void PirSensor::reset()
 {
 	//software reset
-	motionDetected = false;//initialize to no motion detected
+	this->_motionDetected = false;//initialize to no motion detected
 }
 
 

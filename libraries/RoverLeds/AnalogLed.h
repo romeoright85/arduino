@@ -17,8 +17,8 @@ public:
 	boolean isLedOn();//returns status of the led (true for any level on and false of off)
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
-	boolean ledIsOn;//if it's on, returns true, else off, returns false
-	byte ledPin;
+	boolean _ledIsOn;//if it's on, returns true, else off, returns false
+	byte _ledPin;
 };
 
 

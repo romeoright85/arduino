@@ -29,7 +29,7 @@
 			void isrUpdate();//updates the motionDetected variable when the interrupt service routine (ISR) is called
 			virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 		private:
-			volatile boolean motionDetected = false;//initialize to no motion detected
+			volatile boolean _motionDetected = false;//initialize to no motion detected
 	};
 
 

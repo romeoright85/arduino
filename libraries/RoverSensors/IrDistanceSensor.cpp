@@ -5,7 +5,7 @@
 
 IrDistanceSensor::IrDistanceSensor(byte IrSensorPin)
 {
-	this->IrSensorPin = IrSensorPin;	
+	this->_IrSensorPin = IrSensorPin;	
 }
 
 IrDistanceSensor::~IrDistanceSensor()
@@ -22,9 +22,9 @@ int IrDistanceSensor::getDistance(byte mode)
 	const int referenceVolts = 5;
 
 	//Note: the type of distance is "int" so the value will be truncated. but since the sensor isn't that accurate in the first place due to the approximated equation, no big deal.
-	distance = 0;//Inherited from DistanceSensor.h
+	this->_distance = 0;//Inherited from DistanceSensor.h
 
-	analogRawData = analogRead(IrSensorPin);//get the raw analog data
+	analogRawData = analogRead(this->_IrSensorPin);//get the raw analog data
 	voltage = analogRawData / 1023.0 * referenceVolts;//calculate the voltage
 	 
 	//select mode for returning the distance value
@@ -33,33 +33,33 @@ int IrDistanceSensor::getDistance(byte mode)
 		case UNIT_CM:
 			//DEBUG: WRITE THE MATH TO CONVERT THE ANALOG READING TO ACTUAL DISTANCE MEASURED LATER
 			//12.628*voltage_in_v ^-1.043			
-			distance = (int)(12.628*pow(voltage, -1.043));	
+			this->_distance = (int)(12.628*pow(voltage, -1.043));	
 			break;
 		case UNIT_M:
 			//DEBUG: WRITE THE MATH TO CONVERT THE ANALOG READING TO ACTUAL DISTANCE MEASURED LATER
 			//0.12628*voltage_in_v ^-1.043			
-			distance = (int)(0.12628*pow(voltage, -1.043));
+			this->_distance = (int)(0.12628*pow(voltage, -1.043));
 			break;
 		case UNIT_IN:
 			//DEBUG: WRITE THE MATH TO CONVERT THE ANALOG READING TO ACTUAL DISTANCE MEASURED LATER
 			//4.9717*voltage_in_v ^-1.043			
-			distance = (int)(4.9717*pow(voltage, -1.043));
+			this->_distance = (int)(4.9717*pow(voltage, -1.043));
 			break;
 		case UNIT_FT:
 			//DEBUG: WRITE THE MATH TO CONVERT THE ANALOG READING TO ACTUAL DISTANCE MEASURED LATER
 			//0.4143*voltage_in_v ^-1.043		
-			distance = (int)(0.4143*pow(voltage, -1.043));
+			this->_distance = (int)(0.4143*pow(voltage, -1.043));
 			break;
 	}//end switch
 
-	return distance;
+	return this->_distance;
 
 }
 
 void IrDistanceSensor::reset()
 {
 	//software reset
-	distance = 0;//Inherited from DistanceSensor.h
+	this->_distance = 0;//Inherited from DistanceSensor.h
 }
 
 

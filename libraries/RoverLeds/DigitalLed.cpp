@@ -6,9 +6,9 @@
 
 DigitalLed::DigitalLed(byte ledPin)
 {
-	this->ledPin = ledPin;
-	pinMode(ledPin, OUTPUT);
-	digitalWrite(ledPin, LOW);//initialize off
+	this->_ledPin = ledPin;
+	pinMode(this->_ledPin, OUTPUT);
+	digitalWrite(this->_ledPin, LOW);//initialize off
 }
 
 DigitalLed::~DigitalLed()
@@ -19,17 +19,17 @@ DigitalLed::~DigitalLed()
 
 void DigitalLed::ledOn()
 {
-	ledIsOn = true;
-	digitalWrite(ledPin, HIGH);
+	this->_ledIsOn = true;
+	digitalWrite(this->_ledPin, HIGH);
 }
 void DigitalLed::ledOff()
 {
-	ledIsOn = false;
-	digitalWrite(ledPin, LOW);
+	this->_ledIsOn = false;
+	digitalWrite(this->_ledIsOn, LOW);
 }
 boolean DigitalLed::isLedOn()
 {
-	return ledIsOn;
+	return this->_ledIsOn;
 }
 void DigitalLed::reset()
 {

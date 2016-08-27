@@ -7,12 +7,12 @@ UltrasonicSensor::UltrasonicSensor(byte triggerPin, byte echoPin)
 {
 	
 	//Trigger setup
-	this->triggerPin = triggerPin;
-	pinMode(triggerPin, OUTPUT);
+	this->_triggerPin = triggerPin;
+	pinMode(this->_triggerPin, OUTPUT);
 
 	//Echo setup
-	this->echoPin = echoPin;
-	pinMode(echoPin, INPUT);
+	this->_echoPin = echoPin;
+	pinMode(this->_echoPin, INPUT);
 }
 UltrasonicSensor::~UltrasonicSensor()
 {
@@ -25,30 +25,30 @@ int UltrasonicSensor::getDistance(byte mode)
 	//initialize variables
 	unsigned long prevMicros5uS;//used to read the 1st timestamp to detect timeout
 	unsigned long postMicros5uS;//used to read the 2nd timestamp to detect timeout
-	distance = 0;//Inherited from DistanceSensor.h
+	this->_distance = 0;//Inherited from DistanceSensor.h
 	int pulseWidth = 0;
 
 	//start with the trigger pin low
-	digitalWrite(triggerPin, LOW);
+	digitalWrite(this->_triggerPin, LOW);
 
 	//wait 50mS between sensor enables  
 	delay(50);
 	
 	//pulse trigger pin high
-	digitalWrite(triggerPin, HIGH);
+	digitalWrite(this->_triggerPin, HIGH);
 	
 	//wait 10uS
 	delayMicroseconds(10);
 
 	//pulse trigger pin low, this will yield a negative edge. This is where the timing starts.
-	digitalWrite(triggerPin, LOW);
+	digitalWrite(this->_triggerPin, LOW);
 	
 
 	//get the 1st reading of the current timestamp
 	prevMicros5uS = micros();
 
 	//distance is actually in two-way uS (measured the two way speed of sound)
-	pulseWidth = pulseIn(echoPin, HIGH, USON_TIMEOUT);
+	pulseWidth = pulseIn(this->_echoPin, HIGH, USON_TIMEOUT);
 
 	//get the 2nd reading of the current timestamp
 	postMicros5uS = micros();
@@ -56,7 +56,7 @@ int UltrasonicSensor::getDistance(byte mode)
 	//if the time that has past is greater than the timeout, no echo was returned, so no oject was detected
 	if (postMicros5uS - prevMicros5uS >= USON_TIMEOUT)
 	{
-		distance = -1;//no object detected
+		this->_distance = -1;//no object detected
 	}//end if
 	else
 	{
@@ -71,26 +71,26 @@ int UltrasonicSensor::getDistance(byte mode)
 				//~0.07 ft to ~14.8 ft
 			
 			case UNIT_CM:
-					distance = pulseWidth / 58;//see conversion notes below. The resulting one way distance in "cm".
-					distance = constrain(distance, 0, 450);//Output constrained to prevent irregular numbers. Max based on the range of the ultrasonic sensor. See above.
+					this->_distance = pulseWidth / 58;//see conversion notes below. The resulting one way distance in "cm".
+					this->_distance = constrain(this->_distance, 0, 450);//Output constrained to prevent irregular numbers. Max based on the range of the ultrasonic sensor. See above.
 				break;
 			case UNIT_M:
-					distance = pulseWidth / 5831;//see conversion notes below. The resulting one way distance in "m".
-					distance = constrain(distance, 0, 5);//Output constrained to prevent irregular numbers. Max based on the range of the ultrasonic sensor. See above.
+					this->_distance = pulseWidth / 5831;//see conversion notes below. The resulting one way distance in "m".
+					this->_distance = constrain(this->_distance, 0, 5);//Output constrained to prevent irregular numbers. Max based on the range of the ultrasonic sensor. See above.
 				break;
 			case UNIT_IN:
-					distance = pulseWidth / 148;//see conversion notes below. The resulting one way distance in "in".
-					distance = constrain(distance, 0, 178);//Output constrained to prevent irregular numbers. Max based on the range of the ultrasonic sensor. See above.
+					this->_distance = pulseWidth / 148;//see conversion notes below. The resulting one way distance in "in".
+					this->_distance = constrain(this->_distance, 0, 178);//Output constrained to prevent irregular numbers. Max based on the range of the ultrasonic sensor. See above.
 				break;
 			case UNIT_FT:
-					distance = pulseWidth / 1778;//see conversion notes below. The resulting one way distance in "ft".
-					distance = constrain(distance, 0, 15);//Output constrained to prevent irregular numbers. Max based on the range of the ultrasonic sensor. See above.
+					this->_distance = pulseWidth / 1778;//see conversion notes below. The resulting one way distance in "ft".
+					this->_distance = constrain(this->_distance, 0, 15);//Output constrained to prevent irregular numbers. Max based on the range of the ultrasonic sensor. See above.
 				break;
 		}//end switch
 		
 	}//end else
 
-	return distance;
+	return this->_distance;
 
 
 
@@ -104,12 +104,12 @@ void UltrasonicSensor::reset()
 	//software reset
 	
 	//Trigger setup
-	pinMode(triggerPin, OUTPUT);
+	pinMode(this->_triggerPin, OUTPUT);
 
 	//Echo setup
-	pinMode(echoPin, INPUT);
+	pinMode(this->_echoPin, INPUT);
 	
-	distance = 0;//Inherited from DistanceSensor.h
+	this->_distance = 0;//Inherited from DistanceSensor.h
 }
 
 

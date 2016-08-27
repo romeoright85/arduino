@@ -4,11 +4,11 @@
 
 RoverSleeperServer::RoverSleeperServer(byte wakeUpPin, voidFuncPtr interruptDispatch)
 {
-	this->wakeUpPin = wakeUpPin;
-	this->interruptDispatch = interruptDispatch;
-	this->interruptChannel = digitalPinToInterrupt(this->wakeUpPin); //calling an Arduino function
-	pinMode(this->wakeUpPin, INPUT);
-	this->awake = true;//initialize variable
+	this->_wakeUpPin = wakeUpPin;
+	this->_interruptDispatch = interruptDispatch;
+	this->_interruptChannel = digitalPinToInterrupt(this->_wakeUpPin); //calling an Arduino function
+	pinMode(this->_wakeUpPin, INPUT);
+	this->_awake = true;//initialize variable
 }
 RoverSleeperServer::~RoverSleeperServer()
 {
@@ -23,10 +23,10 @@ void RoverSleeperServer::goToSleep()
    
    
    //attach the interrupt on the wakeUpPin, call the  interruptDispatch, and do it when the pin rises from 5V to 0V  
-	attachInterrupt(this->interruptChannel, this->interruptDispatch, RISING); //calling an Arduino function attachInterrupt()
+	attachInterrupt(this->_interruptChannel, this->_interruptDispatch, RISING); //calling an Arduino function attachInterrupt()
    
    
-   this->awake = false;//update the awake flag to reflect current status
+   this->_awake = false;//update the awake flag to reflect current status
    
   /*
     See 9.11.1 SMCR – Sleep Mode Control Register of pdf below:
@@ -75,34 +75,34 @@ void RoverSleeperServer::goToSleep()
 
 void RoverSleeperServer::hasAwoken()
 {
-	if(awake)//awake flag will be updated by isrUpdate() 
+	if(this->_awake)//awake flag will be updated by isrUpdate() 
 	{
 		SMCR = B00000100;// turn off bit 0 to disable the ability to sleep
-		detachInterrupt(this->interruptChannel);//turn off the interrupt, so the program doesn't go crazy when awake
+		detachInterrupt(this->_interruptChannel);//turn off the interrupt, so the program doesn't go crazy when awake
 	}
 	return;	
 }
 
 void RoverSleeperServer::isrUpdate()
 {
-	this->awake = true;//update the awake flag to reflect current status
+	this->_awake = true;//update the awake flag to reflect current status
 	return;	
 }
 
 boolean RoverSleeperServer::isAwake()
 {
-	return this->awake;
+	return this->_awake;
 }
 void RoverSleeperServer::reset()
 {
 	//software reset
 	
 	
-	this->interruptChannel = digitalPinToInterrupt(this->wakeUpPin); //calling an Arduino function
-	pinMode(this->wakeUpPin, INPUT);
+	this->_interruptChannel = digitalPinToInterrupt(this->_wakeUpPin); //calling an Arduino function
+	pinMode(this->_wakeUpPin, INPUT);
 	
 	//it is assumed the rover is awake since if it isn't, it couldn't sw reset anyways	
-	this->awake = true;//initialize variable
+	this->_awake = true;//initialize variable
 	this->hasAwoken();
 }
 
