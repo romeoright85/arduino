@@ -8,8 +8,16 @@ void InterruptDispatch1();
 PirSensor pirSensor = PirSensor(PIR_PIN, &InterruptDispatch1);//Note: This is my custom function and not attachInterrupt (though it calls it)
 volatile boolean motionDetected;
 
-																 // the setup function runs once when you press reset or power the board
+
+RoverReset * resetArray[] = { &pirSensor };
+
+
 void setup() {
+	//resetting all objects
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		resetArray[i]->reset();
+	}
 	Serial.begin(9600);
 
 }

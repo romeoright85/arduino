@@ -9,8 +9,16 @@ void InterruptDispatch1();
 RoverSleeperServer sleeperAUXI(AUXI_WAKEUP_CTRL_PIN, &InterruptDispatch1);//AUXI Wakeup Pin Control
 
 
-void setup()
-{
+
+RoverReset * resetArray[] = { &sleeperAUXI };
+
+
+void setup() {
+	//resetting all objects
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		resetArray[i]->reset();
+	}
 
 	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
 	Serial2.begin(AUXI_BAUD_RATE);//Use to talk between MAIN and AUXI

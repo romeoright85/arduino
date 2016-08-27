@@ -33,15 +33,22 @@ to make it sleep, any UART Rx will wake up both the COMM and MAIN at the same ti
 //Used to communicate between COMM and MAIN
 SoftwareSerial comm2MainSerial(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX, TX, Note declare this in global and not setup() else it won't work
 
-
 //Controls the self wakeup of COMM
 RoverSleeperServer sleeperCOMM(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch1);//COMM Wakeup Pin Control
 RoverSleeperClient sleeperMAIN(MAIN_WAKEUP_CTRL_PIN);
 
 
 
-void setup()
-{ 
+//Holds all custom objects created by this sketch
+RoverReset * resetArray[] = { &sleeperCOMM, &sleeperMAIN };
+
+
+void setup() {
+	//resetting all custom objects
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		resetArray[i]->reset();
+	}
 	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer    
 	comm2MainSerial.begin(COMM_BAUD_RATE);//Use to talk between COMM and MAIN
 

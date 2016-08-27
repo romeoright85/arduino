@@ -54,3 +54,11 @@ int UnoLoopback::getBaud()//don't put a semicolon here
 {
 	return _baudRate;
 }//end of getBaud()
+
+
+
+void UnoLoopback::reset()
+{
+	//software reset
+	//no nothing
+}

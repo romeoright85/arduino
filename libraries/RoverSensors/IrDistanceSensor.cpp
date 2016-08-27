@@ -56,7 +56,11 @@ int IrDistanceSensor::getDistance(byte mode)
 
 }
 
-
+void IrDistanceSensor::reset()
+{
+	//software reset
+	distance = 0;//Inherited from DistanceSensor.h
+}
 
 
 

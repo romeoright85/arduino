@@ -83,3 +83,10 @@ boolean FoglightAssembly::isOn(byte foglightType)
 			break;
 	}//end switch
 }
+void FoglightAssembly::reset()
+{
+	//software reset
+	this->turnOff(RIGHT_FOG, LEFT_FOG);
+	
+}
+

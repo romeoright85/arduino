@@ -23,8 +23,16 @@ UltrasonicSensor * uSonSensors[6] =
 };
 
 
-void setup()
-{
+
+RoverReset * resetArray[] = { &uSon_FwdLeft , &uSon_FwdCenter, &uSon_FwdRight, &uSon_SideRight, &uSon_RearCenter, &uSon_SideLeft};
+
+
+void setup() {
+	//resetting all objects
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		resetArray[i]->reset();
+	}
 
 	Serial.begin(9600);
 

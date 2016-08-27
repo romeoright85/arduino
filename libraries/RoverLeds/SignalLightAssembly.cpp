@@ -144,3 +144,10 @@ boolean SignalLightAssembly::isOn(byte signalLightType)
 
 
 }
+
+void SignalLightAssembly::reset()
+{
+	//software reset
+	turnOff(FRONT_RIGHT_SIGNAL_PIN, FRONT_LEFT_SIGNAL_PIN, SIDE_RIGHT_SIGNAL_PIN, SIDE_LEFT_SIGNAL_PIN);
+	
+}

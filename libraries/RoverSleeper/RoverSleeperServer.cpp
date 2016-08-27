@@ -93,6 +93,18 @@ boolean RoverSleeperServer::isAwake()
 {
 	return this->awake;
 }
+void RoverSleeperServer::reset()
+{
+	//software reset
+	
+	
+	this->interruptChannel = digitalPinToInterrupt(this->wakeUpPin); //calling an Arduino function
+	pinMode(this->wakeUpPin, INPUT);
+	
+	//it is assumed the rover is awake since if it isn't, it couldn't sw reset anyways	
+	this->awake = true;//initialize variable
+	this->hasAwoken();
+}
 
 
 

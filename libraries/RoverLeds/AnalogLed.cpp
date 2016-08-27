@@ -47,3 +47,7 @@ boolean AnalogLed::isLedOn()
 	return ledIsOn;
 }
 
+void AnalogLed::reset()
+{
+	ledOff();
+}

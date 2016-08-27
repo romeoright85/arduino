@@ -19,9 +19,17 @@ IrDistanceSensor * irDistanceSensors[4] =
 
 
 
-// the setup function runs once when you press reset or power the board
+RoverReset * resetArray[] = { &irDistanceSideLeft , &irDistanceSideRight, &irDistanceRearCenter, &irDistanceForwardCenter };
+
+
+
 void setup() {
-	
+	//resetting all objects
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		resetArray[i]->reset();
+	}
+
 	Serial.begin(9600);
 }
 

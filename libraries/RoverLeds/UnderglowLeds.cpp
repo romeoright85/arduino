@@ -13,3 +13,9 @@ UnderglowLeds::~UnderglowLeds()
 	//do nothing
 }
 
+void UnderglowLeds::reset()
+{
+	//software reset
+	DigitalLed::reset();
+}
+

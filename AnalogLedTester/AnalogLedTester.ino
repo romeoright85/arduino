@@ -12,11 +12,20 @@ HeartLed heartLed = HeartLed(HEART_LED_PIN, &heartLedCounter, DELAY_10_PERIODS, 
 GlobalDelayTimer mainTimer = GlobalDelayTimer(DELAY_TIMER_RES_5ms, &heartLedCounter);
 
 
+//Holds all custom objects created by this sketch
+RoverReset * resetArray[] = { &heartLedCounter , &heartLed, &mainTimer };
+
 
 void setup() {
+	//resetting all objects in this sketch
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		resetArray[i]->reset();
+	}
+
 	Serial.begin(9600);
 	delay(15);//add a little delay so the serial port has time to start up
-	Serial.println(F("Test Running"));
+	Serial.println(F("Test Running"));	
 }
 
 

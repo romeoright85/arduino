@@ -31,3 +31,9 @@ void RoverSleeperClient::wakeUp()
   digitalWrite(this->wakeUpPin,HIGH);//reset back to high
   this->awake = true;//update the awake flag to reflect current status
 }
+void RoverSleeperClient::reset()
+{
+	//this will awake any servers the client is connected to
+	this->wakeUp();
+}
+

@@ -21,12 +21,13 @@ Use DelayCounter::counterReset() to reset the counter to the startValue and clea
 #define _DELAYCOUNTER_H
 
 #include <Arduino.h>
+#include <RoverReset.h>
 
 #define DELAY_10_PERIODS 10
 #define DELAY_80_PERIODS 80
 #define DELAY_200_PERIODS 200
 
-	class DelayCounter {
+	class DelayCounter : public virtual RoverReset {
 	public:
 		DelayCounter(unsigned int);//constructor. (stop value. The default start value when not provided is 0.)
 		DelayCounter(unsigned int, unsigned int);//constructor. (start value, and stop value)
@@ -38,6 +39,7 @@ Use DelayCounter::counterReset() to reset the counter to the startValue and clea
 		unsigned int getCnt();//get the current count. good for debugging.
 		boolean countReached();//returns true when the count is reached
 		void counterReset();//resets the counter to the startValue and clears the counterDone flag
+		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	private:
 		unsigned int count;//counter
 		unsigned int stopValue;//the value to stop counting at	

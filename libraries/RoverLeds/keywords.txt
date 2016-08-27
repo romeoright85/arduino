@@ -2,3 +2,5 @@ DigitalLed KEYWORD1
 UnderglowLeds KEYWORD2
 FoglightAssembly KEYWORD3
 SignalLightAssembly KEYWORD4
+HeartLed KEYWORD5
+AnalogLed KEYWORD6

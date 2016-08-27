@@ -3,6 +3,7 @@
 #define _SIGNALLIGHT_ASSEMBLY_H
 
 #include <DigitalLed.h>
+#include <RoverReset.h>
 
 //Signal light types
 #define FRONT_RIGHT_SIGNAL_PIN 0
@@ -26,7 +27,7 @@ Configure (define) flags before calling #include <RoverConfig.h>
 
 
 
-class SignalLightAssembly {
+class SignalLightAssembly: public virtual RoverReset {
 	public:
 		SignalLightAssembly(byte, byte, byte, byte);//constructor. (signal light pins: front right, front left, side right, side left)
 		~SignalLightAssembly();//destructor
@@ -43,6 +44,7 @@ class SignalLightAssembly {
 		void turnOff(byte, byte, byte, byte);
 		//returns status of that led
 		boolean isOn(byte);
+		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	private:
 		//have to declare them here in order to have "access of"/"scope to" these objects in all the methods of the class
 		//use a pointer since they will not be created yet until the constructor of this class is called

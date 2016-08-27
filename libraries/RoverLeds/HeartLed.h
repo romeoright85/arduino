@@ -12,6 +12,7 @@ Run HeartLed::resetHeartLed() to reset the pattern to the beginning of the array
 
 #include <AnalogLed.h>
 #include <DelayCounter.h>
+#include <RoverReset.h>
 
 //Created this class so can configure RoverConfig.h
 
@@ -30,12 +31,13 @@ Configure (define) flags before calling #include <RoverConfig.h>
 
 
 
-class HeartLed : public AnalogLed {
+class HeartLed : public AnalogLed, public virtual RoverReset {
 public:
 	HeartLed(byte, DelayCounter *, unsigned int, unsigned int);//constructor. (LED pin, DelayCounter pointer, periods for short delay, periods for long delay)
 	~HeartLed();//destructor
 	void breathing();//have the led step through the breathing effect
 	void resetHeartLed();//reset the delay pattern index
+	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
 	byte baseClassPin;//this parameter is passed to the base class's constructor
 	byte ledPatternIndex = 0;//index of the pattern array

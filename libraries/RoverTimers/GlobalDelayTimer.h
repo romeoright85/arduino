@@ -17,14 +17,16 @@ i.e. for a 5ms delayInterval with a stop value to count up to of 10, you get 5ms
 
 #include <Arduino.h>
 #include <DelayCounter.h>
+#include <RoverReset.h>
 
 #define DELAY_TIMER_RES_5ms 5
 
-class GlobalDelayTimer {
+class GlobalDelayTimer : public virtual RoverReset {
 public:
 	GlobalDelayTimer(byte, DelayCounter * );//constructor, (delayInterval value, DelayCounter pointer)
 	~GlobalDelayTimer();//destructor
 	void Running();//activates the clock
+	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
 	unsigned long prevMillis;//holds the previous counter value
 	byte delayInterval;//holds the delay interval size

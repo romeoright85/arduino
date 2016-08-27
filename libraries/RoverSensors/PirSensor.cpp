@@ -21,3 +21,10 @@ void PirSensor::isrUpdate()//this will be called by an interruptDispatch
 {
 	this->motionDetected = true;
 }
+void PirSensor::reset()
+{
+	//software reset
+	motionDetected = false;//initialize to no motion detected
+}
+
+

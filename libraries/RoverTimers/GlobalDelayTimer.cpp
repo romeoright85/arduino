@@ -26,4 +26,10 @@ void GlobalDelayTimer::Running()
 	}//end if
 }
 
+void GlobalDelayTimer::reset()
+{
+		//software reset
+		//nothing needed to be done. The counter class will reset the counter object. This class just acts on the counter object.
+}
+
 

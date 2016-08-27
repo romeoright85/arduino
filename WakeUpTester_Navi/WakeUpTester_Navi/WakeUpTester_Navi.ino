@@ -7,11 +7,16 @@ void InterruptDispatch1();
 
 //Controls the self wakeup of NAVI
 RoverSleeperServer sleeperNAVI(NAVI_WAKEUP_CTRL_PIN, &InterruptDispatch1);//NAVI Wakeup Pin Control
+//Holds all custom objects created by this sketch
+RoverReset * resetArray[] = { &sleeperNAVI };
 
 
-void setup()
-{
-
+void setup() {
+	//resetting all objects
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		resetArray[i]->reset();
+	}
 	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
 	Serial2.begin(NAVI_BAUD_RATE);//Use to talk between MAIN and NAVI
 

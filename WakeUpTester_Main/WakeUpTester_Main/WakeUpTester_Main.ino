@@ -13,8 +13,18 @@ RoverSleeperClient sleeperNAVI(NAVI_WAKEUP_CTRL_PIN);
 
 
 
-void setup()
-{
+//Holds all custom objects created by this sketch
+
+RoverReset * resetArray[] = { &sleeperMAIN , &sleeperAUXI, &sleeperNAVI };
+
+
+void setup() {
+	//resetting all objects
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		resetArray[i]->reset();
+	}
+
 	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
 	Serial1.begin(COMM_BAUD_RATE);//Use to talk between COMM and MAIN
 	Serial2.begin(NAVI_BAUD_RATE);//Use to talk between MAIN and NAVI

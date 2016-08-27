@@ -99,6 +99,18 @@ int UltrasonicSensor::getDistance(byte mode)
 
 }
 
+void UltrasonicSensor::reset()
+{
+	//software reset
+	
+	//Trigger setup
+	pinMode(triggerPin, OUTPUT);
+
+	//Echo setup
+	pinMode(echoPin, INPUT);
+	
+	distance = 0;//Inherited from DistanceSensor.h
+}
 
 
 

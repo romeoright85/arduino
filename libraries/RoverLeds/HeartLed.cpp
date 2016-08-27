@@ -53,6 +53,12 @@ void HeartLed::breathing()
 }
 void HeartLed::resetHeartLed()
 {
+	AnalogLed::reset();
 	this->ledPatternIndex = 0;
 }
-
+void HeartLed::reset()
+{
+	//software reset
+	this->resetHeartLed();
+	
+}

@@ -3,7 +3,8 @@
 #define _ROVERSLEEPER_SERVER_H
 
 	#include <Arduino.h>
-
+	#include <RoverReset.h>
+	
 	/*******************************************************************
 	Configure (define) flags before calling #include <RoverConfig.h>
 	/********************************************************************/
@@ -40,7 +41,7 @@
 
 	typedef void (*voidFuncPtr)(void);//defining the type voidFuncPtr that is a function pointer that takes no arguments and returns void. It is used later on for the interrupt service routine.
 	
-	class RoverSleeperServer {
+	class RoverSleeperServer : public virtual RoverReset {
 	public:
 		RoverSleeperServer(byte, voidFuncPtr);//constructor. Used for self wakeup/sleeping. (wakeup control pin, interrupt_service_routine)
 		~RoverSleeperServer();//destructor
@@ -48,6 +49,7 @@
 		void goToSleep();
 		void isrUpdate();//updates the awake variable when the interrupt service routine (ISR) is called. (can't do much else because the isr has to happen fast or the program will not work)
 		boolean isAwake();
+		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	private:
 		byte wakeUpPin;
 		byte interruptChannel;

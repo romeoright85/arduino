@@ -31,4 +31,10 @@ boolean DigitalLed::isLedOn()
 {
 	return ledIsOn;
 }
+void DigitalLed::reset()
+{
+	//software reset
+	this->ledOff();//turn led off	
+}
+
 

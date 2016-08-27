@@ -3,7 +3,8 @@
 //For the flags in this RoverConfig.h, use #ifdef _SOME_FLAG_NAME in order to only "turn on"/enable that code if that flag name was defined then #include <RoverConfig.h> was called after
 //The order of defining the flag then calling #include <RoverConfig.h> matters. You have to define the flags first, then call #include <RoverConfig.h>
 		
-		
+	#include <RoverReset.h>
+
 		
 	//Serial Communications
 	#define PC_USB_BAUD_RATE	9600
