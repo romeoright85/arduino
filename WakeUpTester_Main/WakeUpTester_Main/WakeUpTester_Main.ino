@@ -27,7 +27,7 @@ void setup() {
 	}
 
 	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
-	Serial1.begin(COMM_BAUD_RATE);//Use to talk between COMM and MAIN
+	Serial1.begin(MAIN_BAUD_RATE);//Use to talk between COMM and MAIN
 	Serial2.begin(NAVI_BAUD_RATE);//Use to talk between MAIN and NAVI
 	Serial3.begin(AUXI_BAUD_RATE);//Use to talk between MAIN and AUXI
 	

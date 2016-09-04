@@ -7,12 +7,27 @@
 
 		
 	//Serial Communications
-	#define PC_USB_BAUD_RATE	9600
-	#define COMM_BAUD_RATE 9600
+	//Note: CMNC = Command and Control
+	#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
+	#define PC_USB_BAUD_RATE	9600 //used for outputting from UNO, Mega Arduinos to the PC via USB
+	#define MAIN_BAUD_RATE 9600
 	#define AUXI_BAUD_RATE 115200
 	#define NAVI_BAUD_RATE 115200
 	#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
-		
+
+	
+	//definition for RoverComm
+	#ifdef _ROVERCOMM_H
+		//RoverCommTypes
+		#define ROVERCOMM_CMNC 0
+		#define ROVERCOMM_NAVI 1
+		#define ROVERCOMM_AUXI 2
+		#define ROVERCOMM_MAIN 3
+		#define ROVERCOMM_COMM 4				
+		//Rover Comm Data Directions
+		#define ROVERCOMM_DATA_DIR_RX 0
+		#define ROVERCOMM_DATA_DIR_TX 1
+	#endif
 		
 	//Pinouts for Arduino 4: COMM (UNO)
 	#ifdef _ARD_4_COMM_H

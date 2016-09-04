@@ -50,7 +50,7 @@ void setup() {
 		resetArray[i]->reset();
 	}
 	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer    
-	comm2MainSerial.begin(COMM_BAUD_RATE);//Use to talk between COMM and MAIN
+	comm2MainSerial.begin(MAIN_BAUD_RATE);//Use to talk between COMM and MAIN
 
 
 }
@@ -138,7 +138,7 @@ void wakeUpCOMM() {
 	//Wake Up
 	sleeperCOMM.hasAwoken();
 	//Note: Make sure to begin (again) any Software Serial here
-	comm2MainSerial.begin(COMM_BAUD_RATE);//Turn on SW Serial again
+	comm2MainSerial.begin(MAIN_BAUD_RATE);//Turn on SW Serial again
 
 	//Post Wake Up tasks
 	delay(100);// let everybody get up and running for a sec
