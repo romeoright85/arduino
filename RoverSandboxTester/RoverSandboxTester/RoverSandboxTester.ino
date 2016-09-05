@@ -4,8 +4,8 @@
 //Global Variables
 
 
-//RoverSandbox * roverSandbox = new RoverSandbox();
-RoverSandbox * roverSandbox = NULL;
+
+RoverSandbox * roverSandbox = new RoverSandbox();
 
 RoverReset * resetArray[] = { roverSandbox };
 boolean test = false;
@@ -25,20 +25,7 @@ void setup() {
 
 
 void loop() {
+	Serial.println("1");
+	delay(1000);
 
-	delay(100);
-	Serial.println("Create object");
-	roverSandbox = new RoverSandbox();
-	//Serial.println("Reset Object");
-	//roverSandbox->reset();
-	//Serial.println("Reset Counter");
-	//RoverSandbox::resetObjectInstances();
-	Serial.println("Destroy object");
-	delete roverSandbox;
-	//Serial.println("NULL ptr");
-	//roverSandbox = NULL;
-	//Serial.println("Destroy object");
-	//roverSandbox->~RoverSandbox();
-
-	delay(5000);
 }
