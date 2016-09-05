@@ -32,25 +32,27 @@ RoverData::~RoverData()
 {
 	//do nothing
 }
-
 void RoverData::setData(String dataString)
 {	
-	this->_dataString = dataString;//copy string (destination, source)
+	this->_dataString = dataString;
 }
-boolean RoverData::validData()
+String RoverData::getData()
 {	
-	//WRITE ME LATER
-	return true;//TEMP DEBUG
+	return this->_dataString;
 }
 byte RoverData::getCommType()
 {	
-	//WRITE ME LATER
-	return 0;//TEMP DEBUG
+	return this->_roverCommType;
 }
 
+void RoverData::setCommType(byte roverCommType)
+{	
+	this->_roverCommType = roverCommType;
+}
 void RoverData::reset()
 {	
-	//WRITE ME LATER
+	this->_roverCommType = ROVERCOMM_NONE;
+	this->_dataString = "";
 }
 
 		

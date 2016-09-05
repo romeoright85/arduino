@@ -16,17 +16,15 @@
 	#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
 
 	
-	//definition for RoverComm
-	#ifdef _ROVERCOMM_H
+	//definition for RoverComm (which rover communication source/destination)
+	#ifdef _ROVERCOMMTYPES
 		//RoverCommTypes
-		#define ROVERCOMM_CMNC 0
-		#define ROVERCOMM_NAVI 1
-		#define ROVERCOMM_AUXI 2
-		#define ROVERCOMM_MAIN 3
-		#define ROVERCOMM_COMM 4				
-		//Rover Comm Data Directions
-		#define ROVERCOMM_DATA_DIR_RX 0
-		#define ROVERCOMM_DATA_DIR_TX 1
+		#define ROVERCOMM_NONE 0
+		#define ROVERCOMM_CMNC 1
+		#define ROVERCOMM_NAVI 2
+		#define ROVERCOMM_AUXI 3
+		#define ROVERCOMM_MAIN 4
+		#define ROVERCOMM_COMM 5
 	#endif
 		
 	//Pinouts for Arduino 4: COMM (UNO)

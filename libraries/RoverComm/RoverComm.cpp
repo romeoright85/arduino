@@ -24,138 +24,58 @@
 			COMM:
 				/-c4--*----.... 
 */	
-RoverComm::RoverComm(byte commType, RoverData * roverData )
+RoverComm::RoverComm(RoverData * roverData )
 {	
-	this->_thisUnit_CommType = commType;//set the RoverComm Type of this unit
-	roverData = this->_thisUnit_RoverDataPointer;//saving this unit's RoverData pointer to the external pointer
+	this->_rxRoverDataPointer = roverData;//saving the RoverData pointer for the received data
 }
 RoverComm::~RoverComm()
 {
 	//do nothing
 }
-byte RoverComm::getThisUnitsCommType()
+void RoverComm::appendToRxData(char dataIn)
 {
-	return this->_thisUnit_CommType;
+	this->getRxData() += dataIn;
 }
-void RoverComm::appendToRxData(char dataIn, byte commType)
-{
-	this->getRxData(commType) += dataIn;
-}
-void RoverComm::processReceivedData()
-{
-	RoverData * rxRoverData = new RoverData();//create a new RoverData object for the received RoverData each time (it has to be destroyed manually later)
-	String dataString;
-	dataString = this->getRxData(ROVERCOMM_CMNC);//copy string (destination, source)
-	byte rxCommType;
-	
-	rxRoverData->setData(dataString);//get the received CMNC data string and set it to the rxRoverData object's data string
-	if(rxRoverData->validData())//validate the rxRoverData object's data by checking to see if the data is not empty and is in the correct format
-	{
-		rxCommType = rxRoverData->getCommType();//extract the RoverComm Type from the rxRoverData object
-				
-		if( rxCommType == this->getThisUnitsCommType() )//if the RoverComm type matches with the one for this unit (arduino)
-		{			
-			this->_thisUnit_RoverDataPointer = rxRoverData;//then set this unit's RoverData pointer to the address the current rxRoverData pointer is pointing to
-			//IMPORTANT: manually delete the rxRoverData object later once it's done being used
-		}
-		else
-		{
-			//reroute the data if it's meant for another unit (arduino)
-			dataSelector(rxCommType, ROVERCOMM_DATA_DIR_TX) = dataString;//copy the dataString to the corresponding transmit string based on the RoverComm Type.
-			delete rxRoverData;//delete the rxRoverData now since you don't need it anymore
-			
-			this->_thisUnit_RoverDataPointer = NULL;//null out the pointer since it no longer has an object to point to
-		}		
-	}
-	
-}
-String RoverComm::getTxData(byte commType)
+String RoverComm::getTxData()
 {	
-	return dataSelector(commType, ROVERCOMM_DATA_DIR_TX);
+	return _txDataString;
 }
-String RoverComm::getRxData(byte commType)
+String RoverComm::getRxData()
 {
-	return dataSelector(commType, ROVERCOMM_DATA_DIR_RX);
+	return _rxDataString;
 }
 void RoverComm::reset()
 {
-		//received data strings
-		this->_rxDataString_CMNC = "";
-		this->_rxDataString_NAVI = "";
-		this->_rxDataString_AUXI = "";
-		this->_rxDataString_MAIN = "";
-		this->_rxDataString_COMM = "";
+		//received data string
+		_rxDataString = "";
 		//transmit data strings
-		this->_txDataString_CMNC = "";
-		this->_txDataString_NAVI = "";
-		this->_txDataString_AUXI = "";
-		this->_txDataString_MAIN = "";
-		this->_txDataString_COMM = "";	
-		
-		
-		this->_thisUnit_RoverDataPointer = NULL;//null out the pointer
-		
-		//DEBUG, HOPEFULLY THIS WON'T CAUSE A MEMORY LEAK IF ANYTHING IT WAS ONCE POINTING TO IS NO LONGER BEING USED BUT WAS NOT DELETED
-		
+		_txDataString = "";
 }
-String RoverComm::dataSelector(byte commType, byte dataDirection)
+byte RoverComm::getDestinationCommType()
+{
+	return _destinationCommType;
+}
+
+void RoverComm::validateData()
 {
 	
-	if(dataDirection == ROVERCOMM_DATA_DIR_RX)
-	{
-		switch(commType)
-		{
-			case ROVERCOMM_CMNC:
-				return this->_rxDataString_CMNC;
-			break;
-			case ROVERCOMM_NAVI:
-				return this->_rxDataString_NAVI;
-			break;		
-			case ROVERCOMM_AUXI:
-				return this->_rxDataString_AUXI;
-			break;	
-			case ROVERCOMM_MAIN:
-				return this->_rxDataString_MAIN;
-			break;		
-			case ROVERCOMM_COMM:
-				return this->_rxDataString_COMM;
-			break;				
-			default:
-				return "";//invalid response
-		}//end switch
-	}//end if
-	else if(dataDirection == ROVERCOMM_DATA_DIR_TX)
-	{
-		switch(commType)
-		{
-			case ROVERCOMM_CMNC:
-				return this->_txDataString_CMNC;
-			break;
-			case ROVERCOMM_NAVI:
-				return this->_txDataString_NAVI;
-			break;		
-			case ROVERCOMM_AUXI:
-				return this->_txDataString_AUXI;
-			break;	
-			case ROVERCOMM_MAIN:
-				return this->_txDataString_MAIN;
-			break;		
-			case ROVERCOMM_COMM:
-				return this->_txDataString_COMM;
-			break;				
-			default:
-				return "";//invalid response
-		}//end switch
-	}//end else if
-	else
-	{
-		return "";//invalid response
-	}//end else
+	String rxDataString = this->getRxData();
+		
+	//WRITE ME LATER
+	//check to see if the data is empty
+	//check for correct format (i.e. has the correct delimeters and at the right locations)
+	//parse out the destination RoverComm Type
+	//check RoverComm type validity	
+	//store the RoverComm Type in the RoverData object
+	this->_rxRoverDataPointer->setCommType(ROVERCOMM_COMM);//DEBUG
+	//sets the falg for whether the data is valid or not
+	_dataIsValid = true;//DEBUG
+}
+boolean RoverComm::isDataValid()
+{
+	return _dataIsValid;
 }
 
-
-		
-		
 		
 		
 		
