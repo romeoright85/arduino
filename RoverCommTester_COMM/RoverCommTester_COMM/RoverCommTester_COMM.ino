@@ -26,10 +26,14 @@ SoftwareSerial swSerialMAIN(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX, TX
 
 
 void setup() {
-	//resetting all objects
+	//resetting all objects in this sketch
 	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
 	{
-		resetArray[i]->reset();
+		if (!resetArray[i] == NULL)//if the object isn't null
+		{
+			resetArray[i]->reset();//reset the object	
+		}
+
 	}
 
 

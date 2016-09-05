@@ -24,10 +24,14 @@ RoverReset * resetArray[] = { &irDistanceSideLeft , &irDistanceSideRight, &irDis
 
 
 void setup() {
-	//resetting all objects
+	//resetting all objects in this sketch
 	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
 	{
-		resetArray[i]->reset();
+		if (!resetArray[i] == NULL)//if the object isn't null
+		{
+			resetArray[i]->reset();//reset the object	
+		}
+
 	}
 
 	Serial.begin(9600);

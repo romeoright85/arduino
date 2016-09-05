@@ -36,9 +36,12 @@
 	public:
 		RoverSandbox();//constructor
 		~RoverSandbox();//destructor
+		static void printNumofObjects();//prints the number of objects
+		static void resetObjectInstances();//reset the number of objects
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-	private:
 		
+	private:
+		static int _objectInstances;
 	};
 
 	#endif 

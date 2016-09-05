@@ -13,10 +13,14 @@ RoverReset * resetArray[] = { &sleeperNAVI };
 
 
 void setup() {
-	//resetting all objects
+	//resetting all objects in this sketch
 	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
 	{
-		resetArray[i]->reset();
+		if (!resetArray[i] == NULL)//if the object isn't null
+		{
+			resetArray[i]->reset();//reset the object	
+		}
+
 	}
 	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
 	Serial2.begin(NAVI_BAUD_RATE);//Use to talk between MAIN and NAVI
