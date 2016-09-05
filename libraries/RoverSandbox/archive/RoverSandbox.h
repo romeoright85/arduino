@@ -1,6 +1,6 @@
-//Template.h
-#ifndef _TEMPLATE_H
-#define _TEMPLATE_H
+//RoverSandbox.h
+#ifndef _ROVERSANDBOX_H
+#define _ROVERSANDBOX_H
 
 	#include <Arduino.h>
 	#include <RoverReset.h>
@@ -32,10 +32,10 @@
 
 	#include <RoverConfig.h>
 	
-	class Template : public virtual RoverReset {
+	class RoverSandbox : public virtual RoverReset {
 	public:
-		Template();//constructor
-		~Template();//destructor
+		RoverSandbox();//constructor
+		~RoverSandbox();//destructor
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	private:
 		
