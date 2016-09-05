@@ -9,6 +9,7 @@ RoverReset * resetArray[] = { &roverSandbox };
 #include <String.h>
 String string1 = "hello";
 String string2 = "";
+String string3 = "";
 
 void setup() {
 	//resetting all objects
@@ -24,7 +25,11 @@ void loop() {
 	string2 = string1;
 	Serial.println("String1");
 	Serial.println(string1);
+	string2 = string1;
 	Serial.println("String2");
 	Serial.println(string2);
+	string3 = String(string1);
+	Serial.println("String3");
+	Serial.println(string3);
 	delay(1000);
 }
