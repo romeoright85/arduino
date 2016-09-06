@@ -34,22 +34,17 @@ RoverComm::~RoverComm()
 }
 void RoverComm::appendToRxData(char dataIn)
 {
-	this->getRxData() += dataIn;
+	//Note: For some reason I couldn't call this->getRxData().concat(dataIn), so I got rid of the method getRxData() that was used to return _rxDataString and I am manually calling _rxDataString
+	_rxDataString.concat(dataIn);		
 }
-String RoverComm::getTxData()
-{	
-	return _txDataString;
-}
-String RoverComm::getRxData()
-{
-	return _rxDataString;
-}
+
+
 void RoverComm::reset()
 {
-		//received data string
 		_rxDataString = "";
-		//transmit data strings
-		_txDataString = "";
+		_destinationCommType = ROVERCOMM_NONE;
+		_dataIsValid = false;
+		
 }
 byte RoverComm::getDestinationCommType()
 {
@@ -59,26 +54,58 @@ byte RoverComm::getDestinationCommType()
 void RoverComm::validateData()
 {
 	
-	String rxDataString = this->getRxData();
-		
-	//WRITE ME LATER
+	
+	this->_rxDataString.trim();//remove any leading and trailing whitespaces
+	
 	//check to see if the data is empty
-	//check for correct format (i.e. has the correct delimeters and at the right locations)
+	if(this->_rxDataString.equals(""))
+	{
+		//the string was empty
+		_dataIsValid = false;
+		
+		//clear RoverComm's _rxDataString before exiting this function
+		this->_rxDataString = "";
+		return;//end the data validation if the string is empty, no reason to move on
+	}
+	
+		
+	//check for correct format - for proper delimeters, /-c---*-..., where - are don't cares and ... means the length may vary
+	//if( !(( this->_rxDataString.substring(0,1)=="/" ) && ( this->_rxDataString.substring(2,3)=="c" ) && ( this->_rxDataString.substring(7,7)=="*" )) )
+	if( !( this->_rxDataString.substring(0,1) == "/" && this->_rxDataString.substring(2,3) == "c" && this->_rxDataString.substring(6,7) == "*") )	//DEBUG
+	{
+		//clear RoverComm's _rxDataString before exiting this function
+		this->_rxDataString = "";
+		return;//end the data validation if the the format is incorrect, no reason to move on
+	}
+Serial.print(_rxDataString);//DEBUG
+
+	
+	//WRITE ME LATER
 	//parse out the destination RoverComm Type
 	//check RoverComm type validity	
+	
+	
 	//store the RoverComm Type in the RoverData object
 	this->_rxRoverDataPointer->setCommType(ROVERCOMM_COMM);//DEBUG
-	//sets the falg for whether the data is valid or not
-	_dataIsValid = true;//DEBUG
+	
+	
+	//sets the flag for whether the data is valid or not
+	_dataIsValid = true;//DEBUG	
+	
+	//save the raw data to the RoverData object
+	this->_rxRoverDataPointer->setData(this->_rxDataString);
+
+	
+	//clear RoverComm's _rxDataString before exiting this function
+	this->_rxDataString = "";
+	return;
+		
 }
 boolean RoverComm::isDataValid()
 {
 	return _dataIsValid;
 }
 
-		
-		
-		
 		
 		
 		

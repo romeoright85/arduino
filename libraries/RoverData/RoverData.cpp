@@ -54,6 +54,7 @@ void RoverData::reset()
 	this->_roverCommType = ROVERCOMM_NONE;
 	this->_dataString = "";
 }
-
-		
-		
+void RoverData::clearData()
+{	
+	this->_dataString = "";	
+}

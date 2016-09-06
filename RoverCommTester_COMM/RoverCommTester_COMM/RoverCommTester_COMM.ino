@@ -18,6 +18,10 @@ RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 //Command Parser
 RoverCommand * roverCommand = new RoverCommand();
 
+//flags for data ready
+boolean dataReadyCh1;
+boolean dataReadyCh2;
+
 //{ SW_UART Declarations
 	//{ MAIN SW_UART
 	SoftwareSerial swSerialMAIN(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX, TX, Note declare this in global and not setup() else it won't work
@@ -57,24 +61,34 @@ void setup() {
 
 void loop() {
 	
-
+	
 	//1. receive all data first
 
 		//1a. receive data from CMNC (the PC)
-		rxData(roverComm_Ch1);
+		roverDataCh1_COMM->clearData();//clear data before getting new data
+		rxData(roverComm_Ch1, ROVERCOMM_CMNC, dataReadyCh1);
+	
 
 		//1b. receive data from MAIN
-		rxData(roverComm_Ch2);
+		roverDataCh2_COMM->clearData();//clear data before getting new data
+		rxData(roverComm_Ch2, ROVERCOMM_MAIN, dataReadyCh2);
 
 	//2. process data	
 	
 		//2a. process received data from CMNC (the PC)
-		roverComm_Ch1->validateData();//validate, parse the data
+		if (dataReadyCh1)
+		{
+			roverComm_Ch1->validateData();//validate, parse the data
+		}
+		
 
 		//2b. process received data from MAIN
-		roverComm_Ch2->validateData();
+		if (dataReadyCh2)
+		{
+			roverComm_Ch2->validateData();
+		}
 
-		if(roverComm_Ch1->isDataValid())
+		if(roverComm_Ch1->isDataValid() && dataReadyCh1)
 		{
 						
 			//3. then transmit the data if it was meant for CMNC (the PC) or MAIN
@@ -89,9 +103,13 @@ void loop() {
 				commandDirector(roverCommand->getCommand());
 			}
 		}
+		else
+		{
+			//The data was invalid, so do nothing			
+		}
 		
 		
-		if (roverComm_Ch2->isDataValid())
+		if (roverComm_Ch2->isDataValid() && dataReadyCh2)
 		{
 
 			//3. then transmit the data if it was meant for CMNC (the PC) or MAIN
@@ -101,10 +119,15 @@ void loop() {
 			if (dataWasForCOMM)
 			{
 				dataWasForCOMM = false;//reset the flag
-									   //send the RoverData to the roverCommand's parser to get the command
+				//send the RoverData to the roverCommand's parser to get the command
 				roverCommand->parseCommand(roverDataCh2_COMM->getData());
 				commandDirector(roverCommand->getCommand());
+				
 			}
+		}
+		else
+		{
+			//The data was invalid, so do nothing
 		}
 		
 	delay(1000);//add some delay in between cycles
@@ -112,17 +135,49 @@ void loop() {
 }
 
 
-void rxData(RoverComm * roverComm) {
-	if (Serial.available() > 1)
+void rxData(RoverComm * roverComm, byte roverCommType, boolean &dataReady) {
+	
+	dataReady = false;//initialize the dataReady flag as false, then set it later in the function if the data is ready
+
+	if (roverCommType == ROVERCOMM_CMNC)
 	{
-		while (Serial.available() > 0)//while there is data on the Serial RX Buffer
+
+		if (Serial.available() > 1)
 		{
-			//Read one character of serial data at a time
-			//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-			roverComm->appendToRxData((char)swSerialMAIN.read());//construct the string one char at a time
-			//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
-		}//end while
+			dataReady = true;
+			while (Serial.available() > 0)//while there is data on the Serial RX Buffer
+			{
+				//Read one character of serial data at a time
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
+				//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+			}//end while
+		}//end if
 	}//end if
+	else if (roverCommType == ROVERCOMM_MAIN)
+	{
+		if (swSerialMAIN.available() > 1)
+		{
+			dataReady = true;
+			while (swSerialMAIN.available() > 0)//while there is data on the Serial RX Buffer
+			{
+				//Read one character of serial data at a time
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)swSerialMAIN.read());//construct the string one char at a time
+																	 //DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+			}//end while
+		}//end if
+
+	}//end else if
+	else
+	{
+		//invalid RoverComm Type, so do nothing
+	}//end else
+
+	
+		
+
+	
 }
 
 void dataDirector(RoverData * roverData)
@@ -170,13 +225,14 @@ void txData(String txData, byte roverCommType)
 
 void commandDirector(String roverCommand)
 {
+	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
 	if (roverCommand.equals("cmd0"))
 	{
-		Serial.println("CMD 0");
+		txData("CMD 0", ROVERCOMM_CMNC);//DEBUG		
 	}
 	else if (roverCommand.equals("cmd1"))
 	{
-		Serial.println("CMD 1");
+		txData("CMD 1", ROVERCOMM_CMNC);//DEBUG
 	}
 	else
 	{
