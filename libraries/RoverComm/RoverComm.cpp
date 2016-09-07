@@ -54,18 +54,19 @@ byte RoverComm::getDestinationCommType()
 void RoverComm::validateData()
 {
 	
+	byte commandType;
 	
 	this->_rxDataString.trim();//remove any leading and trailing whitespaces
 	
 	//check to see if the data is empty
 	if(this->_rxDataString.equals(""))
 	{
-		//the string was empty
-		_dataIsValid = false;
-		
-		//clear RoverComm's _rxDataString before exiting this function
-		this->_rxDataString = "";
-		return;//end the data validation if the string is empty, no reason to move on
+			//the string was empty
+			this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);
+			_dataIsValid = false;//sets the flag for whether the data is valid or not
+			this->_rxRoverDataPointer->setData("");//clear the RoverData since there is no data			
+			this->_rxDataString = "";//clear RoverComm's _rxDataString before exiting this function
+			return;//end the data validation if the RoverComm Type is invalid, no reason to move on
 	}
 	
 		
@@ -73,31 +74,49 @@ void RoverComm::validateData()
 	//if( !(( this->_rxDataString.substring(0,1)=="/" ) && ( this->_rxDataString.substring(2,3)=="c" ) && ( this->_rxDataString.substring(7,7)=="*" )) )
 	if( !( this->_rxDataString.substring(0,1) == "/" && this->_rxDataString.substring(2,3) == "c" && this->_rxDataString.substring(6,7) == "*") )	//DEBUG
 	{
-		//clear RoverComm's _rxDataString before exiting this function
-		this->_rxDataString = "";
-		return;//end the data validation if the the format is incorrect, no reason to move on
+			//the data format was incorrect
+			this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);
+			_dataIsValid = false;//sets the flag for whether the data is valid or not
+			this->_rxRoverDataPointer->setData("");//clear the RoverData since there is no data			
+			this->_rxDataString = "";//clear RoverComm's _rxDataString before exiting this function
+			return;//end the data validation if the RoverComm Type is invalid, no reason to move on
 	}
-Serial.print(_rxDataString);//DEBUG
+	
+	
+	//parse out the destination RoverComm Type (i.e. destination ID)
+	commandType = this->_rxDataString.substring(3,4).toInt();//convert the string to a number. If the string isn't a valid number, the default output is 0
 
+	//check RoverComm type validity and then store the RoverComm Type in the RoverData object
+	switch(commandType)
+	{
+		case ROVERCOMM_CMNC:
+			this->_rxRoverDataPointer->setCommType(ROVERCOMM_CMNC);
+		break;
+		case ROVERCOMM_NAVI:
+			this->_rxRoverDataPointer->setCommType(ROVERCOMM_NAVI);
+		break;
+		case ROVERCOMM_AUXI:
+			this->_rxRoverDataPointer->setCommType(ROVERCOMM_AUXI);
+		break;
+		case ROVERCOMM_MAIN:
+			this->_rxRoverDataPointer->setCommType(ROVERCOMM_MAIN);
+		break ;
+		case ROVERCOMM_COMM:
+			this->_rxRoverDataPointer->setCommType(ROVERCOMM_COMM);
+		break;
+		default:
+			//the RoverComm Type didn't match any of the results
+			this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);
+			_dataIsValid = false;//sets the flag for whether the data is valid or not
+			this->_rxRoverDataPointer->setData("");//clear the RoverData since there is no data			
+			this->_rxDataString = "";//clear RoverComm's _rxDataString before exiting this function
+			return;//end the data validation if the RoverComm Type is invalid, no reason to move on
+	}//end switch
 	
-	//WRITE ME LATER
-	//parse out the destination RoverComm Type
-	//check RoverComm type validity	
-	
-	
-	//store the RoverComm Type in the RoverData object
-	this->_rxRoverDataPointer->setCommType(ROVERCOMM_COMM);//DEBUG
-	
-	
-	//sets the flag for whether the data is valid or not
-	_dataIsValid = true;//DEBUG	
-	
-	//save the raw data to the RoverData object
-	this->_rxRoverDataPointer->setData(this->_rxDataString);
-
-	
-	//clear RoverComm's _rxDataString before exiting this function
-	this->_rxDataString = "";
+	//For valid RoverComm Types
+	_dataIsValid = true;//sets the flag for whether the data is valid or not
+	this->_rxRoverDataPointer->setData(this->_rxDataString);//save the raw data to the RoverData object
+	this->_rxDataString = "";//clear RoverComm's _rxDataString before exiting this function
 	return;
 		
 }

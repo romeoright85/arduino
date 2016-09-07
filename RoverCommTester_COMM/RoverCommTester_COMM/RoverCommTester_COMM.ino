@@ -61,17 +61,21 @@ void setup() {
 
 void loop() {
 	
-	
+
+	//reset flags
+	dataReadyCh1 = false;
+	dataReadyCh2 = false;
+
 	//1. receive all data first
 
 		//1a. receive data from CMNC (the PC)
 		roverDataCh1_COMM->clearData();//clear data before getting new data
-		rxData(roverComm_Ch1, ROVERCOMM_CMNC, dataReadyCh1);
+		dataReadyCh1 = rxData(roverComm_Ch1, ROVERCOMM_CMNC);
 	
 
 		//1b. receive data from MAIN
 		roverDataCh2_COMM->clearData();//clear data before getting new data
-		rxData(roverComm_Ch2, ROVERCOMM_MAIN, dataReadyCh2);
+		dataReadyCh2 = rxData(roverComm_Ch2, ROVERCOMM_MAIN);
 
 	//2. process data	
 	
@@ -135,16 +139,13 @@ void loop() {
 }
 
 
-void rxData(RoverComm * roverComm, byte roverCommType, boolean &dataReady) {
+boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	
-	dataReady = false;//initialize the dataReady flag as false, then set it later in the function if the data is ready
-
 	if (roverCommType == ROVERCOMM_CMNC)
 	{
 
 		if (Serial.available() > 1)
 		{
-			dataReady = true;
 			while (Serial.available() > 0)//while there is data on the Serial RX Buffer
 			{
 				//Read one character of serial data at a time
@@ -152,13 +153,17 @@ void rxData(RoverComm * roverComm, byte roverCommType, boolean &dataReady) {
 				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
 				//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
 			}//end while
+			return true;
 		}//end if
+		else
+		{
+			return false;
+		}//end else
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{
 		if (swSerialMAIN.available() > 1)
 		{
-			dataReady = true;
 			while (swSerialMAIN.available() > 0)//while there is data on the Serial RX Buffer
 			{
 				//Read one character of serial data at a time
@@ -166,8 +171,12 @@ void rxData(RoverComm * roverComm, byte roverCommType, boolean &dataReady) {
 				roverComm->appendToRxData((char)swSerialMAIN.read());//construct the string one char at a time
 																	 //DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
 			}//end while
+			return true;
 		}//end if
-
+		else
+		{
+			return false;
+		}//end else
 	}//end else if
 	else
 	{
@@ -210,7 +219,7 @@ void txData(String txData, byte roverCommType)
 	if (roverCommType == ROVERCOMM_CMNC)
 	{
 		//transmit the data to CMNC
-		Serial.println(txData);
+		Serial.println(txData);//NOTE: txData() in the RoverCommTester will output any data sent to the COMM with the destination CMNC back out to the CMNC. So if you want to test a loopback, send from CMNC with the destination CMNC to get a loopback
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{

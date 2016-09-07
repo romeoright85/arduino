@@ -19,7 +19,7 @@
 	//definition for RoverComm (which rover communication source/destination)
 	#ifdef _ROVERCOMMTYPES
 		//RoverCommTypes
-		#define ROVERCOMM_NONE 0
+		#define ROVERCOMM_NONE 0 //SAve 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
 		#define ROVERCOMM_CMNC 1
 		#define ROVERCOMM_NAVI 2
 		#define ROVERCOMM_AUXI 3
