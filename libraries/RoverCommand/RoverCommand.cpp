@@ -38,12 +38,10 @@ void RoverCommand::reset()
 
 void RoverCommand::parseCommand(String dataString)
 {
-		//WRITE ME LATER
-		
 		//take the dataString and parse it to grab only the rover command
+		//The command is everything after the */-c---*-..., where - are don't cares and ... means the length may vary
 		//no need to check for validity as it's different for every Arduino. So instead check it at the Ardunio's ino
-		//this->_roverCommand = "cmd0";//DEBUG
-		this->_roverCommand = "invalid";//DEBUG
+		this->_roverCommand = dataString.substring(7);		
 }
 String RoverCommand::getCommand()
 {

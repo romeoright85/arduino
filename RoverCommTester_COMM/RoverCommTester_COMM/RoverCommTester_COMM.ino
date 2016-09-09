@@ -237,14 +237,18 @@ void commandDirector(String roverCommand)
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
 	if (roverCommand.equals("cmd0"))
 	{
-		txData("CMD 0", ROVERCOMM_CMNC);//DEBUG		
+		txData(F("CMD 0 Rx'd"), ROVERCOMM_CMNC);//DEBUG		
 	}
 	else if (roverCommand.equals("cmd1"))
 	{
-		txData("CMD 1", ROVERCOMM_CMNC);//DEBUG
+		txData(F("CMD 1 Rx'd"), ROVERCOMM_CMNC);//DEBUG
 	}
 	else
 	{
-		//do nothing, invalid command
+		txData(F("Invalid, Rx'd:"), ROVERCOMM_CMNC);//DEBUG
+		txData(roverCommand, ROVERCOMM_CMNC);//DEBUG
+
+		//DEBUG//Can send this (about max size) to test: "/ -c5--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+
 	}	
 }
