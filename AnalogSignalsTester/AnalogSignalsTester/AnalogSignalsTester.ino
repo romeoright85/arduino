@@ -37,31 +37,31 @@ void loop() {
 
 	//AMUX 1
 	Serial.println(F("==AMUX1=="));
-	val = analogSignals->getRawAnalogValueOf(VOLTAGE_7D2_RAW);
+	val = analogSignals->getRawADCValueOf(VOLTAGE_7D2_RAW);
 	Serial.print(F("VOLTAGE_7D2_RAW: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(CURRENT_7D2_PRESW25A);
+	val = analogSignals->getRawADCValueOf(CURRENT_7D2_PRESW25A);
 	Serial.print(F("CURRENT_7D2_PRESW25A: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(CURRENT_7D2_SW12D5A);
+	val = analogSignals->getRawADCValueOf(CURRENT_7D2_SW12D5A);
 	Serial.print(F("CURRENT_7D2_SW12D5A: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING);
 	Serial.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING: "));
 	Serial.println(val);
 	
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING);
 	Serial.print(F("PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING: "));
 	Serial.println(val);
 	
-	val = analogSignals->getRawAnalogValueOf(TEMPSENSOR_BEACONCCA_CENTERSIDE);
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_BEACONCCA_CENTERSIDE);
 	Serial.print(F("TEMPSENSOR_BEACONCCA_CENTERSIDE: "));
 	Serial.println(val);
 	
-	val = analogSignals->getRawAnalogValueOf(TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET);
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET);
 	Serial.print(F("TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET: "));
 	Serial.println(val);
 
@@ -70,31 +70,31 @@ void loop() {
 
 	//AMUX 2
 	Serial.println(F("==AMUX2=="));
-	val = analogSignals->getRawAnalogValueOf(VOLTAGE_5_ANALOGCCA);
+	val = analogSignals->getRawADCValueOf(VOLTAGE_5_ANALOGCCA);
 	Serial.print(F("VOLTAGE_5_ANALOGCCA: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(CURRENT_3D3_SW12D5A);
+	val = analogSignals->getRawADCValueOf(CURRENT_3D3_SW12D5A);
 	Serial.print(F("CURRENT_3D3_SW12D5A: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING);
 	Serial.print(F("PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING);
 	Serial.print(F("PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING);
 	Serial.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR);
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR);
 	Serial.print(F("TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(TEMPSENSOR_DIGITALCCA_MIDDLESIDE);
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_DIGITALCCA_MIDDLESIDE);
 	Serial.print(F("TEMPSENSOR_DIGITALCCA_MIDDLESIDE: "));
 	Serial.println(val);
 
@@ -103,27 +103,27 @@ void loop() {
 
 	//AMUX 3
 	Serial.println(F("==AMUX3=="));
-	val = analogSignals->getRawAnalogValueOf(VOLTAGE_3D3_SW);
+	val = analogSignals->getRawADCValueOf(VOLTAGE_3D3_SW);
 	Serial.print(F("VOLTAGE_3D3_SW: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(CURRENT_MOTORCTRLR_CH1_12D5A);
+	val = analogSignals->getRawADCValueOf(CURRENT_MOTORCTRLR_CH1_12D5A);
 	Serial.print(F("CURRENT_MOTORCTRLR_CH1_12D5A: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING);
 	Serial.print(F("PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK);
 	Serial.print(F("PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING);
 	Serial.print(F("PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK);
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK);
 	Serial.print(F("TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK: "));
 	Serial.println(val);
 	
@@ -132,27 +132,27 @@ void loop() {
 
 	//AMUX 4
 	Serial.println(F("==AMUX4=="));
-	val = analogSignals->getRawAnalogValueOf(GAS_BEACONCCA_RIGHTPOINTING);
+	val = analogSignals->getRawADCValueOf(GAS_BEACONCCA_RIGHTPOINTING);
 	Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(CURRENT_MOTORCTRLR_CH2_12D5A);
+	val = analogSignals->getRawADCValueOf(CURRENT_MOTORCTRLR_CH2_12D5A);
 	Serial.print(F("CURRENT_MOTORCTRLR_CH2_12D5A: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING);
 	Serial.print(F("PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK);
 	Serial.print(F("PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK: "));
 	Serial.println(val);
 	
-	val = analogSignals->getRawAnalogValueOf(PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING);
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING);
 	Serial.print(F("PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING: "));
 	Serial.println(val);
 
-	val = analogSignals->getRawAnalogValueOf(TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE);
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE);
 	Serial.print(F("TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE: "));
 	Serial.println(val);
 	

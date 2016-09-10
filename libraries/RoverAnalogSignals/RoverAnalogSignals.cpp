@@ -133,7 +133,7 @@ AnalogMuxSensor * RoverAnalogSignals::findMuxBySignalName(byte analogSignalName)
 	}
 	return NULL;//else return no object if there is no mux with that Analog Signal Name
 }
-int RoverAnalogSignals::getRawAnalogValueOf(byte analogSignalName)
+int RoverAnalogSignals::getRawADCValueOf(byte analogSignalName)
 {
 	
 	AnalogMuxSensor * analogMux;
@@ -141,6 +141,6 @@ int RoverAnalogSignals::getRawAnalogValueOf(byte analogSignalName)
 	analogMux = findMuxBySignalName(analogSignalName);
 	
 	//using delegation and calling AnalogMuxSensor's method
-	return analogMux->getRawAnalogValueOf(analogSignalName);
+	return analogMux->getRawADCValueOf(analogSignalName);
 }
 

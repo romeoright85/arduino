@@ -96,7 +96,7 @@ int AnalogMuxSensor::readAmuxChannel(byte aMuxChannel)
 	delay(1);//allow enough time to switch to the desired AMUX channel
 	return analogRead(this->_OPAMP_OUT_PIN);		
 }
-int AnalogMuxSensor::getRawAnalogValueOf(byte analogSignalName)
+int AnalogMuxSensor::getRawADCValueOf(byte analogSignalName)
 {
 	for(byte i = 0; i< sizeof( this->_analogNames)/sizeof(_analogNames[0]); i++)
 	{
