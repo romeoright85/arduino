@@ -2,10 +2,10 @@
 //Note: Don't do a #ifndef as you want the user to do a #include <RoverConfig.h> with newly updated flags for each .h or .cpp class which will append to the current config like with cascading style sheets (CSS).
 //For the flags in this RoverConfig.h, use #ifdef _SOME_FLAG_NAME in order to only "turn on"/enable that code if that flag name was defined then #include <RoverConfig.h> was called after
 //The order of defining the flag then calling #include <RoverConfig.h> matters. You have to define the flags first, then call #include <RoverConfig.h>
-		
+	
 	#include <RoverReset.h>
-
-		
+	
+	
 	//Serial Communications
 	//Note: CMNC = Command and Control
 	#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
@@ -14,8 +14,7 @@
 	#define AUXI_BAUD_RATE 115200
 	#define NAVI_BAUD_RATE 115200
 	#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
-
-	
+		
 	//definition for RoverComm (which rover communication source/destination)
 	#ifdef _ROVERCOMMTYPES
 		//RoverCommTypes
@@ -26,6 +25,38 @@
 		#define ROVERCOMM_MAIN 4
 		#define ROVERCOMM_COMM 5
 	#endif
+	
+	
+	//definition for AnalogMuxSensor Channels
+	#ifdef _ROVERAMUXCHANNELS
+		//Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
+		#define AMUX_UNDEF 0 //undefined channel
+		#define AMUX_CH_1 1
+		#define AMUX_CH_2 2
+		#define AMUX_CH_3 3
+		#define AMUX_CH_4 4
+		#define AMUX_CH_5 5
+		#define AMUX_CH_6 6
+		#define AMUX_CH_7 7
+		#define AMUX_CH_8 8
+	#endif
+	
+	//definition for Rover Analog Names
+	#ifdef _ROVERANALOGNAMES
+		//Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
+		#define UNUSED_CH 0 //unused channel
+		#define VOLTAGE_7D2_RAW 1
+		#define VOLTAGE_7D2_PRESW25A 2
+		#define VOLTAGE_7D2_SW12D5A 3
+		#define PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING		4
+		#define PHOTOSENSOR_BEACONCCA_REARSIDE_UPWARDPOINTING	5
+		#define TEMPSENSOR_BEACONCCA_CENTERSIDE		6
+		#define TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET		7
+	#endif
+	
+		
+	
+	
 		
 	//Pinouts for Arduino 4: COMM (UNO)
 	#ifdef _ARD_4_COMM_H
@@ -70,18 +101,42 @@
 		#define CURRENT_FAULT_1_PIN				12
 		#define IMU_SDA_PIN						20
 		#define IMU_SCL_PIN						21
+		#define AMUX1_SEL_0_PIN				22
+		#define AMUX1_SEL_1_PIN				23
+		#define AMUX1_SEL_2_PIN				24
+		#define AMUX2_SEL_0_PIN				25
+		#define AMUX2_SEL_1_PIN				26
+		#define AMUX2_SEL_2_PIN				27
+		#define AMUX3_SEL_0_PIN				28
+		#define AMUX3_SEL_1_PIN				29
+		#define AMUX3_SEL_2_PIN				30
+		#define AMUX4_SEL_0_PIN				31
+		#define AMUX4_SEL_1_PIN				32
+		#define AMUX4_SEL_2_PIN				33
+		#define AMUX5_SEL_0_PIN				34
+		#define AMUX5_SEL_1_PIN				35
+		#define AMUX5_SEL_2_PIN				36
+		#define AMUX6_SEL_0_PIN				37
+		#define AMUX6_SEL_1_PIN				38
+		#define AMUX6_SEL_2_PIN				39
+		#define AMUX7_SEL_0_PIN				40
+		#define AMUX7_SEL_1_PIN				41
+		#define AMUX7_SEL_2_PIN				42
+		#define AMUX8_SEL_0_PIN				43
+		#define AMUX8_SEL_1_PIN				44
+		#define AMUX8_SEL_2_PIN				45
 		#define CURRENT_FAULT_2_PIN				46
 		#define CURRENT_FAULT_3_PIN				47
 		#define CURRENT_FAULT_4_PIN				48
 		#define CURRENT_FAULT_5_PIN				49
-		#define OP_AMP_1						0
-		#define OP_AMP_2						1
-		#define OP_AMP_3						2
-		#define OP_AMP_4						3
-		#define OP_AMP_5						4
-		#define OP_AMP_6						5
-		#define OP_AMP_7						6
-		#define OP_AMP_8						7
+		#define OPAMP_1_OUT_PIN					0
+		#define OPAMP_2_OUT_PIN					1
+		#define OPAMP_3_OUT_PIN					2
+		#define OPAMP_4_OUT_PIN					3
+		#define OPAMP_5_OUT_PIN					4
+		#define OPAMP_6_OUT_PIN					5
+		#define OPAMP_7_OUT_PIN					6
+		#define OPAMP_8_OUT_PIN					7
 	#endif
 
 
