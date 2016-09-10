@@ -23,6 +23,16 @@
 				/-c3--*----.... 				
 			COMM:
 				/-c4--*----.... 
+				
+		Note: RoverComm Types have a different number though, so pay attention
+		#define ROVERCOMM_NONE 0 //Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
+		#define ROVERCOMM_CMNC 1
+		#define ROVERCOMM_NAVI 2
+		#define ROVERCOMM_AUXI 3
+		#define ROVERCOMM_MAIN 4
+		#define ROVERCOMM_COMM 5				
+		
+		
 */	
 RoverComm::RoverComm(RoverData * roverData )
 {	
