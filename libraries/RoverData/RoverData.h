@@ -5,6 +5,7 @@
 #define _ROVERCOMMTYPES 
 	
 	#include <Arduino.h>
+	#include <RoverDebug.h>
 	#include <RoverReset.h>
 	#include <String.h>
 	#include <RoverConfig.h>

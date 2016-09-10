@@ -21,6 +21,7 @@ Use DelayCounter::counterReset() to reset the counter to the startValue and clea
 #define _DELAYCOUNTER_H
 
 #include <Arduino.h>
+#include <RoverDebug.h>
 #include <RoverReset.h>
 
 #define DELAY_10_PERIODS 10

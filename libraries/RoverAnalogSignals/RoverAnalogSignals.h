@@ -30,9 +30,8 @@
 	public:
 		RoverAnalogSignals();//constructor
 		~RoverAnalogSignals();//destructor
-		AnalogMuxSensor * getMuxWith(byte);//returns the first mux in the _muxArray with the analog signal name (using a for loop). The intention is not to use the same name twice, else you'd only get the first mux that has it. (analog signal name)
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-
+		int getRawAnalogValueOf(byte);//returns the raw analog value by Analog Signal Name (Analog Signal Name)
 	private:
 		AnalogMuxSensor * _amux1;
 		AnalogMuxSensor * _amux2;
@@ -52,6 +51,8 @@
 		byte _amux6AnalogNames[8];
 		byte _amux7AnalogNames[8];
 		byte _amux8AnalogNames[8];
+		
+		AnalogMuxSensor * findMuxBySignalName(byte);//returns the first mux in the _muxArray with the analog signal name (using a for loop). The intention is not to use the same name twice, else you'd only get the first mux that has it. (analog signal name)
 		
 	};
 

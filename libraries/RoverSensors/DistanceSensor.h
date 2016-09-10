@@ -3,6 +3,7 @@
 #define _DISTANCESENSOR_H
 
 	#include <Arduino.h>
+	#include <RoverDebug.h>	
 	#include <RoverReset.h>
 	
 	/*******************************************************************

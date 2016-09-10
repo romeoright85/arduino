@@ -3,6 +3,7 @@
 #define _ROVERSLEEPER_SERVER_H
 
 	#include <Arduino.h>
+	#include <RoverDebug.h>
 	#include <RoverReset.h>
 	
 	/*******************************************************************

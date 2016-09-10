@@ -5,39 +5,38 @@ RoverAnalogSignals::RoverAnalogSignals()
 		
 	//Define the amux names below before passing it to the AnalogMuxSensor objects
 	this->_amux1AnalogNames[0] = VOLTAGE_7D2_RAW;
-	this->_amux1AnalogNames[1] = VOLTAGE_7D2_PRESW25A;
-	this->_amux1AnalogNames[2] = VOLTAGE_7D2_SW12D5A;
+	this->_amux1AnalogNames[1] = CURRENT_7D2_PRESW25A;
+	this->_amux1AnalogNames[2] = CURRENT_7D2_SW12D5A;
 	this->_amux1AnalogNames[3] = PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING;
-	this->_amux1AnalogNames[4] = PHOTOSENSOR_BEACONCCA_REARSIDE_UPWARDPOINTING;
+	this->_amux1AnalogNames[4] = PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING;
 	this->_amux1AnalogNames[5] = TEMPSENSOR_BEACONCCA_CENTERSIDE;
 	this->_amux1AnalogNames[6] = TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET;
 	this->_amux1AnalogNames[7] = UNUSED_CH;
 
-//DEBUG, type up the other names later using the AMUX Spreadsheet	at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes\Pinout Lists
-	this->_amux2AnalogNames[0] = UNUSED_CH;
-	this->_amux2AnalogNames[1] = UNUSED_CH;
-	this->_amux2AnalogNames[2] = UNUSED_CH;
-	this->_amux2AnalogNames[3] = UNUSED_CH;
-	this->_amux2AnalogNames[4] = UNUSED_CH;
-	this->_amux2AnalogNames[5] = UNUSED_CH;
-	this->_amux2AnalogNames[6] = UNUSED_CH;
+	this->_amux2AnalogNames[0] = VOLTAGE_5_ANALOGCCA;
+	this->_amux2AnalogNames[1] = CURRENT_3D3_SW12D5A;
+	this->_amux2AnalogNames[2] = PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING;
+	this->_amux2AnalogNames[3] = PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING;
+	this->_amux2AnalogNames[4] = PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING;
+	this->_amux2AnalogNames[5] = TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR;
+	this->_amux2AnalogNames[6] = TEMPSENSOR_DIGITALCCA_MIDDLESIDE;
 	this->_amux2AnalogNames[7] = UNUSED_CH;	
 
-	this->_amux3AnalogNames[0] = UNUSED_CH;
-	this->_amux3AnalogNames[1] = UNUSED_CH;
-	this->_amux3AnalogNames[2] = UNUSED_CH;
-	this->_amux3AnalogNames[3] = UNUSED_CH;
-	this->_amux3AnalogNames[4] = UNUSED_CH;
-	this->_amux3AnalogNames[5] = UNUSED_CH;
+	this->_amux3AnalogNames[0] = VOLTAGE_3D3_SW;
+	this->_amux3AnalogNames[1] = CURRENT_MOTORCTRLR_CH1_12D5A;
+	this->_amux3AnalogNames[2] = PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING;
+	this->_amux3AnalogNames[3] = PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK;
+	this->_amux3AnalogNames[4] = PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING;
+	this->_amux3AnalogNames[5] = TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK;
 	this->_amux3AnalogNames[6] = UNUSED_CH;
 	this->_amux3AnalogNames[7] = UNUSED_CH;	
 
-	this->_amux4AnalogNames[0] = UNUSED_CH;
-	this->_amux4AnalogNames[1] = UNUSED_CH;
-	this->_amux4AnalogNames[2] = UNUSED_CH;
-	this->_amux4AnalogNames[3] = UNUSED_CH;
-	this->_amux4AnalogNames[4] = UNUSED_CH;
-	this->_amux4AnalogNames[5] = UNUSED_CH;
+	this->_amux4AnalogNames[0] = GAS_BEACONCCA_RIGHTPOINTING;
+	this->_amux4AnalogNames[1] = CURRENT_MOTORCTRLR_CH2_12D5A;
+	this->_amux4AnalogNames[2] = PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING;
+	this->_amux4AnalogNames[3] = PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK;
+	this->_amux4AnalogNames[4] = PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING;
+	this->_amux4AnalogNames[5] = TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE;
 	this->_amux4AnalogNames[6] = UNUSED_CH;
 	this->_amux4AnalogNames[7] = UNUSED_CH;	
 
@@ -77,6 +76,8 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_amux8AnalogNames[6] = UNUSED_CH;
 	this->_amux8AnalogNames[7] = UNUSED_CH;
 
+	
+	
 	//create AnalogMuxSensor objects and assign them to the private _amux pointers
 	this->_amux1 = new AnalogMuxSensor(AMUX1_SEL_0_PIN, AMUX1_SEL_1_PIN, AMUX1_SEL_2_PIN, OPAMP_1_OUT_PIN, this->_amux1AnalogNames);
 	this->_amux2 = new AnalogMuxSensor(AMUX2_SEL_0_PIN, AMUX2_SEL_1_PIN, AMUX2_SEL_2_PIN, OPAMP_2_OUT_PIN, this->_amux2AnalogNames);//DEBUG, change the _amux1AnalogNames later
@@ -112,7 +113,7 @@ void RoverAnalogSignals::reset()
 		this->_muxArray[i]->reset();
 	}
 }
-AnalogMuxSensor * RoverAnalogSignals::getMuxWith(byte analogSignalName)
+AnalogMuxSensor * RoverAnalogSignals::findMuxBySignalName(byte analogSignalName)
 {	
 	
 	for (byte i = 0; i < sizeof(this->_muxArray) / sizeof(this->_muxArray[0]); i++)//search through all the muxes contained in RoverAnalogSignals
@@ -122,7 +123,8 @@ AnalogMuxSensor * RoverAnalogSignals::getMuxWith(byte analogSignalName)
 		{
 			
 			#ifdef _DEBUG_MODE_ON
-				Serial.print("MUX: ");
+				Serial.flush();
+				Serial.print(F("MUX: "));
 				Serial.println(i+1);//i+1 since the array starts at 0 but the mux numbering starts at 1
 			#endif
 			
@@ -131,7 +133,14 @@ AnalogMuxSensor * RoverAnalogSignals::getMuxWith(byte analogSignalName)
 	}
 	return NULL;//else return no object if there is no mux with that Analog Signal Name
 }
-
-
-
+int RoverAnalogSignals::getRawAnalogValueOf(byte analogSignalName)
+{
+	
+	AnalogMuxSensor * analogMux;
+	
+	analogMux = findMuxBySignalName(analogSignalName);
+	
+	//using delegation and calling AnalogMuxSensor's method
+	return analogMux->getRawAnalogValueOf(analogSignalName);
+}
 

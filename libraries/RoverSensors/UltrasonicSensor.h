@@ -3,6 +3,7 @@
 #define _ULTRASONICSENSOR_H
 	
 	#include <Arduino.h>
+	#include <RoverDebug.h>		
 	#include <DistanceSensor.h>
 	#include <RoverReset.h>
 	

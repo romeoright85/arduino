@@ -3,6 +3,7 @@
 #define _ROVERRESET_H
 
 	#include <Arduino.h>
+	#include <RoverDebug.h>
 
 	class RoverReset {
 		public:

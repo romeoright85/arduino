@@ -2,6 +2,7 @@
 #ifndef _FOGLIGHT_ASSEMBLY_H
 #define _FOGLIGHT_ASSEMBLY_H
 
+#include <RoverDebug.h>
 #include <DigitalLed.h>
 #include <RoverReset.h>
 

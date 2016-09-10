@@ -10,6 +10,7 @@ Run HeartLed::resetHeartLed() to reset the pattern to the beginning of the array
 #ifndef _HEART_LED_H
 #define _HEART_LED_H
 
+#include <RoverDebug.h>
 #include <AnalogLed.h>
 #include <DelayCounter.h>
 #include <RoverReset.h>

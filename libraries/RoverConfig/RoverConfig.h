@@ -3,6 +3,7 @@
 //For the flags in this RoverConfig.h, use #ifdef _SOME_FLAG_NAME in order to only "turn on"/enable that code if that flag name was defined then #include <RoverConfig.h> was called after
 //The order of defining the flag then calling #include <RoverConfig.h> matters. You have to define the flags first, then call #include <RoverConfig.h>
 	
+	#include <RoverDebug.h>
 	#include <RoverReset.h>
 	
 	
@@ -43,15 +44,48 @@
 	
 	//definition for Rover Analog Names
 	#ifdef _ROVERANALOGNAMES
+		
+		//General Use
 		//Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
 		#define UNUSED_CH 0 //unused channel
+		
+		//Amux 1
 		#define VOLTAGE_7D2_RAW 1
-		#define VOLTAGE_7D2_PRESW25A 2
-		#define VOLTAGE_7D2_SW12D5A 3
+		#define CURRENT_7D2_PRESW25A 2
+		#define CURRENT_7D2_SW12D5A 3
 		#define PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING		4
-		#define PHOTOSENSOR_BEACONCCA_REARSIDE_UPWARDPOINTING	5
+		#define PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING	5
 		#define TEMPSENSOR_BEACONCCA_CENTERSIDE		6
 		#define TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET		7
+		
+		//Amux 2
+		#define VOLTAGE_5_ANALOGCCA 8
+		#define CURRENT_3D3_SW12D5A 9
+		#define PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING 10
+		#define PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING 11
+		#define PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING 12
+		#define TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR 13
+		#define TEMPSENSOR_DIGITALCCA_MIDDLESIDE 14
+		
+		//Amux 3
+		#define VOLTAGE_3D3_SW 15
+		#define CURRENT_MOTORCTRLR_CH1_12D5A 16
+		#define PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING 17
+		#define PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK 18
+		#define PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING 19
+		#define TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK 20
+		
+		//Amux 4
+		#define GAS_BEACONCCA_RIGHTPOINTING 21
+		#define CURRENT_MOTORCTRLR_CH2_12D5A 22
+		#define PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING 23
+		#define PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK 24
+		#define PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING 25
+		#define TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE 26
+		
+		//Amux 5-8
+		//Not used
+
 	#endif
 	
 		

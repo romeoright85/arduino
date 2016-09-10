@@ -16,6 +16,7 @@ i.e. for a 5ms delayInterval with a stop value to count up to of 10, you get 5ms
 #define _GLOBALDELAYTIMER_H
 
 #include <Arduino.h>
+#include <RoverDebug.h>
 #include <DelayCounter.h>
 #include <RoverReset.h>
 

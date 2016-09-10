@@ -2,6 +2,7 @@
 #ifndef _UNDERGLOW_LEDS_H
 #define _UNDERGLOW_LEDS_H
 
+#include <RoverDebug.h>
 #include <DigitalLed.h>
 #include <RoverReset.h>
 

@@ -3,6 +3,7 @@
 #define _ROVERSLEEPER_CLIENT_H
 
 	#include <Arduino.h>
+	#include <RoverDebug.h>
 	#include <RoverReset.h>
 	
 //The sleeper local is used to locally control the sleep and wakeup of itself
