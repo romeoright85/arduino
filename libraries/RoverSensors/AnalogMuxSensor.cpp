@@ -9,7 +9,7 @@ AnalogMuxSensor::AnalogMuxSensor(byte amuxSel0Pin, byte amuxSel1Pin, byte amuxSe
 			this->_AMUX_SEL_2_PIN = amuxSel2Pin;
 			this->_OPAMP_OUT_PIN = opampOutPin;
 
-			memcpy(this->_analogNames, analogNames, sizeof(this->_analogNames)/sizeof(this->_analogNames[0]));
+			memcpy(this->_analogNames, analogNames, sizeof(this->_analogNames)/sizeof(this->_analogNames[0])); //memcpy(pointer to dest array, pointer to src array, size)
 	
 			//configure the pins
 			pinMode(this->_AMUX_SEL_0_PIN, OUTPUT);

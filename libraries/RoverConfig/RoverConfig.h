@@ -42,6 +42,14 @@
 		#define AMUX_CH_8 8
 	#endif
 	
+	//definition for ImuSensor (use with data arrays that go from element [0] to element [2]
+	#ifdef _IMUDATATYPES
+		//IMU Data Types
+		#define X_DATA 0
+		#define Y_DATA 1
+		#define Z_DATA 2		
+	#endif	
+	
 	//definition for Rover Analog Names
 	#ifdef _ROVERANALOGNAMES
 		

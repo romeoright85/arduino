@@ -33,6 +33,7 @@
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 		int getRawADCValueOf(byte);//returns the raw analog value by Analog Signal Name (Analog Signal Name)
 	private:
+		//AnalogMuxSensor objects
 		AnalogMuxSensor * _amux1;
 		AnalogMuxSensor * _amux2;
 		AnalogMuxSensor * _amux3;
@@ -41,7 +42,12 @@
 		AnalogMuxSensor * _amux6;
 		AnalogMuxSensor * _amux7;
 		AnalogMuxSensor * _amux8;
-		AnalogMuxSensor * _muxArray[8];//holds pointers to AnalogMuxSensor
+		
+		//holds pointers to AnalogMuxSensor
+		AnalogMuxSensor * _muxArray[8];
+		RoverReset * _resetArray[8];
+		
+		
 		//The array below are used to store the cross reference between which analog mux has which analog signal (name)
 		byte _amux1AnalogNames[8];
 		byte _amux2AnalogNames[8];

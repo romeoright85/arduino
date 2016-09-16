@@ -98,7 +98,16 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_muxArray[6] = this->_amux7;
 	this->_muxArray[7] = this->_amux8;	
 
-	
+	//initialize the _resetArray's pointers with the AnalogMuxSensor objects
+	this->_resetArray[0] = this->_amux1;
+	this->_resetArray[1] = this->_amux2;
+	this->_resetArray[2] = this->_amux3;
+	this->_resetArray[3] = this->_amux4;
+	this->_resetArray[4] = this->_amux5;
+	this->_resetArray[5] = this->_amux6;
+	this->_resetArray[6] = this->_amux7;
+	this->_resetArray[7] = this->_amux8;	
+
 }
 
 RoverAnalogSignals::~RoverAnalogSignals()
@@ -108,9 +117,9 @@ RoverAnalogSignals::~RoverAnalogSignals()
 void RoverAnalogSignals::reset()
 {
 	//resetting all muxes
-	for (byte i = 0; i < sizeof(this->_muxArray) / sizeof(this->_muxArray[0]); i++)
+	for (byte i = 0; i < sizeof(this->_resetArray) / sizeof(this->_resetArray[0]); i++)
 	{
-		this->_muxArray[i]->reset();
+		this->_resetArray[i]->reset();
 	}
 }
 AnalogMuxSensor * RoverAnalogSignals::findMuxBySignalName(byte analogSignalName)
