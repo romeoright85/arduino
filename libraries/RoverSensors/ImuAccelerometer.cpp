@@ -3,6 +3,7 @@
 
 ImuAccelerometer::ImuAccelerometer()
 {
+		this->_accelerometer = new LSM303();
 }
 ImuAccelerometer::~ImuAccelerometer()
 {
@@ -10,8 +11,25 @@ ImuAccelerometer::~ImuAccelerometer()
 }
 void ImuAccelerometer::reset()
 {
+	//do nothing
 }
-
+bool ImuAccelerometer::init()
+{
+	Wire.begin();//Begin the Wire (just in case it has not started yet)
+	if (this->_accelerometer->init())
+	{
+		this->_accelerometer->enableDefault();		
+		return true;
+	}
+	else
+	{
+		return false;
+	}	
+}
+void ImuAccelerometer::readSensor()
+{
+	this->_accelerometer->read();
+}
 int ImuAccelerometer::getXValue()
 {
 	//Converting Raw Data to Usable Data
@@ -36,13 +54,13 @@ int ImuAccelerometer::getZValue()
 
 int ImuAccelerometer::getRawXValue()
 {
-	return 111;//DEBUG//WRITE ME LATER
+	return this->_accelerometer->a.x;
 }
 int ImuAccelerometer::getRawYValue()
 {
-	return 222;//DEBUG//WRITE ME LATER
+	return this->_accelerometer->a.y;
 }
 int ImuAccelerometer::getRawZValue()
 {
-	return 333;//DEBUG//WRITE ME LATER
+	return this->_accelerometer->a.z;
 }

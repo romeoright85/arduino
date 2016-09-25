@@ -5,6 +5,7 @@
 	#include <Arduino.h>
 	#include <RoverDebug.h>
 	#include <RoverReset.h>
+	#include <Wire.h>
 	#include <ImuGyro.h>
 	#include <ImuCompass.h>
 	#include <ImuAccelerometer.h>
@@ -32,12 +33,12 @@
 		~ImuSensor();//destructor
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 		
-		void readIMUSensor();//reads the IMU Sensor Data. You will still need to get the data.
+		void readSensor();//reads the IMU Sensor Data. You will still need to get the data.
+		bool init();//initialize the IMU Sensor, must not be done in the global, but either in the setup() or the loop(). returns true when successful, else returns false.
+		void getGyroXYZData(int []);//the 1x3 int array of gyro values (x,y,z) is passed by reference and the values are altered by the function
+		void getAccelerometerXYZData(int []);//the 1x3 int array of accelerometer values (x,y,z) is passed by reference and the values are altered by the function
+		float getCompassHeading();// returns the angular difference in the horizontal plane between a default vector and north, in degrees.
 		
-		void getGyroData(int []);//the 1x3 int array of gyro values (x,y,z) is passed by reference and the values are altered by the function
-		void getAccelerometerData(int []);//the 1x3 int array of accelerometer values (x,y,z) is passed by reference and the values are altered by the function
-		void getCompassData(int []);//the 1x3 int array of compass values (x,y,z) is passed by reference and the values are altered by the function
-					
 	private:
 		ImuGyro * _imuGyro;
 		ImuAccelerometer * _imuAccelerometer;
@@ -46,10 +47,12 @@
 		//holds pointers to the IMU Sensors
 		RoverReset * _resetArray[3];
 		
-		//Array to hold x,y,z values of corresponding data
-		int _compassData[3];
-		int _gyroData[3];
-		int _accelerometerData[3];
+		//SW Resetable
+		//Holds the compass heading in degrees
+		float _compassHeading;
+		//Arrays to hold x,y,z values of corresponding data
+		int _gyroXYZData[3];
+		int _accelerometerXYZData[3];
 			
 	};
 	

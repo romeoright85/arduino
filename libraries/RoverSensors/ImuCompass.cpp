@@ -3,46 +3,37 @@
 
 ImuCompass::ImuCompass()
 {
+	this->_compass = new LSM303();
 }
 ImuCompass::~ImuCompass()
 {
 	//do nothing
 }
+bool ImuCompass::init()
+{
+	Wire.begin();//Begin the Wire (just in case it has not started yet)
+	if (this->_compass->init())
+	{
+		this->_compass->enableDefault();	
+		this->_compass->m_min = (LSM303::vector<int16_t>){-32767, -32767, -32767};
+		this->_compass->m_max = (LSM303::vector<int16_t>){+32767, +32767, +32767};		
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 void ImuCompass::reset()
 {
+		//do nothing
 }
-int ImuCompass::getXValue()
+void ImuCompass::readSensor()
 {
-	//Converting Raw Data to Usable Data
-	//WRITE ME LATER//DEBUG
-	
-	return this->getRawXValue();//DEBUG, write conversion later
+	this->_compass->read();
 }
-int ImuCompass::getYValue()
+float ImuCompass::getCompassHeading()
 {
-	//Converting Raw Data to Usable Data
-	//WRITE ME LATER//DEBUG
-	
-	return this->getRawYValue();
-}
-int ImuCompass::getZValue()
-{
-	//Converting Raw Data to Usable Data
-	//WRITE ME LATER//DEBUG
-	
-	return this->getRawZValue();
+	return this->_compass->heading();
 }
 
-
-int ImuCompass::getRawXValue()
-{
-	return 11;//DEBUG//WRITE ME LATER
-}
-int ImuCompass::getRawYValue()
-{
-	return 11;//DEBUG//WRITE ME LATER
-}
-int ImuCompass::getRawZValue()
-{
-	return 11;//DEBUG//WRITE ME LATER
-}

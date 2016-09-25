@@ -5,10 +5,9 @@
 	#include <Arduino.h>
 	#include <RoverDebug.h>
 	#include <RoverReset.h>
-	
+	#include <Wire.h>
 	//Gyro Sensor Libraries
 	//https://github.com/pololu/l3g-arduino/
-	#include <Wire.h>
 	#include <L3G.h>
 	#define _IMUDATATYPES //used with RoverConfig.h
 
@@ -32,10 +31,11 @@
 		ImuGyro();//constructor
 		~ImuGyro();//destructor
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
+		void readSensor();//read Gyro sensor
 		int getXValue();
 		int getYValue();
-		int getZValue();	
-		
+		int getZValue();
+		bool init();//initialize the Gyro Sensor, must not be done in the global, but either in the setup() or the loop(). returns true when successful, else returns false.
 	private:
 	
 		L3G * _gyro;

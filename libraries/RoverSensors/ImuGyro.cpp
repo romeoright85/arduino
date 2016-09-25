@@ -1,39 +1,54 @@
 #include <ImuGyro.h>
 
-
 ImuGyro::ImuGyro()
 {
-	this->_gyro = new L3G();
+	this->_gyro = new L3G();	
 }
 ImuGyro::~ImuGyro()
 {
 	//do nothing
 }
+bool ImuGyro::init()
+{
+	Wire.begin();//Begin the Wire (just in case it has not started yet)
+	if (this->_gyro->init())
+	{
+		this->_gyro->enableDefault();		
+		return true;
+	}
+	else
+	{
+		return false;
+	}	
+}
 void ImuGyro::reset()
 {
 	//do nothing
 }
-
+void ImuGyro::readSensor()
+{
+	this->_gyro->read();
+}
 int ImuGyro::getXValue()
 {
 	//Converting Raw Data to Usable Data
 	//WRITE ME LATER//DEBUG
 	
-	return this->getRawXValue();//DEBUG, write conversion later
+	return this->getRawXValue();//DEBUG
 }
 int ImuGyro::getYValue()
 {
 	//Converting Raw Data to Usable Data
 	//WRITE ME LATER//DEBUG
 	
-	return this->getRawYValue();
+	return this->getRawYValue();//DEBUG
 }
 int ImuGyro::getZValue()
 {
 	//Converting Raw Data to Usable Data
 	//WRITE ME LATER//DEBUG
 	
-	return this->getRawZValue();
+	return this->getRawZValue();//DEBUG
 }
 
 

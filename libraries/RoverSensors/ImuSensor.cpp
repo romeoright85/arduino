@@ -3,6 +3,9 @@
 
 ImuSensor::ImuSensor()
 {
+	//Required by the Gyro and Compass
+	Wire.begin();
+	
 	//create the ImuGyro, ImuAccelerometer, and ImuCompass objects
 	this->_imuGyro = new ImuGyro();
 	this->_imuAccelerometer = new ImuAccelerometer();
@@ -14,75 +17,109 @@ ImuSensor::ImuSensor()
 	
 	
 	//initialize the arrays
-	this->_compassData[X_DATA] = 0;
-	this->_compassData[Y_DATA] = 0;
-	this->_compassData[Z_DATA] = 0;
+	this->_compassHeading = 0;
 	
-	this->_gyroData[X_DATA] = 0;
-	this->_gyroData[Y_DATA] = 0;
-	this->_gyroData[Z_DATA] = 0;
+	this->_gyroXYZData[X_DATA] = 0;
+	this->_gyroXYZData[Y_DATA] = 0;
+	this->_gyroXYZData[Z_DATA] = 0;
 		
-	this->_accelerometerData[X_DATA] = 0;
-	this->_accelerometerData[Y_DATA] = 0;
-	this->_accelerometerData[Z_DATA] = 0;
+	this->_accelerometerXYZData[X_DATA] = 0;
+	this->_accelerometerXYZData[Y_DATA] = 0;
+	this->_accelerometerXYZData[Z_DATA] = 0;
 	
 }
 ImuSensor::~ImuSensor()
 {
 	//do nothing
 }
+bool ImuSensor::init()
+{
+	if(!this->_imuGyro->init())
+	{
+		return false;//when gyro fails to initialize
+	}
+	if(!this->_imuAccelerometer->init())
+	{
+		return false;//when accelerometer fails to initialize
+	}	
+	if(!this->_imuCompass->init())
+	{
+		return false;//when compass fails to initialize
+	}
+	return true;//when all are successful
+	
+}
 void ImuSensor::reset()
 {
-	//resetting all muxes
+	//Resetting all muxes
 	for (byte i = 0; i < sizeof(this->_resetArray) / sizeof(this->_resetArray[0]); i++)
 	{
 		this->_resetArray[i]->reset();
 	}
+	
+	
+	//Reset the Compass heading
+	this->_compassHeading = 0;
+	
+		
+	//Reset the Gyro data array
+	this->_gyroXYZData[X_DATA] = 0;
+	this->_gyroXYZData[Y_DATA] = 0;
+	this->_gyroXYZData[Z_DATA] = 0;
+				
+	//Reset the Accelerometer data array
+	this->_accelerometerXYZData[X_DATA] = 0;
+	this->_accelerometerXYZData[Y_DATA] = 0;
+	this->_accelerometerXYZData[Z_DATA] = 0;
+
+	
 }
-void ImuSensor::readIMUSensor()
+void ImuSensor::readSensor()
 {
 
-	//Get the Compass Data
-	this->_compassData[X_DATA] = _imuCompass->getXValue();
-	this->_compassData[Y_DATA] = _imuCompass->getYValue();
-	this->_compassData[Z_DATA] = _imuCompass->getZValue();
-	
-	//Get the Gyro Data
-	this->_gyroData[X_DATA] = _imuGyro->getXValue();
-	this->_gyroData[Y_DATA] = _imuGyro->getYValue();
-	this->_gyroData[Z_DATA] = _imuGyro->getZValue();
+	//Read the sensor data
+	this->_imuGyro->readSensor();
+	this->_imuAccelerometer->readSensor();
+	this->_imuCompass->readSensor();
+
+	//Store the Compass Converted Data
+	this->_compassHeading = _imuCompass->getCompassHeading();
+		
+	//Store the Gyro Converted Data
+	this->_gyroXYZData[X_DATA] = _imuGyro->getXValue();
+	this->_gyroXYZData[Y_DATA] = _imuGyro->getYValue();
+	this->_gyroXYZData[Z_DATA] = _imuGyro->getZValue();
 				
-	//Get the Accelerometer Data		
-	this->_accelerometerData[X_DATA] = _imuAccelerometer->getXValue();
-	this->_accelerometerData[Y_DATA] = _imuAccelerometer->getYValue();
-	this->_accelerometerData[Z_DATA] = _imuAccelerometer->getZValue();
+	//Store the Accelerometer Converted Data		
+	this->_accelerometerXYZData[X_DATA] = _imuAccelerometer->getXValue();
+	this->_accelerometerXYZData[Y_DATA] = _imuAccelerometer->getYValue();
+	this->_accelerometerXYZData[Z_DATA] = _imuAccelerometer->getZValue();
 				
 	return;
 }
 
 
 
-void ImuSensor::getGyroData(int gyroData[])
+void ImuSensor::getGyroXYZData(int gyroXYZData[])
 {
 	//copy the array values over	
-	gyroData[X_DATA] = this->_gyroData[X_DATA];
-	gyroData[Y_DATA] = this->_gyroData[Y_DATA];
-	gyroData[Z_DATA] = this->_gyroData[Z_DATA];	
+	gyroXYZData[X_DATA] = this->_gyroXYZData[X_DATA];
+	gyroXYZData[Y_DATA] = this->_gyroXYZData[Y_DATA];
+	gyroXYZData[Z_DATA] = this->_gyroXYZData[Z_DATA];	
 	return;
 }
 //void ImuSensor::getAccelerometerData(int accelerometerData[])
-void ImuSensor::getAccelerometerData(int accelerometerData[])
+void ImuSensor::getAccelerometerXYZData(int accelerometerXYZData[])
 {	
 	//copy the array values over
-	accelerometerData[X_DATA] = this->_accelerometerData[X_DATA];
-	accelerometerData[Y_DATA] = this->_accelerometerData[Y_DATA];
-	accelerometerData[Z_DATA] = this->_accelerometerData[Z_DATA];	
+	accelerometerXYZData[X_DATA] = this->_accelerometerXYZData[X_DATA];
+	accelerometerXYZData[Y_DATA] = this->_accelerometerXYZData[Y_DATA];
+	accelerometerXYZData[Z_DATA] = this->_accelerometerXYZData[Z_DATA];	
 	return;
 }
-void ImuSensor::getCompassData(int compassData[])
+
+float ImuSensor::getCompassHeading()// returns the angular difference in the horizontal plane between a default vector and north, in degrees.
 {
-	compassData[X_DATA] = this->_compassData[X_DATA];
-	compassData[Y_DATA] = this->_compassData[Y_DATA];
-	compassData[Z_DATA] = this->_compassData[Z_DATA];	
-	return;
+	return this->_compassHeading;
 }
+
