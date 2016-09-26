@@ -50,6 +50,24 @@
 		#define Z_DATA 2		
 	#endif	
 	
+	
+	
+	//definition for WheelEncoderSensor
+	#ifdef _WHEEL_ENCODER_DEFINITIONS
+		//Motor Mounting Side
+		#define RIGHT_MOUNTED_MOTOR		0
+		#define LEFT_MOUNTED_MOTOR		1
+		//Motor Directions
+		#define MOTOR_STOPPED		0
+		#define MOTOR_FORWARD		1
+		#define MOTOR_REVERSE		2
+		#define SINGLE_SIDED_EDGES_PER_REVOLUTION 12
+		#define INCHES_PER_REVOLUTION 15
+		
+		
+	#endif	
+	
+	
 	//definition for Rover Analog Names
 	#ifdef _ROVERANALOGNAMES
 		
@@ -124,11 +142,11 @@
 		#define AUXI_WAKEUP_CTRL_PIN			5
 		#define COMM_HW_RESET_CTRL_PIN			12
 		#define MTR_FET_CTRL_PIN				12
-		#define ENCODER_5_PIN					20
-		#define ENCODER_7_PIN					21
+		#define ENCODER_A_MID_LEFT					20
+		#define ENCODER_A_MID_RIGHT					21
 		#define MTR_ENABLE_STATUS				22
-		#define ENCODER_6_PIN					23
-		#define ENCODER_8_PIN					24
+		#define ENCODER_B_MID_LEFT					23
+		#define ENCODER_B_MID_RIGHT					24
 
 	#endif
 
@@ -186,20 +204,20 @@
 	#ifdef _ARD_1_NAVI_H
 
 		#define NAVI_WAKEUP_CTRL_PIN				2
-		#define ENCODER_2_PIN						3
-		#define ENCODER_4_PIN						4
-		#define ENCODER_10_PIN						5
-		#define ENCODER_12_PIN						6
+		#define ENCODER_B_FRONT_LEFT					3
+		#define ENCODER_B_FRONT_RIGHT						4
+		#define ENCODER_B_REAR_LEFT						5
+		#define ENCODER_B_REAR_RIGHT						6
 		#define MTR_RC_CTRL_STEERING_PIN			7
 		#define MTR_RC_CTRL_ACCELERATION_PIN		8
 		#define SERVO_PAN_PIN						9
 		#define SERVO_TILT_PIN						10
 		#define BUFFER_SELECT_PIN					11
 		#define GPS_DATA_PIN						15
-		#define ENCODER_1_PIN						18
-		#define ENCODER_3_PIN						19
-		#define ENCODER_9_PIN						20
-		#define ENCODER_11_PIN						21
+		#define ENCODER_A_FRONT_LEFT						18
+		#define ENCODER_A_FRONT_RIGHT						19
+		#define ENCODER_A_REAR_LEFT						20
+		#define ENCODER_A_REAR_RIGHT						21
 		#define SIDE_LEFT_SIGNAL_PIN				22
 		#define SIDE_RIGHT_SIGNAL_PIN				24
 		#define FRONT_RIGHT_FOG_PIN					26
