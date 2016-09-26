@@ -58,11 +58,11 @@ void WheelEncoderSensor::calculateMotorParameters()
 			//Determine motor direction
 			if(this->_chAIsLeadingChB)
 			{
-				if(this->_motorSide == RIGHT_MOUNTED_MOTOR)//and when the motor is on the right side and _chAIsLeadingChB == true, the motor is going forward
+				if(this->_motorSide == RIGHT_MOUNTED)//and when the motor is on the right side and _chAIsLeadingChB == true, the motor is going forward
 				{
 					this->_motorDirection = MOTOR_FORWARD;			
 				}		
-				else//this->_motorSide == LEFT_MOUNTED_MOTOR
+				else//this->_motorSide == LEFT_MOUNTED
 				//the motor is going in reverse
 				{
 					this->_motorDirection = MOTOR_REVERSE;
@@ -70,11 +70,11 @@ void WheelEncoderSensor::calculateMotorParameters()
 			}
 			else//this->_chAIsLeadingChB == false
 			{
-				if(this->_motorSide == RIGHT_MOUNTED_MOTOR)//and when the motor is on the right side and _chAIsLeadingChB == false, the motor is going in reverse
+				if(this->_motorSide == RIGHT_MOUNTED)//and when the motor is on the right side and _chAIsLeadingChB == false, the motor is going in reverse
 				{
 					this->_motorDirection = MOTOR_REVERSE;			
 				}		
-				else//this->_motorSide == LEFT_MOUNTED_MOTOR
+				else//this->_motorSide == LEFT_MOUNTED
 				//the motor is going forward
 				{
 					this->_motorDirection = MOTOR_FORWARD;

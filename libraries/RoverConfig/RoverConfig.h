@@ -55,8 +55,8 @@
 	//definition for WheelEncoderSensor
 	#ifdef _WHEEL_ENCODER_DEFINITIONS
 		//Motor Mounting Side
-		#define RIGHT_MOUNTED_MOTOR		0
-		#define LEFT_MOUNTED_MOTOR		1
+		#define RIGHT_MOUNTED		0
+		#define LEFT_MOUNTED		1
 		//Motor Directions
 		#define MOTOR_STOPPED		0
 		#define MOTOR_FORWARD		1
