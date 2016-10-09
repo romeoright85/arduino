@@ -1,4 +1,7 @@
 /*
+The counter is incremented for each delay interval reached. (the delay is controlled by the timer). So the counter will count the number of delays (delay intervals). Only once the number of delays have been achieved, the counter will produce a counter done flag and stay there until it is reset by the object that needs to use the counter.
+
+
 The timer will check for the time each time GlobalDelayTimer::Running() is executed.
 So it need to be executed in a loop such as loop().
 The design for this is instead of using delay() which holds up the program from doing anything else, you can check for GlobalDelayTimer::Running() then go do something else and check it again later in a polling style.
@@ -20,7 +23,10 @@ i.e. for a 5ms delayInterval with a stop value to count up to of 10, you get 5ms
 #include <DelayCounter.h>
 #include <RoverReset.h>
 
-#define DELAY_TIMER_RES_5ms 5
+#define _DELAYTIMER_RESOLUTIONS
+#include <RoverConfig.h>
+
+
 
 class GlobalDelayTimer : public virtual RoverReset {
 public:

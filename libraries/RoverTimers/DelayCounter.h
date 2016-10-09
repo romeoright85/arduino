@@ -24,9 +24,12 @@ Use DelayCounter::counterReset() to reset the counter to the startValue and clea
 #include <RoverDebug.h>
 #include <RoverReset.h>
 
-#define DELAY_10_PERIODS 10
-#define DELAY_80_PERIODS 80
-#define DELAY_200_PERIODS 200
+#define _DELAYCOUNTERPERIODS
+#include <RoverConfig.h>
+
+
+
+
 
 	class DelayCounter : public virtual RoverReset {
 	public:
@@ -41,6 +44,7 @@ Use DelayCounter::counterReset() to reset the counter to the startValue and clea
 		boolean countReached();//returns true when the count is reached
 		void counterReset();//resets the counter to the startValue and clears the counterDone flag
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
+		
 	private:
 		unsigned int _count;//counter
 		unsigned int _stopValue;//the value to stop counting at	

@@ -9,6 +9,7 @@ AnalogMuxSensor::AnalogMuxSensor(byte amuxSel0Pin, byte amuxSel1Pin, byte amuxSe
 			this->_AMUX_SEL_2_PIN = amuxSel2Pin;
 			this->_OPAMP_OUT_PIN = opampOutPin;
 
+			//copy the array passed from the function (where the size if fixed to 8 channels. Note you can't use sizeof() on an array passed. You either have to pass it as a separate variable or use a fixed size.
 			memcpy(this->_analogNames, analogNames, sizeof(this->_analogNames)/sizeof(this->_analogNames[0])); //memcpy(pointer to dest array, pointer to src array, size)
 	
 			//configure the pins

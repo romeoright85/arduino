@@ -5,7 +5,7 @@
 	#include <Arduino.h>
 	#include <RoverDebug.h>
 	#include <RoverReset.h>
-	
+	#include <DelayCounter.h>
 	
 	#define _WHEEL_ENCODER_DEFINITIONS
 	/*******************************************************************
@@ -66,7 +66,7 @@ A Quadrature Encoder has two channels. For this design, they will be called chan
 	
 	class WheelEncoderSensor : public virtual RoverReset {
 	public:
-		WheelEncoderSensor(byte, byte, byte, voidFuncPtr);//constructor. (pin of encoder channel A, pin of encoder channel B, side the motor is on, the interrupt service routine for the edge detection). The side the motor is on the robot will determine if the motor is going in reverse or forward relativate to encoder channel A and B.
+		WheelEncoderSensor(byte, byte, byte, voidFuncPtr, DelayCounter *);//constructor. (pin of encoder channel A, pin of encoder channel B, side the motor is on, the interrupt service routine for the edge detection, the DelayCounter used to trigger when to recalculate the wheel encoder calculations). The side the motor is on the robot will determine if the motor is going in reverse or forward relativate to encoder channel A and B.
 		~WheelEncoderSensor();//destructor
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 		
@@ -74,7 +74,7 @@ A Quadrature Encoder has two channels. For this design, they will be called chan
 		byte getDirection();//returns the direction of the motor in
 		int getSpeed();//returns the speed of the motor in inches per second, value is rounded off/truncated
 		int getFootage();//returns the distance traveled in feet, value is rounded off/truncated
-		
+		void sensorOnline();//to run the calculations, always have this function called on every loop() interation.
 		
 		void isrUpdate();//updates the _chAIsLeadingChB and _encoderAEdgeCount variables when the interrupt service routine (ISR) is called
 	
@@ -83,18 +83,18 @@ A Quadrature Encoder has two channels. For this design, they will be called chan
 		//Not SW Resettable
 		byte _pinEncoderA;
 		byte _pinEncoderB;
-		byte _motorSide;
-		void calculateMotorParameters();//DEBUG, called by a timer function??
-		
+		byte _motorSide;		
 		
 		//SW Resettable
+		DelayCounter * _counterPtr;//delay counter pointer
 		byte _motorDirection;
-		byte _inchesTraveled;
+		byte _inchesTraveledWithinLastSecond;
+		unsigned long _totalInchesTraveled;
 		int _mtrSpeed;
 		byte _encoderAEdgeCount;//holds the current edge count
-		byte _prevEncoderAEdgeCount;//holds the past edge count
 		byte _encoderBLevel;
 		bool _chAIsLeadingChB;//if encoder channel A is leading channel B
+		
 	};
 
 	#endif 

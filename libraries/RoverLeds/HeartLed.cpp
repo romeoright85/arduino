@@ -19,11 +19,13 @@ HeartLed::~HeartLed()
 
 void HeartLed::breathing()
 {
-	
+
+//UNCOMMENT THE LINE BELOW FOR DEBUGGING
+//Serial.println(this->_ledPatternIndex);//KEEP FOR DEBUGGING
+
 	//LED Code
 	if (this->_ledPatternIndex < 37)
 	{
-
 		//waits for the short delay (determined the by periodsForShortDelay * delayInterval)
 		//The periodsForShortDelay is set by the heart led from the else statement below or by the constructor. The delayInterval is set when the GlobalDelayTimer object is created. And the GlobalDelayTimer is what increments the counter.
 		if (this->_counterPtr->countReached())

@@ -27,6 +27,24 @@
 		#define ROVERCOMM_COMM 5
 	#endif
 	
+	//definition for DelayCounter Periods
+	#ifdef _DELAYCOUNTERPERIODS
+		#define DELAY_1_PERIODS 1
+		#define DELAY_10_PERIODS 10
+		#define DELAY_80_PERIODS 80
+		#define DELAY_200_PERIODS 200
+	#endif
+
+
+	//definition for DelayTimer Resolutions
+	#ifdef _DELAYTIMER_RESOLUTIONS
+		#define DELAY_TIMER_RES_1ms 1
+		#define DELAY_TIMER_RES_5ms 5
+	#endif
+		
+
+	
+	
 	
 	//definition for AnalogMuxSensor Channels
 	#ifdef _ROVERAMUXCHANNELS

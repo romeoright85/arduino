@@ -35,6 +35,7 @@ void setup() {
 
 void loop() {
 
+	//Tasks always running in the background with every loop() cycle
 	mainTimer.Running();//activate the timer
 	heartLed.breathing();//activate the heart led
 

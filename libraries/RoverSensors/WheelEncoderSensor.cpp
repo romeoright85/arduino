@@ -1,12 +1,14 @@
 #include <WheelEncoderSensor.h>
 
 
-WheelEncoderSensor::WheelEncoderSensor(byte pinEncoderA, byte pinEncoderB, byte motorSide, voidFuncPtr interruptDispatch)
+WheelEncoderSensor::WheelEncoderSensor(byte pinEncoderA, byte pinEncoderB, byte motorSide, voidFuncPtr interruptDispatch, DelayCounter * counterPtr)
 {		
 		//Assign values
 		this->_pinEncoderA = pinEncoderA;
 		this->_pinEncoderB = pinEncoderB;
 		this->_motorSide = motorSide;
+		this->_counterPtr = counterPtr;//take the passed counter pointer in the constructor argument and save it to the object member counter pointer				
+				
 				
 		pinMode(this->_pinEncoderA, INPUT);
 		pinMode(this->_pinEncoderB, INPUT);
@@ -16,11 +18,14 @@ WheelEncoderSensor::WheelEncoderSensor(byte pinEncoderA, byte pinEncoderB, byte 
 		attachInterrupt(interruptChannel, interruptDispatch, RISING); //calling an arduino function, attachInterrupt()
 		
 		//Initialize variables
+		this->_counterPtr->reset();
 		this->_motorDirection = MOTOR_STOPPED;
+		this->_inchesTraveledWithinLastSecond = 0;
+		this->_totalInchesTraveled = 0;
+		this->_mtrSpeed = 0;	
 		this->_encoderAEdgeCount = 0;
-		this->_mtrSpeed = 0;
 		this->_encoderBLevel = LOW;
-		this->_inchesTraveled = 0;
+		this->_chAIsLeadingChB = false;
 		
 		
 }
@@ -28,72 +33,95 @@ WheelEncoderSensor::~WheelEncoderSensor()
 {
 	//do nothing
 }
+
 void WheelEncoderSensor::reset()
 {
+	
+
 	//reset variables
+	this->_counterPtr->reset();
 	this->_motorDirection = MOTOR_STOPPED;
+	this->_inchesTraveledWithinLastSecond = 0;
+	this->_totalInchesTraveled = 0;
+	this->_mtrSpeed = 0;	
 	this->_encoderAEdgeCount = 0;
-	this->_mtrSpeed = 0;
 	this->_encoderBLevel = LOW;
-	this->_inchesTraveled = 0;
-		
+	this->_chAIsLeadingChB = false;
 }
-void WheelEncoderSensor::calculateMotorParameters()
+
+void WheelEncoderSensor::sensorOnline()
 {
-	unsigned long timeElapsed;//milliseconds elapsed
+	//This function is to calculation the motor/wheel encoder parameters like speed, distance, and direction
+	//this function is called with every pass in the loop(). But calculations are only performed after the counter/timer counts to 1 second. This is to free up the Arduino to do other tasks.
+	//The edge counter is still counting in the background using interrupts. Just the calculations are only performed once a second.
+	//Motors are slow, and there is only 12 edges per a revolution, so a 1Hz refresh rate is okay.
 	
-//LEFT OFF HERE	
-//WRITE ME	
-//calculate time elapsed and save it to timeElapsed
-//need to maybe use delay timers and delay counters to automatically call calculateMotorParameters()
-	//add delay timers and delay counters to the .ino file
 	
-	if(this->_prevEncoderAEdgeCount==this->_encoderAEdgeCount)//if the edge count has not changed, the motor is stopped
+//UNCOMMENT THE LINE BELOW FOR DEBUGGING	WITHOUT MOTORS CONNECTED TO THE ARDUINO
+//this->_encoderAEdgeCount=this->_encoderAEdgeCount+50;//KEEP FOR DEBUG
+
+	if (this->_counterPtr->countReached())//waits for the delay to finish counting to 1 second (determined the by delay periods * delayInterval/resolution)
 	{
-		//Determine motor direction
-		this->_motorDirection = MOTOR_STOPPED;
-	}
-	else
-	{
+		//calculate the motor's speed, distance, and direction
+		if(this->_encoderAEdgeCount==0)//if the edge count is still at zero (from the last reset), the motor is stopped
+		{
 			//Determine motor direction
-			if(this->_chAIsLeadingChB)
-			{
-				if(this->_motorSide == RIGHT_MOUNTED)//and when the motor is on the right side and _chAIsLeadingChB == true, the motor is going forward
+			this->_motorDirection = MOTOR_STOPPED;
+			
+			//since the edge counts is 0, both _inchesTraveledWithinLastSecond and _mtrSpeed are 0.  And _totalInchesTraveled has not changed.
+			//distance traveled since the last second
+			this->_inchesTraveledWithinLastSecond = 0;
+
+			//calculate the motor speed in inches per second
+			this->_mtrSpeed = 0;
+			
+			//calculate total inches traveled
+			this->_totalInchesTraveled = this->_totalInchesTraveled;//no change
+		}
+		else//the motors are moving
+		{
+				//Determine motor direction
+				if(this->_chAIsLeadingChB)
 				{
-					this->_motorDirection = MOTOR_FORWARD;			
-				}		
-				else//this->_motorSide == LEFT_MOUNTED
-				//the motor is going in reverse
-				{
-					this->_motorDirection = MOTOR_REVERSE;
+					if(this->_motorSide == RIGHT_MOUNTED)//and when the motor is on the right side and _chAIsLeadingChB == true, the motor is going forward
+					{
+						this->_motorDirection = MOTOR_FORWARD;			
+					}		
+					else//this->_motorSide == LEFT_MOUNTED
+					//the motor is going in reverse
+					{
+						this->_motorDirection = MOTOR_REVERSE;
+					}
 				}
-			}
-			else//this->_chAIsLeadingChB == false
-			{
-				if(this->_motorSide == RIGHT_MOUNTED)//and when the motor is on the right side and _chAIsLeadingChB == false, the motor is going in reverse
+				else//this->_chAIsLeadingChB == false
 				{
-					this->_motorDirection = MOTOR_REVERSE;			
-				}		
-				else//this->_motorSide == LEFT_MOUNTED
-				//the motor is going forward
-				{
-					this->_motorDirection = MOTOR_FORWARD;
+					if(this->_motorSide == RIGHT_MOUNTED)//and when the motor is on the right side and _chAIsLeadingChB == false, the motor is going in reverse
+					{
+						this->_motorDirection = MOTOR_REVERSE;			
+					}		
+					else//this->_motorSide == LEFT_MOUNTED
+					//the motor is going forward
+					{
+						this->_motorDirection = MOTOR_FORWARD;
+					}
 				}
-			}
-	}
+				
+				//distance traveled since the last second
+				this->_inchesTraveledWithinLastSecond = ( (this->_encoderAEdgeCount) / SINGLE_SIDED_EDGES_PER_REVOLUTION) * INCHES_PER_REVOLUTION;//the number of edges divided by 12 edges per a wheel revolution * 15 inches per a revolution equals the distance traveled in inches
 
+				//calculate the motor speed in inches per second
+				this->_mtrSpeed = this->_inchesTraveledWithinLastSecond;// inches/1 second (but since this function is already set to refresh every second so no need to divide)
+				
+				//calculate total inches traveled
+				this->_totalInchesTraveled = this->_totalInchesTraveled + this->_inchesTraveledWithinLastSecond;//add to the inches accumulator
+				
+		}
 
-	
-	//distance traveled in inches
-	this->_inchesTraveled = ((this->_encoderAEdgeCount - this->_prevEncoderAEdgeCount) / SINGLE_SIDED_EDGES_PER_REVOLUTION) * INCHES_PER_REVOLUTION;//the number of edges (the delta between last and current number of edges) divided by 12 edges per a wheel revolution * 15 inches per a revolution is the distance traveled in inches
-
-	//calculate the motor speed	
-	this->_mtrSpeed = this->_inchesTraveled/(timeElapsed/1000);// inches/seconds = inches / (msec/1000)	
+		this->_encoderAEdgeCount = 0;//reset the current edge count		
+		this->_counterPtr->counterReset();//reset the counter to start the count over again			
 		
-	//set up the variables for the next time it's called
-	this->_prevEncoderAEdgeCount=this->_encoderAEdgeCount;//set the previous count to the current count
-	this->_encoderAEdgeCount = 0;//reset the current edge count
-	
+	}//end if for count reached
+
 	
 }
 byte WheelEncoderSensor::getDirection()
@@ -106,7 +134,7 @@ int WheelEncoderSensor::getSpeed()
 }
 int WheelEncoderSensor::getFootage()
 {	
-	return this->_inchesTraveled / 12;
+	return this->_inchesTraveledWithinLastSecond / 12;
 }
 void WheelEncoderSensor::isrUpdate()//this will be called by an interruptDispatch
 {
