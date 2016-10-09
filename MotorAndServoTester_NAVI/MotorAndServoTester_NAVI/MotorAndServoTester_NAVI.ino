@@ -10,7 +10,7 @@ unsigned int outputMessageDelay = 0;//using a counter to delay the output messag
 
 
 
-//The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
+									//The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
 DelayCounter * frontLeftSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
 GlobalDelayTimer * frontLeftSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, frontLeftSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
 
@@ -80,7 +80,7 @@ void loop() {
 
 
 
-		
+
 
 	if (outputMessageDelay >= 40000)
 	{
@@ -106,9 +106,9 @@ void loop() {
 		Serial.println(wheelEncoder_FrontLeft->getFootage());//distance traveled in feet
 		Serial.print(F("Spd: "));//in inches per second
 		Serial.println(wheelEncoder_FrontLeft->getSpeed());//in inches per second
-		
 
-		//========Front Right Motor===========
+
+														   //========Front Right Motor===========
 		byte direction_FrontRight = wheelEncoder_FrontRight->getDirection();
 		Serial.println(F("=FRONT RIGHT MTR="));
 		Serial.print(F("Dir: "));
@@ -128,9 +128,9 @@ void loop() {
 		Serial.println(wheelEncoder_FrontRight->getFootage());//distance traveled in feet
 		Serial.print(F("Spd: "));//in inches per second
 		Serial.println(wheelEncoder_FrontRight->getSpeed());//in inches per second
-		
 
-		//========Rear Left Motor===========
+
+															//========Rear Left Motor===========
 		byte direction_RearLeft = wheelEncoder_RearLeft->getDirection();
 		Serial.println(F("=REAR LEFT MTR="));
 		Serial.print(F("Dir: "));
@@ -151,7 +151,7 @@ void loop() {
 		Serial.print(F("Spd: "));//in inches per second
 		Serial.println(wheelEncoder_RearLeft->getSpeed());//in inches per second
 
-		//========Rear Right Motor===========
+														  //========Rear Right Motor===========
 		byte direction_RearRight = wheelEncoder_RearRight->getDirection();
 		Serial.println(F("=REAR RIGHT MTR="));
 		Serial.print(F("Dir: "));
@@ -171,10 +171,10 @@ void loop() {
 		Serial.println(wheelEncoder_RearRight->getFootage());//distance traveled in feet
 		Serial.print(F("Spd: "));//in inches per second
 		Serial.println(wheelEncoder_RearRight->getSpeed());//in inches per second
-		
-		
-		
-		
+
+
+
+
 		Serial.println();
 
 
@@ -183,8 +183,8 @@ void loop() {
 		outputMessageDelay = 0;//reset the counter
 	}
 	outputMessageDelay++;//increment the counter
-	
-	
+
+
 
 
 }

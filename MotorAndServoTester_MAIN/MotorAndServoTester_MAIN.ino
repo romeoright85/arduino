@@ -10,7 +10,7 @@ unsigned int outputMessageDelay = 0;//using a counter to delay the output messag
 
 
 
-//The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
+									//The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
 DelayCounter * midLeftSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
 GlobalDelayTimer * midLeftSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, midLeftSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
 
@@ -35,7 +35,7 @@ RoverReset * resetArray[] = {
 	midRightSyncCounter,
 	midRightSyncTimer,
 	wheelEncoder_MidLeft,
-	wheelEncoder_MidRight	
+	wheelEncoder_MidRight
 };
 
 
@@ -55,11 +55,11 @@ void loop() {
 	//Timers
 	midLeftSyncTimer->Running();
 	midRightSyncTimer->Running();
-	
+
 	//Wheel Encoders
 	wheelEncoder_MidLeft->sensorOnline();
 	wheelEncoder_MidRight->sensorOnline();
-	
+
 
 
 
@@ -91,7 +91,7 @@ void loop() {
 		Serial.println(wheelEncoder_MidLeft->getSpeed());//in inches per second
 
 
-		//========Mid Right Motor===========
+														 //========Mid Right Motor===========
 		byte direction_MidRight = wheelEncoder_MidRight->getDirection();
 		Serial.println(F("=MID RIGHT MTR="));
 		Serial.print(F("Dir: "));
