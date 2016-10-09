@@ -6,15 +6,23 @@
 //Global Variables
 
 
+unsigned int outputMessageDelay = 0;//using a counter to delay the output messages without the delaying the return time of the loop(). Timing doesn't have to be exact. Just picked an approximate number that outputted the messages around once a second.
+
+
+
 //The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
-DelayCounter * wheelEncoderSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
+DelayCounter * frontLeftSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
+GlobalDelayTimer * frontLeftSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, frontLeftSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
 
+DelayCounter * frontRightSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
+GlobalDelayTimer * frontRightSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, frontRightSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
 
-GlobalDelayTimer * wheelEncoderSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, wheelEncoderSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
+DelayCounter * rearLeftSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
+GlobalDelayTimer * rearLeftSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, rearLeftSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
 
+DelayCounter * rearRightSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
+GlobalDelayTimer * rearRightSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, rearRightSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
 
-
-unsigned int counterDelay = 0;//using a counter to delay the output messages without the delaying the return time of the loop(). Timing doesn't have to be exact. Just picked an approximate number that outputted the messages around once a second.
 
 
 void InterruptDispatch_wheelEncoder_FrontLeft();
@@ -22,20 +30,28 @@ void InterruptDispatch_wheelEncoder_FrontRight();
 void InterruptDispatch_wheelEncoder_RearLeft();
 void InterruptDispatch_wheelEncoder_RearRight();
 
-WheelEncoderSensor * wheelEncoder_FrontLeft = new WheelEncoderSensor(ENCODER_A_FRONT_LEFT, ENCODER_B_FRONT_LEFT, LEFT_MOUNTED, &InterruptDispatch_wheelEncoder_FrontLeft, wheelEncoderSyncCounter);
-
-/*
-WRITE ME LATER
-WheelEncoderSensor * wheelEncoder_FrontRight = new WheelEncoderSensor();
-WheelEncoderSensor * wheelEncoder_RearLeft = new WheelEncoderSensor();
-WheelEncoderSensor * wheelEncoder_RearRight = newWheelEncoderSensor();
-
-
-*/
+//Note: Remember to update all fields of the constructor. All the fields are unique to/distinct for each motor. You can't share the counter, because it gets reset for each one. And each timer get's only one counter, so you need a timer for each one as well.
+WheelEncoderSensor * wheelEncoder_FrontLeft = new WheelEncoderSensor(ENCODER_A_FRONT_LEFT, ENCODER_B_FRONT_LEFT, LEFT_MOUNTED, &InterruptDispatch_wheelEncoder_FrontLeft, frontLeftSyncCounter);
+WheelEncoderSensor * wheelEncoder_FrontRight = new WheelEncoderSensor(ENCODER_A_FRONT_RIGHT, ENCODER_B_FRONT_RIGHT, RIGHT_MOUNTED, &InterruptDispatch_wheelEncoder_FrontRight, frontRightSyncCounter);
+WheelEncoderSensor * wheelEncoder_RearLeft = new WheelEncoderSensor(ENCODER_A_REAR_LEFT, ENCODER_B_REAR_LEFT, LEFT_MOUNTED, &InterruptDispatch_wheelEncoder_RearLeft, rearLeftSyncCounter);
+WheelEncoderSensor * wheelEncoder_RearRight = new WheelEncoderSensor(ENCODER_A_REAR_RIGHT, ENCODER_B_REAR_RIGHT, RIGHT_MOUNTED, &InterruptDispatch_wheelEncoder_RearRight, rearRightSyncCounter);
 
 
 
-RoverReset * resetArray[] = { wheelEncoderSyncCounter, wheelEncoderSyncTimer, wheelEncoder_FrontLeft };//DEBUG, ADD OTHER OBJECTS LATER
+RoverReset * resetArray[] = {
+	frontLeftSyncCounter,
+	frontLeftSyncTimer,
+	frontRightSyncCounter,
+	frontRightSyncTimer,
+	rearLeftSyncCounter,
+	rearLeftSyncTimer,
+	rearRightSyncCounter,
+	rearRightSyncTimer,
+	wheelEncoder_FrontLeft,
+	wheelEncoder_FrontRight,
+	wheelEncoder_RearLeft,
+	wheelEncoder_RearRight
+};
 
 
 void setup() {
@@ -51,28 +67,34 @@ void setup() {
 void loop() {
 
 	//Tasks always running in the background with every loop() cycle
-	wheelEncoderSyncTimer->Running();
+	//Timers
+	frontLeftSyncTimer->Running();
+	frontRightSyncTimer->Running();
+	rearLeftSyncTimer->Running();
+	rearRightSyncTimer->Running();
+	//Wheel Encoders
 	wheelEncoder_FrontLeft->sensorOnline();
-	
-	
-	//Serial.print("test1");//DEBUG
-	//Serial.print(wheelEncoderSyncCounter->test1);//DEBUG
-	//Serial.print("test1");//DEBUG
-	//Serial.println(wheelEncoderSyncCounter->test2);//DEBUG
-	
-	
-	byte direction = wheelEncoder_FrontLeft->getDirection();
+	wheelEncoder_FrontRight->sensorOnline();
+	wheelEncoder_RearLeft->sensorOnline();
+	wheelEncoder_RearRight->sensorOnline();
 
 
-	if (counterDelay >= 40000)
+
+		
+
+	if (outputMessageDelay >= 40000)
 	{
 
+
+		//========Front Left Motor===========
+		byte direction_FrontLeft = wheelEncoder_FrontLeft->getDirection();
+		Serial.println(F("=FRONT LEFT MTR="));
 		Serial.print(F("Dir: "));
-		if (direction == MOTOR_FORWARD)//forward, reverse, stopped
+		if (direction_FrontLeft == MOTOR_FORWARD)//forward, reverse, stopped
 		{
 			Serial.println(F("Fwd"));
 		}
-		else if (direction == MOTOR_REVERSE)
+		else if (direction_FrontLeft == MOTOR_REVERSE)
 		{
 			Serial.println(F("Rev"));
 		}
@@ -80,18 +102,87 @@ void loop() {
 		{
 			Serial.println(F("Stopped"));
 		}
-
-
 		Serial.print(F("Dist: "));//in inches
 		Serial.println(wheelEncoder_FrontLeft->getFootage());//distance traveled in feet
-
-
 		Serial.print(F("Spd: "));//in inches per second
 		Serial.println(wheelEncoder_FrontLeft->getSpeed());//in inches per second
+		
 
-		counterDelay = 0;//reset the counter
+		//========Front Right Motor===========
+		byte direction_FrontRight = wheelEncoder_FrontRight->getDirection();
+		Serial.println(F("=FRONT RIGHT MTR="));
+		Serial.print(F("Dir: "));
+		if (direction_FrontRight == MOTOR_FORWARD)//forward, reverse, stopped
+		{
+			Serial.println(F("Fwd"));
+		}
+		else if (direction_FrontRight == MOTOR_REVERSE)
+		{
+			Serial.println(F("Rev"));
+		}
+		else//MOTOR_STOPPED
+		{
+			Serial.println(F("Stopped"));
+		}
+		Serial.print(F("Dist: "));//in inches
+		Serial.println(wheelEncoder_FrontRight->getFootage());//distance traveled in feet
+		Serial.print(F("Spd: "));//in inches per second
+		Serial.println(wheelEncoder_FrontRight->getSpeed());//in inches per second
+		
+
+		//========Rear Left Motor===========
+		byte direction_RearLeft = wheelEncoder_RearLeft->getDirection();
+		Serial.println(F("=REAR LEFT MTR="));
+		Serial.print(F("Dir: "));
+		if (direction_RearLeft == MOTOR_FORWARD)//forward, reverse, stopped
+		{
+			Serial.println(F("Fwd"));
+		}
+		else if (direction_RearLeft == MOTOR_REVERSE)
+		{
+			Serial.println(F("Rev"));
+		}
+		else//MOTOR_STOPPED
+		{
+			Serial.println(F("Stopped"));
+		}
+		Serial.print(F("Dist: "));//in inches
+		Serial.println(wheelEncoder_RearLeft->getFootage());//distance traveled in feet
+		Serial.print(F("Spd: "));//in inches per second
+		Serial.println(wheelEncoder_RearLeft->getSpeed());//in inches per second
+
+		//========Rear Right Motor===========
+		byte direction_RearRight = wheelEncoder_RearRight->getDirection();
+		Serial.println(F("=REAR RIGHT MTR="));
+		Serial.print(F("Dir: "));
+		if (direction_RearRight == MOTOR_FORWARD)//forward, reverse, stopped
+		{
+			Serial.println(F("Fwd"));
+		}
+		else if (direction_RearRight == MOTOR_REVERSE)
+		{
+			Serial.println(F("Rev"));
+		}
+		else//MOTOR_STOPPED
+		{
+			Serial.println(F("Stopped"));
+		}
+		Serial.print(F("Dist: "));//in inches
+		Serial.println(wheelEncoder_RearRight->getFootage());//distance traveled in feet
+		Serial.print(F("Spd: "));//in inches per second
+		Serial.println(wheelEncoder_RearRight->getSpeed());//in inches per second
+		
+		
+		
+		
+		Serial.println();
+
+
+
+
+		outputMessageDelay = 0;//reset the counter
 	}
-	counterDelay++;//increment the counter
+	outputMessageDelay++;//increment the counter
 	
 	
 
@@ -105,15 +196,12 @@ void loop() {
 void InterruptDispatch_wheelEncoder_FrontLeft() {
 	wheelEncoder_FrontLeft->isrUpdate();
 }
-/*
-WRITE ME LATER
-void InterruptDispatch_wheelEncoder_FrontLeft() {
+void InterruptDispatch_wheelEncoder_FrontRight() {
 	wheelEncoder_FrontRight->isrUpdate();
 }
-void InterruptDispatch_wheelEncoder_FrontLeft() {
+void InterruptDispatch_wheelEncoder_RearLeft() {
 	wheelEncoder_RearLeft->isrUpdate();
 }
-void InterruptDispatch_wheelEncoder_FrontLeft() {
+void InterruptDispatch_wheelEncoder_RearRight() {
 	wheelEncoder_RearRight->isrUpdate();
 }
-*/

@@ -58,7 +58,7 @@ void WheelEncoderSensor::sensorOnline()
 	
 	
 //UNCOMMENT THE LINE BELOW FOR DEBUGGING	WITHOUT MOTORS CONNECTED TO THE ARDUINO
-//this->_encoderAEdgeCount=this->_encoderAEdgeCount+50;//KEEP FOR DEBUG
+this->_encoderAEdgeCount=this->_encoderAEdgeCount+50;//KEEP FOR DEBUG
 
 	if (this->_counterPtr->countReached())//waits for the delay to finish counting to 1 second (determined the by delay periods * delayInterval/resolution)
 	{
