@@ -2,15 +2,21 @@
 #include <WheelEncoderSensor.h>
 #include <GlobalDelayTimer.h>
 #include <DelayCounter.h>
+#include <BufferSelect.h>
 
 //Global Variables
 
 
-unsigned int outputMessageDelay = 0;//using a counter to delay the output messages without the delaying the return time of the loop(). Timing doesn't have to be exact. Just picked an approximate number that outputted the messages around once a second.
+//counter delays
+//using a counter to create delays while still allowing the loop() to run (i.e. for messages, etc.)
+unsigned int outputMessageDelay = 0;
+unsigned int bufferToggleDelay = 0;
 
 
 
-									//The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
+BufferSelect * roverBuffer = new BufferSelect(BUFFER_SELECT_PIN);
+
+//The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
 DelayCounter * frontLeftSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
 GlobalDelayTimer * frontLeftSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, frontLeftSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
 
@@ -50,7 +56,8 @@ RoverReset * resetArray[] = {
 	wheelEncoder_FrontLeft,
 	wheelEncoder_FrontRight,
 	wheelEncoder_RearLeft,
-	wheelEncoder_RearRight
+	wheelEncoder_RearRight,
+	roverBuffer
 };
 
 
@@ -77,15 +84,58 @@ void loop() {
 	wheelEncoder_FrontRight->sensorOnline();
 	wheelEncoder_RearLeft->sensorOnline();
 	wheelEncoder_RearRight->sensorOnline();
+	//Counter Delays
+	//increment the counters
+	outputMessageDelay++;
+	bufferToggleDelay++;
+
+
+	//Motor Power Control
+	if (bufferToggleDelay >= 40000)//about once every second
+	{
+
+		//toggle motor power on and off
+		Serial.print(F("SWITCHING TO "));
+		if (roverBuffer->inAutoMode())//motor is currently on, so turn it off
+		{
+			roverBuffer->driverMode(MANUAL_DRIVE);
+			Serial.print(F("MANUAL"));
+		}
+		else//motor is currently off, so turn it on
+		{
+			roverBuffer->driverMode(AUTO_DRIVE);
+			Serial.print(F("AUTO"));
+		}
+		Serial.println(F(" DRIVE"));
+		Serial.println();
+		bufferToggleDelay = 0;//reset the counter
+		
+	}
 
 
 
-
-
-	if (outputMessageDelay >= 40000)
+	if (outputMessageDelay >= 40000)//about once a second
 	{
 
 
+
+		//Print Buffer Select Status
+		Serial.println(F("=BUFFER STATUS="));
+		if (roverBuffer->inAutoMode())//currently in auto mode
+		{
+			Serial.println(F("AUTO MODE"));
+		}
+		else//currently in manual mode
+		{
+
+			Serial.println(F("MANUAL MODE"));
+		}
+		Serial.println();
+
+
+
+
+		//Wheel Encoder Control and Status
 		//========Front Left Motor===========
 		byte direction_FrontLeft = wheelEncoder_FrontLeft->getDirection();
 		Serial.println(F("=FRONT LEFT MTR="));
@@ -182,7 +232,7 @@ void loop() {
 
 		outputMessageDelay = 0;//reset the counter
 	}
-	outputMessageDelay++;//increment the counter
+
 
 
 

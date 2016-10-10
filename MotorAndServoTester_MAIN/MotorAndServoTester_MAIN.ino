@@ -2,15 +2,18 @@
 #include <WheelEncoderSensor.h>
 #include <GlobalDelayTimer.h>
 #include <DelayCounter.h>
+#include <MotorPowerControl.h>
 
 //Global Variables
 
+//counter delays
+//using a counter to create delays while still allowing the loop() to run (i.e. for messages, etc.)
+unsigned int outputMessageDelay = 0;
+unsigned int mtrPowerToggleDelay = 0;
 
-unsigned int outputMessageDelay = 0;//using a counter to delay the output messages without the delaying the return time of the loop(). Timing doesn't have to be exact. Just picked an approximate number that outputted the messages around once a second.
+MotorPowerControl * mtrPowerCtrlr = new MotorPowerControl(MTR_FET_CTRL_PIN, MTR_ENABLE_STATUS);
 
-
-
-									//The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
+//The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
 DelayCounter * midLeftSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
 GlobalDelayTimer * midLeftSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, midLeftSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
 
@@ -35,7 +38,8 @@ RoverReset * resetArray[] = {
 	midRightSyncCounter,
 	midRightSyncTimer,
 	wheelEncoder_MidLeft,
-	wheelEncoder_MidRight
+	wheelEncoder_MidRight,
+	mtrPowerCtrlr
 };
 
 
@@ -54,21 +58,60 @@ void loop() {
 	//Tasks always running in the background with every loop() cycle
 	//Timers
 	midLeftSyncTimer->Running();
-	midRightSyncTimer->Running();
-
+	midRightSyncTimer->Running();	
 	//Wheel Encoders
 	wheelEncoder_MidLeft->sensorOnline();
 	wheelEncoder_MidRight->sensorOnline();
+	//Counter Delays
+	//increment the counters
+	outputMessageDelay++;
+	mtrPowerToggleDelay++;
 
 
 
+	//Motor Power Control
+	if (mtrPowerToggleDelay >= 40000)//about once a 1 seconds
+	{
+		//toggle motor power on and off
+		Serial.print(F("SWITCHING MTR "));
+		if (mtrPowerCtrlr->motorIsOn())//motor is currently on, so turn it off
+		{
+			mtrPowerCtrlr->setMotorPower(MTR_OFF);
+			Serial.println(F("OFF"));
+		}
+		else//motor is currently off, so turn it on
+		{
+			mtrPowerCtrlr->setMotorPower(MTR_ON);
+			Serial.println(F("ON"));
+		}
+		Serial.println();
+		mtrPowerToggleDelay = 0;//reset the counter
+	}
 
 
 
-	if (outputMessageDelay >= 40000)
+	if (outputMessageDelay >= 40000)//about once a second
 	{
 
 
+
+
+		//Print Motor Power Status
+		Serial.println(F("=MTR STATUS="));
+		if (mtrPowerCtrlr->motorIsOn())//motor is currently on
+		{
+			Serial.println(F("MTR ON"));
+		}
+		else//motor is currently off
+		{
+			
+			Serial.println(F("MTR OFF"));
+		}
+		Serial.println();
+
+		
+
+		//Wheel Encoder Control and Status
 		//========Mid Left Motor===========
 		byte direction_MidLeft = wheelEncoder_MidLeft->getDirection();
 		Serial.println(F("=MID LEFT MTR="));
@@ -121,7 +164,7 @@ void loop() {
 
 		outputMessageDelay = 0;//reset the counter
 	}
-	outputMessageDelay++;//increment the counter
+	
 
 
 

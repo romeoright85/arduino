@@ -3,9 +3,11 @@
 
 //Global Variables
 
-Template template = Template();
+Template * template = new Template();
 
-RoverReset * resetArray[] = { &template };
+RoverReset * resetArray[] = {
+	template
+};
 
 
 void setup() {

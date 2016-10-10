@@ -42,7 +42,25 @@
 		#define DELAY_TIMER_RES_5ms 5
 	#endif
 		
+	//definition for MotorPowerControl
+	#ifdef _MOTORPOWERCONTROL
+		#define MTR_OFF 0
+		#define MTR_ON 1		
+	#endif
+	
 
+	//definition for MotorPowerControl
+	#ifdef _BUFFERSELECT_MODES
+		#define MANUAL_DRIVE 0
+		#define AUTO_DRIVE 1
+	#endif
+	
+	
+	//definition for LaserControl
+	#ifdef _LASERCONTROL_MODES
+		#define LASER_OFF 0
+		#define LASER_ON 1
+	#endif
 	
 	
 	
