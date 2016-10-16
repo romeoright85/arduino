@@ -18,9 +18,10 @@
 		#define _ARD_3_MAIN_H
 	#endif
 	
-
+	#define _MOTORPOWERCONTROL_DEFINITIONS
+	
 	/********************************************************************/
-	#define _MOTORPOWERCONTROL
+	
 	
 	#include <RoverConfig.h>
 	

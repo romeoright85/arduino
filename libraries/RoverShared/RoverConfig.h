@@ -43,13 +43,13 @@
 	#endif
 		
 	//definition for MotorPowerControl
-	#ifdef _MOTORPOWERCONTROL
+	#ifdef _MOTORPOWERCONTROL_DEFINITIONS
 		#define MTR_OFF 0
 		#define MTR_ON 1	
 	#endif
 	
 
-	//definition for MotorPowerControl
+	//definition for BufferSelect
 	#ifdef _BUFFERSELECT_MODES
 		#define MANUAL_DRIVE 0
 		#define AUTO_DRIVE 1
@@ -103,22 +103,20 @@
 	
 
 	//definition for MotorController
-	#ifdef _MOTORCONTROLLER_DEFINITIONS
-		//Power On Reset Values
-		//Note: These values need to be calibration then the values updated here
-		#define MC_CENTER_POSITION_AFTER_POR		90		
-		#define MC_NO_THROTTLE_AFTER_POR		90		
+	#ifdef _MOTORCONTROLLER_DEFINITIONS		
 		//Ideal/theoretical value, before calibration adjusted
 		//Note: These values should not change. These are  from manufacturing/RC signal specifications.
 		#define MC_CENTER_POSITION_IDEAL		90		
 		#define MC_NO_THROTTLE_IDEAL	90
-		//Servo Limits
-		//Got these values from trial and error. The servos don't do well after 175 or before 5 degrees
-		#define SRVO_MAX_RANGE 175
-		#define SRVO_MIN_RANGE 5
 	#endif	
 	
-	
+	//definition for GimbalController
+	#ifdef _GIMBALCONTROLLER_DEFINITIONS		
+		//Ideal/theoretical value, before calibration adjusted
+		//Note: These values should not change. These are  from manufacturing/RC signal specifications.
+		#define GC_CENTER_POSITION_IDEAL		90		//for pan
+		#define GC_MIDDLE_POSITION_IDEAL	90		//for tilt
+	#endif	
 	
 	
 	//definition for Rover Analog Names

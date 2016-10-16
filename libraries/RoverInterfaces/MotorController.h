@@ -6,6 +6,8 @@
 	#include <RoverDebug.h>
 	#include <RoverReset.h>
 	#include <Servo.h>
+
+	
 	
 	
 	/*******************************************************************
@@ -19,8 +21,11 @@
 	#define _MOTORCONTROLLER_DEFINITIONS
 	
 	/********************************************************************/
-
 	#include <RoverConfig.h>
+	
+	#define _SERVOSIGNAL_CALIBRATIONS
+	#define _MOTORCONTROLLER_CALIBRATIONS
+	#include <RoverCalibration.h>
 	
 	class MotorController : public virtual RoverReset {
 	public:

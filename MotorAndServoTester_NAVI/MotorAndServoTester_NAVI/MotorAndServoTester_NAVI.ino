@@ -6,7 +6,7 @@
 #include <MotorPowerControl.h>
 #include <MotorController.h>
 #include <GimbalController.h>
-
+#include <RoverCalibration.h>
 
 //Global Variables
 
@@ -20,7 +20,7 @@ unsigned int modesToggleDelay = 0;
 //A counter use to increment through the different modes
 byte modesTester = 0;
 
-
+MotorPowerControl * roverMtrPowerCtrl = new MotorPowerControl(MTR_FET_CTRL_PIN, MTR_ENABLE_STATUS);
 
 BufferSelect * roverBuffer = new BufferSelect(BUFFER_SELECT_PIN);
 
@@ -38,6 +38,7 @@ DelayCounter * rearRightSyncCounter = new DelayCounter(DELAY_200_PERIODS);//init
 GlobalDelayTimer * rearRightSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, rearRightSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
 
 
+void printMcAndGcOutputs();//print motor controller and gimbal controller outputs
 
 void InterruptDispatch_wheelEncoder_FrontLeft();
 void InterruptDispatch_wheelEncoder_FrontRight();
@@ -72,7 +73,8 @@ RoverReset * resetArray[] = {
 	wheelEncoder_RearRight,
 	roverBuffer,
 	roverMotorController,
-	roverGimbalController
+	roverGimbalController,
+	roverMtrPowerCtrl
 };
 
 
@@ -125,21 +127,20 @@ void loop() {
 		{
 
 			case 0:
+				Serial.println(F("TURN MTR ON"));
+				roverMtrPowerCtrl->setMotorPower(MTR_ON);
 				//Set to auto drive
-				Serial.print(F("SWITCHING TO "));
+				Serial.println(F("SWITCHING TO AUTO DRIVE"));
 				roverBuffer->driverMode(AUTO_DRIVE);
-				Serial.println(F("AUTO DRIVE"));
 				break;
 			case 1:
 				//Set to stop/center uncalibrated values: 90
 				roverMotorController->setSteering(90);
 				roverMotorController->setThrottle(90);
-
+				roverGimbalController->setPan(90);
+				roverGimbalController->setTilt(90);
 				//Print out the currently set values
-				Serial.print(F("Steering: "));
-				Serial.println(roverMotorController->getSteeringSet());
-				Serial.print(F("Throttle: "));
-				Serial.println(roverMotorController->getThrottleSet());
+				printMcAndGcOutputs();
 
 				//Set next state
 				modesTester++;
@@ -150,10 +151,7 @@ void loop() {
 				roverMotorController->setThrottle(75);
 
 				//Print out the currently set values
-				Serial.print(F("Steering: "));
-				Serial.println(roverMotorController->getSteeringSet());
-				Serial.print(F("Throttle: "));
-				Serial.println(roverMotorController->getThrottleSet());
+				printMcAndGcOutputs();
 
 				//Set next state
 				modesTester++;
@@ -164,10 +162,7 @@ void loop() {
 				roverMotorController->setThrottle(100);
 
 				//Print out the currently set values
-				Serial.print(F("Steering: "));
-				Serial.println(roverMotorController->getSteeringSet());
-				Serial.print(F("Throttle: "));
-				Serial.println(roverMotorController->getThrottleSet());
+				printMcAndGcOutputs();
 				
 				//Set next state
 				modesTester++;
@@ -178,10 +173,7 @@ void loop() {
 				roverMotorController->setThrottle(200);
 
 				//Print out the currently set values
-				Serial.print(F("Steering: "));
-				Serial.println(roverMotorController->getSteeringSet());
-				Serial.print(F("Throttle: "));
-				Serial.println(roverMotorController->getThrottleSet());
+				printMcAndGcOutputs();
 
 				//Set next state				
 				modesTester++;
@@ -192,24 +184,29 @@ void loop() {
 				roverMotorController->setThrottle(-100);
 
 				//Print out the currently set values
-				Serial.print(F("Steering: "));
-				Serial.println(roverMotorController->getSteeringSet());
-				Serial.print(F("Throttle: "));
-				Serial.println(roverMotorController->getThrottleSet());
+				printMcAndGcOutputs();
 
 				//Set next state
 				modesTester++;
 				break;
 			case 6:
 				//Set to auto drive
-				Serial.print(F("SWITCHING TO "));
-				roverBuffer->driverMode(MANUAL_DRIVE);
-				Serial.println(F("MANUAL DRIVE"));
+				Serial.println(F("SWITCHING TO MANUAL DRIVE"));
+				roverBuffer->driverMode(MANUAL_DRIVE);				
 				//Set next state
 				modesTester++;
 				break;
+			case 7:
+				//Set to auto drive
+				Serial.println(F("SWITCHING TO MANUAL DRIVE"));
+				roverBuffer->driverMode(MANUAL_DRIVE);
+				//Set next state
+				modesTester++;
+				Serial.println(F("TURN MTR ON"));
+				roverMtrPowerCtrl->setMotorPower(MTR_OFF);
+				break;
 			default:
-				//Set initial state
+				//Set initial state, when it gets an undefined state or when modesTester++ has went past the max defined states
 				modesTester = 0;
 				break;
 		}//end switch 
@@ -360,4 +357,18 @@ void InterruptDispatch_wheelEncoder_RearLeft() {
 }
 void InterruptDispatch_wheelEncoder_RearRight() {
 	wheelEncoder_RearRight->isrUpdate();
+}
+
+
+void printMcAndGcOutputs() {
+
+	Serial.print(F("Steering: "));
+	Serial.println(roverMotorController->getSteeringSet());
+	Serial.print(F("Throttle: "));
+	Serial.println(roverMotorController->getThrottleSet());
+	Serial.print(F("Pan: "));
+	Serial.println(roverGimbalController->getPanSet());
+	Serial.print(F("Tilt: "));
+	Serial.println(roverGimbalController->getTiltSet());
+
 }

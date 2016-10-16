@@ -24,7 +24,7 @@ MotorController::~MotorController()
 }
 void MotorController::reset()
 {	
-	//At HW or SW Reset, the values will be set to MC_CENTER_POSITION_AFTER_POR and MC_NO_THROTTLE_AFTER_POR as defined in RoverConfig.h
+	//At HW or SW Reset, the values will be set to MC_CENTER_POSITION_AFTER_POR and MC_NO_THROTTLE_AFTER_POR as defined in RoverCalibration.h
 	this->calibrateSteering(MC_CENTER_POSITION_AFTER_POR);
 	this->calibrateThrottle(MC_NO_THROTTLE_AFTER_POR);
 }
@@ -63,7 +63,7 @@ int MotorController::getSteeringSet()
 int MotorController::getThrottleSet()
 {
 	
-	return this->_throttleAmount;
+	return this->_throttleAmount;//can be values between SRVO_MIN_RANGE to SRVO_MAX_RANGE
 		
 }
 void MotorController::calibrateSteering(int steeringActualAmount)
