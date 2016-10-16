@@ -3,6 +3,10 @@
 #include <GlobalDelayTimer.h>
 #include <DelayCounter.h>
 #include <BufferSelect.h>
+#include <MotorPowerControl.h>
+#include <MotorController.h>
+#include <GimbalController.h>
+
 
 //Global Variables
 
@@ -10,7 +14,11 @@
 //counter delays
 //using a counter to create delays while still allowing the loop() to run (i.e. for messages, etc.)
 unsigned int outputMessageDelay = 0;
-unsigned int bufferToggleDelay = 0;
+unsigned int modesToggleDelay = 0;
+
+
+//A counter use to increment through the different modes
+byte modesTester = 0;
 
 
 
@@ -43,6 +51,11 @@ WheelEncoderSensor * wheelEncoder_RearLeft = new WheelEncoderSensor(ENCODER_A_RE
 WheelEncoderSensor * wheelEncoder_RearRight = new WheelEncoderSensor(ENCODER_A_REAR_RIGHT, ENCODER_B_REAR_RIGHT, RIGHT_MOUNTED, &InterruptDispatch_wheelEncoder_RearRight, rearRightSyncCounter);
 
 
+MotorController * roverMotorController = new MotorController(MTR_RC_CTRL_STEERING_PIN, MTR_RC_CTRL_THROTTLE_PIN);
+GimbalController * roverGimbalController = new GimbalController(SERVO_PAN_PIN, SERVO_TILT_PIN);
+
+
+
 
 RoverReset * resetArray[] = {
 	frontLeftSyncCounter,
@@ -57,7 +70,9 @@ RoverReset * resetArray[] = {
 	wheelEncoder_FrontRight,
 	wheelEncoder_RearLeft,
 	wheelEncoder_RearRight,
-	roverBuffer
+	roverBuffer,
+	roverMotorController,
+	roverGimbalController
 };
 
 
@@ -87,30 +102,121 @@ void loop() {
 	//Counter Delays
 	//increment the counters
 	outputMessageDelay++;
-	bufferToggleDelay++;
+	modesToggleDelay++;
 
 
 	//Motor Power Control
-	if (bufferToggleDelay >= 40000)//about once every second
+	if (modesToggleDelay >= 40000)//about once every second
 	{
 
-		//toggle motor power on and off
-		Serial.print(F("SWITCHING TO "));
-		if (roverBuffer->inAutoMode())//motor is currently on, so turn it off
+
+		//Detect drive mode
+		if (roverBuffer->inAutoMode())
 		{
-			roverBuffer->driverMode(MANUAL_DRIVE);
-			Serial.print(F("MANUAL"));
+			Serial.println(F("IN AUTO DRIVE"));
 		}
-		else//motor is currently off, so turn it on
+		else
 		{
-			roverBuffer->driverMode(AUTO_DRIVE);
-			Serial.print(F("AUTO"));
+			Serial.println(F("IN MANUAL DRIVE"));
 		}
-		Serial.println(F(" DRIVE"));
-		Serial.println();
-		bufferToggleDelay = 0;//reset the counter
 		
-	}
+
+		switch (modesTester)
+		{
+
+			case 0:
+				//Set to auto drive
+				Serial.print(F("SWITCHING TO "));
+				roverBuffer->driverMode(AUTO_DRIVE);
+				Serial.println(F("AUTO DRIVE"));
+				break;
+			case 1:
+				//Set to stop/center uncalibrated values: 90
+				roverMotorController->setSteering(90);
+				roverMotorController->setThrottle(90);
+
+				//Print out the currently set values
+				Serial.print(F("Steering: "));
+				Serial.println(roverMotorController->getSteeringSet());
+				Serial.print(F("Throttle: "));
+				Serial.println(roverMotorController->getThrottleSet());
+
+				//Set next state
+				modesTester++;
+				break;
+			case 2:
+				//Set to arbitrary values: 75
+				roverMotorController->setSteering(75);
+				roverMotorController->setThrottle(75);
+
+				//Print out the currently set values
+				Serial.print(F("Steering: "));
+				Serial.println(roverMotorController->getSteeringSet());
+				Serial.print(F("Throttle: "));
+				Serial.println(roverMotorController->getThrottleSet());
+
+				//Set next state
+				modesTester++;
+				break;
+			case 3:
+				//Set to arbitrary values: 100
+				roverMotorController->setSteering(100);
+				roverMotorController->setThrottle(100);
+
+				//Print out the currently set values
+				Serial.print(F("Steering: "));
+				Serial.println(roverMotorController->getSteeringSet());
+				Serial.print(F("Throttle: "));
+				Serial.println(roverMotorController->getThrottleSet());
+				
+				//Set next state
+				modesTester++;
+				break;
+			case 4:
+				//Set to arbitrary out of range values: 200
+				roverMotorController->setSteering(200);
+				roverMotorController->setThrottle(200);
+
+				//Print out the currently set values
+				Serial.print(F("Steering: "));
+				Serial.println(roverMotorController->getSteeringSet());
+				Serial.print(F("Throttle: "));
+				Serial.println(roverMotorController->getThrottleSet());
+
+				//Set next state				
+				modesTester++;
+				break;
+			case 5:
+				//Set to arbitrary out of range values: -100
+				roverMotorController->setSteering(-100);
+				roverMotorController->setThrottle(-100);
+
+				//Print out the currently set values
+				Serial.print(F("Steering: "));
+				Serial.println(roverMotorController->getSteeringSet());
+				Serial.print(F("Throttle: "));
+				Serial.println(roverMotorController->getThrottleSet());
+
+				//Set next state
+				modesTester++;
+				break;
+			case 6:
+				//Set to auto drive
+				Serial.print(F("SWITCHING TO "));
+				roverBuffer->driverMode(MANUAL_DRIVE);
+				Serial.println(F("MANUAL DRIVE"));
+				//Set next state
+				modesTester++;
+				break;
+			default:
+				//Set initial state
+				modesTester = 0;
+				break;
+		}//end switch 
+		
+		modesToggleDelay = 0;//reset the counter
+
+	}//end if
 
 
 

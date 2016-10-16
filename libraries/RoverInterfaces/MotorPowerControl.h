@@ -1,6 +1,6 @@
 //MotorPowerControl.h
-#ifndef _TEMPLATE_H
-#define _TEMPLATE_H
+#ifndef _MOTORPOWERCONTROL_H
+#define _MOTORPOWERCONTROL_H
 
 	#include <Arduino.h>
 	#include <RoverDebug.h>
