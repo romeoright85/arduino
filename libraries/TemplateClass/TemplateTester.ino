@@ -16,7 +16,9 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
-
+	
+	Serial.begin(9600);
+	
 }
 
 

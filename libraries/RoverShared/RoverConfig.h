@@ -15,6 +15,13 @@
 	#define AUXI_BAUD_RATE 115200
 	#define NAVI_BAUD_RATE 115200
 	#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
+	
+	//Arduino Types
+	#define ARDUINO_NAVI		1
+	#define ARDUINO_AUXI		2
+	#define ARDUINO_MAIN	3
+	#define ARDUINO_COMM	4
+	
 		
 	//definition for RoverComm (which rover communication source/destination)
 	#ifdef _ROVERCOMMTYPES
@@ -35,7 +42,7 @@
 		#define DELAY_200_PERIODS 200
 	#endif
 
-
+	
 	//definition for DelayTimer Resolutions
 	#ifdef _DELAYTIMER_RESOLUTIONS
 		#define DELAY_TIMER_RES_1ms 1

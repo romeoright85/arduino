@@ -42,11 +42,11 @@
 		
 	private:
 		//Non-SW Resettable
-		byte currentSensorFaultPins[5];
-		byte currentSensors_ResetPin;
+		byte _currentSensorFaultPins[5];
+		byte _currentSensors_ResetPin;
 				
 		//SW Resettable
-		boolean faultedCurrentSensors[5];
+		boolean _faultedCurrentSensors[5];
 	};
 
 	#endif 

@@ -5,21 +5,21 @@ CurrentSensorFault::CurrentSensorFault(byte currentSensor1_FaultPin, byte curren
 {
 	//Assign Pins
 	//Current Fault Pins
-	this->currentSensorFaultPins[0] = currentSensor1_FaultPin;
-	this->currentSensorFaultPins[1] = currentSensor2_FaultPin;
-	this->currentSensorFaultPins[2] = currentSensor3_FaultPin;
-	this->currentSensorFaultPins[3] = currentSensor4_FaultPin;
-	this->currentSensorFaultPins[4] = currentSensor5_FaultPin;
+	this->_currentSensorFaultPins[0] = currentSensor1_FaultPin;
+	this->_currentSensorFaultPins[1] = currentSensor2_FaultPin;
+	this->_currentSensorFaultPins[2] = currentSensor3_FaultPin;
+	this->_currentSensorFaultPins[3] = currentSensor4_FaultPin;
+	this->_currentSensorFaultPins[4] = currentSensor5_FaultPin;
 	//Reset Pin	
-	this->currentSensors_ResetPin = currentSensors_ResetPin;
+	this->_currentSensors_ResetPin = currentSensors_ResetPin;
 	
 	//Setup pins
-	pinMode(this->currentSensorFaultPins[0], INPUT);
-	pinMode(this->currentSensorFaultPins[1], INPUT);
-	pinMode(this->currentSensorFaultPins[2], INPUT);
-	pinMode(this->currentSensorFaultPins[3], INPUT);
-	pinMode(this->currentSensorFaultPins[4], INPUT);
-	pinMode(this->currentSensors_ResetPin, OUTPUT);
+	pinMode(this->_currentSensorFaultPins[0], INPUT);
+	pinMode(this->_currentSensorFaultPins[1], INPUT);
+	pinMode(this->_currentSensorFaultPins[2], INPUT);
+	pinMode(this->_currentSensorFaultPins[3], INPUT);
+	pinMode(this->_currentSensorFaultPins[4], INPUT);
+	pinMode(this->_currentSensors_ResetPin, OUTPUT);
 		
 	//Initialize
 	this->reset();
@@ -44,9 +44,9 @@ boolean CurrentSensorFault::anyFaulted()
 	for (byte i = 0; i < 5; i++)
 	{		
 		//Read the current sensor fault pin (it is active low)
-		if(!digitalRead(this->currentSensorFaultPins[i]))
+		if(!digitalRead(this->_currentSensorFaultPins[i]))
 		{
-			this->faultedCurrentSensors[i] = true;
+			this->_faultedCurrentSensors[i] = true;
 			anyFaultedCurrentSensors = true;
 		}					
 	}	
@@ -55,20 +55,20 @@ boolean CurrentSensorFault::anyFaulted()
 
 boolean * CurrentSensorFault::getFaultedSensors()
 {
-	return this->faultedCurrentSensors;
+	return this->_faultedCurrentSensors;
 }
 void CurrentSensorFault::resetCurrentSensors()
 {
 	
 	//Toggle the current reset pin
-	//Initialize to turn Vcc on (active low)
-	digitalWrite(this->currentSensors_ResetPin, LOW);
+	//Initialize to turn Vcc ON (active low)
+	digitalWrite(this->_currentSensors_ResetPin, LOW);
 	delay(10);
-	//Turn off Vcc (active low)
-	digitalWrite(this->currentSensors_ResetPin, HIGH);
+	//Turn OFF Vcc (active low)
+	digitalWrite(this->_currentSensors_ResetPin, HIGH);
 	delay(10);
-	//Turn on Vcc again (active low)
-	digitalWrite(this->currentSensors_ResetPin, LOW);
+	//Turn ON Vcc again (active low)
+	digitalWrite(this->_currentSensors_ResetPin, LOW);
 	
 	//Clear the faulted current sensor flags
 	this->clearFaultedCurrentSensors();
@@ -80,6 +80,6 @@ void CurrentSensorFault::clearFaultedCurrentSensors()
 	//Clear the faulted current sensor flags
 	for (byte i = 0; i < 5; i++)
 	{
-		this->faultedCurrentSensors[i] = false;
+		this->_faultedCurrentSensors[i] = false;
 	}
 }
