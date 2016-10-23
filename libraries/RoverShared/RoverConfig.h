@@ -209,7 +209,7 @@
 		#define LEFT_LASER_CTRL_PIN				4
 		#define RIGHT_LASER_CTRL_PIN			5
 		#define CURRENT_SENSOR_RESET_PIN		11
-		#define CURRENT_FAULT_1_PIN				12
+		#define CURRENT_FAULT_1_7D2V_25A_PRESW_PIN				12
 		#define IMU_SDA_PIN						20
 		#define IMU_SCL_PIN						21
 		#define AMUX1_SEL_0_PIN				22
@@ -236,10 +236,10 @@
 		#define AMUX8_SEL_0_PIN				43
 		#define AMUX8_SEL_1_PIN				44
 		#define AMUX8_SEL_2_PIN				45
-		#define CURRENT_FAULT_2_PIN				46
-		#define CURRENT_FAULT_3_PIN				47
-		#define CURRENT_FAULT_4_PIN				48
-		#define CURRENT_FAULT_5_PIN				49
+		#define CURRENT_FAULT_2_3D3V_12D4A_SW_PIN				46
+		#define CURRENT_FAULT_3_MCTRLRCH1_12D5A_PIN				47
+		#define CURRENT_FAULT_4_MCTRLRCH2_12D5A_PIN				48
+		#define CURRENT_FAULT_5_7D2_12D5A_SW_PIN				49
 		#define OPAMP_1_OUT_PIN					0
 		#define OPAMP_2_OUT_PIN					1
 		#define OPAMP_3_OUT_PIN					2
