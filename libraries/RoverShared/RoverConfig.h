@@ -22,6 +22,34 @@
 	#define ARDUINO_MAIN	3
 	#define ARDUINO_COMM	4
 	
+
+	//definition for BeaconLightAssembly
+	//Beacon light types
+	#define FRONT_LEFT_IR_BEACON		0
+	#define BACK_LEFT_IR_BEACON			1
+	#define BACK_RIGHT_IR_BEACON		2
+	#define FRONT_RIGHT_IR_BEACON		3
+	#define LEFT_BLUE_BEACON				4
+	#define BACK_BLUE_BEACON				5
+	#define RIGHT_BLUE_BEACON				6
+	#define FRONT_BLUE_BEACON			7
+	
+	//definition for HeadLightAssembly
+	//Headlight types
+	#define HIGHBEAM_HEADLIGHT		0
+	#define SIGNAL_HEADLIGHT			1
+	#define FOG_HEADLIGHT					2
+	
+	
+	//definition for TailLightAssembly
+	//Taillight types
+	#define RED1_TAILLIGHT			0
+	#define RED2_TAILLIGHT			1
+	#define RED3_TAILLIGHT			2
+	#define RED4_TAILLIGHT			3
+	#define RED5_TAILLIGHT			4
+	#define WHITE_TAILLIGHT			5	
+	
 		
 	//definition for RoverComm (which rover communication source/destination)
 	#ifdef _ROVERCOMMTYPES
@@ -278,33 +306,33 @@
 		#define ENCODER_A_REAR_RIGHT						21
 		#define SIDE_LEFT_SIGNAL_PIN				22
 		#define SIDE_RIGHT_SIGNAL_PIN				24
-		#define FRONT_RIGHT_FOG_PIN					26
-		#define FRONT_RIGHT_SIGNAL_PIN				28
+		#define RIGHT_FOG_HEADLIGHT_PIN					26
+		#define RIGHT_SIGNAL_HEADLIGHT_PIN				28
 		#define UNDERGLOW_PIN						29
-		#define FRONT_RIGHT_HEADLIGHT_PIN			30
-		#define BACK_LEFT_TAILLIGHT_1_PIN			31
-		#define FRONT_LEFT_HEADLIGHT_PIN			32
-		#define BACK_LEFT_TAILLIGHT_2_PIN			33
-		#define FRONT_LEFT_SIGNAL_PIN				34
-		#define BACK_LEFT_TAILLIGHT_3_PIN			35
-		#define FRONT_LEFT_FOG_PIN					36
-		#define BACK_LEFT_REVERSE_PIN				37
-		#define TOP_BEACON_IR_4_PIN					38
-		#define BACK_LEFT_TAILLIGHT_5_PIN			39
-		#define TOP_BEACON_IR_3_PIN					40
-		#define BACK_LEFT_TAILLIGHT_4_PIN			41
-		#define TOP_BEACON_IR_2_PIN					42
-		#define BACK_LEFT_TAILLIGHT_3_PIN			43
-		#define TOP_BEACON_IR_1_PIN					44
-		#define BACK_LEFT_TAILLIGHT_2_PIN			45
-		#define TOP_BEACON_BLUE_1_PIN				46
-		#define BACK_RIGHT_TAILLIGHT_1_PIN			47
-		#define TOP_BEACON_BLUE_3_PIN				48
-		#define BACK_RIGHT_TAILLIGHT_4_PIN			49
-		#define TOP_BEACON_BLUE_2_PIN				50
-		#define BACK_RIGHT_TAILLIGHT_5_PIN			51
-		#define TOP_BEACON_BLUE_1_PIN				52
-		#define BACK_RIGHT_REVERSE_PIN				53
+		#define RIGHT_HIGHBEAM_HEADLIGHT_PIN			30
+		#define LEFT_RED_TAILLIGHT_1_PIN			31
+		#define LEFT_HIGHBEAM_HEADLIGHT_PIN			32
+		#define LEFT_RED_TAILLIGHT_2_PIN			33
+		#define LEFT_SIGNAL_HEADLIGHT_PIN				34
+		#define LEFT_RED_TAILLIGHT_3_PIN			35
+		#define LEFT_FOG_HEADLIGHT_PIN					36
+		#define LEFT_WHITE_TAILLIGHT_PIN				37
+		#define FRONT_LEFT_BEACON_IR_PIN					38
+		#define LEFT_RED_TAILLIGHT_5_PIN			39
+		#define BACK_LEFT_BEACON_IR_PIN					40
+		#define LEFT_RED_TAILLIGHT_4_PIN			41
+		#define BACK_RIGHT_BEACON_IR_PIN					42
+		#define RIGHT_RED_TAILLIGHT_3_PIN			43
+		#define FRONT_RIGHT_BEACON_IR_PIN					44
+		#define RIGHT_RED_TAILLIGHT_2_PIN			45
+		#define LEFT_BEACON_BLUE_PIN				46
+		#define RIGHT_RED_TAILLIGHT_1_PIN			47
+		#define BACK_BEACON_BLUE_PIN				48
+		#define RIGHT_RED_TAILLIGHT_4_PIN			49
+		#define RIGHT_BEACON_BLUE_PIN				50
+		#define RIGHT_RED_TAILLIGHT_5_PIN			51
+		#define FRONT_BEACON_BLUE_PIN				52
+		#define RIGHT_WHITE_TAILLIGHT_PIN				53
 		#define SIDE_LEFT_IR_DIST_SENSOR_PIN		0
 		#define REAR_CENTER_IR_DIST_SENSOR_PIN		1
 		#define FORWARD_CENTER_IR_DIST_SENSOR_PIN	2

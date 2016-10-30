@@ -1,6 +1,8 @@
 #define _IMUDATATYPES //used with RoverConfig.h
 #include <ImuSensor.h>
 
+//NOTE: The IMU Must be connected to the Arduino for this code to work.
+//See RoverConfig.h for pinouts
 
 //Global Variables
 

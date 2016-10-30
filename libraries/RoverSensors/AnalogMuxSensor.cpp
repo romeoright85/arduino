@@ -99,7 +99,7 @@ int AnalogMuxSensor::readAmuxChannel(byte aMuxChannel)
 }
 int AnalogMuxSensor::getRawADCValueOf(byte analogSignalName)
 {
-	for(byte i = 0; i< sizeof( this->_analogNames)/sizeof(_analogNames[0]); i++)
+	for(byte i = 0; i< sizeof( this->_analogNames)/sizeof(this->_analogNames[0]); i++)
 	{
 		if(this->_analogNames[i] == analogSignalName)
 		{
@@ -110,7 +110,7 @@ int AnalogMuxSensor::getRawADCValueOf(byte analogSignalName)
 }
 boolean AnalogMuxSensor::hasAnalogName(byte analogSignalName)
 {
-	for(byte i = 0; i< sizeof( this->_analogNames)/sizeof(_analogNames[0]); i++)
+	for(byte i = 0; i< sizeof( this->_analogNames)/sizeof(this->_analogNames[0]); i++)
 	{
 	if(this->_analogNames[i] == analogSignalName)
 		{
