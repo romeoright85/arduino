@@ -4,6 +4,8 @@ RoverAnalogSignals::RoverAnalogSignals()
 {
 		
 	//Define the amux names below before passing it to the AnalogMuxSensor objects
+	
+	//AMUX 1
 	this->_amux1AnalogNames[0] = VOLTAGE_7D2_RAW;
 	this->_amux1AnalogNames[1] = CURRENT_7D2_PRESW25A;
 	this->_amux1AnalogNames[2] = CURRENT_7D2_SW12D5A;
@@ -13,6 +15,7 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_amux1AnalogNames[6] = TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET;
 	this->_amux1AnalogNames[7] = UNUSED_CH;
 
+	//AMUX 2
 	this->_amux2AnalogNames[0] = VOLTAGE_5_ANALOGCCA;
 	this->_amux2AnalogNames[1] = CURRENT_3D3_SW12D5A;
 	this->_amux2AnalogNames[2] = PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING;
@@ -22,6 +25,7 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_amux2AnalogNames[6] = TEMPSENSOR_DIGITALCCA_MIDDLESIDE;
 	this->_amux2AnalogNames[7] = UNUSED_CH;	
 
+	//AMUX 3
 	this->_amux3AnalogNames[0] = VOLTAGE_3D3_SW;
 	this->_amux3AnalogNames[1] = CURRENT_MOTORCTRLR_CH1_12D5A;
 	this->_amux3AnalogNames[2] = PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING;
@@ -31,6 +35,7 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_amux3AnalogNames[6] = UNUSED_CH;
 	this->_amux3AnalogNames[7] = UNUSED_CH;	
 
+	//AMUX 4
 	this->_amux4AnalogNames[0] = GAS_BEACONCCA_RIGHTPOINTING;
 	this->_amux4AnalogNames[1] = CURRENT_MOTORCTRLR_CH2_12D5A;
 	this->_amux4AnalogNames[2] = PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING;
@@ -40,6 +45,7 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_amux4AnalogNames[6] = UNUSED_CH;
 	this->_amux4AnalogNames[7] = UNUSED_CH;	
 
+	//AMUX 5
 	this->_amux5AnalogNames[0] = UNUSED_CH;
 	this->_amux5AnalogNames[1] = UNUSED_CH;
 	this->_amux5AnalogNames[2] = UNUSED_CH;
@@ -49,6 +55,7 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_amux5AnalogNames[6] = UNUSED_CH;
 	this->_amux5AnalogNames[7] = UNUSED_CH;	
 
+	//AMUX 6
 	this->_amux6AnalogNames[0] = UNUSED_CH;
 	this->_amux6AnalogNames[1] = UNUSED_CH;
 	this->_amux6AnalogNames[2] = UNUSED_CH;
@@ -58,6 +65,7 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_amux6AnalogNames[6] = UNUSED_CH;
 	this->_amux6AnalogNames[7] = UNUSED_CH;	
 			
+	//AMUX 7
 	this->_amux7AnalogNames[0] = UNUSED_CH;
 	this->_amux7AnalogNames[1] = UNUSED_CH;
 	this->_amux7AnalogNames[2] = UNUSED_CH;
@@ -66,7 +74,8 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_amux7AnalogNames[5] = UNUSED_CH;
 	this->_amux7AnalogNames[6] = UNUSED_CH;
 	this->_amux7AnalogNames[7] = UNUSED_CH;	
-							
+				
+	//AMUX 8
 	this->_amux8AnalogNames[0] = UNUSED_CH;
 	this->_amux8AnalogNames[1] = UNUSED_CH;
 	this->_amux8AnalogNames[2] = UNUSED_CH;
@@ -153,3 +162,72 @@ int RoverAnalogSignals::getRawADCValueOf(byte analogSignalName)
 	return analogMux->getRawADCValueOf(analogSignalName);
 }
 
+
+double RoverAnalogSignals::getADCValueOf_As(byte analogSignalName, byte conversionType, double fixedResistorValue)
+{
+	
+	int rawADCValue;
+	double voltage;
+	double resistanceValue;
+	 rawADCValue = this->getRawADCValueOf(analogSignalName);
+	
+	switch(conversionType)
+	{
+		case VOLTAGE_VALUE: //fixedResistorValue not needed, so you can pass it the constant NO_RESISTOR
+			//Convert rawADC to voltage
+			return getMeasuredVoltage(rawADCValue);			
+			break;
+		case CURRENT_VALUE:
+			//Convert rawADC to voltage
+			voltage = getMeasuredVoltage(rawADCValue);
+			//Convert voltage to current
+//DEBUG, write me later			
+			return voltage;//DEBUG
+			break;
+		case TEMP_VALUE:
+			//Convert rawADC to voltage
+			voltage = getMeasuredVoltage(rawADCValue);
+			//Convert voltage output of resistor divider to measured resistance
+			resistanceValue = getMeasuredResistance(voltage, fixedResistorValue);
+			//Convert resistance to temperature
+			return 1/(1/TEMP_CONSTANT_T0+1/TEMP_CONSTANT_B*log(resistanceValue/TEMP_CONSTANT_R0));			
+			break;
+		case GAS_VALUE:			
+			//Convert rawADC to voltage
+			voltage = getMeasuredVoltage(rawADCValue);
+			//????
+//DEBUG, write me later		
+			return rawADCValue*10;//DEBUG
+			break;	
+		case PHOTO_VALUE:
+			//Convert rawADC to voltage
+			voltage = getMeasuredVoltage(rawADCValue);
+			//Convert voltage output of resistor divider to measured resistance
+			resistanceValue = getMeasuredResistance(voltage, fixedResistorValue);
+			//Convert resistance to lux
+//DEBUG, write me later					
+			return rawADCValue*10;//DEBUG
+			break;				
+		default: //No conversion.
+			return rawADCValue*10;//DEBUG
+			break;
+	}	
+}
+
+
+
+
+
+double RoverAnalogSignals::getMeasuredVoltage(int rawADCValue)
+{
+	//Convert rawADC to voltage
+//DEBUG, write me later
+	return rawADCValue;//DEBUG
+}
+
+double RoverAnalogSignals::getMeasuredResistance(double voltage, double fixedResistorValue)
+{
+	//Convert voltage to resistance
+//DEBUG, write me later	
+	return voltage;//DEBUG
+}

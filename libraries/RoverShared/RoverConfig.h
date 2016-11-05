@@ -23,6 +23,7 @@
 	#define ARDUINO_COMM	4
 	
 
+
 	//definition for BeaconLightAssembly
 	//Beacon light types
 	#define FRONT_LEFT_IR_BEACON		0
@@ -154,7 +155,18 @@
 	#endif	
 	
 	
-	//definition for Rover Analog Names
+		
+	//definition for RoverAnalogSignals
+	//Conversion types
+	#ifdef _ROVERCONVERSIONTYPES
+		#define VOLTAGE_VALUE				0
+		#define CURRENT_VALUE				1
+		#define TEMP_VALUE		2
+		#define GAS_VALUE					3
+		#define PHOTO_VALUE				4
+	#endif
+		
+	//Rover Analog Names
 	#ifdef _ROVERANALOGNAMES
 		
 		//General Use

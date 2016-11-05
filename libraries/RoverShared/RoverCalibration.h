@@ -29,8 +29,17 @@
 	#endif	
 		
 	
-	
-	
+	#ifdef _TEMP_CONSTANTS
+		#define	TEMP_CONSTANT_T0	298.15
+		#define	TEMP_CONSTANT_B	4050
+		#define	TEMP_CONSTANT_R0	10000
+	#endif	
+			
+		
+	#ifdef _FIXED_RESISTORS
+		#define	NO_RESISTOR	0
+	#endif	
+			
 	
 
 	
