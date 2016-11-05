@@ -5,7 +5,7 @@
 	#include <Arduino.h>
 	#include <RoverDebug.h>	
 	#include <RoverReset.h>
-	
+	#include <RoverAdc.h>
 	
 	//turn on the flag for AMUX Channels (defined in RoverConfig.h)
 	#define _ROVERAMUXCHANNELS
@@ -28,7 +28,8 @@
 			AnalogMuxSensor(byte, byte, byte, byte, byte []);//constructor (sel 0 pin, sel 1 pin, sel 2 pin, opamp out pin, array of analogNames)
 			~AnalogMuxSensor();//destructor
 			virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-			int getRawADCValueOf(byte);//returns the raw analog value by Analog Signal Name (Analog Signal Name)
+			unsigned int getRawADCValueOf(byte);//returns the raw analog value by Analog Signal Name (Analog Signal Name)
+			double getVoltageValueOf(byte);//returns the voltage value by Analog Signal Name (Analog Signal Name)
 			boolean hasAnalogName(byte);//returns true if it has the desired Analog Signal Name(Analog Signal Name)
 
 		private:
@@ -37,10 +38,15 @@
 			byte _AMUX_SEL_1_PIN;
 			byte _AMUX_SEL_2_PIN;
 			//Not SW Resetted
-			byte _OPAMP_OUT_PIN;
+			byte _opAmpOutputPin;
 			byte _analogNames[8];//holds the analog names corresponding to the 8 channels
-			int readAmuxChannel(byte);//(AMUX Channel 0 through 8)
-
+			unsigned int readRawADCValueOfAmuxChannel(byte);//(AMUX Channel 0 through 8)
+			double readVoltageValueOfAmuxChannel(byte);//(AMUX Channel 0 through 8)
+			void selectMuxChannel(byte);//sends the select signals to the AMUX to route the designed channel
+			//RoverAdc  Object
+			RoverAdc * _roverAdc;//used to get various types of analog readings
+			
+		
 			
 	};
 

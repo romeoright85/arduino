@@ -116,7 +116,7 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_resetArray[5] = this->_amux6;
 	this->_resetArray[6] = this->_amux7;
 	this->_resetArray[7] = this->_amux8;	
-
+		
 }
 
 RoverAnalogSignals::~RoverAnalogSignals()
@@ -151,7 +151,7 @@ AnalogMuxSensor * RoverAnalogSignals::findMuxBySignalName(byte analogSignalName)
 	}
 	return NULL;//else return no object if there is no mux with that Analog Signal Name
 }
-int RoverAnalogSignals::getRawADCValueOf(byte analogSignalName)
+unsigned int RoverAnalogSignals::getRawADCValueOf(byte analogSignalName)
 {
 	
 	AnalogMuxSensor * analogMux;
@@ -162,69 +162,79 @@ int RoverAnalogSignals::getRawADCValueOf(byte analogSignalName)
 	return analogMux->getRawADCValueOf(analogSignalName);
 }
 
-
-double RoverAnalogSignals::getADCValueOf_As(byte analogSignalName, byte conversionType, double fixedResistorValue)
+double RoverAnalogSignals::getVoltageValueOf(byte analogSignalName)
 {
 	
-	int rawADCValue;
-	double voltage;
-	double resistanceValue;
-	 rawADCValue = this->getRawADCValueOf(analogSignalName);
+	AnalogMuxSensor * analogMux;
 	
+	analogMux = findMuxBySignalName(analogSignalName);
+	
+	//using delegation and calling AnalogMuxSensor's method
+	return analogMux->getVoltageValueOf(analogSignalName);
+}
+double RoverAnalogSignals::getADCValueOf_As(byte analogSignalName, byte conversionType, double fixedResistorValue)
+{
+		
 	switch(conversionType)
 	{
 		case VOLTAGE_VALUE: //fixedResistorValue not needed, so you can pass it the constant NO_RESISTOR
-			//Convert rawADC to voltage
-			return getMeasuredVoltage(rawADCValue);			
-			break;
+		{
+				//Get the voltage value of the analog mux channel
+				return this->getVoltageValueOf(analogSignalName);			
+				break;
+		}
 		case CURRENT_VALUE:
-			//Convert rawADC to voltage
-			voltage = getMeasuredVoltage(rawADCValue);
-			//Convert voltage to current
+		{
+				double voltage;
+				//Get the voltage value of the analog mux channel
+				voltage = this->getVoltageValueOf(analogSignalName);
+				//Convert voltage to current							
 //DEBUG, write me later			
-			return voltage;//DEBUG
-			break;
+				return voltage;//DEBUG
+				break;
+		}
 		case TEMP_VALUE:
-			//Convert rawADC to voltage
-			voltage = getMeasuredVoltage(rawADCValue);
+		{
+			double voltage;
+			double resistanceValue;
+			//Get the voltage value of the analog mux channel
+			voltage = this->getVoltageValueOf(analogSignalName);
 			//Convert voltage output of resistor divider to measured resistance
-			resistanceValue = getMeasuredResistance(voltage, fixedResistorValue);
+			resistanceValue = this->getMeasuredResistance(voltage, fixedResistorValue);
 			//Convert resistance to temperature
 			return 1/(1/TEMP_CONSTANT_T0+1/TEMP_CONSTANT_B*log(resistanceValue/TEMP_CONSTANT_R0));			
 			break;
+		}
 		case GAS_VALUE:			
-			//Convert rawADC to voltage
-			voltage = getMeasuredVoltage(rawADCValue);
+		{
+			double voltage;
+			//Get the voltage value of the analog mux channel
+			voltage = this->getVoltageValueOf(analogSignalName);
 			//????
 //DEBUG, write me later		
-			return rawADCValue*10;//DEBUG
+			return voltage;//DEBUG
 			break;	
+		}
 		case PHOTO_VALUE:
-			//Convert rawADC to voltage
-			voltage = getMeasuredVoltage(rawADCValue);
+		{
+			double voltage;
+			double resistanceValue;
+			//Get the voltage value of the analog mux channel
+			voltage = this->getVoltageValueOf(analogSignalName);
 			//Convert voltage output of resistor divider to measured resistance
-			resistanceValue = getMeasuredResistance(voltage, fixedResistorValue);
+			resistanceValue = this->getMeasuredResistance(voltage, fixedResistorValue);
 			//Convert resistance to lux
 //DEBUG, write me later					
-			return rawADCValue*10;//DEBUG
+			return voltage;//DEBUG
 			break;				
-		default: //No conversion.
-			return rawADCValue*10;//DEBUG
+		}
+		default: //No conversion. Return the raw ADC Value of the Analog Signal Name.
+		{
+			return this->getRawADCValueOf(analogSignalName);
 			break;
+		}
 	}	
 }
-
-
-
-
-
-double RoverAnalogSignals::getMeasuredVoltage(int rawADCValue)
-{
-	//Convert rawADC to voltage
-//DEBUG, write me later
-	return rawADCValue;//DEBUG
-}
-
 double RoverAnalogSignals::getMeasuredResistance(double voltage, double fixedResistorValue)
 {
 	//Convert voltage to resistance

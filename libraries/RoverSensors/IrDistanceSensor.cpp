@@ -3,9 +3,12 @@
 #include <Arduino.h>
 
 
-IrDistanceSensor::IrDistanceSensor(byte IrSensorPin)
+IrDistanceSensor::IrDistanceSensor(byte irSensorPin)
 {
-	this->_IrSensorPin = IrSensorPin;	
+	
+	this->_irSensorPin = irSensorPin;	
+	this->_roverAdc = new RoverAdc();
+	
 }
 
 IrDistanceSensor::~IrDistanceSensor()
@@ -17,16 +20,14 @@ int IrDistanceSensor::getDistance(byte mode)
 {
 
 	//initialize variables
-	int analogRawData;
 	double voltage = 0;
-	const int referenceVolts = 5;
-
+	
 	//Note: the type of distance is "int" so the value will be truncated. but since the sensor isn't that accurate in the first place due to the approximated equation, no big deal.
 	this->_distance = 0;//Inherited from DistanceSensor.h
 
-	analogRawData = analogRead(this->_IrSensorPin);//get the raw analog data
-	voltage = analogRawData / 1023.0 * referenceVolts;//calculate the voltage
-	 
+		
+	voltage = this->_roverAdc->voltageRead(this->_irSensorPin);//get the raw analog data
+		 
 	//select mode for returning the distance value
 	switch (mode)
 	{			

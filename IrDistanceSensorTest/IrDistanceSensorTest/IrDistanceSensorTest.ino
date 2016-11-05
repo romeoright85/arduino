@@ -2,24 +2,29 @@
 
 
 //Global Variables
-IrDistanceSensor irDistanceSideLeft = IrDistanceSensor(SIDE_LEFT_IR_DIST_SENSOR_PIN);
-IrDistanceSensor irDistanceSideRight = IrDistanceSensor(SIDE_RIGHT_IR_DIST_SENSOR_PIN);
-IrDistanceSensor irDistanceRearCenter = IrDistanceSensor(REAR_CENTER_IR_DIST_SENSOR_PIN);
-IrDistanceSensor irDistanceForwardCenter = IrDistanceSensor(FORWARD_CENTER_IR_DIST_SENSOR_PIN);
+IrDistanceSensor * irDistanceSideLeft = new IrDistanceSensor(SIDE_LEFT_IR_DIST_SENSOR_PIN);
+IrDistanceSensor * irDistanceSideRight = new  IrDistanceSensor(SIDE_RIGHT_IR_DIST_SENSOR_PIN);
+IrDistanceSensor * irDistanceRearCenter = new  IrDistanceSensor(REAR_CENTER_IR_DIST_SENSOR_PIN);
+IrDistanceSensor * irDistanceForwardCenter = new  IrDistanceSensor(FORWARD_CENTER_IR_DIST_SENSOR_PIN);
 
 int distanceMeasured;
 
 IrDistanceSensor * irDistanceSensors[4] =
 {
-	&irDistanceSideLeft,
-	&irDistanceSideRight,
-	&irDistanceRearCenter,
-	&irDistanceForwardCenter
+	irDistanceSideLeft,
+	irDistanceSideRight,
+	irDistanceRearCenter,
+	irDistanceForwardCenter
 };
 
 
 
-RoverReset * resetArray[] = { &irDistanceSideLeft , &irDistanceSideRight, &irDistanceRearCenter, &irDistanceForwardCenter };
+RoverReset * resetArray[] = { 
+	irDistanceSideLeft , 
+	irDistanceSideRight, 
+	irDistanceRearCenter, 
+	irDistanceForwardCenter
+};
 
 
 
