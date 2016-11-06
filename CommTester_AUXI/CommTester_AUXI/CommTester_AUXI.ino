@@ -1,7 +1,7 @@
+//TEMPLATE BELOW
+
+/*
 //Instructions: Send over USB serial /-c5--*hi or /-c5--*bye to test it.
-
-
-
 //Must define this before calling RoverConfig.h (either directly or through another header file)
 #define _ARD_4_COMM_H //define this flag to turn on COMM definitions
 #include <RoverData.h>
@@ -27,17 +27,17 @@ boolean dataReadyCh1;
 boolean dataReadyCh2;
 
 //{ SW_UART Declarations
-	//{ MAIN SW_UART
-		SoftwareSerial swSerialMAIN(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX, TX, Note declare this in global and not setup() else it won't work
-	//} End of MAIN SW_UART
-//} End of SW_UART Declarations
+//{ MAIN SW_UART
+SoftwareSerial swSerialMAIN(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX, TX, Note declare this in global and not setup() else it won't work
+																	   //} End of MAIN SW_UART
+																	   //} End of SW_UART Declarations
 
 
 
 
 
 
-//SW resettable variables
+																	   //SW resettable variables
 boolean dataWasForCOMM = false;
 RoverReset * resetArray[] = {
 	roverDataCh1_COMM,
@@ -108,11 +108,11 @@ void loop() {
 		//3. then transmit the data if it was meant for CMNC (the PC) or MAIN
 		dataDirector(roverDataCh1_COMM);//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
 
-		//4. Take any actions if the data was meant for this unit, COMM
+										//4. Take any actions if the data was meant for this unit, COMM
 		if (dataWasForCOMM)
 		{
 			dataWasForCOMM = false;//reset the flag
-		   //send the RoverData to the roverCommand's parser to get the command
+								   //send the RoverData to the roverCommand's parser to get the command
 			roverCommand->parseCommand(roverDataCh1_COMM->getData());
 			commandDirector(roverCommand->getCommand());
 		}
@@ -129,7 +129,7 @@ void loop() {
 		//3. then transmit the data if it was meant for CMNC (the PC) or MAIN
 		dataDirector(roverDataCh2_COMM);//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
 
-		//4. Take any actions if the data was meant for this unit, COMM
+										//4. Take any actions if the data was meant for this unit, COMM
 		if (dataWasForCOMM)
 		{
 			dataWasForCOMM = false;//reset the flag
@@ -161,7 +161,7 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
 				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
-//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+															   //DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
 			}//end while
 			return true;
 		}//end if
@@ -179,7 +179,7 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
 				roverComm->appendToRxData((char)swSerialMAIN.read());//construct the string one char at a time
-//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+																	 //DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
 			}//end while
 			return true;
 		}//end if
@@ -244,7 +244,7 @@ void txData(String txData, byte roverCommType)
 
 void commandDirector(String roverCommand)
 {
-	
+
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
 	if (roverCommand.equals("hi"))
 	{
@@ -259,7 +259,9 @@ void commandDirector(String roverCommand)
 		txData(F("Invalid, Rx'd:"), ROVERCOMM_CMNC);//DEBUG
 		txData(roverCommand, ROVERCOMM_CMNC);//DEBUG
 
-//DEBUG//Can send this (about max size) to test: "/ -c5--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+											 //DEBUG//Can send this (about max size) to test: "/ -c5--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
 
 	}
 }
+
+*/

@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="WakeUpTester_Comm.ino" />
+    <None Include="CommTester_MAIN.ino" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="__vm\.WakeUpTester_Comm.vsarduino.h">
+    <ClInclude Include="__vm\.CommTester_MAIN.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

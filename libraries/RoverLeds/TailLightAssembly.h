@@ -7,6 +7,8 @@
 #include <RoverReset.h>
 #include <DigitalLed.h>
 
+#define _TAILLIGHT_TYPES
+
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/

@@ -33,7 +33,7 @@ to make it sleep, any UART Rx will wake up both the COMM and MAIN at the same ti
 //Used to communicate between COMM and MAIN
 SoftwareSerial comm2MainSerial(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX, TX, Note declare this in global and not setup() else it won't work
 
-//Controls the self wakeup of COMM
+																		  //Controls the self wakeup of COMM
 RoverSleeperServer sleeperCOMM(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch1);//COMM Wakeup Pin Control
 RoverSleeperClient sleeperMAIN(MAIN_WAKEUP_CTRL_PIN);
 
@@ -66,8 +66,8 @@ void loop()
 	//The Computer puts COMM to Sleep or Wakes it up. It can also puts MAIN, AUXI, and NAVI to sleep  (by using COMM to command the sleep) as well.
 	if (Serial.available() > 0)
 	{
-		
-		
+
+
 		rxData = Serial.read();//Get data from the computer
 		if (rxData == 's')//Sleep all Megas
 		{
@@ -84,7 +84,7 @@ void loop()
 			//The COMM will go to sleep here. Then it will resume below once it's awoken.
 
 			wakeUpCOMM();
-			
+
 		}//end else if
 		else if (rxData == 'a')//Uno and Mega sleep (any UART/Xbee character will generate a low/rising/or falling signal (depending on the attach interrupt mode)
 		{
@@ -103,8 +103,8 @@ void loop()
 
 		}//end else if 
 
-		
-	
+
+
 	}//end if
 
 	if (sleeperCOMM.isAwake())
@@ -132,8 +132,8 @@ void goToSleepCOMM() {
 	Serial.println(F("COMM sleeping..."));
 	delay(100);//add some delay to allow the serial print to finish before going to sleep
 
-	//Go to sleep
-	//Note: Make sure to end any Software Serial here
+			   //Go to sleep
+			   //Note: Make sure to end any Software Serial here
 	comm2MainSerial.end();// IMPORTANT! You have to stop the software serial function before sleep, or it won't sleep!
 	sleeperCOMM.goToSleep();//will sleep and wakeup the COMM
 
@@ -144,7 +144,7 @@ void wakeUpCOMM() {
 	//Note: Make sure to begin (again) any Software Serial here
 	comm2MainSerial.begin(MAIN_BAUD_RATE);//Turn on SW Serial again
 
-	//Post Wake Up tasks
+										  //Post Wake Up tasks
 	delay(100);// let everybody get up and running for a sec
 	Serial.println(F("COMM Awoken!"));
 }
@@ -157,18 +157,18 @@ void goToSleepMegas() {
 	//Go to sleep
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
 	sleeperMAIN.goToSleep();//update awake flag status
-	//Send command over software serial to shutdown the MAIN, AUXI, and NAVI
+							//Send command over software serial to shutdown the MAIN, AUXI, and NAVI
 	comm2MainSerial.println('s');//send 's' to the MAIN
 
 }
 void wakeUpMegas() {
-	
+
 	if (!sleeperMAIN.isAwake())
 	{
 		//Wake Up
 		sleeperMAIN.wakeUp();//Creates a rising edge on the interrupt pin to wake up MAIN, which then wakes up all others
 
-		//Post Wake Up tasks
+							 //Post Wake Up tasks
 		Serial.println(F("Megas Awoken!"));
 	}
 	else

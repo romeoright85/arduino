@@ -161,7 +161,6 @@ unsigned int RoverAnalogSignals::getRawADCValueOf(byte analogSignalName)
 	//using delegation and calling AnalogMuxSensor's method
 	return analogMux->getRawADCValueOf(analogSignalName);
 }
-
 double RoverAnalogSignals::getVoltageValueOf(byte analogSignalName)
 {
 	
@@ -172,72 +171,78 @@ double RoverAnalogSignals::getVoltageValueOf(byte analogSignalName)
 	//using delegation and calling AnalogMuxSensor's method
 	return analogMux->getVoltageValueOf(analogSignalName);
 }
-double RoverAnalogSignals::getADCValueOf_As(byte analogSignalName, byte conversionType, double fixedResistorValue)
+double RoverAnalogSignals::getCurrentValueOf(byte analogSignalName, byte currentSensorModel)
 {
-		
-	switch(conversionType)
+	
+	//Vcc for the ACS current sensors are switched Vcc (standard ~5V)
+	long measuredVcc = this->readVcc();
+	
+	double outputVoltage;
+	//Get the voltage value of the analog mux channel
+	outputVoltage = this->getVoltageValueOf(analogSignalName);
+	
+	//Convert voltage to current	
+	switch(currentSensorModel)
 	{
-		case VOLTAGE_VALUE: //fixedResistorValue not needed, so you can pass it the constant NO_RESISTOR
-		{
-				//Get the voltage value of the analog mux channel
-				return this->getVoltageValueOf(analogSignalName);			
-				break;
-		}
-		case CURRENT_VALUE:
-		{
-				double voltage;
-				//Get the voltage value of the analog mux channel
-				voltage = this->getVoltageValueOf(analogSignalName);
-				//Convert voltage to current							
-//DEBUG, write me later			
-				return voltage;//DEBUG
-				break;
-		}
-		case TEMP_VALUE:
-		{
-			double voltage;
-			double resistanceValue;
-			//Get the voltage value of the analog mux channel
-			voltage = this->getVoltageValueOf(analogSignalName);
-			//Convert voltage output of resistor divider to measured resistance
-			resistanceValue = this->getMeasuredResistance(voltage, fixedResistorValue);
-			//Convert resistance to temperature
-			return 1/(1/TEMP_CONSTANT_T0+1/TEMP_CONSTANT_B*log(resistanceValue/TEMP_CONSTANT_R0));			
-			break;
-		}
-		case GAS_VALUE:			
-		{
-			double voltage;
-			//Get the voltage value of the analog mux channel
-			voltage = this->getVoltageValueOf(analogSignalName);
-			//????
-//DEBUG, write me later		
-			return voltage;//DEBUG
-			break;	
-		}
-		case PHOTO_VALUE:
-		{
-			double voltage;
-			double resistanceValue;
-			//Get the voltage value of the analog mux channel
-			voltage = this->getVoltageValueOf(analogSignalName);
-			//Convert voltage output of resistor divider to measured resistance
-			resistanceValue = this->getMeasuredResistance(voltage, fixedResistorValue);
-			//Convert resistance to lux
-//DEBUG, write me later					
-			return voltage;//DEBUG
-			break;				
-		}
-		default: //No conversion. Return the raw ADC Value of the Analog Signal Name.
-		{
-			return this->getRawADCValueOf(analogSignalName);
-			break;
-		}
+		case ACS711_12D5A:
+			//Original Equation: VOUT = (0.11 V/A * i + 1.65 V) * Vcc / 3.3 V
+			//Derived Equation: i = ((VOUT*3.3/Vcc)-1.65)/0.11
+			return ( ( outputVoltage * 3.3 / measuredVcc ) - 1.65 ) / 0.11;
+		break;
+		case ACS711_25A:
+			//Original Equation: VOUT = (0.055 V/A * i + 1.65 V) * Vcc / 3.3 V
+			//Derived Equation: i = ((VOUT*3.3/Vcc)-1.65)/0.055
+			return ( ( outputVoltage * 3.3 / measuredVcc ) - 1.65 ) / 0.055;
+		break;
+		default: //when the model isn't recognized
+			return 9999;
+		break;
 	}	
 }
-double RoverAnalogSignals::getMeasuredResistance(double voltage, double fixedResistorValue)
+double RoverAnalogSignals::getLightValueOf(byte analogSignalName, double fixedResistorValue)
+{
+
+	long measuredVcc = this->readVcc();
+	
+	double outputVoltage;
+	double resistanceInOhms;
+	//Get the voltage value of the analog mux channel
+	outputVoltage = this->getVoltageValueOf(analogSignalName);
+	//Convert voltage output of resistor divider to measured resistance
+	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, fixedResistorValue);
+	//Convert resistance to lux
+	return 500 / ( resistanceInOhms / 1000 );
+}
+double RoverAnalogSignals::getTempValueOf(byte analogSignalName, double fixedResistorValue)
+{
+	
+	long measuredVcc = this->readVcc();
+	
+	double outputVoltage;
+	double resistanceInOhms;
+	//Get the voltage value of the analog mux channel
+	outputVoltage = this->getVoltageValueOf(analogSignalName);
+	//Convert voltage output of resistor divider to measured resistance
+	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, fixedResistorValue);
+	//Convert resistance to temperature
+	return 1 / ( 1 / TEMP_CONSTANT_T0 + 1 / TEMP_CONSTANT_B * log( resistanceInOhms / TEMP_CONSTANT_R0 ) );	
+}
+double RoverAnalogSignals::getGasValueOf(byte analogSignalName, double fixedResistorValue)
+{
+	double outputVoltage;
+	//Get the voltage value of the analog mux channel
+	outputVoltage = this->getVoltageValueOf(analogSignalName);
+	//???
+//FINISH WRITING ME, DEBUG
+	return outputVoltage;//DEBUG
+}	
+double RoverAnalogSignals::calculateResistance(long measuredVcc, double outputVoltage, double fixedResistorValue)
 {
 	//Convert voltage to resistance
-//DEBUG, write me later	
-	return voltage;//DEBUG
+	//Original Equation: Vo = Vin * Rl / ( Rf + Rl )
+	//Derived Equation: Rl = Vo * Rf / ( Vin + Vo )
+	//Note: Vcc is Vin in this case.
+	//returns resistance in ohms
+	
+	return outputVoltage * fixedResistorValue / ( measuredVcc + outputVoltage );
 }

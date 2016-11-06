@@ -26,31 +26,35 @@
 
 	//definition for BeaconLightAssembly
 	//Beacon light types
-	#define FRONT_LEFT_IR_BEACON		0
-	#define BACK_LEFT_IR_BEACON			1
-	#define BACK_RIGHT_IR_BEACON		2
-	#define FRONT_RIGHT_IR_BEACON		3
-	#define LEFT_BLUE_BEACON				4
-	#define BACK_BLUE_BEACON				5
-	#define RIGHT_BLUE_BEACON				6
-	#define FRONT_BLUE_BEACON			7
+	#ifdef _BEACON_LIGHT_TYPES
+		#define FRONT_LEFT_IR_BEACON		0
+		#define BACK_LEFT_IR_BEACON			1
+		#define BACK_RIGHT_IR_BEACON		2
+		#define FRONT_RIGHT_IR_BEACON		3
+		#define LEFT_BLUE_BEACON				4
+		#define BACK_BLUE_BEACON				5
+		#define RIGHT_BLUE_BEACON				6
+		#define FRONT_BLUE_BEACON			7
+	#endif
 	
 	//definition for HeadLightAssembly
 	//Headlight types
-	#define HIGHBEAM_HEADLIGHT		0
-	#define SIGNAL_HEADLIGHT			1
-	#define FOG_HEADLIGHT					2
-	
+	#ifdef _HEADLIGHT_TYPES
+		#define HIGHBEAM_HEADLIGHT		0
+		#define SIGNAL_HEADLIGHT			1
+		#define FOG_HEADLIGHT					2
+	#endif
 	
 	//definition for TailLightAssembly
 	//Taillight types
-	#define RED1_TAILLIGHT			0
-	#define RED2_TAILLIGHT			1
-	#define RED3_TAILLIGHT			2
-	#define RED4_TAILLIGHT			3
-	#define RED5_TAILLIGHT			4
-	#define WHITE_TAILLIGHT			5	
-	
+	#ifdef _TAILLIGHT_TYPES
+		#define RED1_TAILLIGHT			0
+		#define RED2_TAILLIGHT			1
+		#define RED3_TAILLIGHT			2
+		#define RED4_TAILLIGHT			3
+		#define RED5_TAILLIGHT			4
+		#define WHITE_TAILLIGHT			5	
+	#endif
 		
 	//definition for RoverComm (which rover communication source/destination)
 	#ifdef _ROVERCOMMTYPES
@@ -154,17 +158,12 @@
 		#define GC_MIDDLE_POSITION_IDEAL	90		//for tilt
 	#endif	
 	
-	
-		
-	//definition for RoverAnalogSignals
-	//Conversion types
-	#ifdef _ROVERCONVERSIONTYPES
-		#define VOLTAGE_VALUE				0
-		#define CURRENT_VALUE				1
-		#define TEMP_VALUE		2
-		#define GAS_VALUE					3
-		#define PHOTO_VALUE				4
-	#endif
+	//Rover Current Sensor Models
+	#ifdef _ROVERCURRENTSENSORMODELS
+		//Leave 0 for the default case
+		#define ACS711_12D5A	1
+		#define ACS711_25A		2
+	#endif		
 		
 	//Rover Analog Names
 	#ifdef _ROVERANALOGNAMES

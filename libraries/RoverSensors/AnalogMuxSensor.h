@@ -6,6 +6,7 @@
 	#include <RoverDebug.h>	
 	#include <RoverReset.h>
 	#include <RoverAdc.h>
+	#include <RoverVcc.h>
 	
 	//turn on the flag for AMUX Channels (defined in RoverConfig.h)
 	#define _ROVERAMUXCHANNELS
@@ -23,7 +24,7 @@
 	#include <RoverConfig.h>
 
 
-	class AnalogMuxSensor : public virtual RoverReset {
+	class AnalogMuxSensor : public virtual RoverReset, public RoverVcc {
 		public:
 			AnalogMuxSensor(byte, byte, byte, byte, byte []);//constructor (sel 0 pin, sel 1 pin, sel 2 pin, opamp out pin, array of analogNames)
 			~AnalogMuxSensor();//destructor

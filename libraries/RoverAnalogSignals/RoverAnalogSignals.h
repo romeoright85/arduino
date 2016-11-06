@@ -6,12 +6,23 @@
 	#include <RoverDebug.h>	
 	#include <RoverReset.h>
 	#include <AnalogMuxSensor.h>
+	#include <RoverVcc.h>
 
+	
+	//References:
+	//Lux Calculations
+	//http://emant.com/316002.page
+	//Currrent Calulcations
+	//ACS711_12D5A
+	//https://www.pololu.com/product/2197
+	//ACS711_25A
+	//https://www.pololu.com/product/2198
 	
 	
 	//turn on the analog names in RoverConfig.h
 	#define _ROVERANALOGNAMES
-	#define _ROVERCONVERSIONTYPES
+	#define _ROVERCURRENTSENSORMODELS
+	
 
 	
 	/*******************************************************************
@@ -31,19 +42,22 @@
 	#define _FIXED_RESISTORS
 	#include <RoverCalibration.h>
 	
-	class RoverAnalogSignals : public virtual RoverReset {
+	class RoverAnalogSignals : public virtual RoverReset, public RoverVcc {
 	public:
 		RoverAnalogSignals();//constructor
 		~RoverAnalogSignals();//destructor
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 		unsigned int getRawADCValueOf(byte);//returns the raw analog value by Analog Signal Name (Analog Signal Name)
 		double getVoltageValueOf(byte);//returns the voltage value by Analog Signal Name (Analog Signal Name)
-		double getADCValueOf_As(byte, byte, double);//gets the coverted value of the analogSignalName based on the desired conversionType. If a voltage divider is used, the fixed resistor value is passed as well. Else NO_RESISTOR is passed when not used. (Analog Signal Name, conversion type, fixed resistor value)
+		double getCurrentValueOf(byte, byte);//returns the current value by Analog Signal Name based on the current sensor model (Analog Signal Name, current sensor model)
+		double getLightValueOf(byte, double);//returns the current value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
+		double getTempValueOf(byte, double);//returns the temperature value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
+		double getGasValueOf(byte, double);//returns the gas value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
+		
+		
 	private:
+		double calculateResistance(long, double, double);//converts the output voltage and measured Vcc to resistance (in ohms) based on the fixed resistor used in the voltage divider(Vcc, output voltage, fixed resistance)
 	
-		double getMeasuredVoltage(int);//converts the raw ADC value to actual voltage values (raw ADC value)
-		double getMeasuredResistance(double, double);//converts the output voltage to measured resistance based on the fixed resistance of the voltage divider(double voltage, fixed resistance)
-
 		//AnalogMuxSensor objects
 		AnalogMuxSensor * _amux1;
 		AnalogMuxSensor * _amux2;
