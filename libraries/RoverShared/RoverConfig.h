@@ -14,6 +14,7 @@
 	#define MAIN_BAUD_RATE 9600
 	#define AUXI_BAUD_RATE 115200
 	#define NAVI_BAUD_RATE 115200
+	#define GPS_BAUD_RATE 57600// The default GPS baud rate is 57600
 	#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
 	
 	//Arduino Types
@@ -24,6 +25,41 @@
 	
 
 
+	//definition for RoverGpsSensor
+	#ifdef _GPS_SENSOR
+		//GPS Number of Attempts To Obtain A Valid Data String
+		#define GPS_RX_DATA_ATTEMPTS 	5
+		//GPS Number of Characters to receive while waiting for the start of the GPS data (i.e. $) before timing out
+		#define GPS_CHAR_2_RX_BEFORE_TIMEOUT 	100
+		//GPS Header Types
+		#define GPS_HD_FIXED_DATA						"GPGGA"
+		#define GPS_HD_MIN_RECOMMENDED_DATA	"GPRMC"
+		//GPS Header Types
+		#define GPS_HD_FIXED_DATA						"GPGGA"
+		#define GPS_HD_MIN_RECOMMENDED_DATA	"GPRMC"
+		//GPS Direction Types
+		#define GPS_DIR_UNKOWN 0//Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
+		#define GPS_DIR_NORTH				1//Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
+		#define GPS_DIR_NORTHEAST		2
+		#define GPS_DIR_EAST					3
+		#define GPS_DIR_SOUTHEAST		4
+		#define GPS_DIR_SOUTH				5
+		#define GPS_DIR_SOUTHWEST		6
+		#define GPS_DIR_WEST					7
+		#define GPS_DIR_NORTHWEST		8
+		//GPS Fix Quality Types	
+		#define GPS_FQ_INVALID								0
+		#define GPS_FQ_SPS										1
+		#define GPS_FQ_DGPS									2
+		#define GPS_FQ_PPS										3
+		#define GPS_FQ_REAL_TIME_KINEMATIC			4
+		#define GPS_FQ_FLOAT_RTK							5
+		#define GPS_FQ_EST_DEAD_RECKONING		6
+		#define GPS_FQ_EST_MANUAL_INPUT				7
+		#define GPS_FQ_EST_SIMULATION					8
+	#endif	
+	
+	
 	//definition for BeaconLightAssembly
 	//Beacon light types
 	#ifdef _BEACON_LIGHT_TYPES
