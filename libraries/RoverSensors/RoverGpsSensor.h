@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include <RoverDebug.h>
 #include <RoverReset.h>
-
+#include <string.h>
 
 
 #define _GPS_SENSOR

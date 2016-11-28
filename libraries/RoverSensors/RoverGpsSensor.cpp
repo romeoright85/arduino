@@ -39,16 +39,37 @@ void RoverGpsSensor::appendToRxGPSData(char dataIn)
 }
 boolean RoverGpsSensor::processRxGPSData()
 {
+//Parse gps data
+//Example Raw Data: $GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B
+//Example Data Received by this function: GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B
+	//Note: The data starts after the $ since the code that runs before this function will strip out the $	
+//Reference:
+//https://www.arduino.cc/en/Reference/StringObject
+//http://stackoverflow.com/questions/11068450/arduino-c-language-parsing-string-with-delimiter-input-through-serial-interfa
+
+
+
+	byte commaIndex;
+
+	commaIndex = this->_rxData.indexOf(',');
+= this->_rxData.substring(0,commaIndex);
 	
-	//Parse gps data
+	
+
 //WRITE ME LATER		
 //reference
 //split string
 //http://stackoverflow.com/questions/11068450/arduino-c-language-parsing-string-with-delimiter-input-through-serial-interfa
+//decimal to hex
+
 //use these defines for your gps header detection
-//reemmber $ won't be included in the data string
+//remember $ won't be included in the data string
 //		#define GPS_HD_FIXED_DATA						"GPGGA"
 //		#define GPS_HD_MIN_RECOMMENDED_DATA	"GPRMC"
+
+
+	
+	
 	
 	
 	
