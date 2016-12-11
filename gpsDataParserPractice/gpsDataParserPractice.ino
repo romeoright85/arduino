@@ -2,16 +2,33 @@
 
 #include <string.h>
 
-#define GPS_HD_FIXED_DATA			"GPGGA"
-#define GPS_HD_MIN_RECOMMENDED_DATA	"GPRMC"
-#define GPS_HEADER_FIELD	0
+#define _GPS_SENSOR
+#include <RoverConfig.h>
+
+
+//#define _DEBUG_ //Uncomment this flag to turn on debug outputs
+#define _DEBUG2_ //Uncomment this flag to turn on more debug outputs
+
+
+//Declare variables (and initialize some)
+String dataString = "";//string that holds the GPS data (GPGGA or GPRMC) with the $, the *, or the checksum (afther the *)
+byte startIndex;
+byte endIndex;
+byte gpsPreProcessedDataIndex;//index for the gpsPreProcessedData array
+String gpsPreProcessedData[13];//size 15, from 0 to 12.
+							   //Notes:
+							   //For GPGGA there are 13 fields, the rest won't be used.
+							   //For GPRMC there are 10 fields, the rest won't be used.
+byte gpsPostProcessedDataIndex;//index for the gpsPostProcessedData array. This array is the merger of GPGGA and GPRMC data.
+String gpsPostProcessedData[16];//size 16, from 0 to 15.
+
 
 
 
 void setup()
 {
 
-	/* add setup code here */
+	
 	Serial.begin(9600);
 	Serial1.begin(57600);
 }
@@ -19,22 +36,12 @@ void setup()
 void loop()
 {
 
+
+
 	
-
-	//Declare variables (and initialize some)
-	String dataString = "";//string that holds the GPS data (GPGGA or GPRMC) with the $, the *, or the checksum (afther the *)
-	byte startIndex;
-	byte endIndex;
-	byte gpsDataIndex;//index for the gpsData array
-	String gpsData[15];//size 15, from 0 to 14.
-					   //Notes:
-					   //For GPGGA there are 15 fields
-					   //For GPRMC there are 13 fields, the rest won't be used.
-
-
 	//Test Case 1
 	//DEBUG: Example of GPGGA data with a GOOD checksum to test this function. Uncomment to use.
-	//String original = "GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B";//DEBUG
+	String original = "GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B";//DEBUG
 
 	//Test Case 2
 	//DEBUG: Example of GPGGA data with a BAD checksum to test this function. Uncomment to use.
@@ -42,7 +49,7 @@ void loop()
 	
 	//Test Case 3
 	//DEBUG: Example of GPRMC data with a GOOD checksum to test this function. Uncomment to use.
-	String original = "GPRMC,142101.600,A,3916.2226,N,07636.6530,W,0.33,0.00,271116,,,A*72";//DEBUG
+	//String original = "GPRMC,142101.600,A,3916.2226,N,07636.6530,W,0.33,0.00,271116,,,A*72";//DEBUG
 
 	//Test Case 4
 	//DEBUG: Example of GPRMC data with a BAD checksum to test this function. Uncomment to use.
@@ -50,12 +57,13 @@ void loop()
 
 
 	//Initialize variable(s)
-	gpsDataIndex = GPS_HEADER_FIELD;
+	gpsPreProcessedDataIndex = GPS_GENERIC_INDEX_OF_HEADER;
 
 	//Data Filtering
 	//Note: Only keep and process GPGGA or GPRMC data. Ignore everything else.
-	if (!dataPassedFiltering(original, gpsData[gpsDataIndex]))//Save the GPS Header (outputString) into gpsData[gpsDataIndex] where gpsDataIndex = 0;
+	if (!dataPassedFiltering(original, gpsPreProcessedData[gpsPreProcessedDataIndex]))//Save the GPS Header (outputString) into gpsPreProcessedData[gpsPreProcessedDataIndex] where gpsPreProcessedDataIndex = 0;
 	{
+		Serial.println(F("Filtered Out"));
 		return;//do nothing if the data isn't desired
 	}
 	//else continue
@@ -68,50 +76,105 @@ void loop()
 	}	
 	//else continue
 	
-	//Serial.println(dataString);//DEBUG
-
-	//Note: dataString is the GPS data without the $ at the beginning or the ending part (i.e. without the * or anything after, like the checksum)
+	#ifdef _DEBUG_
+		Serial.println("====");//DEBUG
+		Serial.println(dataString);//DEBUG
+	#endif
 	
-	//Note: Since GPGGA has a comma before the * but GPRMC doesn't, will have to have different algorithms string parsing for the two types
 
-	if (gpsData[GPS_HEADER_FIELD] == GPS_HD_FIXED_DATA)//for GPGGA data
+	//Notes:
+		//dataString is the GPS data without the $ at the beginning or the ending part (i.e. without the * or anything after, like the checksum)
+		//Since GPGGA has a comma before the * but GPRMC doesn't, will have to have different algorithms string parsing for the two types
+
+
+	if (gpsPreProcessedData[GPS_GPGGA_INDEX_OF_HEADER] == GPS_GPGGA_FIXED_DATA)//for GPGGA data
 	{
-		//FINISH WRITING ME
-
-		/*
-
-		while(endIndex >= 0)
+		
+		for (byte i = 0; i < GPS_GPGGA_FIELDS; i++)
 		{
-		endIndex = dataString.indexOf(',', startIndex);//search for the first/next comma
-		//Serial.println(temp1);//DEBUG
-		//Serial.println(startIndex);//DEBUG
-		//Serial.println(endIndex);//DEBUG
+			endIndex = dataString.indexOf(',', startIndex);//search for the first/next comma			
 
-		gpsData[i] = dataString.substring(startIndex, endIndex);//grab the substring the start and the first commas (for the first field) or the substring between two commas
+			//Serial.println(dataString);//DEBUG
+			//Serial.println(startIndex);//DEBUG
+			//Serial.println(endIndex);//DEBUG
 
-		dataString = dataString.substring(endIndex + 1);//skip over the current comma
+			gpsPreProcessedData[i] = dataString.substring(startIndex, endIndex);//grab the substring the start and the first commas (for the first field) or the substring between two commas
 
-		//Serial.print("Data: ");//DEBUG
-		//Serial.println(i);//DEBUG
-		//Serial.println(gpsData[i]);//DEBUG
+			#ifdef _DEBUG_
+				Serial.println(gpsPreProcessedData[i]);//DEBUG
+			#endif
+			
+			dataString = dataString.substring(endIndex + 1);//skip over the current comma to process the data the next loop					
+		}
+		
+		//Merge GPGGA data (shared/overwritten array, gpsPreProcessedData) with the master data array, gpsPostProcessedData
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_DATA_FIX_TIME] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_DATA_FIX_TIME];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_LATITUDE] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_LATITUDE];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_LATITUDE_DIRECTION] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_LONGITUDE] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_LONGITUDE];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_LONGITUDE_DIRECTION] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_LONGITUDE_DIRECTION];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_FIX_QUALITY] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_FIX_QUALITY];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_SATELLITES_TRACKED] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_SATELLITES_TRACKED];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_HORIZONTAL_DILUTION_OF_POSITION] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_HORIZONTAL_DILUTION_OF_POSITION];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_ABOVE_MEAN_SEA_LEVEL] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_ALTITUDE_ABOVE_MEAN_SEA_LEVEL];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_UNIT] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_ALTITUDE_UNIT];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_HEIGHT_OF_GEOID] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_HEIGHT_OF_GEOID];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_GEOID_UNIT] = gpsPreProcessedData[GPS_GPGGA_INDEX_OF_GEOID_UNIT];
+		
+	}
+	else if (gpsPreProcessedData[GPS_GPRMC_INDEX_OF_HEADER] == GPS_GPRMC_MIN_RECOMMENDED_DATA)//For GPRMC data
+	{
+		for (byte i = 0; i < GPS_GPRMC_FIELDS; i++)
+		{
+			endIndex = dataString.indexOf(',', startIndex);//search for the first/next comma			
+			//Serial.println(dataString);//DEBUG
+			//Serial.println(startIndex);//DEBUG
+			//Serial.println(endIndex);//DEBUG
+			gpsPreProcessedData[i] = dataString.substring(startIndex, endIndex);//grab the substring the start and the first commas (for the first field) or the substring between two commas
+			
+			#ifdef _DEBUG_
+						Serial.println(gpsPreProcessedData[i]);//DEBUG
+			#endif
 
+			dataString = dataString.substring(endIndex + 1);//skip over the current comma to process the data the next loop					
 		}
 
-		*/
 
-	}
-	else if (gpsData[GPS_HEADER_FIELD] == GPS_HD_MIN_RECOMMENDED_DATA)//For GPRMC data
-	{
-		//FINISH WRITING ME
+		//Merge GPRMC data (shared/overwritten array, gpsPreProcessedData) with the master data array, gpsPostProcessedData
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_DATA_FIX_TIME] = gpsPreProcessedData[GPS_GPRMC_INDEX_OF_DATA_FIX_TIME];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_STATUS] = gpsPreProcessedData[GPS_GPRMC_INDEX_OF_STATUS];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_LATITUDE] = gpsPreProcessedData[GPS_GPRMC_INDEX_OF_LATITUDE];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_LATITUDE_DIRECTION] = gpsPreProcessedData[GPS_GPRMC_INDEX_OF_LATITUDE_DIRECTION];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_LONGITUDE] = gpsPreProcessedData[GPS_GPRMC_INDEX_OF_LONGITUDE];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_LONGITUDE_DIRECTION] = gpsPreProcessedData[GPS_GPRMC_INDEX_OF_LONGITUDE_DIRECTION];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_SPEED] = gpsPreProcessedData[GPS_GPRMC_INDEX_OF_SPEED];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_TRACK_ANGLE] = gpsPreProcessedData[GPS_GPRMC_INDEX_OF_TRACK_ANGLE];
+		gpsPostProcessedData[GPS_POST_PROCESSED_INDEX_OF_DATE] = gpsPreProcessedData[GPS_GPRMC_INDEX_OF_DATE];
+
+
 	}
 	else
 	{
 		//do nothing as this is an error
 	}
 
+		#ifdef _DEBUG2_
+
+				Serial.println("==BEGIN==");
+				for (byte i = 0; i < GPS_POST_PROCESSED_FIELDS; i++)
+				{		
+					Serial.println(gpsPostProcessedData[i]);
+				}
+				Serial.println("==END==");
+				Serial.println();
+
+		#endif
+
 	return;
 
 }
+
+
 
 
 
@@ -271,7 +334,7 @@ boolean dataPassedFiltering(String inputString, String & outputString)
 	//Grab the GPS Header
 	tempString = inputString.substring(startIndex, endIndex);//grab the substring from the start to the first comma
 
-	if (tempString.equals(GPS_HD_FIXED_DATA) || tempString.equals(GPS_HD_MIN_RECOMMENDED_DATA))
+	if (tempString.equals(GPS_GPGGA_FIXED_DATA) || tempString.equals(GPS_GPRMC_MIN_RECOMMENDED_DATA))
 	{
 		outputString = tempString;
 		return true;

@@ -10,7 +10,10 @@
 
 #define _GPS_SENSOR
 
-//Reference: http://www.gpsinformation.org/dale/nmea.htm
+//Reference:
+//http://www.gpsinformation.org/dale/nmea.htm
+//http://aprs.gids.nl/nmea/
+//http://googlecompass.com/MagneticVariationAdjustment.htm
 
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>

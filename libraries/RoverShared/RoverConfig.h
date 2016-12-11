@@ -32,11 +32,56 @@
 		//GPS Number of Characters to receive while waiting for the start of the GPS data (i.e. $) before timing out
 		#define GPS_CHAR_2_RX_BEFORE_TIMEOUT 	100
 		//GPS Header Types
-		#define GPS_HD_FIXED_DATA						"GPGGA"
-		#define GPS_HD_MIN_RECOMMENDED_DATA	"GPRMC"
-		//GPS Header Types
-		#define GPS_HD_FIXED_DATA						"GPGGA"
-		#define GPS_HD_MIN_RECOMMENDED_DATA	"GPRMC"
+		#define GPS_GPGGA_FIXED_DATA			"GPGGA"
+		#define GPS_GPRMC_MIN_RECOMMENDED_DATA	"GPRMC"		
+		//GPS Data Index - Both GPGGA and GPRMC		
+		#define GPS_GENERIC_INDEX_OF_HEADER		0
+		//GPS Data Index - GPGGA (holds the GPGGA GPS data)
+		#define GPS_GPGGA_INDEX_OF_HEADER														0
+		#define GPS_GPGGA_INDEX_OF_DATA_FIX_TIME											1 
+		#define GPS_GPGGA_INDEX_OF_LATITUDE													2
+		#define GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION								3 //N (North) or S (South)
+		#define GPS_GPGGA_INDEX_OF_LONGITUDE												4
+		#define GPS_GPGGA_INDEX_OF_LONGITUDE_DIRECTION							5 //E (East) or W (West)
+		#define GPS_GPGGA_INDEX_OF_FIX_QUALITY												6
+		#define GPS_GPGGA_INDEX_OF_SATELLITES_TRACKED								7
+		#define GPS_GPGGA_INDEX_OF_HORIZONTAL_DILUTION_OF_POSITION		8
+		#define GPS_GPGGA_INDEX_OF_ALTITUDE_ABOVE_MEAN_SEA_LEVEL			9
+		#define GPS_GPGGA_INDEX_OF_ALTITUDE_UNIT											10 //Should always be M (meters)
+		#define GPS_GPGGA_INDEX_OF_HEIGHT_OF_GEOID									11
+		#define GPS_GPGGA_INDEX_OF_GEOID_UNIT												12 //Should always be M (meters)
+		//GPS Data Index - GPRMC (holds the GPRMC GPS data)
+		#define GPS_GPRMC_INDEX_OF_HEADER														0
+		#define GPS_GPRMC_INDEX_OF_DATA_FIX_TIME											1
+		#define GPS_GPRMC_INDEX_OF_STATUS														2 //Status - A (Active) Or V (Void)
+		#define GPS_GPRMC_INDEX_OF_LATITUDE													3
+		#define GPS_GPRMC_INDEX_OF_LATITUDE_DIRECTION								4 //N (North) or S (South)
+		#define GPS_GPRMC_INDEX_OF_LONGITUDE												5
+		#define GPS_GPRMC_INDEX_OF_LONGITUDE_DIRECTION							6 //E (East) or W (West)
+		#define GPS_GPRMC_INDEX_OF_SPEED														7 //Speedover the ground in knots
+		#define GPS_GPRMC_INDEX_OF_TRACK_ANGLE											8 //In degrees True
+		#define GPS_GPRMC_INDEX_OF_DATE															9 //DD/MM/YY
+		//GPS Data Index - Master (holds the merged GPS data between GPGGA and GPRMC)
+		#define GPS_POST_PROCESSED_INDEX_OF_DATA_FIX_TIME												0 //GPGGA and GPRMC
+		#define GPS_POST_PROCESSED_INDEX_OF_STATUS															1 //Status - A (Active) Or V (Void), GPRMC only
+		#define GPS_POST_PROCESSED_INDEX_OF_LATITUDE															2//GPGGA and GPRMC
+		#define GPS_POST_PROCESSED_INDEX_OF_LATITUDE_DIRECTION										3 //N (North) or S (South), GPGGA and GPRMC
+		#define GPS_POST_PROCESSED_INDEX_OF_LONGITUDE														4 //GPGGA and GPRMC
+		#define GPS_POST_PROCESSED_INDEX_OF_LONGITUDE_DIRECTION									5 //E (East) or W (West), GPGGA and GPRMC
+		#define GPS_POST_PROCESSED_INDEX_OF_FIX_QUALITY													6 //GPGGA only
+		#define GPS_POST_PROCESSED_INDEX_OF_SATELLITES_TRACKED										7 //GPGGA only
+		#define GPS_POST_PROCESSED_INDEX_OF_HORIZONTAL_DILUTION_OF_POSITION			8 //GPGGA only
+		#define GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_ABOVE_MEAN_SEA_LEVEL				9 //GPGGA only
+		#define GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_UNIT												10 //Should always be M (meters), GPGGA only
+		#define GPS_POST_PROCESSED_INDEX_OF_SPEED																11 //Speedover the ground in knots, GPRMC only
+		#define GPS_POST_PROCESSED_INDEX_OF_HEIGHT_OF_GEOID											12 //GPGGA only
+		#define GPS_POST_PROCESSED_INDEX_OF_GEOID_UNIT													13 //Should always be M (meters), GPGGA only
+		#define GPS_POST_PROCESSED_INDEX_OF_TRACK_ANGLE													14 //In degrees True, GPRMC only
+		#define GPS_POST_PROCESSED_INDEX_OF_DATE																15 //DD/MM/YY, GPRMC only
+		//GPS Number of Fields for the specific header type
+		#define GPS_GPGGA_FIELDS		13			
+		#define GPS_GPRMC_FIELDS		10
+		#define GPS_POST_PROCESSED_FIELDS		16
 		//GPS Direction Types
 		#define GPS_DIR_UNKOWN 0//Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
 		#define GPS_DIR_NORTH				1//Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
