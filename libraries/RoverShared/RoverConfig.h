@@ -30,7 +30,7 @@
 		//GPS Number of Attempts To Obtain A Valid Data String
 		#define GPS_RX_DATA_ATTEMPTS 	5
 		//GPS Number of Characters to receive while waiting for the start of the GPS data (i.e. $) before timing out
-		#define GPS_CHAR_2_RX_BEFORE_TIMEOUT 	100
+		#define GPS_CHARACTERS_TO_RX_BEFORE_TIMEOUT 	100
 		//GPS Header Types
 		#define GPS_GPGGA_FIXED_DATA			"GPGGA"
 		#define GPS_GPRMC_MIN_RECOMMENDED_DATA	"GPRMC"		

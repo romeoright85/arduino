@@ -1,4 +1,7 @@
-//See: //FINISH WRITING ME
+//NOTES:
+//Used to test filtering, checksum, parsing, and validating algorithms. Though not kept up to date.
+//After the migration of this practice code to the actual rover code, improvements have been made to the actual rover code (i..e got ride of unnecessary variables, renamed things to make it more clear, etc.)
+
 
 #include <string.h>
 
@@ -61,7 +64,7 @@ void loop()
 
 	//Data Filtering
 	//Note: Only keep and process GPGGA or GPRMC data. Ignore everything else.
-	if (!dataPassedFiltering(original, gpsPreProcessedData[gpsPreProcessedDataIndex]))//Save the GPS Header (outputString) into gpsPreProcessedData[gpsPreProcessedDataIndex] where gpsPreProcessedDataIndex = 0;
+	if (!dataPassedFiltering(original, gpsPreProcessedData[gpsPreProcessedDataIndex]))//Save the GPS Header (gpsHeader) into gpsPreProcessedData[gpsPreProcessedDataIndex] where gpsPreProcessedDataIndex = 0;
 	{
 		Serial.println(F("Filtered Out"));
 		return;//do nothing if the data isn't desired
@@ -314,34 +317,36 @@ char decimalToHex(byte decimalValue)
 
 }
 
-boolean dataPassedFiltering(String inputString, String & outputString)
+
+
+boolean dataPassedFiltering(String gpsRxdData, String & gpsHeader)
 {
-	
+
 	//This function will return true if the GPS data passes the filtering and false if it doesn't.
 	//This function will pass by reference the outputString:
 	//For Filter-Passed GPS data: the GPS header (i.e. GPGGA or GPRMC)
 	//For Filter-Blocked GPS data: a blank string
 
-	
+
 	//Declare and initialize variable(s)
 	byte startIndex = 0;
 	byte endIndex;
 	String tempString;
-		
+
 	//GPS header (data type) i.e. GPGGA or GPRMC
 	//Search for the first comma
-	endIndex = inputString.indexOf(',', startIndex);
+	endIndex = gpsRxdData.indexOf(',', startIndex);
 	//Grab the GPS Header
-	tempString = inputString.substring(startIndex, endIndex);//grab the substring from the start to the first comma
+	tempString = gpsRxdData.substring(startIndex, endIndex);//grab the substring from the start to the first comma
 
 	if (tempString.equals(GPS_GPGGA_FIXED_DATA) || tempString.equals(GPS_GPRMC_MIN_RECOMMENDED_DATA))
 	{
-		outputString = tempString;
+		gpsHeader = tempString;
 		return true;
 	}
 	else
 	{
-		outputString = "";
+		gpsHeader = "";
 		return false;
 	}
 }
