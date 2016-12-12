@@ -35,7 +35,8 @@
 		#define GPS_GPGGA_FIXED_DATA			"GPGGA"
 		#define GPS_GPRMC_MIN_RECOMMENDED_DATA	"GPRMC"		
 		//GPS Data Index - Both GPGGA and GPRMC		
-		#define GPS_GENERIC_INDEX_OF_HEADER		0
+		#define GPS_GENERIC_INDEX_OF_HEADER													0
+		#define GPS_GENERIC_INDEX_OF_CHECKSUM												13 //Not the 13th field in the GPGGA or GPRMC string, but will store it in the array as the 13th element as it's the last unused element
 		//GPS Data Index - GPGGA (holds the GPGGA GPS data)
 		#define GPS_GPGGA_INDEX_OF_HEADER														0
 		#define GPS_GPGGA_INDEX_OF_DATA_FIX_TIME											1 
@@ -60,7 +61,7 @@
 		#define GPS_GPRMC_INDEX_OF_LONGITUDE_DIRECTION							6 //E (East) or W (West)
 		#define GPS_GPRMC_INDEX_OF_SPEED														7 //Speedover the ground in knots
 		#define GPS_GPRMC_INDEX_OF_TRACK_ANGLE											8 //In degrees True
-		#define GPS_GPRMC_INDEX_OF_DATE															9 //DD/MM/YY
+		#define GPS_GPRMC_INDEX_OF_DATE															9 //DD/MM/YY		
 		//GPS Data Index - Master (holds the merged GPS data between GPGGA and GPRMC)
 		#define GPS_POST_PROCESSED_INDEX_OF_DATA_FIX_TIME												0 //GPGGA and GPRMC
 		#define GPS_POST_PROCESSED_INDEX_OF_STATUS															1 //Status - A (Active) Or V (Void), GPRMC only
@@ -78,6 +79,8 @@
 		#define GPS_POST_PROCESSED_INDEX_OF_GEOID_UNIT													13 //Should always be M (meters), GPGGA only
 		#define GPS_POST_PROCESSED_INDEX_OF_TRACK_ANGLE													14 //In degrees True, GPRMC only
 		#define GPS_POST_PROCESSED_INDEX_OF_DATE																15 //DD/MM/YY, GPRMC only
+		#define GPS_POST_PROCESSED_INDEX_OF_GPGGA_CHECKSUM												16 //Received Checksum of GPGGA
+		#define GPS_POST_PROCESSED_INDEX_OF_GPRMC_CHECKSUM												17 //Received Checksum of GPRMC
 		//GPS Number of Fields for the specific header type
 		#define GPS_GPGGA_FIELDS		13			
 		#define GPS_GPRMC_FIELDS		10

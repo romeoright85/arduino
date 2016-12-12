@@ -15,9 +15,7 @@ void RoverGpsSensor::reset()
 	//Flags
 	this->_validChecksum = false;	
 	//Persistent GPS Data Array (GPGGA and GPRMC merged data)
-	this->clearProcessedGpsDataArray();
-	//Persistent Parsed GPS Data Variables (GPGGA and GPRMC merged data)
-	this->clearParsedGpsData();
+	this->clearProcessedGpsDataArray();	
 	//GPS Helper Variables	
 	this->clearGpsHelperVariables();
 	//GPS Received Data	
@@ -38,27 +36,6 @@ void RoverGpsSensor::clearProcessedGpsDataArray()
 {
 	//Note: This data should be presistent since it's shared between GPGGA and GPRMC. Try only to clear it when needed (i.e. during reset)
 	memset(this->_gpsPostProcessedDataArray,0,sizeof(this->_gpsPostProcessedDataArray));	
-}
-void RoverGpsSensor::clearParsedGpsData()
-{
-	//Note: This data should be presistent since it's shared between GPGGA and GPRMC. Try only to clear it when needed (i.e. during reset)
-	this->_timeWhenDataWasFixed = 0;
-	this->_gpsStatus = '\0';
-	this->_latitude = 0.0;
-	this->_latitudeDirection =  '\0';
-	this->_longitude = 0.0;	
-	this->_longitudeDirection =  '\0';	
-	this->_fixQuality = 0;	
-	this->_sattelitesTracked = 0;
-	this->_horizontalDilution = 0.0;
-	this->_altitude = 0.0;
-	this->_altitudeUnit = '\0';
-	this->_speed = 0.0;
-	this->_geoidHeight = 0.0;
-	this->_geoidHeightUnit =  '\0';
-	this->_trackAngle = 0.0;
-	this->_date = 0;
-	this->_rxChecksum = "";		
 }
 void RoverGpsSensor::appendToRxGPSData(char dataIn)
 {
@@ -97,7 +74,7 @@ boolean RoverGpsSensor::processRxGPSData()
 	String dataStringToParse = _rxData;
 		
 	//==Validating the Checksum==
-	if (!this->validateChecksum(_rxData, dataStringToParse, this->_rxChecksum))//if checksum failed
+	if (!this->validateChecksum(this->_rxData, dataStringToParse, this->_gpsPreProcessedDataArray[GPS_GENERIC_INDEX_OF_CHECKSUM]))//if checksum failed
 	{
 		Serial.println(F("Checksum Failed"));
 		this->clearRxGpsDataString();//clear the gps data
@@ -150,6 +127,7 @@ boolean RoverGpsSensor::processRxGPSData()
 		this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_UNIT] = this->_gpsPreProcessedDataArray[GPS_GPGGA_INDEX_OF_ALTITUDE_UNIT];
 		this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_HEIGHT_OF_GEOID] = this->_gpsPreProcessedDataArray[GPS_GPGGA_INDEX_OF_HEIGHT_OF_GEOID];
 		this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_GEOID_UNIT] = this->_gpsPreProcessedDataArray[GPS_GPGGA_INDEX_OF_GEOID_UNIT];
+		this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_GPGGA_CHECKSUM] = this->_gpsPreProcessedDataArray[GPS_GENERIC_INDEX_OF_CHECKSUM];
 
 	}//end if
 	else if (this->_gpsPreProcessedDataArray[GPS_GPRMC_INDEX_OF_HEADER] == GPS_GPRMC_MIN_RECOMMENDED_DATA)//For GPRMC data
@@ -180,6 +158,7 @@ boolean RoverGpsSensor::processRxGPSData()
 		this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_SPEED] = this->_gpsPreProcessedDataArray[GPS_GPRMC_INDEX_OF_SPEED];
 		this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_TRACK_ANGLE] = this->_gpsPreProcessedDataArray[GPS_GPRMC_INDEX_OF_TRACK_ANGLE];
 		this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_DATE] = this->_gpsPreProcessedDataArray[GPS_GPRMC_INDEX_OF_DATE];
+		this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_GPRMC_CHECKSUM] = this->_gpsPreProcessedDataArray[GPS_GENERIC_INDEX_OF_CHECKSUM];
 
 	}//end else if
 	else
@@ -228,67 +207,90 @@ boolean RoverGpsSensor::isGpsDataValid()
 }
 unsigned int RoverGpsSensor::getGpsTimeWhenDataWasFixed()
 {	
-	return this->_timeWhenDataWasFixed;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_DATA_FIX_TIME]).toInt();
 }
 char RoverGpsSensor::getGpsStatus()
 {	
-	return this->_gpsStatus;
+	byte charBufferSize = (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_STATUS]).length() + 1;
+	char charArray[charBufferSize];
+	(this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_STATUS]).toCharArray(charArray,charBufferSize);
+	return charArray[0];
 }
 double RoverGpsSensor::getGpsLatitude()
 {	
-	return this->_latitude;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_LATITUDE]).toFloat();
 }
 char RoverGpsSensor::getGpsLatitudeDirection()
 {	
-	return this->_latitudeDirection;
+	byte charBufferSize = (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_LATITUDE_DIRECTION]).length() + 1;
+	char charArray[charBufferSize];
+	(this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_LATITUDE_DIRECTION]).toCharArray(charArray,charBufferSize);
+	return charArray[0];
 }
 double RoverGpsSensor::getGpsLongitude()
 {	
-	return this->_longitude;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_LONGITUDE]).toFloat();
 }
 char RoverGpsSensor::getGpsLongitudeDirection()
 {	
-	return this->_longitudeDirection;
+	byte charBufferSize = (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_LONGITUDE_DIRECTION]).length() + 1;
+	char charArray[charBufferSize];
+	(this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_LONGITUDE_DIRECTION]).toCharArray(charArray,charBufferSize);
+	return charArray[0];
 }
 byte RoverGpsSensor::getGpsFixQuality()
-{	
-	return this->_fixQuality;	
+{		
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_FIX_QUALITY]).toInt();		
 }
 byte RoverGpsSensor::getGpsSatellitesTracked()
 {
-	return this->_sattelitesTracked;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_SATELLITES_TRACKED]).toInt();		
 }
 double RoverGpsSensor::getGpsHorizontalDilution()
 {
-	return this->_horizontalDilution;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_HORIZONTAL_DILUTION_OF_POSITION]).toFloat();
 }
 double RoverGpsSensor::getGpsAltitude()
 {
-	return this->_altitude;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_ABOVE_MEAN_SEA_LEVEL]).toFloat();
 }
 char RoverGpsSensor::getGpsAltitudeUnit()
 {
-	return this->_altitudeUnit;
+	byte charBufferSize = (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_UNIT]).length() + 1;
+	char charArray[charBufferSize];
+	(this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_UNIT]).toCharArray(charArray,charBufferSize);
+	return charArray[0];
 }
 double RoverGpsSensor::getGpsSpeed()
 {
-	return this->_speed;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_SPEED]).toFloat();
 }
 double RoverGpsSensor::getGpsGeoidHeight()
 {
-	return this->_geoidHeight;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_HEIGHT_OF_GEOID]).toFloat();	
 }
 char RoverGpsSensor::getGpsGeoidHeightUnit()
 {
-	return this->_geoidHeightUnit;
+	byte charBufferSize = (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_GEOID_UNIT]).length() + 1;
+	char charArray[charBufferSize];
+	(this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_GEOID_UNIT]).toCharArray(charArray,charBufferSize);
+	return charArray[0];
 }
 double RoverGpsSensor::getGpsTrackAngle()
 {
-	return this->_trackAngle;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_TRACK_ANGLE]).toFloat();	
 }
 unsigned int RoverGpsSensor::getGpsDate()
 {
-	return _date;
+	return (this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_DATE]).toInt();
+}
+String RoverGpsSensor::getGpsGPGGAChecksum()
+{
+	return this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_GPGGA_CHECKSUM];
+}
+String RoverGpsSensor::getGpsGPRMCChecksum()
+{
+	return this->_gpsPostProcessedDataArray[GPS_POST_PROCESSED_INDEX_OF_GPRMC_CHECKSUM];
 }
 boolean RoverGpsSensor::dataPassedFiltering(String gpsRxdData, String & gpsHeader)
 {
@@ -324,9 +326,9 @@ boolean RoverGpsSensor::dataPassedFiltering(String gpsRxdData, String & gpsHeade
 boolean RoverGpsSensor::validateChecksum(String inputString, String & outputString, String & receivedChecksumInHex)
 {
 	//This function will return true if the checksum is valid and false if it isn't.
-	//This function will pass by reference the outputString:
-	//For Valid Checksums: the GPS data without the $ at the beginning or the ending part (i.e. without the * or anything after, like the checksum)
-	//For Invalid Checksums: a blank string
+	//This function will pass by reference the variable outputString:
+		//For Valid Checksums: as the GPS data without the $ at the beginning or the ending part (i.e. without the * or anything after, like the checksum)
+		//For Invalid Checksums: as a blank string
 
 	//Note: This checksum calculation algorithm works for both GPRMC and GPGGA
 	//Note: The checksum doesn't include the $ at the beginning or the * or anything after that
@@ -360,16 +362,16 @@ boolean RoverGpsSensor::validateChecksum(String inputString, String & outputStri
 	//Grab the received checksum
 	receivedChecksumInHex = inputString.substring(endIndex + 1, endIndex + 3);//It is the two characters after the *
 
+	
+	//Set the outputString as the tempString
+	outputString = tempString;
+	
 	if (receivedChecksumInHex.equals(calculatedChecksumInHex))
-	{
-		//Set the outputString as the tempString
-		outputString = tempString;
+	{	
 		return true;
 	}//end if
 	else
-	{
-		//Return a blank output string
-		outputString = "";
+	{		
 		return false;
 	}//end else
 }

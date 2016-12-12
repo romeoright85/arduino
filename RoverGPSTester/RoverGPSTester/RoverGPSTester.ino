@@ -1,7 +1,7 @@
 #include <RoverGpsSensor.h>
 
 //#define _DEBUG_ //Uncomment this flag to turn on debug outputs
-#define _DEBUG2_ //Uncomment this flag to turn on more debug outputs
+//#define _DEBUG2_ //Uncomment this flag to turn on more debug outputs
 
 
 //Global Variables
@@ -29,6 +29,8 @@ void setup() {
 
 
 void loop() {
+	
+
 	//reset flags
 	gpsDataReady = false;
 		
