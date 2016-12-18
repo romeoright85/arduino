@@ -1,4 +1,3 @@
-#define _IMUDATATYPES //used with RoverConfig.h
 #include <ImuSensor.h>
 
 //NOTE: The IMU Must be connected to the Arduino for this code to work.
@@ -8,74 +7,80 @@
 
 ImuSensor * imuSensor = new ImuSensor();
 
+
+
+
 RoverReset * resetArray[] = { imuSensor };
-int gyroXYZData[3];
-float compassHeading;
-int accelerometerXYZData[3];
+
+
 
 void setup() {
+		
 	//resetting all objects
 	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
 	{
 		resetArray[i]->reset();
 	}
+
+
 	Serial.begin(9600);
 
-	while (!imuSensor->init());//must not be done in the global, but either in the setup() or the loop()
-
+	imuSensor->init();
 }
 
 
 void loop() {
-		
+	
+	Serial.println("2DEBUG");//DEBUG
+
+	
+	/*
+	//Declare variables
+	float roverRoll;
+	float roverPitch;
+	float roverYaw;
+	float roverHeading;
+
 	//Get IMU Data
 	Serial.println(F("IMU Data"));
 	imuSensor->readSensor();
-			
-	//Gyro
-	Serial.println(F("Gyro XYZ"));
-	imuSensor->getGyroXYZData(gyroXYZData);
-	Serial.println(gyroXYZData[X_DATA]);//DEBUG
-	Serial.println(gyroXYZData[Y_DATA]);//DEBUG
-	Serial.println(gyroXYZData[Z_DATA]);//DEBUG
+
+	//AHRS = An attitude and heading reference system
+	Serial.println(F("Roll/Pitch/Yaw"));
+	roverRoll = imuSensor->getRoll();
+	Serial.print("Roll: ");
+	Serial.println(roverRoll);
+	roverPitch = imuSensor->getPitch();
+	Serial.print("Pitch: ");
+	Serial.println(roverPitch);
+	roverYaw = imuSensor->getYaw();
+	Serial.print("Yaw: ");
+	Serial.println(roverYaw);
 	
 	//Compass
 	Serial.println(F("Compass Heading"));
-	compassHeading = imuSensor->getCompassHeading();
-	Serial.println(compassHeading);//DEBUG
+	roverHeading = imuSensor->getHeading();	
+	Serial.print("Heading: ");
+	Serial.println(roverHeading);
 
-	//Accelerometer
-	Serial.println(F("Accelerometer XYZ"));
-	imuSensor->getAccelerometerXYZData(accelerometerXYZData);
-	Serial.println(accelerometerXYZData[X_DATA]);//DEBUG
-	Serial.println(accelerometerXYZData[Y_DATA]);//DEBUG
-	Serial.println(accelerometerXYZData[Z_DATA]);//DEBUG
 
-	delay(2000);//DEBUG
-	/*
-	//Reset IMU Data
-	Serial.println(F("IMU Reset"));
-	imuSensor->reset();
+	Serial.print("AHRS: ");
+	imuSensor->printForAHRS();
 		
-	//Gyro
-	Serial.println(F("Gyro XYZ"));
-	imuSensor->getGyroXYZData(gyroXYZData);
-	Serial.println(gyroXYZData[X_DATA]);//DEBUG
-	Serial.println(gyroXYZData[Y_DATA]);//DEBUG
-	Serial.println(gyroXYZData[Z_DATA]);//DEBUG
-
-	//Compass
-	Serial.println(F("Compass Heading"));
-	compassHeading = imuSensor->getCompassHeading();
-	Serial.println(compassHeading);//DEBUG
-
-	//Accelerometer
-	Serial.println(F("Accelerometer XYZ"));
-	imuSensor->getAccelerometerXYZData(accelerometerXYZData);
-	Serial.println(accelerometerXYZData[X_DATA]);//DEBUG
-	Serial.println(accelerometerXYZData[Y_DATA]);//DEBUG
-	Serial.println(accelerometerXYZData[Z_DATA]);//DEBUG
-
 	delay(2000);//DEBUG
-	*/
+		*/		
 }
+
+
+/*
+
+!ANG:0.27,1.56,16.47
+!ANG:0.24,1.57,16.46
+!ANG:0.26,1.56,16.46
+!ANG:0.38,1.61,16.47
+!ANG:0.38,1.63,16.46
+!ANG:0.42,1.63,16.47
+!ANG:0.45,1.61,16.47
+!ANG:0.41,1.61,16.47
+
+*/

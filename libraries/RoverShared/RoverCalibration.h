@@ -28,6 +28,30 @@
 		#define SRVO_MIN_RANGE 5
 	#endif	
 		
+	//definitions for ImuSensor
+	#ifdef _IMU_CALIBRATIONS
+
+		//==Start Of Intergrated Code From Others
+		// LSM303/LIS3MDL magnetometer calibration constants; use the Calibrate example from
+		// the Pololu LSM303 or LIS3MDL library to find the right values for your board
+
+		#define IMU_M_X_MIN -1000
+		#define IMU_M_Y_MIN -1000
+		#define IMU_M_Z_MIN -1000
+		#define IMU_M_X_MAX +1000
+		#define IMU_M_Y_MAX +1000
+		#define IMU_M_Z_MAX +1000
+
+		#define IMU_Kp_ROLLPITCH 0.02
+		#define IMU_Ki_ROLLPITCH 0.00002
+		#define IMU_Kp_YAW 1.2
+		#define IMU_Ki_YAW 0.00002
+		//==End Of Intergrated Code From Others
+		
+	#endif
+	
+		
+		
 	
 	#ifdef _TEMP_CONSTANTS
 		#define	TEMP_CONSTANT_T0	298.15

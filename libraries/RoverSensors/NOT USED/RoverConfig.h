@@ -202,40 +202,12 @@
 		#define AMUX_CH_8 8
 	#endif
 	
-	//definitions for ImuSensor
-	#ifdef _IMU_DEFINITIONS
-
-	
-	// tested with Arduino Uno with ATmega328 and Arduino Duemilanove with ATMega168
-
-	// accelerometer: 8 g sensitivity
-	// 3.9 mg/digit; 1 g = 256
-	#define IMU_GRAVITY 256  //this equivalent to 1G in the raw data coming from the accelerometer
-
-	#define ToRad(x) ((x)*0.01745329252)  // *pi/180
-	#define ToDeg(x) ((x)*57.2957795131)  // *180/pi
-
-	// gyro: 2000 dps full scale
-	// 70 mdps/digit; 1 dps = 0.07
-	#define Gyro_Gain_X 0.07 //X axis Gyro gain
-	#define Gyro_Gain_Y 0.07 //Y axis Gyro gain
-	#define Gyro_Gain_Z 0.07 //Z axis Gyro gain
-	#define Gyro_Scaled_X(x) ((x)*ToRad(Gyro_Gain_X)) //Return the scaled ADC raw data of the gyro in radians for second
-	#define Gyro_Scaled_Y(x) ((x)*ToRad(Gyro_Gain_Y)) //Return the scaled ADC raw data of the gyro in radians for second
-	#define Gyro_Scaled_Z(x) ((x)*ToRad(Gyro_Gain_Z)) //Return the scaled ADC raw data of the gyro in radians for second
-
-	/*For debugging purposes*/
-	//IMU_OUTPUTMODE=1 will print the corrected data,
-	//IMU_OUTPUTMODE=0 will print uncorrected data of the gyros (with drift)
-	#define IMU_OUTPUTMODE 1
-
-	#define IMU_PRINT_DCM 0     //Will print the whole direction cosine matrix
-	#define IMU_PRINT_ANALOGS 0 //Will print the analog raw data
-	#define IMU_PRINT_EULER 1   //Will print the Euler angles Roll, Pitch and Yaw
-			
-	//==End Of Intergrated Code From Others
-	
-
+	//definition for ImuSensor (use with data arrays that go from element [0] to element [2]
+	#ifdef _IMUDATATYPES
+		//IMU Data Types
+		#define X_DATA 0
+		#define Y_DATA 1
+		#define Z_DATA 2		
 	#endif	
 	
 	
