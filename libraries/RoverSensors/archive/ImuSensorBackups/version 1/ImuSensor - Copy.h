@@ -1,27 +1,4 @@
 //ImuSensor.h
-
-/*
-Bug Alert:
-This code didn't work with pointer objects. It was flakey and the code/serial seemed to lock up.
-
-	#ifdef IMU_V5
-			LSM6 * _gyro_acc;
-			LIS3MDL * _mag;
-		#else // older IMUs through v4
-			L3G * _gyro;
-			LSM303 * _compass;
-		#endif
-So use absolute objects instead.
-	#ifdef IMU_V5
-			LSM6 _gyro_acc;
-			LIS3MDL _mag;
-		#else // older IMUs through v4
-			L3G _gyro;
-			LSM303 _compass;
-		#endif
-*/	
-		
-
 #ifndef _IMUSENSOR_H
 #define _IMUSENSOR_H
 
@@ -35,6 +12,7 @@ So use absolute objects instead.
 	#define _IMU_CALIBRATIONS
 	
 
+	
 	// Uncomment the following line to use a MinIMU-9 v5 or AltIMU-10 v5. Leave commented for older IMUs (up through v4).
 	//#define IMU_V5
 	#ifdef IMU_V5
@@ -150,11 +128,11 @@ So use absolute objects instead.
 
 		
 		#ifdef IMU_V5
-			LSM6 _gyro_acc;
-			LIS3MDL _mag;
+			LSM6 * _gyro_acc;
+			LIS3MDL * _mag;
 		#else // older IMUs through v4
-			L3G _gyro;
-			LSM303 _compass;
+			L3G * _gyro;
+			LSM303 * _compass;
 		#endif
 		
 		

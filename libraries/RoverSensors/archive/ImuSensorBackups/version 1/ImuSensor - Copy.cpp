@@ -11,7 +11,6 @@ http://code.google.com/p/ardu-imu/
 //==Start Of Intergrated Code From Others
 
 
-	
 ImuSensor::ImuSensor()
 {
 	
@@ -137,18 +136,26 @@ void ImuSensor::init()
 {
 	
 	this->I2C_Init();
+//DEBUG ME: FOR SOME REASON Accel_Init(); DOESN'T WORK	
 	this->Accel_Init();
 	this->Compass_Init();
 	this->Gyro_Init();
-	delay(250);		
+
+	
+	
+	delay(1500);//DEBUG
+	
+	
+Serial.println("0DEBUG");//DEBUG
 
 
+//DEBUG ME: FOR SOME REASON THE CODE BELOW DOESN'T WORK
+
+	/*
 	
 	// We take some readings...
 	for(int i=0;i<32;i++)
     {
-		
-	
 		this->Read_Gyro();
 		this->Read_Accel();
 		//Accumulate values		
@@ -172,7 +179,7 @@ void ImuSensor::init()
   delay(20);
   //this->_counter=0;	
  
-
+ */
 
 	
 }
@@ -457,23 +464,25 @@ void ImuSensor::Accel_Init()
 	
 #ifdef IMU_V5
 
-  this->_gyro_acc.init();
-  this->_gyro_acc.enableDefault();
-  this->_gyro_acc.writeReg(LSM6::CTRL1_XL, 0x3C); // 52 Hz, 8 g full scale
+  this->_gyro_acc->init();
+  this->_gyro_acc->enableDefault();
+  this->_gyro_acc->writeReg(LSM6::CTRL1_XL, 0x3C); // 52 Hz, 8 g full scale
 #else
-	
-  this->_compass.init(); 
-  this->_compass.enableDefault();   
-  switch (this->_compass.getDeviceType())
+
+  //this->_compass->init();  
+
+  this->_compass->enableDefault();
+   
+  switch (this->_compass->getDeviceType())
   {
     case LSM303::device_D:
-      this->_compass.writeReg(LSM303::CTRL2, 0x18); // 8 g full scale: AFS = 011
+      this->_compass->writeReg(LSM303::CTRL2, 0x18); // 8 g full scale: AFS = 011
       break;
     case LSM303::device_DLHC:
-      this->_compass.writeReg(LSM303::CTRL_REG4_A, 0x28); // 8 g full scale: FS = 10; high resolution output mode
+      this->_compass->writeReg(LSM303::CTRL_REG4_A, 0x28); // 8 g full scale: FS = 10; high resolution output mode
       break;
     default: // DLM, DLH
-      this->_compass.writeReg(LSM303::CTRL_REG4_A, 0x30); // 8 g full scale: FS = 11
+      this->_compass->writeReg(LSM303::CTRL_REG4_A, 0x30); // 8 g full scale: FS = 11
   }
 
 #endif
@@ -482,26 +491,24 @@ void ImuSensor::Accel_Init()
 void ImuSensor::Compass_Init()
 {
 #ifdef IMU_V5
-  this->_mag.init();
-  this->_mag.enableDefault();
+  this->_mag->init();
+  this->_mag->enableDefault();
 #else
-  // LSM303: doesn't need to do anything because this->Accel_Init() should have already called this->_compass.enableDefault()
+  // LSM303: doesn't need to do anything because this->Accel_Init() should have already called this->_compass->enableDefault()
 #endif
-
 }
 
 void ImuSensor::Gyro_Init()
 {
 #ifdef IMU_V5
-  // this->Accel_Init() should have already called this->_gyro_acc.init() and enableDefault()
-  this->_gyro_acc.writeReg(LSM6::CTRL2_G, 0x4C); // 104 Hz, 2000 dps full scale
+  // this->Accel_Init() should have already called this->_gyro_acc->init() and enableDefault()
+  this->_gyro_acc->writeReg(LSM6::CTRL2_G, 0x4C); // 104 Hz, 2000 dps full scale
 #else
-  this->_gyro.init();
-  this->_gyro.enableDefault();
-  this->_gyro.writeReg(L3G::CTRL_REG4, 0x20); // 2000 dps full scale
-  this->_gyro.writeReg(L3G::CTRL_REG1, 0x0F); // normal power mode, all axes enabled, 100 Hz
+  this->_gyro->init();
+  this->_gyro->enableDefault();
+  this->_gyro->writeReg(L3G::CTRL_REG4, 0x20); // 2000 dps full scale
+  this->_gyro->writeReg(L3G::CTRL_REG1, 0x0F); // normal power mode, all axes enabled, 100 Hz
 #endif
-
 }
 
 void ImuSensor::I2C_Init()
@@ -512,41 +519,39 @@ void ImuSensor::I2C_Init()
 void ImuSensor::Read_Gyro()
 {
 #ifdef IMU_V5
-  this->_gyro_acc.readGyro();
+  this->_gyro_acc->readGyro();
 
-  this->_AN[0] = this->_gyro_acc.g.x;
-  this->_AN[1] = this->_gyro_acc.g.y;
-  this->_AN[2] = this->_gyro_acc.g.z;
+  this->_AN[0] = this->_gyro_acc->g.x;
+  this->_AN[1] = this->_gyro_acc->g.y;
+  this->_AN[2] = this->_gyro_acc->g.z;
 #else
-		
-  this->_gyro.read();
+  this->_gyro->read();
 
-  this->_AN[0] = this->_gyro.g.x;
-  this->_AN[1] = this->_gyro.g.y;
-  this->_AN[2] = this->_gyro.g.z;
+  this->_AN[0] = this->_gyro->g.x;
+  this->_AN[1] = this->_gyro->g.y;
+  this->_AN[2] = this->_gyro->g.z;
 #endif
 
   this->_gyro_x = this->_SENSOR_SIGN[0] * (this->_AN[0] - this->_AN_OFFSET[0]);
   this->_gyro_y = this->_SENSOR_SIGN[1] * (this->_AN[1] - this->_AN_OFFSET[1]);
-  this->_gyro_z = this->_SENSOR_SIGN[2] * (this->_AN[2] - this->_AN_OFFSET[2]);  
-
+  this->_gyro_z = this->_SENSOR_SIGN[2] * (this->_AN[2] - this->_AN_OFFSET[2]);
 }
 
 // Reads x,y and z accelerometer registers
 void ImuSensor::Read_Accel()
 {
 #ifdef IMU_V5
-  this->_gyro_acc.readAcc();
+  this->_gyro_acc->readAcc();
 
-  this->_AN[3] = this->_gyro_acc.a.x >> 4; // shift left 4 bits to use 12-bit representation (1 g = 256)
-  this->_AN[4] = this->_gyro_acc.a.y >> 4;
-  this->_AN[5] = this->_gyro_acc.a.z >> 4;
+  this->_AN[3] = this->_gyro_acc->a.x >> 4; // shift left 4 bits to use 12-bit representation (1 g = 256)
+  this->_AN[4] = this->_gyro_acc->a.y >> 4;
+  this->_AN[5] = this->_gyro_acc->a.z >> 4;
 #else
-  this->_compass.readAcc();
+  this->_compass->readAcc();
 
-  this->_AN[3] = this->_compass.a.x >> 4; // shift left 4 bits to use 12-bit representation (1 g = 256)
-  this->_AN[4] = this->_compass.a.y >> 4;
-  this->_AN[5] = this->_compass.a.z >> 4;
+  this->_AN[3] = this->_compass->a.x >> 4; // shift left 4 bits to use 12-bit representation (1 g = 256)
+  this->_AN[4] = this->_compass->a.y >> 4;
+  this->_AN[5] = this->_compass->a.z >> 4;
 #endif
   this->_accel_x = this->_SENSOR_SIGN[3] * (this->_AN[3] - this->_AN_OFFSET[3]);
   this->_accel_y = this->_SENSOR_SIGN[4] * (this->_AN[4] - this->_AN_OFFSET[4]);
@@ -556,17 +561,17 @@ void ImuSensor::Read_Accel()
 void ImuSensor::Read_Compass()
 {
 #ifdef IMU_V5
-  this->_mag.read();
+  this->_mag->read();
 
-  this->_magnetom_x = this->_SENSOR_SIGN[6] * this->_mag.m.x;
-  this->_magnetom_y = this->_SENSOR_SIGN[7] * this->_mag.m.y;
-  this->_magnetom_z = this->_SENSOR_SIGN[8] * this->_mag.m.z;
+  this->_magnetom_x = this->_SENSOR_SIGN[6] * this->_mag->m.x;
+  this->_magnetom_y = this->_SENSOR_SIGN[7] * this->_mag->m.y;
+  this->_magnetom_z = this->_SENSOR_SIGN[8] * this->_mag->m.z;
 #else
-  this->_compass.readMag();
+  this->_compass->readMag();
 
-  this->_magnetom_x = this->_SENSOR_SIGN[6] * this->_compass.m.x;
-  this->_magnetom_y = this->_SENSOR_SIGN[7] * this->_compass.m.y;
-  this->_magnetom_z = this->_SENSOR_SIGN[8] * this->_compass.m.z;
+  this->_magnetom_x = this->_SENSOR_SIGN[6] * this->_compass->m.x;
+  this->_magnetom_y = this->_SENSOR_SIGN[7] * this->_compass->m.y;
+  this->_magnetom_z = this->_SENSOR_SIGN[8] * this->_compass->m.z;
 #endif
 }
 //Multiply two 3x3 matrixs. This function developed by Jordi can be easily adapted to multiple n*n matrix's. (Pero me da flojera!). 

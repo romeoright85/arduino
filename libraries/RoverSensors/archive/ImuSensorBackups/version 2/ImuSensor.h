@@ -1,26 +1,8 @@
 //ImuSensor.h
 
-/*
-Bug Alert:
-This code didn't work with pointer objects. It was flakey and the code/serial seemed to lock up.
-
-	#ifdef IMU_V5
-			LSM6 * _gyro_acc;
-			LIS3MDL * _mag;
-		#else // older IMUs through v4
-			L3G * _gyro;
-			LSM303 * _compass;
-		#endif
-So use absolute objects instead.
-	#ifdef IMU_V5
-			LSM6 _gyro_acc;
-			LIS3MDL _mag;
-		#else // older IMUs through v4
-			L3G _gyro;
-			LSM303 _compass;
-		#endif
-*/	
-		
+//Bug Alert:
+//This code seems to be somewhat flakey. If you don't do a serial print of some characters (and you can't use the F() flash macro) it seems to lock up/freeze the code.
+//Possible memory issues, but for now Serial.println() the status seems to get it going.
 
 #ifndef _IMUSENSOR_H
 #define _IMUSENSOR_H
@@ -150,11 +132,11 @@ So use absolute objects instead.
 
 		
 		#ifdef IMU_V5
-			LSM6 _gyro_acc;
-			LIS3MDL _mag;
+			LSM6 * _gyro_acc;
+			LIS3MDL * _mag;
 		#else // older IMUs through v4
-			L3G _gyro;
-			LSM303 _compass;
+			L3G * _gyro;
+			LSM303 * _compass;
 		#endif
 		
 		
