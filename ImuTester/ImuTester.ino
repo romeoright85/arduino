@@ -33,9 +33,47 @@ void setup() {
 
 void loop() {
 	
-	Serial.println(F("MAIN LOOP"));//DEBUG
-	delay(10);
+	//Serial.println(F("MAIN LOOP"));//DEBUG
+	//delay(10);
 	
+		
+	//Declare variables
+	float roverRoll;
+	float roverPitch;
+	float roverYaw;
+	float roverHeading;
+
+	//Get IMU Data
+	Serial.println(F("IMU Data"));
+	imuSensor->readSensor();
+
+	//AHRS = An attitude and heading reference system
+	Serial.println(F("Roll/Pitch/Yaw"));
+	roverRoll = imuSensor->getRoll();
+	Serial.print("Roll: ");
+	Serial.println(roverRoll);
+	roverPitch = imuSensor->getPitch();
+	Serial.print("Pitch: ");
+	Serial.println(roverPitch);
+	roverYaw = imuSensor->getYaw();
+	Serial.print("Yaw: ");
+	Serial.println(roverYaw);
+
+	//Compass
+	Serial.println(F("Compass Heading"));
+	roverHeading = imuSensor->getHeading();
+	Serial.print("Heading: ");
+	Serial.println(roverHeading);
+
+
+	Serial.print("AHRS: ");
+	imuSensor->printForAHRS();
+
+	delay(2000);//DEBUG
+
+
+
+
 }
 
 

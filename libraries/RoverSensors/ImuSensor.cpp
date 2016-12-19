@@ -97,7 +97,7 @@ void ImuSensor::reset() //This function just reinitializes all the variables (an
 		this->_errorYaw[1] = 0;
 		this->_errorYaw[2] = 0;
 
-		//this->_counter=0;		
+this->_counter=0;//TO REMOVE LATER
 
 		this->_DCM_Matrix[0][0] = 1;
 		this->_DCM_Matrix[0][1] = 0;
@@ -142,7 +142,7 @@ void ImuSensor::init()
 	this->Gyro_Init();
 	delay(250);		
 
-
+/*
 	
 	// We take some readings...
 	for(int i=0;i<32;i++)
@@ -172,9 +172,34 @@ void ImuSensor::init()
   delay(20);
   //this->_counter=0;	
  
+*/
 
-
+//START: TEMP ORIGINAL CODE BELOW. GET NaN not to display, then rid this code	
 	
+  for(int i=0;i<32;i++)    // We take some readings...
+    {
+    this->Read_Gyro();
+    this->Read_Accel();
+    for(int y=0; y<6; y++)   // Cumulate values
+      this->_AN_OFFSET[y] += this->_AN[y];
+    delay(20);
+    }
+
+  for(int y=0; y<6; y++)
+    this->_AN_OFFSET[y] = this->_AN_OFFSET[y]/32;
+
+  this->_AN_OFFSET[5]-=IMU_GRAVITY*this->_SENSOR_SIGN[5];
+
+  //Serial.println("Offset:");
+  for(int y=0; y<6; y++)
+    Serial.println(this->_AN_OFFSET[y]);
+
+  this->_timer=millis();
+  delay(20);
+  this->_counter=0;
+  
+  //END: TEMP ORIGINAL CODE BELOW. GET NaN not to display, then rid this code
+  
 }
 void ImuSensor::printOffsets()
 {
@@ -190,6 +215,8 @@ void ImuSensor::readSensor()
 
 //FINISH WRITING 50HZ BLOCK LATER
   
+  
+  /*
     //this->_counter++;
     this->_timer_old = this->_timer;
     this->_timer=millis();
@@ -228,10 +255,51 @@ void ImuSensor::readSensor()
     this->Drift_correction();
     this->Euler_angles();
     
-  
+  */
   
 //END OF 50 HZ BLOCK
-  
+
+
+//START: TEMP ORIGINAL CODE BELOW. GET NaN not to display, then rid this code
+
+	if ((millis() - this->_timer) >= 20)  // Main loop runs at 50Hz
+	{
+		this->_counter++;
+		this->_timer_old = this->_timer;
+		this->_timer = millis();
+		if (this->_timer > this->_timer_old)
+		{
+			this->_G_Dt = (this->_timer - this->_timer_old) / 1000.0;    // Real time of loop run. We use this on the DCM algorithm (gyro integration time)
+			if (this->_G_Dt > 0.2)
+				this->_G_Dt = 0; // ignore integration times over 200 ms
+		}
+		else
+			this->_G_Dt = 0;
+
+
+
+		// *** DCM algorithm
+		// Data adquisition
+		this->Read_Gyro();   // This read gyro data
+		this->Read_Accel();     // Read I2C accelerometer
+
+		if (this->_counter > 5)  // Read compass data at 10Hz... (5 loop runs)
+		{
+			this->_counter = 0;
+			this->Read_Compass();    // Read I2C magnetometer
+			this->Compass_Heading(); // Calculate magnetic heading
+		}
+
+		// Calculations...
+		this->Matrix_update();
+		this->Normalize();
+		this->Drift_correction();
+		this->Euler_angles();
+		// ***
+	}
+
+	//END: TEMP ORIGINAL CODE BELOW. GET NaN not to display, then rid this code
+	  
 }
 float ImuSensor::getRoll()
 {
@@ -247,8 +315,8 @@ float ImuSensor::getYaw()
 }
 float ImuSensor::getHeading()
 {
-//WRITE ME
-	return 0.0;//DEBUG
+	return this->_compass.heading();
+	
 }
 void ImuSensor::printForAHRS()
 {
