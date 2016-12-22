@@ -43,10 +43,11 @@ void loop() {
 	float roverYaw;
 	float roverHeading;
 
+
 	//Get IMU Data
 	Serial.println(F("IMU Data"));
 	imuSensor->readSensor();
-
+	/*
 	//AHRS = An attitude and heading reference system
 	Serial.println(F("Roll/Pitch/Yaw"));
 	roverRoll = imuSensor->getRoll();
@@ -64,12 +65,12 @@ void loop() {
 	roverHeading = imuSensor->getHeading();
 	Serial.print("Heading: ");
 	Serial.println(roverHeading);
-
+	*/
 
 	Serial.print("AHRS: ");
 	imuSensor->printForAHRS();
 
-	delay(2000);//DEBUG
+	delay(100);//DEBUG
 
 
 

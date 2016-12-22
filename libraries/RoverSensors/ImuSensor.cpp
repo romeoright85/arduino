@@ -83,12 +83,25 @@ void ImuSensor::reset() //This function just reinitializes all the variables (an
 		this->_AN_OFFSET[6] = 0;	
 
 		this->_Accel_Vector[0] = 0;
+		this->_Accel_Vector[1] = 0;
+		this->_Accel_Vector[2] = 0;
+		this->_Gyro_Vector[0]= 0;
 		this->_Gyro_Vector[1]= 0;
+		this->_Gyro_Vector[2]= 0;
+		this->_Omega_Vector[0]= 0;
+		this->_Omega_Vector[1]= 0;
 		this->_Omega_Vector[2]= 0;
 		this->_Omega_P[0]= 0;
+		this->_Omega_P[1]= 0;
+		this->_Omega_P[2]= 0;
+		this->_Omega_I[0]= 0;
 		this->_Omega_I[1]= 0;
+		this->_Omega_I[2]= 0;
+		this->_Omega[0]= 0;			
+		this->_Omega[1]= 0;			
 		this->_Omega[2]= 0;			
 
+		
 		this->_errorRollPitch[0]= 0;
 		this->_errorRollPitch[1] = 0;
 		this->_errorRollPitch[2] = 0;
@@ -101,10 +114,10 @@ this->_counter=0;//TO REMOVE LATER
 
 		this->_DCM_Matrix[0][0] = 1;
 		this->_DCM_Matrix[0][1] = 0;
-		this->_DCM_Matrix[0][2] = 0;
-		this->_DCM_Matrix[1][1] = 0;
-		this->_DCM_Matrix[1][2] = 1;
-		this->_DCM_Matrix[1][3] = 0;
+		this->_DCM_Matrix[0][2] = 0;		
+		this->_DCM_Matrix[1][0] = 0;
+		this->_DCM_Matrix[1][1] = 1;
+		this->_DCM_Matrix[1][2] = 0;
 		this->_DCM_Matrix[2][0] = 0;
 		this->_DCM_Matrix[2][1] = 0;
 		this->_DCM_Matrix[2][2] = 1;			
@@ -136,70 +149,64 @@ this->_counter=0;//TO REMOVE LATER
 void ImuSensor::init()
 {
 	
+	
+	
+		
+	
 	this->I2C_Init();
 	this->Accel_Init();
 	this->Compass_Init();
 	this->Gyro_Init();
-	delay(250);		
 
-/*
-	
-	// We take some readings...
-	for(int i=0;i<32;i++)
-    {
-		
-	
+	delay(20);
+
+	for(int i=0;i<32;i++)    // We take some readings...
+	{
 		this->Read_Gyro();
 		this->Read_Accel();
-		//Accumulate values		
-		for(int y=0; y<6; y++) 
-		{
-			this->_AN_OFFSET[y] += this->_AN[y];
-		}//end for
+		for(int y=0; y<6; y++)   // Cumulate values
+		this->_AN_OFFSET[y] += this->_AN[y];
 		delay(20);
-    }//end for
-	
+	}
+
 	for(int y=0; y<6; y++)
 	{
 		this->_AN_OFFSET[y] = this->_AN_OFFSET[y]/32;
-	}//end for
-	
+	}
+
 	this->_AN_OFFSET[5]-=IMU_GRAVITY*this->_SENSOR_SIGN[5];
 
-  delay(2000);  
 
-  this->_timer=millis();
-  delay(20);
-  //this->_counter=0;	
- 
-*/
-
-//START: TEMP ORIGINAL CODE BELOW. GET NaN not to display, then rid this code	
-	
-  for(int i=0;i<32;i++)    // We take some readings...
-    {
-    this->Read_Gyro();
-    this->Read_Accel();
-    for(int y=0; y<6; y++)   // Cumulate values
-      this->_AN_OFFSET[y] += this->_AN[y];
-    delay(20);
-    }
-
-  for(int y=0; y<6; y++)
-    this->_AN_OFFSET[y] = this->_AN_OFFSET[y]/32;
-
-  this->_AN_OFFSET[5]-=IMU_GRAVITY*this->_SENSOR_SIGN[5];
-
-  //Serial.println("Offset:");
-  for(int y=0; y<6; y++)
-    Serial.println(this->_AN_OFFSET[y]);
-
-  this->_timer=millis();
-  delay(20);
-  this->_counter=0;
+	this->_timer=millis();
+	delay(20);
+	this->_counter=0;
   
-  //END: TEMP ORIGINAL CODE BELOW. GET NaN not to display, then rid this code
   
+  //NO ISSUES HERE
+  //Serial.println("DCM INIT");//DEBUG    
+    //Serial.println(this->_DCM_Matrix[0][0]);//DEBUG   
+	//Serial.println(this->_DCM_Matrix[0][1]);//DEBUG   
+	//Serial.println(this->_DCM_Matrix[0][2]);//DEBUG   
+	//Serial.println(this->_DCM_Matrix[1][0]);//DEBUG   
+	//Serial.println(this->_DCM_Matrix[1][1]);//DEBUG   
+	//Serial.println(this->_DCM_Matrix[1][2]);//DEBUG   
+	//Serial.println(this->_DCM_Matrix[2][0]);//DEBUG   
+	//Serial.println(this->_DCM_Matrix[2][1]);//DEBUG   
+	//Serial.println(this->_DCM_Matrix[2][2]);//DEBUG   
+  
+		//NO ISSUES HERE
+		//DEBUG
+		//Serial.println("RESET OMEGA");//DEBUG
+		//Serial.println(this->_Omega[0]);//DEBUG
+		//Serial.println(this->_Omega[1]);//DEBUG
+		//Serial.println(this->_Omega[2]);//DEBUG
+		//Serial.println("===============");//DEBUG
+		//Serial.println();//DEBUG
+		//Serial.println();//DEBUG
+		//Serial.println();//DEBUG
+		//Serial.println();//DEBUG
+		
+
 }
 void ImuSensor::printOffsets()
 {
@@ -216,8 +223,8 @@ void ImuSensor::readSensor()
 //FINISH WRITING 50HZ BLOCK LATER
   
   
-  /*
-    //this->_counter++;
+  ///*
+    this->_counter++;
     this->_timer_old = this->_timer;
     this->_timer=millis();
     if (this->_timer>this->_timer_old)
@@ -233,29 +240,60 @@ void ImuSensor::readSensor()
 
     // *** DCM algorithm
     // Data adquisition
+	
+	//Serial.println("Read_Gyro");//DEBUG	
     this->Read_Gyro();   // This read gyro data
+	
+
+//Serial.println("Read_Accel");//DEBUG	    	
     this->Read_Accel();     // Read I2C accelerometer
 
-    
+
 	   
 	   // Read compass data at 10Hz... (5 loop runs)
 //WRITE CODE TO DO THIS AT 10 HZ for 5 times
 //START OF 10 HZ BLOCK
+//Serial.println("Read_Compass");//DEBUG	    	  
       this->Read_Compass();    // Read I2C magnetometer
+	  
+
+//Serial.println("Compass_Heading");//DEBUG	    	  	  	  
       this->Compass_Heading(); // Calculate magnetic heading
+	  
+	  
+
 //END OF 10 HZ BLOCK
 
 
 
-
+//Serial.println("Matrix_update");//DEBUG	    	  	  
 	  
     // Calculations...
     this->Matrix_update();
+
+
+//Serial.println("DCM BEFORE");//DEBUG    
+    //Serial.println(this->_DCM_Matrix[0][0]);//DEBUG   
+	//Serial.println(this->_DCM_Matrix[1][0]);//DEBUG   
+	
+//Serial.println("Normalize");//DEBUG	    	  	  
+
+	
     this->Normalize();
+	
+
+//Serial.println("Drift_correction");//DEBUG	    	  	  
+	
     this->Drift_correction();
+	
+
+//Serial.println("Euler_angles");//DEBUG	    	  	  	
+	
     this->Euler_angles();
+	
+
     
-  */
+  //*/
   
 //END OF 50 HZ BLOCK
 
@@ -280,21 +318,38 @@ void ImuSensor::readSensor()
 
 		// *** DCM algorithm
 		// Data adquisition
+		
+		Serial.println("Read_Gyro");//DEBUG	   		
 		this->Read_Gyro();   // This read gyro data
+		
+Serial.println("Read_Accel");//DEBUG	   		
 		this->Read_Accel();     // Read I2C accelerometer
+		
+
 
 		if (this->_counter > 5)  // Read compass data at 10Hz... (5 loop runs)
 		{
 			this->_counter = 0;
+			Serial.println("Read_Compass");//DEBUG	
 			this->Read_Compass();    // Read I2C magnetometer
+   		
+
+Serial.println("Compass_Heading");//DEBUG	   					
 			this->Compass_Heading(); // Calculate magnetic heading
+			
+			
 		}
 
 		// Calculations...
+		Serial.println("Matrix_update");//DEBUG	   							
 		this->Matrix_update();
+Serial.println("Normalize");//DEBUG	   							
 		this->Normalize();
+Serial.println("Drift_correction");//DEBUG	   							
 		this->Drift_correction();
+Serial.println("Euler_angles");//DEBUG	   							
 		this->Euler_angles();
+
 		// ***
 	}
 
@@ -405,7 +460,18 @@ void ImuSensor::Normalize(void)
   float temporary[3][3];
   float renorm=0;
   
+  
+         Serial.println("DCM");//DEBUG    
+    Serial.println(this->_DCM_Matrix[0][0]);//DEBUG   
+	Serial.println(this->_DCM_Matrix[1][0]);//DEBUG   
+
   error= -this->Vector_Dot_Product(&this->_DCM_Matrix[0][0],&this->_DCM_Matrix[1][0])*.5; //eq.19
+  Serial.println("ERROR");//DEBUG    
+    Serial.println(error);//DEBUG    
+
+  
+
+    
 
   this->Vector_Scale(&temporary[0][0], &this->_DCM_Matrix[1][0], error); //eq.19
   this->Vector_Scale(&temporary[1][0], &this->_DCM_Matrix[0][0], error); //eq.19
@@ -445,10 +511,16 @@ void ImuSensor::Drift_correction(void)
   // Dynamic weighting of accelerometer info (reliability filter)
   // Weight for accelerometer info (<0.5G = 0.0, 1G = 1.0 , >1.5G = 0.0)
   Accel_weight = constrain(1 - 2*abs(1 - Accel_magnitude),0,1);  //  
-
+  
+  
+  
+  
+  
+Serial.println("A");//DEBUG   
   this->Vector_Cross_Product(&this->_errorRollPitch[0],&this->_Accel_Vector[0],&this->_DCM_Matrix[2][0]); //adjust the ground of reference
   this->Vector_Scale(&this->_Omega_P[0],&this->_errorRollPitch[0],IMU_Kp_ROLLPITCH*Accel_weight);
-  
+
+Serial.println("B");//DEBUG     
   this->Vector_Scale(&Scaled_Omega_I[0],&this->_errorRollPitch[0],IMU_Ki_ROLLPITCH*Accel_weight);
   this->Vector_Add(this->_Omega_I,this->_Omega_I,Scaled_Omega_I);     
   
@@ -457,12 +529,16 @@ void ImuSensor::Drift_correction(void)
  
   mag_heading_x = cos(this->_MAG_Heading);
   mag_heading_y = sin(this->_MAG_Heading);
+  
+Serial.println("C");//DEBUG       
   errorCourse=(this->_DCM_Matrix[0][0]*mag_heading_y) - (this->_DCM_Matrix[1][0]*mag_heading_x);  //Calculating YAW error
   this->Vector_Scale(this->_errorYaw,&this->_DCM_Matrix[2][0],errorCourse); //Applys the yaw correction to the XYZ rotation of the aircraft, depeding the position.
-  
+
+Serial.println("D");//DEBUG         
   this->Vector_Scale(&Scaled_Omega_P[0],&this->_errorYaw[0],IMU_Kp_YAW);//.01proportional of YAW.
   this->Vector_Add(this->_Omega_P,this->_Omega_P,Scaled_Omega_P);//Adding  Proportional.
-  
+
+Serial.println("E");//DEBUG           
   this->Vector_Scale(&Scaled_Omega_I[0],&this->_errorYaw[0],IMU_Ki_YAW);//.00001Integrator
   this->Vector_Add(this->_Omega_I,this->_Omega_I,Scaled_Omega_I);//adding integrator to the this->_Omega_I
 }
@@ -473,12 +549,42 @@ void ImuSensor::Matrix_update(void)
   this->_Gyro_Vector[1]=Gyro_Scaled_Y(this->_gyro_y); //gyro y pitch
   this->_Gyro_Vector[2]=Gyro_Scaled_Z(this->_gyro_z); //gyro Z yaw
   
+  
+	
+	//NO ISSUES HERE
+	//Serial.println("Gyro_Vector");//DEBUG    
+    //Serial.println(this->_Gyro_Vector[0]);//DEBUG
+    //Serial.println(this->_Gyro_Vector[1]);//DEBUG
+    //Serial.println(this->_Gyro_Vector[2]);//DEBUG
+	
+   
+  
   this->_Accel_Vector[0]=this->_accel_x;
   this->_Accel_Vector[1]=this->_accel_y;
   this->_Accel_Vector[2]=this->_accel_z;
+  
+  //NO ISSUES HERE
+  //Serial.println("Accel_Vector");//DEBUG    
+//    Serial.println( this->_Accel_Vector[0]);//DEBUG
+    //Serial.println( this->_Accel_Vector[1]);//DEBUG
+    //Serial.println( this->_Accel_Vector[2]);//DEBUG
+  
+  
+  //THERE ARE ISSUES HERE
+   Serial.println("OMEGA");//DEBUG    
+    Serial.println(this->_Omega[0]);//DEBUG
+	Serial.println(this->_Omega_Vector[0]);//DEBUG
     
   this->Vector_Add(&this->_Omega[0], &this->_Gyro_Vector[0], &this->_Omega_I[0]);  //adding proportional term
   this->Vector_Add(&this->_Omega_Vector[0], &this->_Omega[0], &this->_Omega_P[0]); //adding Integrator term
+  
+  
+   Serial.println("Vector_Add");//DEBUG    
+    Serial.println(this->_Omega[0]);//DEBUG
+	Serial.println(this->_Omega_Vector[0]);//DEBUG
+    
+  
+  
   
  #if IMU_OUTPUTMODE==1         
   this->_Update_Matrix[0][0]=0;
@@ -511,6 +617,16 @@ void ImuSensor::Matrix_update(void)
       this->_DCM_Matrix[x][y]+=this->_Temporary_Matrix[x][y];
     } 
   }
+  
+  
+  
+    
+
+  
+  
+  
+  
+  
 }
 
 void ImuSensor::Euler_angles(void)
@@ -518,6 +634,16 @@ void ImuSensor::Euler_angles(void)
   this->_pitch = -asin(this->_DCM_Matrix[2][0]);
   this->_roll = atan2(this->_DCM_Matrix[2][1],this->_DCM_Matrix[2][2]);
   this->_yaw = atan2(this->_DCM_Matrix[1][0],this->_DCM_Matrix[0][0]);
+  
+
+    
+  //DEBUG
+  //Serial.println(F("Euler_angles"));
+  //Serial.println(this->_DCM_Matrix[2][0]);
+  //Serial.println(this->_DCM_Matrix[2][1]);
+  //Serial.println(this->_DCM_Matrix[2][2]);
+  //Serial.println(this->_DCM_Matrix[1][0]);
+  //Serial.println(this->_DCM_Matrix[0][0]);  
 }
 
 void ImuSensor::Accel_Init()
@@ -598,6 +724,8 @@ void ImuSensor::Read_Gyro()
   this->_gyro_y = this->_SENSOR_SIGN[1] * (this->_AN[1] - this->_AN_OFFSET[1]);
   this->_gyro_z = this->_SENSOR_SIGN[2] * (this->_AN[2] - this->_AN_OFFSET[2]);  
 
+  
+  
 }
 
 // Reads x,y and z accelerometer registers
@@ -619,6 +747,8 @@ void ImuSensor::Read_Accel()
   this->_accel_x = this->_SENSOR_SIGN[3] * (this->_AN[3] - this->_AN_OFFSET[3]);
   this->_accel_y = this->_SENSOR_SIGN[4] * (this->_AN[4] - this->_AN_OFFSET[4]);
   this->_accel_z = this->_SENSOR_SIGN[5] * (this->_AN[5] - this->_AN_OFFSET[5]);
+  
+  
 }
 
 void ImuSensor::Read_Compass()
@@ -636,6 +766,9 @@ void ImuSensor::Read_Compass()
   this->_magnetom_y = this->_SENSOR_SIGN[7] * this->_compass.m.y;
   this->_magnetom_z = this->_SENSOR_SIGN[8] * this->_compass.m.z;
 #endif
+  
+
+
 }
 //Multiply two 3x3 matrixs. This function developed by Jordi can be easily adapted to multiple n*n matrix's. (Pero me da flojera!). 
 void ImuSensor::Matrix_Multiply(float a[3][3], float b[3][3], float mat[3][3])
@@ -658,10 +791,19 @@ float ImuSensor::Vector_Dot_Product(float vector1[3],float vector2[3])
 {
   float op=0;
   
+  
+    //Serial.println("VECTOR DEBUG");//DEBUG    
+    //Serial.println(vector1[1]);//DEBUG
+    //Serial.println(vector1[2]);//DEBUG
+    //Serial.println(vector1[3]);//DEBUG
+	
+	
   for(int c=0; c<3; c++)
   {
 	op+=vector1[c]*vector2[c];
   }  
+  
+
   return op; 
 }
 //Computes the cross product of two vectors
@@ -678,6 +820,9 @@ void ImuSensor::Vector_Scale(float vectorOut[3],float vectorIn[3], float scale2)
   {
    vectorOut[c]=vectorIn[c]*scale2; 
   }
+  
+  Serial.println(F("VECTOR SCALE"));//DEBUG
+  Serial.println(vectorOut[0]);//DEBUG
 }
 //Adds Vectors
 void ImuSensor::Vector_Add(float vectorOut[3],float vectorIn1[3], float vectorIn2[3])
