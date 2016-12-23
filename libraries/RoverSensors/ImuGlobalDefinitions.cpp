@@ -18,9 +18,6 @@
 //IMU Variable Externally (Already) Defined Variables
 extern int SENSOR_SIGN[9];
 extern float G_Dt;
-extern long timer;
-extern long timer_old;
-extern long timer24;
 extern int AN[6];
 extern int AN_OFFSET[6];
 extern int gyro_x;
@@ -47,10 +44,9 @@ extern float pitch;
 extern float yaw;
 extern float errorRollPitch[3];
 extern float errorYaw[3];
-extern unsigned int counter;
 extern byte gyro_sat;
 extern float DCM_Matrix[3][3];
-extern  float Update_Matrix[3][3];
+extern float Update_Matrix[3][3];
 extern float Temporary_Matrix[3][3];
 
 

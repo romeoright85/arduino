@@ -1,6 +1,12 @@
 /*
-The counter is incremented for each delay interval reached. (the delay is controlled by the timer). So the counter will count the number of delays (delay intervals). Only once the number of delays have been achieved, the counter will produce a counter done flag and stay there until it is reset by the object that needs to use the counter.
+The timer will count to the provided delay interval.
+Once that is reached, it will increment the counter that is passed to it.
+So the counter, that is passed to this timer, will count the number of delays (delay intervals).
+Only once the number of delay intervals have been achieved, the counter (that is passed to this timer) will produce a counter done flag and stay there until it is reset by the object that needs to use the counter.
 
+	
+	
+	
 
 The timer will check for the time each time GlobalDelayTimer::Running() is executed.
 So it need to be executed in a loop such as loop().
@@ -12,6 +18,33 @@ Then it will increment the DelayCounter's "period" counter.
 The reason for this is just in case the main code has different periods it want to check, you can create a DelayCounter object for each desired increments of the delayInterval.
 So for the total desired delay, you multiply delayInterval by the number of counted "periods".
 i.e. for a 5ms delayInterval with a stop value to count up to of 10, you get 5ms x 10 = 50ms
+
+
+
+
+--------------------
+Example Use:
+--------------------
+#include <GlobalDelayTimer.h>
+#include <DelayCounter.h>
+
+DelayCounter * counter = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods
+GlobalDelayTimer * timer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, counter);//set each period to be 5ms long (delay interval)
+
+
+In the main loop() function put:
+	mainTimer->Running();//activate the timer
+	
+Then in the loop (either directly or by some other function, class method, etc.)
+
+if (this->_counterPtr->countReached())
+{
+	//do something
+	this->_counterPtr->counterReset();//reset the counter
+}//end if
+--------------------
+	
+	
 */
 
 //GlobalDelayTimer.h
@@ -32,12 +65,12 @@ class GlobalDelayTimer : public virtual RoverReset {
 public:
 	GlobalDelayTimer(byte, DelayCounter * );//constructor, (delayInterval value, DelayCounter pointer)
 	~GlobalDelayTimer();//destructor
-	void Running();//activates the clock
+	void Running();//activates the clock	
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
 	unsigned long _prevMillis;//holds the previous counter value
 	byte _delayInterval;//holds the delay interval size
-	DelayCounter * _counterPtr;//delay counter pointer
+	DelayCounter * _counterPtr;//delay counter pointer		
 };
 
 

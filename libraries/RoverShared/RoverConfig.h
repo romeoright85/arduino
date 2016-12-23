@@ -154,6 +154,8 @@
 	//definition for DelayCounter Periods
 	#ifdef _DELAYCOUNTERPERIODS
 		#define DELAY_1_PERIODS 1
+		#define DELAY_2_PERIODS 2
+		#define DELAY_4_PERIODS 4
 		#define DELAY_10_PERIODS 10
 		#define DELAY_80_PERIODS 80
 		#define DELAY_200_PERIODS 200

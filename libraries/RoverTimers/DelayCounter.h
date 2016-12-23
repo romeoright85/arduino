@@ -14,6 +14,30 @@ You can use DelayCounter::setStopValue() or DelayCounter::setStartValue() to set
 Use DelayCounter::getCnt() to get the current count the counter is at.
 Use DelayCounter::counterReset() to reset the counter to the startValue and clear the counterDone flag.
 
+
+
+--------------------
+Example Use:
+--------------------
+#include <GlobalDelayTimer.h>
+#include <DelayCounter.h>
+
+DelayCounter * counter = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods
+GlobalDelayTimer * timer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, counter);//set each period to be 5ms long (delay interval)
+
+
+In the main loop() function put:
+	mainTimer->Running();//activate the timer
+	
+Then in the loop (either directly or by some other function, class method, etc.)
+
+if (this->_counterPtr->countReached())
+{
+	//do something
+	this->_counterPtr->counterReset();//reset the counter
+}//end if
+--------------------
+
 */
 
 //DelayCounter.h

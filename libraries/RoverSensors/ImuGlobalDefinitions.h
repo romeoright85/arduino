@@ -73,9 +73,7 @@ int SENSOR_SIGN[9] = { 1,1,1,-1,-1,-1,1,1,1 }; //Correct directions x,y,z - gyro
 								
 float G_Dt = 0.02;    // Integration time (DCM algorithm)  We will run the integration loop at 50Hz if possible
 
-long timer = 0;   //general purpuse timer
-long timer_old;
-long timer24 = 0; //Second timer used to print values
+
 int AN[6]; //array that stores the gyro and accelerometer data
 int AN_OFFSET[6] = { 0,0,0,0,0,0 }; //Array that stores the Offset of the sensors
 
@@ -107,8 +105,6 @@ float yaw;
 
 float errorRollPitch[3] = { 0,0,0 };
 float errorYaw[3] = { 0,0,0 };
-
-unsigned int counter = 0;
 byte gyro_sat = 0;
 
 float DCM_Matrix[3][3] = {
