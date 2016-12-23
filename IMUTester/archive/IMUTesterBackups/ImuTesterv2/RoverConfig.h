@@ -210,7 +210,7 @@
 
 	// accelerometer: 8 g sensitivity
 	// 3.9 mg/digit; 1 g = 256
-	#define GRAVITY 256  //this equivalent to 1G in the raw data coming from the accelerometer
+	#define IMU_GRAVITY 256  //this equivalent to 1G in the raw data coming from the accelerometer
 
 	#define ToRad(x) ((x)*0.01745329252)  // *pi/180
 	#define ToDeg(x) ((x)*57.2957795131)  // *180/pi
@@ -227,11 +227,11 @@
 	/*For debugging purposes*/
 	//IMU_OUTPUTMODE=1 will print the corrected data,
 	//IMU_OUTPUTMODE=0 will print uncorrected data of the gyros (with drift)
-	#define OUTPUTMODE 1
+	#define IMU_OUTPUTMODE 1
 
-	#define PRINT_DCM 0     //Will print the whole direction cosine matrix
-	#define PRINT_ANALOGS 0 //Will print the analog raw data
-	#define PRINT_EULER 1   //Will print the Euler angles Roll, Pitch and Yaw
+	#define IMU_PRINT_DCM 0     //Will print the whole direction cosine matrix
+	#define IMU_PRINT_ANALOGS 0 //Will print the analog raw data
+	#define IMU_PRINT_EULER 1   //Will print the Euler angles Roll, Pitch and Yaw
 			
 	//==End Of Intergrated Code From Others
 	

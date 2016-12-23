@@ -35,17 +35,17 @@
 		// LSM303/LIS3MDL magnetometer calibration constants; use the Calibrate example from
 		// the Pololu LSM303 or LIS3MDL library to find the right values for your board
 
-		#define M_X_MIN -1000
-		#define M_Y_MIN -1000
-		#define M_Z_MIN -1000
-		#define M_X_MAX +1000
-		#define M_Y_MAX +1000
-		#define M_Z_MAX +1000
+		#define IMU_M_X_MIN -1000
+		#define IMU_M_Y_MIN -1000
+		#define IMU_M_Z_MIN -1000
+		#define IMU_M_X_MAX +1000
+		#define IMU_M_Y_MAX +1000
+		#define IMU_M_Z_MAX +1000
 
-		#define Kp_ROLLPITCH 0.02
-		#define Ki_ROLLPITCH 0.00002
-		#define Kp_YAW 1.2
-		#define Ki_YAW 0.00002
+		#define IMU_Kp_ROLLPITCH 0.02
+		#define IMU_Ki_ROLLPITCH 0.00002
+		#define IMU_Kp_YAW 1.2
+		#define IMU_Ki_YAW 0.00002
 		//==End Of Intergrated Code From Others
 		
 	#endif
