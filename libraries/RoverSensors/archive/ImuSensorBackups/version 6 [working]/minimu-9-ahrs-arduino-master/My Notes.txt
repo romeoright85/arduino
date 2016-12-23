@@ -1,0 +1,1 @@
+I revised MinIMU-9-test[revised] to accomodate the COM port 8 (instead of 9) and the baud rate of 9600 instead of 115200.

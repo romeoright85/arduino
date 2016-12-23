@@ -1,4 +1,5 @@
-//ImuGlobalDefintions.h
+//ImuSensor.h
+
 
 
 /*
@@ -103,6 +104,8 @@ float roll;
 float pitch;
 float yaw;
 
+
+
 float errorRollPitch[3] = { 0,0,0 };
 float errorYaw[3] = { 0,0,0 };
 byte gyro_sat = 0;
@@ -137,7 +140,7 @@ float Vector_Dot_Product(float vector1[3], float vector2[3]);
 void Vector_Cross_Product(float vectorOut[3], float v1[3], float v2[3]);
 void Vector_Scale(float vectorOut[3], float vectorIn[3], float scale2);
 void Vector_Add(float vectorOut[3], float vectorIn1[3], float vectorIn2[3]);
-void printdata(void);
+void printInAHRSFormat(void);
 void Matrix_Multiply(float a[3][3], float b[3][3], float mat[3][3]);
 void I2C_Init();
 void Gyro_Init();
@@ -152,3 +155,7 @@ void Matrix_update(void);
 void Euler_angles(void);
 void Imu_Init();
 void Imu_Calculations();
+float getHeading();
+float getRoll();
+float getPitch();
+float getYaw();

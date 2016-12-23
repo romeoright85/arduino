@@ -1,19 +1,22 @@
-//ImuGlobalDefinitions.cpp
+//ImuSensor.cpp
+
+
+//uncomment to print debugging information
+//Note: Since ImuSensor.cpp isn't calling ImuSensor.h (since global variables are define it in and can't have duplication since ImuSensor.h is called by the main .ino file already), then put this debug verbose flag here
+//#define _DEBUG_VERBOSE
+
+
+
+
 
 #include <Arduino.h>
 #include <Wire.h>
-
-
-//Note: Since ImuGlobalDefinitions.cpp isn't calling ImuSensor.h, then some of the headers and definitions have to be called here (again)
+//Note: Since ImuSensor.cpp isn't calling ImuSensor.h, then some of the headers and definitions have to be called here (again)
 #define _IMU_DEFINITIONS
 #define _IMU_CALIBRATIONS
-
 #include <RoverCalibration.h>
 #include <RoverConfig.h>
 
-//uncomment to print debugging information
-//Note: Since ImuGlobalDefinitions.cpp isn't calling ImuSensor.h, then put this debug verbose flag here
-// #define _DEBUG_VERBOSE
 
 //IMU Variable Externally (Already) Defined Variables
 extern int SENSOR_SIGN[9];
@@ -121,61 +124,6 @@ void Vector_Add(float vectorOut[3], float vectorIn1[3], float vectorIn2[3])
 	}
 }
 
-void printdata(void)
-{
-	Serial.print("!");
-
-#if PRINT_EULER == 1
-	Serial.print("ANG:");
-	Serial.print(ToDeg(roll));
-	Serial.print(",");
-	Serial.print(ToDeg(pitch));
-	Serial.print(",");
-	Serial.print(ToDeg(yaw));
-#endif      
-#if PRINT_ANALOGS==1
-	Serial.print(",AN:");
-	Serial.print(AN[0]);  //(int)read_adc(0)
-	Serial.print(",");
-	Serial.print(AN[1]);
-	Serial.print(",");
-	Serial.print(AN[2]);
-	Serial.print(",");
-	Serial.print(AN[3]);
-	Serial.print(",");
-	Serial.print(AN[4]);
-	Serial.print(",");
-	Serial.print(AN[5]);
-	Serial.print(",");
-	Serial.print(c_magnetom_x);
-	Serial.print(",");
-	Serial.print(c_magnetom_y);
-	Serial.print(",");
-	Serial.print(c_magnetom_z);
-#endif
-#if PRINT_DCM == 1
-	Serial.print(",DCM:");
-	Serial.print(DCM_Matrix[0][0]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[0][1]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[0][2]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[1][0]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[1][1]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[1][2]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[2][0]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[2][1]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[2][2]);
-#endif
-	Serial.println();
-
-}
 
 void Matrix_Multiply(float a[3][3], float b[3][3], float mat[3][3])
 {
@@ -493,5 +441,83 @@ void Imu_Calculations()
 
 
 
+float getHeading()
+{
+	return compass.heading();
+}
+
+float getRoll()
+{
+	return ToDeg(roll);
+}
 
 
+float getPitch()
+{
+	return ToDeg(pitch);
+}
+
+
+float getYaw()
+{
+	return ToDeg(yaw);
+}
+
+
+
+void printInAHRSFormat(void)
+{
+	Serial.print("!");
+
+#if PRINT_EULER == 1
+	Serial.print("ANG:");
+	Serial.print(getRoll());
+	Serial.print(",");
+	Serial.print(getPitch());
+	Serial.print(",");
+	Serial.print(getYaw());
+		
+#endif      
+#if PRINT_ANALOGS==1
+	Serial.print(",AN:");
+	Serial.print(AN[0]);  //(int)read_adc(0)
+	Serial.print(",");
+	Serial.print(AN[1]);
+	Serial.print(",");
+	Serial.print(AN[2]);
+	Serial.print(",");
+	Serial.print(AN[3]);
+	Serial.print(",");
+	Serial.print(AN[4]);
+	Serial.print(",");
+	Serial.print(AN[5]);
+	Serial.print(",");
+	Serial.print(c_magnetom_x);
+	Serial.print(",");
+	Serial.print(c_magnetom_y);
+	Serial.print(",");
+	Serial.print(c_magnetom_z);
+#endif
+#if PRINT_DCM == 1
+	Serial.print(",DCM:");
+	Serial.print(DCM_Matrix[0][0]);
+	Serial.print(",");
+	Serial.print(DCM_Matrix[0][1]);
+	Serial.print(",");
+	Serial.print(DCM_Matrix[0][2]);
+	Serial.print(",");
+	Serial.print(DCM_Matrix[1][0]);
+	Serial.print(",");
+	Serial.print(DCM_Matrix[1][1]);
+	Serial.print(",");
+	Serial.print(DCM_Matrix[1][2]);
+	Serial.print(",");
+	Serial.print(DCM_Matrix[2][0]);
+	Serial.print(",");
+	Serial.print(DCM_Matrix[2][1]);
+	Serial.print(",");
+	Serial.print(DCM_Matrix[2][2]);
+#endif
+	Serial.println();
+
+}
