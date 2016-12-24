@@ -65,10 +65,10 @@
 	
 	
 	//uncomment the debug flag below to print the received data string
-	//#define _DEBUG_OUTPUT_RXDATA_
+	#define _DEBUG_OUTPUT_RXDATA_
 	
 	//uncomment the debug flag below to see other data as required
-	//#define _DEBUG_OUTPUT_CMDTYPE_
+	#define _DEBUG_OUTPUT_CMDTYPE_
 	
 
 	class RoverComm : public virtual RoverReset {

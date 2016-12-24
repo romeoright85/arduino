@@ -9,22 +9,26 @@
 	
 	//Serial Communications
 	//Note: CMNC = Command and Control
+	//Note: Make sure the baud rates match on both ends of the pair of devices in communication
 	#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
 	#define PC_USB_BAUD_RATE	9600 //used for outputting from UNO, Mega Arduinos to the PC via USB
-	#define MAIN_BAUD_RATE 9600
-	#define AUXI_BAUD_RATE 115200
+	#define MAIN_BAUD_RATE 115200
+	#define COMM_BAUD_RATE 115200
 	#define NAVI_BAUD_RATE 115200
+	#define AUXI_BAUD_RATE 115200	
 	#define GPS_BAUD_RATE 57600// The default GPS baud rate is 57600
 	#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
 	
 	//Arduino Types
+	//Matching the Arduino numbering with the Microcontroller labels
 	#define ARDUINO_NAVI		1
 	#define ARDUINO_AUXI		2
 	#define ARDUINO_MAIN	3
 	#define ARDUINO_COMM	4
 	
 
-
+	
+	
 	//definition for RoverGpsSensor
 	#ifdef _GPS_SENSOR
 		//GPS Number of Attempts To Obtain A Valid Data String
@@ -148,7 +152,8 @@
 		#define ROVERCOMM_NAVI 2
 		#define ROVERCOMM_AUXI 3
 		#define ROVERCOMM_MAIN 4
-		#define ROVERCOMM_COMM 5
+		#define ROVERCOMM_COMM 5		
+		#define ROVERCOMM_PC_USB 6		
 	#endif
 	
 	//definition for DelayCounter Periods
@@ -352,7 +357,13 @@
 		#define NAVI_WAKEUP_CTRL_PIN			4
 		#define AUXI_WAKEUP_CTRL_PIN			5
 		#define COMM_HW_RESET_CTRL_PIN			12
-		#define MTR_FET_CTRL_PIN				12
+		#define MTR_FET_CTRL_PIN				13		
+		#define MAIN_HW_UART3_TX_PIN		14
+		#define MAIN_HW_UART3_RX_PIN	15
+		#define MAIN_HW_UART2_TX_PIN		16
+		#define MAIN_HW_UART2_RX_PIN	17
+		#define MAIN_HW_UART1_TX_PIN		18
+		#define MAIN_HW_UART1_RX_PIN	19
 		#define ENCODER_A_MID_LEFT					20
 		#define ENCODER_A_MID_RIGHT					21
 		#define MTR_ENABLE_STATUS				22
@@ -370,6 +381,8 @@
 		#define RIGHT_LASER_CTRL_PIN			5
 		#define CURRENT_SENSOR_RESET_PIN		11
 		#define CURRENT_FAULT_1_7D2V_25A_PRESW_PIN				12
+		#define AUXI_HW_UART2_TX_PIN		16
+		#define AUXI_HW_UART2_RX_PIN		17
 		#define IMU_SDA_PIN						20
 		#define IMU_SCL_PIN						21
 		#define AMUX1_SEL_0_PIN				22
@@ -425,6 +438,8 @@
 		#define SERVO_TILT_PIN						10
 		#define BUFFER_SELECT_PIN					11
 		#define GPS_DATA_PIN						15
+		#define MAIN_HW_UART2_TX_PIN		16
+		#define MAIN_HW_UART2_RX_PIN	17		
 		#define ENCODER_A_FRONT_LEFT						18
 		#define ENCODER_A_FRONT_RIGHT						19
 		#define ENCODER_A_REAR_LEFT						20
