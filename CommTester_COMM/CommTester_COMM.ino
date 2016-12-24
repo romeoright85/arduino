@@ -1,4 +1,40 @@
-//Instructions: Send over USB serial /-c5--*hi or /-c5--*bye to test it.
+//Note: Can send this (about max size) to test: "/-c5--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+
+
+//Test cases for debugging
+
+//Test case 1:
+	//#define _DEBUG_IMU_TEST_CASE_
+/*
+Uncomment the line above to test the IMU AHRS formatted data
+Debug data: !ANG:1.23,4.56,78.90
+Also uncomment the _DEBUG_OUTPUT_RXDATA_ in RoverComm.h to see the received string
+*/
+
+//Test case 2:
+	//#define _DEBUG_ROVER_TEST_CASE_
+/*
+Uncomment the line above to test the Rover formatted data
+Debug data: /3c101*HelloMAINtoCMNC
+Also uncomment flag(s) in RoverComm.h to see the received string, etc.
+*/
+
+
+//Test case 3a:
+/*
+	Send (i.e. with your keyboard and using a terminal window) over USB serial
+		/-c5--*hi
+	to test the command interface for this Arduino
+*/
+
+//Test case 3b:
+/*
+	Send (i.e. with your keyboard and using a terminal window) over USB serial
+		/-c5--*bye
+	to test the command interface for this Arduino
+*/
+
+
 
 
 
@@ -22,9 +58,6 @@ RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 //Command Parser
 RoverCommand * roverCommand = new RoverCommand();
 
-//flags for data ready
-boolean dataReadyCh1;
-boolean dataReadyCh2;
 
 //{ SW_UART Declarations
 	//{ MAIN SW_UART
@@ -38,7 +71,12 @@ boolean dataReadyCh2;
 
 
 //SW resettable variables
-boolean dataWasForCOMM = false;
+//flag for dataForCOMM
+boolean dataWasForCOMM;
+//flags for data ready
+boolean dataReadyCh1;
+boolean dataReadyCh2;
+
 RoverReset * resetArray[] = {
 	roverDataCh1_COMM,
 	roverComm_Ch1,
@@ -57,8 +95,11 @@ void setup() {
 		{
 			resetArray[i]->reset();//reset the object	
 		}
-
 	}
+	//Reset flags
+	dataWasForCOMM = false;
+	dataReadyCh1 = false;
+	dataReadyCh2 = false;
 
 
 	//Setup the HW_UART
@@ -76,16 +117,30 @@ void loop() {
 	dataReadyCh1 = false;
 	dataReadyCh2 = false;
 
+	
+
+
 	//1. receive all data first
 
 	//1a. receive data from CMNC (the PC)
 	roverDataCh1_COMM->clearData();//clear data before getting new data
 	dataReadyCh1 = rxData(roverComm_Ch1, ROVERCOMM_CMNC);
-
-
+		
 	//1b. receive data from MAIN
 	roverDataCh2_COMM->clearData();//clear data before getting new data
-	dataReadyCh2 = rxData(roverComm_Ch2, ROVERCOMM_MAIN);
+	dataReadyCh2 = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+
+
+	//DEBUG Code: Data Injection (from MAIN to CMNC)
+	#ifdef _DEBUG_IMU_TEST_CASE_
+		roverComm_Ch2->setRxData("!ANG:1.23,4.56,78.90");
+		dataReadyCh2 = true;
+	#endif
+	#ifdef _DEBUG_ROVER_TEST_CASE_
+		roverComm_Ch2->setRxData("/3c101*HelloMAINtoCMNC");
+		dataReadyCh2 = true;
+	#endif
+			
 
 	//2. process data	
 
@@ -106,13 +161,15 @@ void loop() {
 	{
 
 		//3. then transmit the data if it was meant for CMNC (the PC) or MAIN
-		dataDirector(roverDataCh1_COMM);//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+		//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+		dataDirector(roverDataCh1_COMM);//Note: this is a local .ino function
+		
 
 		//4. Take any actions if the data was meant for this unit, COMM
 		if (dataWasForCOMM)
 		{
-			dataWasForCOMM = false;//reset the flag
-		   //send the RoverData to the roverCommand's parser to get the command
+			
+			//send the RoverData to the roverCommand's parser to get the command
 			roverCommand->parseCommand(roverDataCh1_COMM->getData());
 			commandDirector(roverCommand->getCommand());
 		}
@@ -127,13 +184,14 @@ void loop() {
 	{
 
 		//3. then transmit the data if it was meant for CMNC (the PC) or MAIN
-		dataDirector(roverDataCh2_COMM);//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+		//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+		dataDirector(roverDataCh2_COMM);//Note: this is a local .ino function
 
 		//4. Take any actions if the data was meant for this unit, COMM
 		if (dataWasForCOMM)
 		{
-			dataWasForCOMM = false;//reset the flag
-								   //send the RoverData to the roverCommand's parser to get the command
+			
+			//send the RoverData to the roverCommand's parser to get the command
 			roverCommand->parseCommand(roverDataCh2_COMM->getData());
 			commandDirector(roverCommand->getCommand());
 
@@ -145,6 +203,7 @@ void loop() {
 	}
 
 	delay(1000);//add some delay in between cycles
+
 
 }
 
@@ -201,17 +260,23 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 
 void dataDirector(RoverData * roverData)
 {
+	//Note: This function varies for different Arduinos
+
 	byte roverCommType = roverData->getCommType();
+
+	dataWasForCOMM = false;//reset the flag
 
 	if (roverCommType == ROVERCOMM_COMM)
 	{
 		//if the data is for this unit, CMNC
 		dataWasForCOMM = true;//set the flag that the data was for this unit, COMM
+		//process it back in the main loop (to prevent software stack from being too deep)
+		return;
 	}//end if
 	else if (roverCommType == ROVERCOMM_CMNC)
 	{
 		//if the data is for CMNC data, transmit the data out from COMM to CMNC
-		txData(roverData->getData(), ROVERCOMM_CMNC);
+		txData(roverData->getData(), ROVERCOMM_CMNC);		
 	}//end else if
 	else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 	{
@@ -222,10 +287,14 @@ void dataDirector(RoverData * roverData)
 	{
 		//invalid RoverComm Type, so do nothing
 	}//end else		
+		
+	return;
 }
 
 void txData(String txData, byte roverCommType)
 {
+	//Note: This function varies for different Arduinos
+
 	if (roverCommType == ROVERCOMM_CMNC)
 	{
 		//transmit the data to CMNC
@@ -244,22 +313,28 @@ void txData(String txData, byte roverCommType)
 
 void commandDirector(String roverCommand)
 {
-	
+	//Note: This function varies for different Arduinos
+
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
 	if (roverCommand.equals("hi"))
 	{
-		txData(F("Rx'd: helloworld"), ROVERCOMM_CMNC);//DEBUG		
+		txData(F("Valid Cmd! =)"), ROVERCOMM_CMNC);
+		txData(F("Rx'd:"), ROVERCOMM_CMNC);
+		txData(roverCommand, ROVERCOMM_CMNC);//DEBUG
 	}
 	else if (roverCommand.equals("bye"))
 	{
-		txData(F("Rx'd: goodbye"), ROVERCOMM_CMNC);//DEBUG
+		txData(F("Valid Cmd! =)"), ROVERCOMM_CMNC);
+		txData(F("Rx'd:"), ROVERCOMM_CMNC);
+		txData(roverCommand, ROVERCOMM_CMNC);//DEBUG
 	}
 	else
 	{
-		txData(F("Invalid, Rx'd:"), ROVERCOMM_CMNC);//DEBUG
+		txData(F("Invalid Cmd! =("), ROVERCOMM_CMNC);
+		txData(F("Rx'd:"), ROVERCOMM_CMNC);
 		txData(roverCommand, ROVERCOMM_CMNC);//DEBUG
 
-//DEBUG//Can send this (about max size) to test: "/ -c5--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+
 
 	}
 }
