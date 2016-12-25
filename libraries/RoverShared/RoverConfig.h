@@ -438,8 +438,8 @@
 		#define SERVO_TILT_PIN						10
 		#define BUFFER_SELECT_PIN					11
 		#define GPS_DATA_PIN						15
-		#define MAIN_HW_UART2_TX_PIN		16
-		#define MAIN_HW_UART2_RX_PIN	17		
+		#define NAVI_HW_UART2_TX_PIN		16
+		#define NAVI_HW_UART2_RX_PIN		17		
 		#define ENCODER_A_FRONT_LEFT						18
 		#define ENCODER_A_FRONT_RIGHT						19
 		#define ENCODER_A_REAR_LEFT						20

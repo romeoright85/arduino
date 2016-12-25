@@ -301,8 +301,8 @@ void loop() {
 
 
 
-boolean rxData(RoverComm * roverMain, byte roverMainType) {
-	if (roverMainType == ROVERCOMM_PC_USB)
+boolean rxData(RoverComm * roverComm, byte roverCommType) {
+	if (roverCommType == ROVERCOMM_PC_USB)
 	{
 
 		if (Serial.available() > 1)
@@ -311,7 +311,7 @@ boolean rxData(RoverComm * roverMain, byte roverMainType) {
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverMain->appendToRxData((char)Serial.read());//construct the string one char at a time
+				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
 //DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
 			}//end while
 			return true;
@@ -321,7 +321,7 @@ boolean rxData(RoverComm * roverMain, byte roverMainType) {
 			return false;
 		}//end else
 	}//end if
-	else if (roverMainType == ROVERCOMM_COMM)
+	else if (roverCommType == ROVERCOMM_COMM)
 	{
 
 		if (Serial1.available() > 1)
@@ -330,7 +330,7 @@ boolean rxData(RoverComm * roverMain, byte roverMainType) {
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverMain->appendToRxData((char)Serial1.read());//construct the string one char at a time
+				roverComm->appendToRxData((char)Serial1.read());//construct the string one char at a time
 //DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
 			}//end while
 			return true;
@@ -340,7 +340,7 @@ boolean rxData(RoverComm * roverMain, byte roverMainType) {
 			return false;
 		}//end else
 	}//end if
-	else if (roverMainType == ROVERCOMM_NAVI)
+	else if (roverCommType == ROVERCOMM_NAVI)
 	{
 
 		if (Serial2.available() > 1)
@@ -349,7 +349,7 @@ boolean rxData(RoverComm * roverMain, byte roverMainType) {
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverMain->appendToRxData((char)Serial2.read());//construct the string one char at a time
+				roverComm->appendToRxData((char)Serial2.read());//construct the string one char at a time
 //DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
 			}//end while
 			return true;
@@ -359,7 +359,7 @@ boolean rxData(RoverComm * roverMain, byte roverMainType) {
 			return false;
 		}//end else
 	}//end if
-	else if (roverMainType == ROVERCOMM_AUXI)
+	else if (roverCommType == ROVERCOMM_AUXI)
 	{
 
 		if (Serial3.available() > 1)
@@ -368,7 +368,7 @@ boolean rxData(RoverComm * roverMain, byte roverMainType) {
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverMain->appendToRxData((char)Serial3.read());//construct the string one char at a time
+				roverComm->appendToRxData((char)Serial3.read());//construct the string one char at a time
 //DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
 			}//end while
 			return true;
@@ -393,33 +393,33 @@ void dataDirector(RoverData * roverData)
 {
 	//Note: This function varies for different Arduinos
 
-	byte roverMainType = roverData->getCommType();
+	byte roverCommType = roverData->getCommType();
 
 	dataWasForMAIN = false;//reset the flag
 
-	if (roverMainType == ROVERCOMM_MAIN)
+	if (roverCommType == ROVERCOMM_MAIN)
 	{
 		//if the data is for this unit, MAIN
 		dataWasForMAIN = true;//set the flag that the data was for this unit, MAIN
 		//process it back in the main loop (to prevent software stack from being too deep)
 		return;
 	}//end if
-	else if (roverMainType == ROVERCOMM_PC_USB)
+	else if (roverCommType == ROVERCOMM_PC_USB)
 	{
 		//if the data is for the PC USB, transmit the data out from MAIN to PC USB
 		txData(roverData->getData(), ROVERCOMM_PC_USB);
 	}//end else if
-	else if (roverMainType == ROVERCOMM_COMM)
+	else if (roverCommType == ROVERCOMM_COMM)
 	{
 		//if the data is for COMM, transmit the data out from MAIN to COMM
 		txData(roverData->getData(), ROVERCOMM_COMM);
 	}//end else if
-	else if (roverMainType == ROVERCOMM_NAVI)
+	else if (roverCommType == ROVERCOMM_NAVI)
 	{
 		//if the data is for CMNC, transmit the data out from MAIN to NAVI
 		txData(roverData->getData(), ROVERCOMM_NAVI);
 	}//end else if
-	else if (roverMainType == ROVERCOMM_AUXI)
+	else if (roverCommType == ROVERCOMM_AUXI)
 	{
 		//if the data is for CMNC, transmit the data out from MAIN to AUXI
 		txData(roverData->getData(), ROVERCOMM_AUXI);
@@ -432,27 +432,27 @@ void dataDirector(RoverData * roverData)
 	return;
 }
 
-void txData(String txData, byte roverMainType)
+void txData(String txData, byte roverCommType)
 {
 	//Note: This function varies for different Arduinos
 
-	if (roverMainType == ROVERCOMM_MAIN || roverMainType == ROVERCOMM_PC_USB)
+	if (roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_PC_USB)
 	{
 		//transmit the data through the USB of this Arduino (i.e. for debug)
 		Serial.println(txData);
 	}//end if
-	else if (roverMainType == ROVERCOMM_COMM)
+	else if (roverCommType == ROVERCOMM_COMM)
 	{
 		//transmit the data to COMM
 		Serial1.println(txData);
 		
 	}//end if
-	else if (roverMainType == ROVERCOMM_NAVI)
+	else if (roverCommType == ROVERCOMM_NAVI)
 	{
 		//transmit the data to NAVI
 		Serial2.println(txData);
 	}//end if
-	else if (roverMainType == ROVERCOMM_AUXI)
+	else if (roverCommType == ROVERCOMM_AUXI)
 	{
 		//transmit the data to AUXI
 		Serial3.println(txData);
