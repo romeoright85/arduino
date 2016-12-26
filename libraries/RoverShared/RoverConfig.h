@@ -28,6 +28,26 @@
 	
 
 	
+	//definition for MQ Gas Sensors
+	#ifdef _MQ_GAS_SENSOR_DEFINITIONS
+		#define GAS_SENSOR_TYPE_MQ2		2
+		#define GAS_SENSOR_TYPE_MQ3		3
+		#define GAS_SENSOR_TYPE_MQ4		4
+		#define GAS_SENSOR_TYPE_MQ6		6
+		#define GAS_SENSOR_TYPE_MQ7		7
+		#define GAS_SENSOR_TYPE_MQ9		9
+		
+		#define GAS_SENSOR_CURVE_X			0
+		#define GAS_SENSOR_CURVE_Y			1
+		#define GAS_SENSOR_CURVE_SLOPE	2
+		
+		CALIBARAION_SAMPLE_TIMES
+		CALIBRATION_SAMPLE_INTERVAL
+		READ_SAMPLE_INTERVAL
+		READ_SAMPLE_TIMES
+	#endif	
+
+
 	
 	//definition for UpTime
 	#ifdef _UPTIME_DEFINITIONS

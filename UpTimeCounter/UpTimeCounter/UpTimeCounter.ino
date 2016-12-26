@@ -27,7 +27,7 @@ void loop() {
 
 	roverUptime->printUptime();
 
-	delay(random(500, 5000));//delay a randon number between 0.5 a second to 5 seconds
+	delay(random(500, 5000));//delay a randon number between 0.5 a second to 5 seconds in order to test the code by seeing time variability
 }
 
 

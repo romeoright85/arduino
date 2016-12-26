@@ -229,13 +229,23 @@ double RoverAnalogSignals::getTempValueOf(byte analogSignalName, double fixedRes
 }
 double RoverAnalogSignals::getGasValueOf(byte analogSignalName, double fixedResistorValue)
 {
+	
+	long measuredVcc = this->readVcc();
+	
 	double outputVoltage;
+	double resistanceInOhms;
 	//Get the voltage value of the analog mux channel
 	outputVoltage = this->getVoltageValueOf(analogSignalName);
-	//???
-//FINISH WRITING ME, DEBUG
-	return outputVoltage;//DEBUG
+	//Convert voltage output of resistor divider to measured resistance
+	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, fixedResistorValue);
+	
+	return resistanceInOhms;//DEBUG
+	
+	
+	
 }	
+
+
 double RoverAnalogSignals::calculateResistance(long measuredVcc, double outputVoltage, double fixedResistorValue)
 {
 	//Convert voltage to resistance

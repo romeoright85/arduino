@@ -21,6 +21,52 @@
 	#endif	
 
 	
+	
+	//definition for MQ Gas Sensors
+	#ifdef _MQ_GAS_SENSOR_CALIBRATIONS
+
+		//MQ-2 (Flammable Gas & Smoke Sensor) Curve Values (from the datasheet)
+		#define MQ2_X_PT				2.3  //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		#define MQ2_Y_PT					0.53 //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		#define MQ2_SLOPE				-0.44 //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		#define MQ2_RO_CLEAN_AIR_FACTOR			9.83 //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		
+		//MQ-3 (Alcohol Gas Sensor) Curve Values (from the datasheet)
+		#define MQ3_X_PT				1.1  //DEBUG, get values later. For now create random fake values.
+		#define MQ3_Y_PT					0.22 //DEBUG, get values later. For now create random fake values.
+		#define MQ3_SLOPE				-0.33 //DEBUG, get values later. For now create random fake values.
+		#define MQ3_RO_CLEAN_AIR_FACTOR			9.87 //DEBUG, get values later. For now create random fake values.
+	
+		//MQ-4 (Methane Gas Sensor) Curve Values (from the datasheet)
+		#define MQ4_X_PT				1.1  //DEBUG, get values later. For now create random fake values.
+		#define MQ4_Y_PT					0.22 //DEBUG, get values later. For now create random fake values.
+		#define MQ4_SLOPE				-0.33 //DEBUG, get values later. For now create random fake values.
+		#define MQ4_RO_CLEAN_AIR_FACTOR			9.87 //DEBUG, get values later. For now create random fake values.
+		
+		//MQ-6 (LPG / Isobutane / Propane Gas Sensor)
+		#define MQ6_X_PT				2.3  //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		#define MQ6_Y_PT					0.21 //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		#define MQ6_SLOPE				-0.47 //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		#define MQ6_RO_CLEAN_AIR_FACTOR			9.83 //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+
+		//MQ-7 (Carbon Monoxide Gas Sensor)
+		#define MQ7_X_PT				2.3  //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		#define MQ7_Y_PT					0.72 //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		#define MQ7_SLOPE				-0.34 //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+		#define MQ7_RO_CLEAN_AIR_FACTOR			9.83 //DEBUG, get values later. For now was from http://sandboxelectronics.com/?p=165
+
+		//MQ-9 (Carbon Monoxide & Flammable Gas Sensor)
+		#define MQ9_X_PT				1.1  //DEBUG, get values later. For now create random fake values.
+		#define MQ9_Y_PT					0.22 //DEBUG, get values later. For now create random fake values.
+		#define MQ9_SLOPE				-0.33 //DEBUG, get values later. For now create random fake values.
+		#define MQ9_RO_CLEAN_AIR_FACTOR			9.87 //DEBUG, get values later. For now create random fake values.
+		
+		//Also see "RESISTOR_GAS_BEACONCCA_RIGHTPOINTING"
+		
+	#endif
+	
+	
+	
 	#ifdef _SERVOSIGNAL_CALIBRATIONS
 		//Servo Limits
 		//Got these values from trial and error. The servos don't do well after 175 or before 5 degrees

@@ -72,7 +72,7 @@ public:
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)	
 	void forcedReset();//force resets the clock. Else don't reset the clock with SW resets as you still want to monitor how long the rover has been online
 	unsigned long getDays();
-	byte getHours();
+	byte getHours();//in 24 hour format
 	byte getMinutes();
 	byte getSeconds();
 	void run();//keeps the clock running in the background (i.e. calculations). This is required to run in the background in order to monitor any roll overs.

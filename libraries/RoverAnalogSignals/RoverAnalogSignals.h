@@ -7,6 +7,7 @@
 	#include <RoverReset.h>
 	#include <AnalogMuxSensor.h>
 	#include <RoverVcc.h>
+	#include <MqGasSensor.h>
 
 	
 	//References:
@@ -17,6 +18,15 @@
 	//https://www.pololu.com/product/2197
 	//ACS711_25A
 	//https://www.pololu.com/product/2198
+	
+	
+	/*	
+	Note: MqGasSensor and RoverAnalogSignals are tightly coupled because:
+	RoverAnalogSignals's getGasValueOf() uses MqGasSensor's getGasPercentage()
+	MqGasSensor's calibrate() uses RoverAnalogSignals's getRawADCValueOf()
+	*/	
+		
+	
 	
 	
 	//turn on the analog names in RoverConfig.h
@@ -70,6 +80,8 @@
 		
 		//holds pointers to AnalogMuxSensor
 		AnalogMuxSensor * _muxArray[8];
+		
+		//holds pointers to the reset array
 		RoverReset * _resetArray[8];
 		
 		
@@ -84,7 +96,7 @@
 		byte _amux8AnalogNames[8];
 		
 		AnalogMuxSensor * findMuxBySignalName(byte);//returns the first mux in the _muxArray with the analog signal name (using a for loop). The intention is not to use the same name twice, else you'd only get the first mux that has it. (analog signal name)
-		
+				
 	};
 
 	#endif 
