@@ -29,6 +29,14 @@
 
 	
 	
+	//definition for UpTime
+	#ifdef _UPTIME_DEFINITIONS
+		//value was arbitrarily chosen to be somewhat near the max value for millis() of 4,294,967,295 but not too close to the max to account for any loop delay
+		#define UPTIME_ROLLOVER_UPPER_THRESHOLD 3000000000
+		//value was arbitrarily chosen to be something small since roll over has occured, but big enough to account for any loop code delay
+		#define UPTIME_ROLLOVER_LOWER_THRESHOLD 100000
+	#endif	
+	
 	//definition for RoverGpsSensor
 	#ifdef _GPS_SENSOR
 		//GPS Number of Attempts To Obtain A Valid Data String
