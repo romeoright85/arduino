@@ -2,9 +2,8 @@
 
 RoverAnalogSignals::RoverAnalogSignals()
 {
-		
-	//Define the amux names below before passing it to the AnalogMuxSensor objects
-	
+						
+	//Define the amux names below before passing it to the AnalogMuxSensor objects	
 	//AMUX 1
 	this->_amux1AnalogNames[0] = VOLTAGE_7D2_RAW;
 	this->_amux1AnalogNames[1] = CURRENT_7D2_PRESW25A;
@@ -116,7 +115,10 @@ RoverAnalogSignals::RoverAnalogSignals()
 	this->_resetArray[5] = this->_amux6;
 	this->_resetArray[6] = this->_amux7;
 	this->_resetArray[7] = this->_amux8;	
-		
+
+	
+	
+	
 }
 
 RoverAnalogSignals::~RoverAnalogSignals()
@@ -125,11 +127,12 @@ RoverAnalogSignals::~RoverAnalogSignals()
 }
 void RoverAnalogSignals::reset()
 {
-	//resetting all muxes
+	//resetting all muxes and gas sensor
 	for (byte i = 0; i < sizeof(this->_resetArray) / sizeof(this->_resetArray[0]); i++)
 	{
 		this->_resetArray[i]->reset();
-	}
+	}	
+	
 }
 AnalogMuxSensor * RoverAnalogSignals::findMuxBySignalName(byte analogSignalName)
 {	
@@ -227,21 +230,33 @@ double RoverAnalogSignals::getTempValueOf(byte analogSignalName, double fixedRes
 	//Convert resistance to temperature
 	return 1 / ( 1 / TEMP_CONSTANT_T0 + 1 / TEMP_CONSTANT_B * log( resistanceInOhms / TEMP_CONSTANT_R0 ) );	
 }
-double RoverAnalogSignals::getGasValueOf(byte analogSignalName, double fixedResistorValue)
+int RoverAnalogSignals::getGasValueOf(MqGasSensor * mqGasSensor)
 {
 	
-	long measuredVcc = this->readVcc();
-	
-	double outputVoltage;
-	double resistanceInOhms;
-	//Get the voltage value of the analog mux channel
-	outputVoltage = this->getVoltageValueOf(analogSignalName);
-	//Convert voltage output of resistor divider to measured resistance
-	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, fixedResistorValue);
-	
-	return resistanceInOhms;//DEBUG
-	
-	
+	/*
+		Reference: http://sandboxelectronics.com/?p=165
+		Based on the MqGasSensor object's mqGasSensorDataCurve data (which is based on sensor type),
+		by using the slope and a point of the line. The x(logarithmic value of ppm) 
+		of the line could be derived if y(rs_ro_ratio) is provided. As it is a 
+		logarithmic coordinate, power of 10 is used to convert the result to non-logarithmic 
+		 value.
+		 
+		 This function calculates and returns the ppm (parts per million) of the target gas.
+	*/	
+
+	//calculate and set (in mqGasSensor) the Rs/R0 ratio
+	this->calculateGasSensorRsRoRatio(mqGasSensor);
+
+	return (
+		pow(10, (
+					(
+						(
+							log(mqGasSensor->getRsRoRatio()) - mqGasSensor->mqGasSensorDataCurve[1]
+						) / mqGasSensor->mqGasSensorDataCurve[2]						
+					) + mqGasSensor->mqGasSensorDataCurve[0]
+				)
+		)
+	);
 	
 }	
 
@@ -254,5 +269,81 @@ double RoverAnalogSignals::calculateResistance(long measuredVcc, double outputVo
 	//Note: Vcc is Vin in this case.
 	//returns resistance in ohms
 	
-	return outputVoltage * fixedResistorValue / ( measuredVcc + outputVoltage );
+	return outputVoltage * fixedResistorValue / ( measuredVcc + outputVoltage );		
+}
+
+
+double RoverAnalogSignals::calculateGasSensorResistance(MqGasSensor * mqGasSensor)
+{
+	
+
+	/*
+	Notes from http://sandboxelectronics.com/?p=165
+	The sensor and the load resistor forms a voltage divider.
+	Given the voltage across the load resistor and its resistance,
+	the resistance of the sensor could be derived.
+	*/
+	
+	long measuredVcc = this->readVcc();
+	
+	double outputVoltage;
+	double resistanceInOhms;
+	//Get the voltage value of the analog mux channel
+	outputVoltage = this->getVoltageValueOf(mqGasSensor->getAnalogSignalName());
+		
+	//Convert voltage output of resistor divider to measured resistance
+	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, mqGasSensor->getFixedResistorValue());
+	
+	return resistanceInOhms;
+	
+}
+
+void RoverAnalogSignals::calculateGasSensorRsRoRatio(MqGasSensor * mqGasSensor)
+{
+	//Reference: http://sandboxelectronics.com/?p=165
+	//Rs divided by R0	
+	mqGasSensor->setRsRoRatio( this->readGasSensor(mqGasSensor) / mqGasSensor->getR0() );
+	
+}
+
+double RoverAnalogSignals::readGasSensor(MqGasSensor * mqGasSensor)
+{
+	//initialize variables	
+	float mqGasSensorRs = 0;//Note: the term mqGasSensorRs = Sensing Resistance is from the MQ datasheet
+	  	   
+	for (byte i=0; i<GAS_SENSOR_READ_SAMPLE_TIMES; i++) {
+		mqGasSensorRs += this->calculateGasSensorResistance(mqGasSensor);
+		delay(GAS_SENSOR_READ_SAMPLE_INTERVAL);
+	}
+
+	mqGasSensorRs = mqGasSensorRs/GAS_SENSOR_READ_SAMPLE_TIMES;
+
+	return mqGasSensorRs;
+}
+
+void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor)
+{
+
+	//Code based on: http://sandboxelectronics.com/?p=165
+
+	float val=0;
+
+	//take multiple samples
+	for (byte i=0; i<GAS_SENSOR_CALIBARAION_SAMPLE_TIMES; i++)
+	{
+		//accumulate sensor resistance measurements (to be averaged later on)
+		val += this->calculateGasSensorResistance(mqGasSensor);
+		//delay between measurements
+		delay(GAS_SENSOR_CALIBRATION_SAMPLE_INTERVAL);
+	}
+	
+	//calculate the average value
+	val = val/GAS_SENSOR_CALIBARAION_SAMPLE_TIMES;
+
+	//divided by _mqGasSensorR0CleanAirFactor yields the Ro according to the chart in the datasheet 
+	val = val/(mqGasSensor->getR0CleanAirFactor());                                                        
+
+	//Assign the calculated value of R0 to the variable R0
+	mqGasSensor->setR0(val);
+	
 }

@@ -8,18 +8,22 @@
 #include <string.h>
 
 
+/*
+References:
 
-//Reference:
-//http://sandboxelectronics.com/?p=165
+			It needs about 3 minutes to warm up in order to get correct values.
+			Need to calibrate the sensor in clean air.
+			-Preheat the sensor for 24 hours, then run a one time calibration.
 
-
-	
-/*	
-Note: MqGasSensor and RoverAnalogSignals are tightly coupled because:
-RoverAnalogSignals's getGasValueOf() uses MqGasSensor's getGasPercentage()
-MqGasSensor's calibrate() uses RoverAnalogSignals's getRawADCValueOf()
+			https://www.youtube.com/watch?v=fBo3Yq9LK1U
+			http://sandboxelectronics.com/?p=165
+			http://mkme.org/forum/viewtopic.php?f=2&t=656
+			http://playground.arduino.cc/Main/MQGasSensors
+			https://www.google.com/amp/www.instructables.com/id/How-to-use-MQ2-Gas-Sensor-Arduino-Tutorial/
+			https://www.youtube.com/watch?v=BIf_mpnsZvY
+			http://circuitdigest.com/microcontroller-projects/arduino-smoke-detector-on-pcb-using-mq2-gas-sensor
+			https://www.youtube.com/watch?v=QYSDSKn2Vf8
 */
-
 
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
@@ -43,25 +47,36 @@ Configure (define) flags before calling #include <RoverConfig.h>
 
 class MqGasSensor : public virtual RoverReset {
 public:
-	MqGasSensor(byte);//constructor (gas sensor type)
+	MqGasSensor(byte, byte ,double);//constructor (gas sensor type, analog signal name, fixed resistor value)
 	~MqGasSensor();//destructor
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-	float calibrate();//??WRITE LATER
-	int getGasPercentage();//??WRITE LATER
-	int getPercentage();//??WRITE LATER
-	float read();//??WRITE LATER
-	float resistanceCalculation();//??WRITE LATER
+	byte getAnalogSignalName();//returns the _analogSignalName of this instance of the gas sensor
+	double getFixedResistorValue();//returns the _mqGasSensorFixedResistorValue of this instance of the gas sensor
+	float getR0CleanAirFactor();//gets the gas sensor instance's _mqGasSensorR0CleanAirFactor (which is based on the gas sensor type. Set by the constructor of this MqGasSensor class)
+	void setR0(float);//sets the gas sensor instance's _mqGasSensorR0
+	float getR0();	//gets the gas sensor instance's _mqGasSensorR0
+	void setRsRoRatio(double);//sets the gas sensor instance's _mqGasSensorRsR0Ratio
+	double getRsRoRatio();//gets the gas sensor instance's _mqGasSensorRsR0Ratio
 	
+//MOVE THIS mqGasSensorDataCurve TO BE A PRIVATE VARIABLE AND MAKE A GETTER METHOD	
+	float mqGasSensorDataCurve[3];//need to make this variable public so the array data can be read from
+//ALSO WRITE CODE FOR IT TO WAIT FOR THE UPTIME TO BE 3 MINUTES BEFORE CALIBRATION
+//GO BACK AND WRITE CALIBRATION FUNCTIONS FOR OTHER SENSORS	
 	
 private:
-	//Non-SW Resettable	
-	//SW Resettable
-	byte _mqGasSensorType;//holds the sensor type.	
-	float mqGasSensorDataCurve[3];
+	//Non-SW Resettable		
 	String _mqGasSensorName;//holds the string of the mq sensor's name
-	String _mqGasSensorUnit;//holds the string of the mq sensor's unit
-	float _valueOfR0 = 10;//initialize to 10 kohms (got the value from http://sandboxelectronics.com/?p=165)
+	String _mqGasSensorUnit;//holds the string of the mq sensor's unit	
+	byte _mqGasSensorType;//holds the sensor type.
+	float _mqGasSensorR0CleanAirFactor;
+	double _mqGasSensorFixedResistorValue;
+	byte _analogSignalName;//holds the analog signal name of the particular instance of this gas sensor, used to find the corresponding channel through the muxes
 	
+	//SW Resettable	
+	float _mqGasSensorR0;//the calibrated resistance (control variable). Initialize to 10 kohms but will be overwritten with calibration. (got the value from http://sandboxelectronics.com/?p=165)
+	float _mqGasSensorRsR0Ratio;//the calculated ratio of Rs vs. R0
+	
+		
 };
 
 #endif 
