@@ -33,7 +33,8 @@ void setup() {
 	
 	Serial.begin(9600);
 	delay(100);//allow some time for the serial port to begin
-	Serial.println(F("Calibrating Gas Sensor: ~26 secs"));	
+
+	Serial.println(F("Calibrating Gas Sensor - Wait ~26 secs"));	
 	analogSignals->calibrateGasSensor(mqGasSensor);//this takes a few seconds, measured at about 26 seconds to begin	
 	Serial.println(F("Done"));
 	

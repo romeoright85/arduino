@@ -88,13 +88,13 @@ RoverAnalogSignals::RoverAnalogSignals()
 	
 	//create AnalogMuxSensor objects and assign them to the private _amux pointers
 	this->_amux1 = new AnalogMuxSensor(AMUX1_SEL_0_PIN, AMUX1_SEL_1_PIN, AMUX1_SEL_2_PIN, OPAMP_1_OUT_PIN, this->_amux1AnalogNames);
-	this->_amux2 = new AnalogMuxSensor(AMUX2_SEL_0_PIN, AMUX2_SEL_1_PIN, AMUX2_SEL_2_PIN, OPAMP_2_OUT_PIN, this->_amux2AnalogNames);//DEBUG, change the _amux1AnalogNames later
-	this->_amux3 = new AnalogMuxSensor(AMUX3_SEL_0_PIN, AMUX3_SEL_1_PIN, AMUX3_SEL_2_PIN, OPAMP_3_OUT_PIN, this->_amux3AnalogNames);//DEBUG, change the _amux1AnalogNames later
-	this->_amux4 = new AnalogMuxSensor(AMUX4_SEL_0_PIN, AMUX4_SEL_1_PIN, AMUX4_SEL_2_PIN, OPAMP_4_OUT_PIN, this->_amux4AnalogNames);//DEBUG, change the _amux1AnalogNames later
-	this->_amux5 = new AnalogMuxSensor(AMUX5_SEL_0_PIN, AMUX5_SEL_1_PIN, AMUX5_SEL_2_PIN, OPAMP_5_OUT_PIN, this->_amux5AnalogNames);//DEBUG, change the _amux1AnalogNames later
-	this->_amux6 = new AnalogMuxSensor(AMUX6_SEL_0_PIN, AMUX6_SEL_1_PIN, AMUX6_SEL_2_PIN, OPAMP_6_OUT_PIN, this->_amux6AnalogNames);//DEBUG, change the _amux1AnalogNames later
-	this->_amux7 = new AnalogMuxSensor(AMUX7_SEL_0_PIN, AMUX7_SEL_1_PIN, AMUX7_SEL_2_PIN, OPAMP_7_OUT_PIN, this->_amux7AnalogNames);//DEBUG, change the _amux1AnalogNames later
-	this->_amux8 = new AnalogMuxSensor(AMUX8_SEL_0_PIN, AMUX8_SEL_1_PIN, AMUX8_SEL_2_PIN, OPAMP_8_OUT_PIN, this->_amux8AnalogNames);//DEBUG, change the _amux1AnalogNames later
+	this->_amux2 = new AnalogMuxSensor(AMUX2_SEL_0_PIN, AMUX2_SEL_1_PIN, AMUX2_SEL_2_PIN, OPAMP_2_OUT_PIN, this->_amux2AnalogNames);
+	this->_amux3 = new AnalogMuxSensor(AMUX3_SEL_0_PIN, AMUX3_SEL_1_PIN, AMUX3_SEL_2_PIN, OPAMP_3_OUT_PIN, this->_amux3AnalogNames);
+	this->_amux4 = new AnalogMuxSensor(AMUX4_SEL_0_PIN, AMUX4_SEL_1_PIN, AMUX4_SEL_2_PIN, OPAMP_4_OUT_PIN, this->_amux4AnalogNames);
+	this->_amux5 = new AnalogMuxSensor(AMUX5_SEL_0_PIN, AMUX5_SEL_1_PIN, AMUX5_SEL_2_PIN, OPAMP_5_OUT_PIN, this->_amux5AnalogNames);
+	this->_amux6 = new AnalogMuxSensor(AMUX6_SEL_0_PIN, AMUX6_SEL_1_PIN, AMUX6_SEL_2_PIN, OPAMP_6_OUT_PIN, this->_amux6AnalogNames);
+	this->_amux7 = new AnalogMuxSensor(AMUX7_SEL_0_PIN, AMUX7_SEL_1_PIN, AMUX7_SEL_2_PIN, OPAMP_7_OUT_PIN, this->_amux7AnalogNames);
+	this->_amux8 = new AnalogMuxSensor(AMUX8_SEL_0_PIN, AMUX8_SEL_1_PIN, AMUX8_SEL_2_PIN, OPAMP_8_OUT_PIN, this->_amux8AnalogNames);
 	
 	//initialize the muxArray's pointers with the AnalogMuxSensor objects
 	this->_muxArray[0] = this->_amux1;
@@ -166,19 +166,32 @@ unsigned int RoverAnalogSignals::getRawADCValueOf(byte analogSignalName)
 }
 double RoverAnalogSignals::getVoltageValueOf(byte analogSignalName)
 {
+	double voltage;
 	
 	AnalogMuxSensor * analogMux;
 	
 	analogMux = findMuxBySignalName(analogSignalName);
-	
+
+	voltage = analogMux->getVoltageValueOf(analogSignalName);
+	 
+//voltage = 5.0*random(10,100)/1000.0;//DEBUG AND DELETE
+
+	#ifdef _DEBUG_MEASURED_VOLTAGE_
+		//Prints the measured voltage
+		Serial.print(F("ADC Voltage: "));//DEBUG		
+		Serial.println(voltage);//DEBUG
+	#endif
+		 
+	 
+
 	//using delegation and calling AnalogMuxSensor's method
-	return analogMux->getVoltageValueOf(analogSignalName);
+	return voltage;
 }
 double RoverAnalogSignals::getCurrentValueOf(byte analogSignalName, byte currentSensorModel)
 {
 	
 	//Vcc for the ACS current sensors are switched Vcc (standard ~5V)
-	long measuredVcc = this->readVcc();
+	double measuredVcc = this->readVcc()/1000.0;//this function is inherited
 	
 	double outputVoltage;
 	//Get the voltage value of the analog mux channel
@@ -205,7 +218,7 @@ double RoverAnalogSignals::getCurrentValueOf(byte analogSignalName, byte current
 double RoverAnalogSignals::getLightValueOf(byte analogSignalName, double fixedResistorValue)
 {
 
-	long measuredVcc = this->readVcc();
+	double measuredVcc = this->readVcc()/1000.0;//this function is inherited
 	
 	double outputVoltage;
 	double resistanceInOhms;
@@ -214,12 +227,12 @@ double RoverAnalogSignals::getLightValueOf(byte analogSignalName, double fixedRe
 	//Convert voltage output of resistor divider to measured resistance
 	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, fixedResistorValue);
 	//Convert resistance to lux
-	return 500 / ( resistanceInOhms / 1000 );
+	return 500.0 / ( resistanceInOhms / 1000.0 );
 }
 double RoverAnalogSignals::getTempValueOf(byte analogSignalName, double fixedResistorValue)
 {
 	
-	long measuredVcc = this->readVcc();
+	double measuredVcc = this->readVcc()/1000.0;//this function is inherited
 	
 	double outputVoltage;
 	double resistanceInOhms;
@@ -228,7 +241,7 @@ double RoverAnalogSignals::getTempValueOf(byte analogSignalName, double fixedRes
 	//Convert voltage output of resistor divider to measured resistance
 	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, fixedResistorValue);
 	//Convert resistance to temperature
-	return 1 / ( 1 / TEMP_CONSTANT_T0 + 1 / TEMP_CONSTANT_B * log( resistanceInOhms / TEMP_CONSTANT_R0 ) );	
+	return 1.0 / ( 1.0 / TEMP_CONSTANT_T0 + 1.0 / TEMP_CONSTANT_B * log( resistanceInOhms / TEMP_CONSTANT_R0 ) );	
 }
 int RoverAnalogSignals::getGasValueOf(MqGasSensor * mqGasSensor)
 {
@@ -246,30 +259,80 @@ int RoverAnalogSignals::getGasValueOf(MqGasSensor * mqGasSensor)
 
 	//calculate and set (in mqGasSensor) the Rs/R0 ratio
 	this->calculateGasSensorRsRoRatio(mqGasSensor);
+	
 
-	return (
-		pow(10, (
-					(
-						(
-							log(mqGasSensor->getRsRoRatio()) - mqGasSensor->mqGasSensorDataCurve[1]
-						) / mqGasSensor->mqGasSensorDataCurve[2]						
-					) + mqGasSensor->mqGasSensorDataCurve[0]
-				)
-		)
-	);
+		
+	#ifdef _DEBUG_PRINT_CURVE_DATA_
+		//Prints X, Y, and the Slope
+		Serial.print(F("X: "));//DEBUG
+		Serial.println(mqGasSensor->getX());//DEBUG
+		Serial.print(F("Y: "));//DEBUG
+		Serial.println(mqGasSensor->getY());//DEBUG
+		Serial.print(F("Slope: "));//DEBUG
+		Serial.println(mqGasSensor->getSlope());//DEBUG
+	#endif
+	
+	
+	
+	float tempValue;
+	
+	tempValue = mqGasSensor->getRsR0Ratio();
+	#ifdef _DEBUG_GAS_SENSOR_MATH_STEPS_
+		Serial.print(F("get Rs/R0: "));//DEBUG
+		Serial.println(tempValue);//DEBUG
+	#endif
+	tempValue = log(tempValue);
+	#ifdef _DEBUG_GAS_SENSOR_MATH_STEPS_
+		Serial.print(F("take ln: "));//DEBUG
+		Serial.println(tempValue);//DEBUG
+	#endif
+	tempValue = tempValue - mqGasSensor->getY();
+	#ifdef _DEBUG_GAS_SENSOR_MATH_STEPS_
+		Serial.print(F("sub Y: "));//DEBUG
+		Serial.println(tempValue);//DEBUG
+	#endif
+	tempValue = tempValue / mqGasSensor->getSlope();
+	#ifdef _DEBUG_GAS_SENSOR_MATH_STEPS_
+		Serial.print(F("div slope: "));//DEBUG
+		Serial.println(tempValue);//DEBUG
+	#endif
+	tempValue = tempValue + mqGasSensor->getX();
+	#ifdef _DEBUG_GAS_SENSOR_MATH_STEPS_
+		Serial.print(F("add X: "));//DEBUG
+		Serial.println(tempValue);//DEBUG
+	#endif
+	tempValue = pow(10,tempValue);
+	#ifdef _DEBUG_GAS_SENSOR_MATH_STEPS_
+		Serial.print(F("10^value: "));//DEBUG
+		Serial.println(tempValue);//DEBUG
+	#endif
+	return tempValue;
 	
 }	
 
 
-double RoverAnalogSignals::calculateResistance(long measuredVcc, double outputVoltage, double fixedResistorValue)
+double RoverAnalogSignals::calculateResistance(double measuredVcc, double outputVoltage, double fixedResistorValue)
 {
 	//Convert voltage to resistance
 	//Original Equation: Vo = Vin * Rl / ( Rf + Rl )
 	//Derived Equation: Rl = Vo * Rf / ( Vin + Vo )
 	//Note: Vcc is Vin in this case.
 	//returns resistance in ohms
+	double value;
+	value = outputVoltage * fixedResistorValue / ( measuredVcc + outputVoltage );
 	
-	return outputVoltage * fixedResistorValue / ( measuredVcc + outputVoltage );		
+	#ifdef _DEBUG_CALC_RES_
+		Serial.print(F("Vo: "));//DEBUG
+		Serial.println(outputVoltage);//DEBUG		
+		Serial.print(F("Fixed Res: "));//DEBUG
+		Serial.println(fixedResistorValue);//DEBUG	
+		Serial.print(F("Measured Vcc: "));//DEBUG
+		Serial.println(measuredVcc);//DEBUG	
+		Serial.print(F("Calculated Resistance: "));//DEBUG
+		Serial.println(value);//DEBUG	
+	#endif
+	
+	return value;
 }
 
 
@@ -284,17 +347,25 @@ double RoverAnalogSignals::calculateGasSensorResistance(MqGasSensor * mqGasSenso
 	the resistance of the sensor could be derived.
 	*/
 	
-	long measuredVcc = this->readVcc();
-	
+	double measuredVcc = this->readVcc()/1000.0;//this function is inherited	
+//Serial.print("Vcc: ");//DEBUG AND DELETE
+//Serial.println(this->readVcc());//DEBUG AND DELETE	
+//Serial.println(measuredVcc);//DEBUG AND DELETE	
 	double outputVoltage;
 	double resistanceInOhms;
 	//Get the voltage value of the analog mux channel
 	outputVoltage = this->getVoltageValueOf(mqGasSensor->getAnalogSignalName());
+//Serial.print("outputVoltage: ");//DEBUG AND DELETE
+//Serial.println(outputVoltage);//DEBUG AND DELETE
 		
 	//Convert voltage output of resistor divider to measured resistance
 	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, mqGasSensor->getFixedResistorValue());
-	
+
+//Serial.print("res: ");//DEBUG AND DELETE
+//Serial.println(resistanceInOhms);//DEBUG AND DELETE
 	return resistanceInOhms;
+	
+	
 	
 }
 
@@ -304,12 +375,18 @@ void RoverAnalogSignals::calculateGasSensorRsRoRatio(MqGasSensor * mqGasSensor)
 	//Rs divided by R0	
 	mqGasSensor->setRsRoRatio( this->readGasSensor(mqGasSensor) / mqGasSensor->getR0() );
 	
+	#ifdef _DEBUG_RS_R0_RATIO_
+		//Prints Rs/R0 Ratio
+		Serial.print(F("Rs/R0: "));//DEBUG
+		Serial.println(mqGasSensor->getRsR0Ratio());//DEBUG
+	#endif
+	
 }
 
 double RoverAnalogSignals::readGasSensor(MqGasSensor * mqGasSensor)
 {
 	//initialize variables	
-	float mqGasSensorRs = 0;//Note: the term mqGasSensorRs = Sensing Resistance is from the MQ datasheet
+	float mqGasSensorRs = 0.0;//Note: the term mqGasSensorRs = Sensing Resistance is from the MQ datasheet
 	  	   
 	for (byte i=0; i<GAS_SENSOR_READ_SAMPLE_TIMES; i++) {
 		mqGasSensorRs += this->calculateGasSensorResistance(mqGasSensor);
@@ -318,6 +395,13 @@ double RoverAnalogSignals::readGasSensor(MqGasSensor * mqGasSensor)
 
 	mqGasSensorRs = mqGasSensorRs/GAS_SENSOR_READ_SAMPLE_TIMES;
 
+	
+	#ifdef _DEBUG_RS_
+		//Prints Rs Value
+		Serial.print(F("Rs: "));//DEBUG
+		Serial.println(mqGasSensorRs);//DEBUG
+	#endif
+	
 	return mqGasSensorRs;
 }
 
@@ -326,16 +410,28 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor)
 
 	//Code based on: http://sandboxelectronics.com/?p=165
 
-	float val=0;
+	float val=0.0;
 
+//Serial.println("initial");//DEBUG AND DELETE
+//Serial.println(val);//DEBUG AND DELETE
+	
+	
 	//take multiple samples
 	for (byte i=0; i<GAS_SENSOR_CALIBARAION_SAMPLE_TIMES; i++)
 	{
 		//accumulate sensor resistance measurements (to be averaged later on)
+		
 		val += this->calculateGasSensorResistance(mqGasSensor);
+		
+//Serial.println("loop");//DEBUG AND DELETE
+//Serial.println(val);//DEBUG AND DELETE
+		
 		//delay between measurements
 		delay(GAS_SENSOR_CALIBRATION_SAMPLE_INTERVAL);
 	}
+	
+//Serial.println("sum");//DEBUG AND DELETE
+//Serial.println(val);//DEBUG AND DELETE
 	
 	//calculate the average value
 	val = val/GAS_SENSOR_CALIBARAION_SAMPLE_TIMES;
@@ -346,4 +442,9 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor)
 	//Assign the calculated value of R0 to the variable R0
 	mqGasSensor->setR0(val);
 	
+	#ifdef _DEBUG_CALIBRATED_R0_
+		//Prints Calibrated R0 Value
+		Serial.print(F("Calibrated R0: "));//DEBUG
+		Serial.println(val);//DEBUG
+	#endif
 }

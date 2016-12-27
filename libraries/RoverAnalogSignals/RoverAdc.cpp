@@ -20,7 +20,7 @@ double RoverAdc::voltageRead(byte analogPin)
 {
 	unsigned int adcValue;
 	double measuredVcc;
-	measuredVcc = this->readVcc()/1000.0;
+	measuredVcc = this->readVcc()/1000.0;//measured Vcc in Volts
 	adcValue = this->rawADCRead(analogPin);
-	return (adcValue/1024.0)*measuredVcc;	
+	return (adcValue/1024.0)*measuredVcc;	//10-bit ADC, so 2^10- 1024
 }

@@ -10,8 +10,10 @@
 	#include <MqGasSensor.h>
 	
 	//References:
+	
 	//Lux Calculations
 	//http://emant.com/316002.page
+	
 	//Currrent Calulcations
 	//ACS711_12D5A
 	//https://www.pololu.com/product/2197
@@ -23,7 +25,14 @@
 
 	
 
-	
+	//uncomment defines below for debugging
+	//#define _DEBUG_CALIBRATED_R0_	
+	//#define _DEBUG_RS_R0_RATIO_
+	//#define _DEBUG_RS_
+	//#define _DEBUG_PRINT_CURVE_DATA_
+	//#define _DEBUG_GAS_SENSOR_MATH_STEPS_
+	//#define __DEBUG_CALC_RES_	
+	//#define _DEBUG_MEASURED_VOLTAGE_
 
 	//turn on the analog names in RoverConfig.h
 	#define _ROVERANALOGNAMES
@@ -64,7 +73,7 @@
 		
 		
 	private:
-		double calculateResistance(long, double, double);//converts the output voltage and measured Vcc to resistance (in ohms) based on the fixed resistor used in the voltage divider(Vcc, output voltage, fixed resistance)
+		double calculateResistance(double, double, double);//converts the output voltage and measured Vcc to resistance (in ohms) based on the fixed resistor used in the voltage divider(Vcc, output voltage, fixed resistance)
 		double calculateGasSensorResistance(MqGasSensor *);//(MqGasSensor object) gets the output resistance of the Gas Sensor. It uses calculateResistance() with values from the MqGasSensor object.
 		double readGasSensor(MqGasSensor *);//(MqGasSensor object) Returns the sensing resistance. Samples are taken by reading the MQ Gas sensor based on values set by GAS_SENSOR_READ_SAMPLE_INTERVAL and GAS_SENSOR_READ_SAMPLE_TIMES
 		void calculateGasSensorRsRoRatio(MqGasSensor *);//(MqGasSensor object) Calculates the ratio of the sensor resistance vs. the calibrated resistance (control variable) and stores it in the MqGasSensor instance's member variable

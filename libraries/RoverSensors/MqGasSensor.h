@@ -8,6 +8,9 @@
 #include <string.h>
 
 
+
+
+
 /*
 References:
 
@@ -56,15 +59,19 @@ public:
 	void setR0(float);//sets the gas sensor instance's _mqGasSensorR0
 	float getR0();	//gets the gas sensor instance's _mqGasSensorR0
 	void setRsRoRatio(double);//sets the gas sensor instance's _mqGasSensorRsR0Ratio
-	double getRsRoRatio();//gets the gas sensor instance's _mqGasSensorRsR0Ratio
+	double getRsR0Ratio();//gets the gas sensor instance's _mqGasSensorRsR0Ratio
+	float getX();//gets the X point on the data curve (from _mqGasSensorDataCurve[])
+	float getY();//gets the Y point on the data curve (from _mqGasSensorDataCurve[])
+	float getSlope();//gets the slope of the curve (from _mqGasSensorDataCurve[])
 	
 //MOVE THIS mqGasSensorDataCurve TO BE A PRIVATE VARIABLE AND MAKE A GETTER METHOD	
-	float mqGasSensorDataCurve[3];//need to make this variable public so the array data can be read from
+	
 //ALSO WRITE CODE FOR IT TO WAIT FOR THE UPTIME TO BE 3 MINUTES BEFORE CALIBRATION
 //GO BACK AND WRITE CALIBRATION FUNCTIONS FOR OTHER SENSORS	
 	
 private:
 	//Non-SW Resettable		
+	float _mqGasSensorDataCurve[3];//need to make this variable public so the array data can be read from	
 	String _mqGasSensorName;//holds the string of the mq sensor's name
 	String _mqGasSensorUnit;//holds the string of the mq sensor's unit	
 	byte _mqGasSensorType;//holds the sensor type.
