@@ -4,7 +4,8 @@ RoverAnalogSignals::RoverAnalogSignals()
 {
 	
 	//Initialize MQ gas sensor flags
-	this->_isGasSensorIsCalibrated = false;
+	this->clearCalibrationStatus();
+	
 	
 	//Define the amux names below before passing it to the AnalogMuxSensor objects	
 	//AMUX 1
@@ -136,7 +137,15 @@ void RoverAnalogSignals::reset()
 		this->_resetArray[i]->reset();
 	}	
 	
+	//Reset/clear MQ gas sensor flags
+	this->clearCalibrationStatus();
+	
+}
+
+void RoverAnalogSignals::clearCalibrationStatus()
+{
 	this->_isGasSensorIsCalibrated = false;
+	this->_firstRunOfCalibration = true;
 	
 }
 AnalogMuxSensor * RoverAnalogSignals::findMuxBySignalName(byte analogSignalName)
@@ -410,51 +419,64 @@ double RoverAnalogSignals::readGasSensor(MqGasSensor * mqGasSensor)
 	return mqGasSensorRs;
 }
 
-void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minutesUptime)
+void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minutesUptime, DelayCounter * counter)
 {
+	
+	//Code based on: http://sandboxelectronics.com/?p=165
 	
 	//Wait for the MQ gas sensor to warm up for at least the GAS_SENSOR_WARM_UP_TIME before running calibration
 	if(mqGasSensor->gasSensorWarmedUp(minutesUptime))
 	{
 		
-		#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
-			Serial.println(F("Gas Sensor Calibration Started"));
-		#endif
-	
-	
-		//Code based on: http://sandboxelectronics.com/?p=165
-
-		float val=0.0;
-
+		//only output this message on the first run of calibration
+		if(this->_firstRunOfCalibration)
+		{
+			#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
+				Serial.println(F("Gas Sensor Calibration Started"));
+			#endif
+			
+								
+			//Initialize variables						
+			mqGasSensor->setCalibrationRuns(0);
+			mqGasSensor->setCalibrationSum(0.0);
 //Serial.println("initial");//DEBUG AND DELETE
 //Serial.println(val);//DEBUG AND DELETE
-		
+Serial.println("Run Once");//DEBUG					
+			//clear the flag since it has been ran once already
+			this->_firstRunOfCalibration = false;
+		}			
+
 		
 		//take multiple samples
-		for (byte i=0; i<GAS_SENSOR_CALIBARAION_SAMPLE_TIMES; i++)
+		while( mqGasSensor->getCalibrationRuns() < GAS_SENSOR_CALIBRATION_SAMPLE_TIMES )
+		//for (byte i=0; i<GAS_SENSOR_CALIBRATION_SAMPLE_TIMES; i++)
 		{
 			//accumulate sensor resistance measurements (to be averaged later on)
 			
-			val += this->calculateGasSensorResistance(mqGasSensor);
-			
+			mqGasSensor->setCalibrationSum( this->calculateGasSensorResistance(mqGasSensor) + mqGasSensor->getCalibrationSum() );
+
 //Serial.println("loop");//DEBUG AND DELETE
 //Serial.println(val);//DEBUG AND DELETE
 			
 			//delay between measurements
-			delay(GAS_SENSOR_CALIBRATION_SAMPLE_INTERVAL);
+			//delay(GAS_SENSOR_CALIBRATION_SAMPLE_INTERVAL);
+//WRITE CODE TO USE COUNTER FOR DELAY
+			
+			mqGasSensor->setCalibrationRuns( mqGasSensor->getCalibrationRuns() + 1 );//increment the number of sample runs
+
 		}
 		
 //Serial.println("sum");//DEBUG AND DELETE
 //Serial.println(val);//DEBUG AND DELETE
 		
 		//calculate the average value
-		val = val/GAS_SENSOR_CALIBARAION_SAMPLE_TIMES;
+		mqGasSensor->setCalibrationSum(mqGasSensor->getCalibrationSum()/GAS_SENSOR_CALIBRATION_SAMPLE_TIMES);
 
 		//divided by _mqGasSensorR0CleanAirFactor yields the Ro according to the chart in the datasheet 
-		val = val/(mqGasSensor->getR0CleanAirFactor());                                                        
+		mqGasSensor->setCalibrationSum( mqGasSensor->getCalibrationSum() / mqGasSensor->getR0CleanAirFactor() );
 
 		//Assign the calculated value of R0 to the variable R0
-		mqGasSensor->setR0(val);
+		mqGasSensor->setR0( mqGasSensor->getCalibrationSum()) ;
 		
 		//Set the falg to note that the MQ Gas sensor is now calibrated
 		this->_isGasSensorIsCalibrated = true;
@@ -466,7 +488,7 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minu
 		#ifdef _DEBUG_CALIBRATED_R0_
 			//Prints Calibrated R0 Value
 			Serial.print(F("Calibrated R0: "));//DEBUG
-			Serial.println(val);//DEBUG
+			Serial.println( mqGasSensor->getCalibrationSum() );//DEBUG
 		#endif
 	}//end if
 	//else do nothing

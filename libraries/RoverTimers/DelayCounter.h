@@ -27,14 +27,15 @@ GlobalDelayTimer * timer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, counter);//
 
 
 In the main loop() function put:
-	mainTimer->Running();//activate the timer
+	timer->Running();//activate the timer
 	
 Then in the loop (either directly or by some other function, class method, etc.)
 
-if (this->_counterPtr->countReached())
+Example for loop() use:
+if (counter->countReached())
 {
 	//do something
-	this->_counterPtr->counterReset();//reset the counter
+	counter->counterReset();//reset the counter
 }//end if
 --------------------
 

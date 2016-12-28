@@ -63,8 +63,13 @@ public:
 	float getX();//gets the X point on the data curve (from _mqGasSensorDataCurve[])
 	float getY();//gets the Y point on the data curve (from _mqGasSensorDataCurve[])
 	float getSlope();//gets the slope of the curve (from _mqGasSensorDataCurve[])
-	boolean gasSensorWarmedUp(byte);//(minutes of uptime) returns true when the gas sensor has warmed up for at least GAS_SENSOR_WARM_UP_TIME, else it returns false
+	boolean gasSensorWarmedUp(byte);//(minutes of uptime) returns true when the gas sensor has warmed up for at least GAS_SENSOR_WARM_UP_TIME, else it returns false	
+	void setCalibrationSum(float);//(the value to set the sum at) used for MQ sensor calibration. Keeps track of the accumulated/sum value use for averaging.
+	void setCalibrationRuns(byte);//(the value to set the sample runs at) used for MQ sensor calibration. Keeps track of the number of samples that have been taken.
+	float getCalibrationSum();//used for MQ sensor calibration. Returns the accumulated/sum value use for averaging.
+	byte getCalibrationRuns();//used for MQ sensor calibration. Returns the number of samples that have been taken.
 	
+
 private:
 	//Non-SW Resettable		
 	float _mqGasSensorDataCurve[3];//need to make this variable public so the array data can be read from	
@@ -78,8 +83,9 @@ private:
 	//SW Resettable	
 	float _mqGasSensorR0;//the calibrated resistance (control variable). Initialize to 10 kohms but will be overwritten with calibration. (got the value from http://sandboxelectronics.com/?p=165)
 	float _mqGasSensorRsR0Ratio;//the calculated ratio of Rs vs. R0
+	byte _calibrationRuns;//used for sensor calibration. It's  the accumulated/sum value use for averaging.
+	float _calibrationSum;//used for sensor calibration. It's the number of samples that have been taken.
 	
-		
 };
 
 #endif 

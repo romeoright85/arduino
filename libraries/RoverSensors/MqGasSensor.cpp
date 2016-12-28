@@ -102,6 +102,10 @@ void MqGasSensor::reset()
 	//reset to 10 kohms (got the value from http://sandboxelectronics.com/?p=165)	
 	this->_mqGasSensorR0 = 10.0;
 	
+	this->_calibrationRuns = 0;
+	this->_calibrationSum = 0.0;
+	
+	
 }
 byte MqGasSensor::getAnalogSignalName()
 {
@@ -158,5 +162,20 @@ boolean MqGasSensor::gasSensorWarmedUp(byte minutes)
 		return false;
 	}
 	
-}	
-		
+}
+void MqGasSensor::setCalibrationSum(float calibrationSum)
+{
+	this->_calibrationSum = calibrationSum;
+}
+void MqGasSensor::setCalibrationRuns(byte calibrationRuns)
+{
+	this->_calibrationRuns = calibrationRuns;
+}
+float MqGasSensor::getCalibrationSum()
+{
+	return this->_calibrationSum;
+}
+byte MqGasSensor::getCalibrationRuns()
+{
+	return this->_calibrationRuns;
+}

@@ -8,6 +8,8 @@
 	#include <AnalogMuxSensor.h>
 	#include <RoverVcc.h>
 	#include <MqGasSensor.h>
+	#include <DelayCounter.h>
+
 	
 	//References:
 	
@@ -63,13 +65,14 @@
 		RoverAnalogSignals();//constructor
 		~RoverAnalogSignals();//destructor
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-		void calibrateGasSensor(MqGasSensor *, byte);//(MqGasSensor object, minutes of Rover Uptime) calibrates the MQ Gas Sensor.
+		void calibrateGasSensor(MqGasSensor *, byte, DelayCounter *);//(MqGasSensor object, minutes of Rover Uptime, delay counter object) calibrates the MQ Gas Sensor after waiting for GAS_SENSOR_WARM_UP_TIME to pass. The DelayCounter object is used for delays in between sampling.
 		unsigned int getRawADCValueOf(byte);//returns the raw analog value by Analog Signal Name (Analog Signal Name)
 		double getVoltageValueOf(byte);//returns the voltage value by Analog Signal Name (Analog Signal Name)
 		double getCurrentValueOf(byte, byte);//returns the current value by Analog Signal Name based on the current sensor model (Analog Signal Name, current sensor model)
 		double getLightValueOf(byte, double);//returns the current value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
 		double getTempValueOf(byte, double);//returns the temperature value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
 		int getGasValueOf(MqGasSensor *);//(MqGasSensor object) Returns the ppm of the target gas of the MqGasSensor object (Note: the ppm can be greater than 255, so return int instead of byte)
+			//Note: Make sure to check for analogSignals->gasSensorIsCalibrated() to be true before using values from the getGasValueOf()
 		boolean gasSensorIsCalibrated();//Returns true when the gas sensor has warmed up and is calibrated.
 		
 		
@@ -78,7 +81,7 @@
 		double calculateGasSensorResistance(MqGasSensor *);//(MqGasSensor object) gets the output resistance of the Gas Sensor. It uses calculateResistance() with values from the MqGasSensor object.
 		double readGasSensor(MqGasSensor *);//(MqGasSensor object) Returns the sensing resistance. Samples are taken by reading the MQ Gas sensor based on values set by GAS_SENSOR_READ_SAMPLE_INTERVAL and GAS_SENSOR_READ_SAMPLE_TIMES
 		void calculateGasSensorRsRoRatio(MqGasSensor *);//(MqGasSensor object) Calculates the ratio of the sensor resistance vs. the calibrated resistance (control variable) and stores it in the MqGasSensor instance's member variable
-		
+		void clearCalibrationStatus();//used to clear/reset calibration status/flags
 		 
 		
 		//Non-SW Resettable	
@@ -110,8 +113,12 @@
 		//SW Resettable
 		
 		//Gas sensor flags
-		boolean _isGasSensorIsCalibrated;
-		
+		boolean _isGasSensorIsCalibrated;				
+		#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
+			boolean _firstRunOfCalibration;//used to make sure certain tasks are only ran on the first iteration of the function call (until it has been reset)
+		#endif
+	
+	
 		//AnalogMuxSensor objects
 		AnalogMuxSensor * _amux1;
 		AnalogMuxSensor * _amux2;
