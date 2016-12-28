@@ -28,7 +28,8 @@
 	
 
 	//uncomment defines below for debugging
-	#define _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
+	//#define _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
+	//#define _DEBUG_GAS_SENSOR_READ_STATUS_
 	//#define _DEBUG_CALIBRATED_R0_	
 	//#define _DEBUG_RS_R0_RATIO_
 	//#define _DEBUG_RS_
@@ -71,17 +72,20 @@
 		double getCurrentValueOf(byte, byte);//returns the current value by Analog Signal Name based on the current sensor model (Analog Signal Name, current sensor model)
 		double getLightValueOf(byte, double);//returns the current value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
 		double getTempValueOf(byte, double);//returns the temperature value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
-		int getGasValueOf(MqGasSensor *);//(MqGasSensor object) Returns the ppm of the target gas of the MqGasSensor object (Note: the ppm can be greater than 255, so return int instead of byte)
+		int getGasValueOf(MqGasSensor *);//(MqGasSensor object) Returns the ppm of the target gas of the MqGasSensor object (Note: the ppm can be greater than 255, so return int instead of byte).
 			//Note: Make sure to check for analogSignals->gasSensorIsCalibrated() to be true before using values from the getGasValueOf()
 		boolean gasSensorIsCalibrated();//Returns true when the gas sensor has warmed up and is calibrated.
-		
+		boolean gasSensorDoneReading();//Returns true when the gas sensor is done reading.
+		void readGasSensor(MqGasSensor *, DelayCounter *);//(MqGasSensor object, delay counter object) Returns the sensing resistance. Samples are taken by reading the MQ Gas sensor based on values set by GAS_SENSOR_READ_SAMPLE_INTERVAL and GAS_SENSOR_READ_SAMPLE_TIMES.  The DelayCounter object is used for delays in between sampling.	
+		void setAverageRead(float);//(the value to set the final read at) used to store the final value of MQ sensor reads. It's the average value of the _readSum samples.
+		float getAverageRead();//used for MQ sensor reads. Returns the final average value of the _readSum samples.
 		
 	private:
 		double calculateResistance(double, double, double);//converts the output voltage and measured Vcc to resistance (in ohms) based on the fixed resistor used in the voltage divider(Vcc, output voltage, fixed resistance)
-		double calculateGasSensorResistance(MqGasSensor *);//(MqGasSensor object) gets the output resistance of the Gas Sensor. It uses calculateResistance() with values from the MqGasSensor object.
-		double readGasSensor(MqGasSensor *);//(MqGasSensor object) Returns the sensing resistance. Samples are taken by reading the MQ Gas sensor based on values set by GAS_SENSOR_READ_SAMPLE_INTERVAL and GAS_SENSOR_READ_SAMPLE_TIMES
-		void calculateGasSensorRsRoRatio(MqGasSensor *);//(MqGasSensor object) Calculates the ratio of the sensor resistance vs. the calibrated resistance (control variable) and stores it in the MqGasSensor instance's member variable
+		double calculateGasSensorResistance(MqGasSensor *);//(MqGasSensor object, delay counter object) gets the output resistance of the Gas Sensor. It uses calculateResistance() with values from the MqGasSensor object.	
+		void calculateGasSensorRsRoRatio(MqGasSensor *);//(MqGasSensor object) Calculates the ratio of the sensor resistance vs. the calibrated resistance (control variable) and stores it in the MqGasSensor instance's member variable.
 		void clearCalibrationStatus();//used to clear/reset calibration status/flags
+		void clearReadStatus();//used to clear/reset read status/flags
 		 
 		
 		//Non-SW Resettable	
@@ -112,11 +116,18 @@
 		
 		//SW Resettable
 		
+		
+		float _averageRead;//used for sensor read. It's the average value of the _readSum samples.
+		
 		//Gas sensor flags
-		boolean _isGasSensorIsCalibrated;				
-		#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
-			boolean _firstRunOfCalibration;//used to make sure certain tasks are only ran on the first iteration of the function call (until it has been reset)
-		#endif
+		//For Calibration
+		boolean _isGasSensorIsCalibrated;		
+		boolean _firstRunOfCalibration;//used to make sure certain tasks are only ran on the first iteration of the function call (until it has been reset)
+		//For Read
+		boolean _gasSensorDoneReading;//used to flag that the MQ gas sensor is done reading/sampling			
+		boolean _firstRunOfRead;//used to make sure certain tasks are only ran on the first iteration of the function call (until it has been reset, or the read function has completed)
+		
+	
 	
 	
 		//AnalogMuxSensor objects

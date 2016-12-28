@@ -5,7 +5,7 @@ RoverAnalogSignals::RoverAnalogSignals()
 	
 	//Initialize MQ gas sensor flags
 	this->clearCalibrationStatus();
-	
+	this->clearReadStatus();
 	
 	//Define the amux names below before passing it to the AnalogMuxSensor objects	
 	//AMUX 1
@@ -147,6 +147,13 @@ void RoverAnalogSignals::clearCalibrationStatus()
 	this->_isGasSensorIsCalibrated = false;
 	this->_firstRunOfCalibration = true;
 	
+}
+
+void RoverAnalogSignals::clearReadStatus()
+{
+		this->_gasSensorDoneReading  = false;
+		this->_firstRunOfRead = true;	
+		this->setAverageRead(0.0);
 }
 AnalogMuxSensor * RoverAnalogSignals::findMuxBySignalName(byte analogSignalName)
 {	
@@ -352,7 +359,7 @@ double RoverAnalogSignals::calculateResistance(double measuredVcc, double output
 
 double RoverAnalogSignals::calculateGasSensorResistance(MqGasSensor * mqGasSensor)
 {
-	
+	//Note: Only use the value from this function once gasSensorDoneReading() returns true
 
 	/*
 	Notes from http://sandboxelectronics.com/?p=165
@@ -387,7 +394,9 @@ void RoverAnalogSignals::calculateGasSensorRsRoRatio(MqGasSensor * mqGasSensor)
 {
 	//Reference: http://sandboxelectronics.com/?p=165
 	//Rs divided by R0	
-	mqGasSensor->setRsRoRatio( this->readGasSensor(mqGasSensor) / mqGasSensor->getR0() );
+	
+	
+	mqGasSensor->setRsRoRatio( this->getAverageRead() / mqGasSensor->getR0() );
 	
 	#ifdef _DEBUG_RS_R0_RATIO_
 		//Prints Rs/R0 Ratio
@@ -397,26 +406,78 @@ void RoverAnalogSignals::calculateGasSensorRsRoRatio(MqGasSensor * mqGasSensor)
 	
 }
 
-double RoverAnalogSignals::readGasSensor(MqGasSensor * mqGasSensor)
+void RoverAnalogSignals::readGasSensor(MqGasSensor * mqGasSensor, DelayCounter * counter)
 {
-	//initialize variables	
-	float mqGasSensorRs = 0.0;//Note: the term mqGasSensorRs = Sensing Resistance is from the MQ datasheet
-	  	   
-	for (byte i=0; i<GAS_SENSOR_READ_SAMPLE_TIMES; i++) {
-		mqGasSensorRs += this->calculateGasSensorResistance(mqGasSensor);
-		delay(GAS_SENSOR_READ_SAMPLE_INTERVAL);
-	}
+	
+	
+	//Code based on: http://sandboxelectronics.com/?p=165	
+	
 
-	mqGasSensorRs = mqGasSensorRs/GAS_SENSOR_READ_SAMPLE_TIMES;
+	//only output this message on the first run of calibration
+	if(this->_firstRunOfRead)
+	{
+		#ifdef _DEBUG_GAS_SENSOR_READ_STATUS_
+			Serial.println(F("Gas Sensor Read Started"));
+		#endif
+		
+							
+		//Initialize variables						
+		mqGasSensor->setReadRuns(0);
+		mqGasSensor->setReadSum(0.0);
+		counter->counterReset();//reset the counter
+
+		//clear the flags
+		this->_firstRunOfRead = false;
+		this->_gasSensorDoneReading = false;
+
+		#ifdef _DEBUG_GAS_SENSOR_READ_STATUS_
+			Serial.print(F("Start Read Time: "));//DEBUG				
+			Serial.println(millis());//DEBUG				
+		#endif
+	}//end if	
+	
+
+	//delay between measurements by using a counter
+	if (counter->countReached())
+	{
+		
+		//take multiple samples			
+		if( mqGasSensor->getReadRuns() < GAS_SENSOR_READ_SAMPLE_TIMES )
+		{			
+			//accumulate sensor resistance measurements (to be averaged later on)
+			mqGasSensor->setReadSum( this->calculateGasSensorResistance(mqGasSensor) + mqGasSensor->getReadSum() );
+			mqGasSensor->setReadRuns( mqGasSensor->getReadRuns() + 1 );//increment the number of sample runs
+		}//end if
+		else //sampling is complete. Proceed with other calculations.
+		{	
+
+			//calculate the average value
+			this->setAverageRead(mqGasSensor->getReadSum()/GAS_SENSOR_READ_SAMPLE_TIMES);		
+			//set flag that the data is ready
+			this->_gasSensorDoneReading = true;
+			
+			//reset the first run flag for next time
+			this->_firstRunOfRead = true;
+			
+			
+			#ifdef _DEBUG_GAS_SENSOR_READ_STATUS_										
+				Serial.println(F("End Read Time:"));//DEBUG				
+				Serial.println(millis());//DEBUG				
+			#endif				
+		}//end else		
+		counter->counterReset();//reset the counter
+	}//end if			
+
+
+
+
+
+
 
 	
-	#ifdef _DEBUG_RS_
-		//Prints Rs Value
-		Serial.print(F("Rs: "));//DEBUG
-		Serial.println(mqGasSensorRs);//DEBUG
-	#endif
 	
-	return mqGasSensorRs;
+	
+	
 }
 
 void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minutesUptime, DelayCounter * counter)
@@ -441,8 +502,6 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minu
 			mqGasSensor->setCalibrationSum(0.0);
 			counter->counterReset();//reset the counter
 			
-//Serial.println("initial");//DEBUG AND DELETE
-//Serial.println(val);//DEBUG AND DELETE
 
 			//clear the flag since it has been ran once already
 			this->_firstRunOfCalibration = false;
@@ -465,8 +524,6 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minu
 				//accumulate sensor resistance measurements (to be averaged later on)
 				mqGasSensor->setCalibrationSum( this->calculateGasSensorResistance(mqGasSensor) + mqGasSensor->getCalibrationSum() );
 
-//Serial.println("loop");//DEBUG AND DELETE
-//Serial.println(val);//DEBUG AND DELETE
 
 				mqGasSensor->setCalibrationRuns( mqGasSensor->getCalibrationRuns() + 1 );//increment the number of sample runs
 
@@ -478,8 +535,6 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minu
 			{
 
 			
-//Serial.println("sum");//DEBUG AND DELETE
-//Serial.println(val);//DEBUG AND DELETE
 
 				//calculate the average value
 				mqGasSensor->setCalibrationSum(mqGasSensor->getCalibrationSum()/GAS_SENSOR_CALIBRATION_SAMPLE_TIMES);
@@ -516,4 +571,17 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minu
 boolean RoverAnalogSignals::gasSensorIsCalibrated()
 {
 	return this->_isGasSensorIsCalibrated;
+}
+
+boolean RoverAnalogSignals::gasSensorDoneReading()
+{
+	return this->_gasSensorDoneReading;
+}
+void RoverAnalogSignals::setAverageRead(float averageRead)
+{
+	this->_averageRead = averageRead;
+}
+float RoverAnalogSignals::getAverageRead()
+{
+	return this->_averageRead;
 }

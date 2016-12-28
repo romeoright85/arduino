@@ -104,7 +104,8 @@ void MqGasSensor::reset()
 	
 	this->_calibrationRuns = 0;
 	this->_calibrationSum = 0.0;
-	
+	this->_readRuns = 0;
+	this->_readSum = 0.0;	
 	
 }
 byte MqGasSensor::getAnalogSignalName()
@@ -129,10 +130,7 @@ float MqGasSensor::getR0()
 }
 void MqGasSensor::setRsRoRatio(double mqGasSensorRsR0Ratio)
 {
-	this->_mqGasSensorRsR0Ratio = mqGasSensorRsR0Ratio;
-	
-
-	
+	this->_mqGasSensorRsR0Ratio = mqGasSensorRsR0Ratio;	
 }
 double MqGasSensor::getRsR0Ratio()
 {
@@ -163,19 +161,40 @@ boolean MqGasSensor::gasSensorWarmedUp(byte minutes)
 	}
 	
 }
+//Calibration Sum
 void MqGasSensor::setCalibrationSum(float calibrationSum)
 {
 	this->_calibrationSum = calibrationSum;
-}
-void MqGasSensor::setCalibrationRuns(byte calibrationRuns)
-{
-	this->_calibrationRuns = calibrationRuns;
 }
 float MqGasSensor::getCalibrationSum()
 {
 	return this->_calibrationSum;
 }
+//Calibration Runs
+void MqGasSensor::setCalibrationRuns(byte calibrationRuns)
+{
+	this->_calibrationRuns = calibrationRuns;
+}
 byte MqGasSensor::getCalibrationRuns()
 {
 	return this->_calibrationRuns;
 }
+//Read Runs
+void MqGasSensor::setReadRuns(byte readRuns)
+{
+	this->_readRuns = readRuns;
+}
+byte MqGasSensor::getReadRuns()
+{
+	return this->_readRuns;
+}
+//Read Sums
+void MqGasSensor::setReadSum(float readSum)
+{
+	this->_readSum = readSum;
+}
+float MqGasSensor::getReadSum()
+{
+	return this->_readSum;
+}
+

@@ -71,7 +71,7 @@ void loop() {
 	if (!analogSignals->gasSensorIsCalibrated())
 	{
 		#ifdef _DEBUG_3SEC_WARM_UP_
-			//Wait for a >= 3 second warm up
+			//Wait for a >= 3 minute second warm up
 			//Note: Calibration takes about 20 secs (due to the parallel processing code)
 			analogSignals->calibrateGasSensor(mqGasSensor, roverUptime->getSeconds(), counterGasCal);//DEBUG, speed it up to 3 seconds. But the code will think the seconds are minutes as the function is expecting minutes as the input
 		#else
@@ -287,9 +287,25 @@ void loop() {
 		//only output the MQ gas sensor actual values once the MQ sensor has warmed up for at least 3 minutes and is calibrated
 		if (analogSignals->gasSensorIsCalibrated())
 		{
-			val = analogSignals->getGasValueOf(mqGasSensor);
-			Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL: "));
-			Serial.println(val);
+			//Note: Calibration takes about 6 secs (due to the parallel processing code)
+			analogSignals->readGasSensor(mqGasSensor, counterGasRead);
+
+
+	
+			//only output the MQ gas sensor gas values once the MQ sensor read is complete
+			if (analogSignals->gasSensorDoneReading())
+			{				
+				val = analogSignals->getGasValueOf(mqGasSensor);
+				Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (new): "));				
+				Serial.println(val);
+			}	
+			else
+			{
+				val = analogSignals->getGasValueOf(mqGasSensor);
+				Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (old): "));				
+				Serial.println(val);				
+			}
+			
 		}
 		else
 		{

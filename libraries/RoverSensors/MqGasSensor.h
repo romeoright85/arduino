@@ -68,8 +68,11 @@ public:
 	void setCalibrationRuns(byte);//(the value to set the sample runs at) used for MQ sensor calibration. Keeps track of the number of samples that have been taken.
 	float getCalibrationSum();//used for MQ sensor calibration. Returns the accumulated/sum value use for averaging.
 	byte getCalibrationRuns();//used for MQ sensor calibration. Returns the number of samples that have been taken.
+	void setReadSum(float);//(the value to set the sum at) used for MQ sensor reads. Keeps track of the accumulated/sum value use for averaging.
+	float getReadSum();//used for MQ sensor reads. Returns the number of samples that have been taken.
+	void setReadRuns(byte);//(the value to set the sample runs at) used for MQ sensor reads. Keeps track of the number of samples that have been taken.
+	byte getReadRuns();//used for MQ sensor reads. Returns the accumulated/sum value use for averaging.
 	
-
 private:
 	//Non-SW Resettable		
 	float _mqGasSensorDataCurve[3];//need to make this variable public so the array data can be read from	
@@ -85,6 +88,9 @@ private:
 	float _mqGasSensorRsR0Ratio;//the calculated ratio of Rs vs. R0
 	byte _calibrationRuns;//used for sensor calibration. It's  the accumulated/sum value use for averaging.
 	float _calibrationSum;//used for sensor calibration. It's the number of samples that have been taken.
+	byte _readRuns;//used for sensor read. It's  the accumulated/sum value use for averaging.
+	float _readSum;//used for sensor read. It's the number of samples that have been taken.
+	
 	
 };
 
