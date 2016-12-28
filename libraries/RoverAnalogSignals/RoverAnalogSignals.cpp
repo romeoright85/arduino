@@ -2,7 +2,10 @@
 
 RoverAnalogSignals::RoverAnalogSignals()
 {
-						
+	
+	//Initialize MQ gas sensor flags
+	this->_isGasSensorIsCalibrated = false;
+	
 	//Define the amux names below before passing it to the AnalogMuxSensor objects	
 	//AMUX 1
 	this->_amux1AnalogNames[0] = VOLTAGE_7D2_RAW;
@@ -132,6 +135,8 @@ void RoverAnalogSignals::reset()
 	{
 		this->_resetArray[i]->reset();
 	}	
+	
+	this->_isGasSensorIsCalibrated = false;
 	
 }
 AnalogMuxSensor * RoverAnalogSignals::findMuxBySignalName(byte analogSignalName)
@@ -405,46 +410,70 @@ double RoverAnalogSignals::readGasSensor(MqGasSensor * mqGasSensor)
 	return mqGasSensorRs;
 }
 
-void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor)
+void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minutesUptime)
 {
+	
+	//Wait for the MQ gas sensor to warm up for at least the GAS_SENSOR_WARM_UP_TIME before running calibration
+	if(mqGasSensor->gasSensorWarmedUp(minutesUptime))
+	{
+		
+		#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
+			Serial.println(F("Gas Sensor Calibration Started"));
+		#endif
+	
+	
+		//Code based on: http://sandboxelectronics.com/?p=165
 
-	//Code based on: http://sandboxelectronics.com/?p=165
-
-	float val=0.0;
+		float val=0.0;
 
 //Serial.println("initial");//DEBUG AND DELETE
 //Serial.println(val);//DEBUG AND DELETE
-	
-	
-	//take multiple samples
-	for (byte i=0; i<GAS_SENSOR_CALIBARAION_SAMPLE_TIMES; i++)
-	{
-		//accumulate sensor resistance measurements (to be averaged later on)
 		
-		val += this->calculateGasSensorResistance(mqGasSensor);
 		
+		//take multiple samples
+		for (byte i=0; i<GAS_SENSOR_CALIBARAION_SAMPLE_TIMES; i++)
+		{
+			//accumulate sensor resistance measurements (to be averaged later on)
+			
+			val += this->calculateGasSensorResistance(mqGasSensor);
+			
 //Serial.println("loop");//DEBUG AND DELETE
 //Serial.println(val);//DEBUG AND DELETE
+			
+			//delay between measurements
+			delay(GAS_SENSOR_CALIBRATION_SAMPLE_INTERVAL);
+		}
 		
-		//delay between measurements
-		delay(GAS_SENSOR_CALIBRATION_SAMPLE_INTERVAL);
-	}
-	
 //Serial.println("sum");//DEBUG AND DELETE
 //Serial.println(val);//DEBUG AND DELETE
-	
-	//calculate the average value
-	val = val/GAS_SENSOR_CALIBARAION_SAMPLE_TIMES;
+		
+		//calculate the average value
+		val = val/GAS_SENSOR_CALIBARAION_SAMPLE_TIMES;
 
-	//divided by _mqGasSensorR0CleanAirFactor yields the Ro according to the chart in the datasheet 
-	val = val/(mqGasSensor->getR0CleanAirFactor());                                                        
+		//divided by _mqGasSensorR0CleanAirFactor yields the Ro according to the chart in the datasheet 
+		val = val/(mqGasSensor->getR0CleanAirFactor());                                                        
 
-	//Assign the calculated value of R0 to the variable R0
-	mqGasSensor->setR0(val);
-	
-	#ifdef _DEBUG_CALIBRATED_R0_
-		//Prints Calibrated R0 Value
-		Serial.print(F("Calibrated R0: "));//DEBUG
-		Serial.println(val);//DEBUG
-	#endif
+		//Assign the calculated value of R0 to the variable R0
+		mqGasSensor->setR0(val);
+		
+		//Set the falg to note that the MQ Gas sensor is now calibrated
+		this->_isGasSensorIsCalibrated = true;
+		#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
+			Serial.println(F("Gas Sensor Calibrated"));
+		#endif
+		
+		
+		#ifdef _DEBUG_CALIBRATED_R0_
+			//Prints Calibrated R0 Value
+			Serial.print(F("Calibrated R0: "));//DEBUG
+			Serial.println(val);//DEBUG
+		#endif
+	}//end if
+	//else do nothing
+	//Need to keep calling calibrateGasSensor() until the GAS_SENSOR_WARM_UP_TIME has passed, then calibration will commence and complete.	
+}
+
+boolean RoverAnalogSignals::gasSensorIsCalibrated()
+{
+	return this->_isGasSensorIsCalibrated;
 }

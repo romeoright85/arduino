@@ -1,14 +1,17 @@
 #include <RoverAnalogSignals.h>
+#include <UpTime.h>
 
 //uncomment the follow defines below in order to see the output (can choose as many or as little as you want
-//#define _OUTPUT_MUX1
-//#define _OUTPUT_MUX2
-//#define _OUTPUT_MUX3
-#define _OUTPUT_MUX4
+//#define _OUTPUT_MUX1_
+//#define _OUTPUT_MUX2_
+//#define _OUTPUT_MUX3_
+#define _OUTPUT_MUX4_
+#define _DEBUG_3SEC_WARM_UP_ //do a 3 second warmup instead of a 3 minute warmup for software debugging only
 
 
 //Global Variables
 
+UpTime * roverUptime = new UpTime();
 MqGasSensor * mqGasSensor = new MqGasSensor(GAS_SENSOR_TYPE_MQ2, GAS_BEACONCCA_RIGHTPOINTING, RESISTOR_GAS_BEACONCCA_RIGHTPOINTING);
 RoverAnalogSignals * analogSignals = new RoverAnalogSignals();
 
@@ -17,6 +20,7 @@ double val_Dbl = 0;
 
 
 RoverReset * resetArray[] = {
+	roverUptime,
 	mqGasSensor,
 	analogSignals	
 };
@@ -34,21 +38,39 @@ void setup() {
 	Serial.begin(9600);
 	delay(100);//allow some time for the serial port to begin
 
-	Serial.println(F("Calibrating Gas Sensor - Wait ~26 secs"));	
-	analogSignals->calibrateGasSensor(mqGasSensor);//this takes a few seconds, measured at about 26 seconds to begin	
-	Serial.println(F("Done"));
-	
+	Serial.println(F("Gas Sensor Warming Up And Calibrating - Wait ~3:26"));
+
 }
 
 
 void loop() {
 	
+
+	roverUptime->run();
+
+
+	//wait for warm up of the MQ gas sensor, the calibrate once
+	if (!analogSignals->gasSensorIsCalibrated())
+	{
+		#ifdef _DEBUG_3SEC_WARM_UP_
+			//Wait for a >= 3 second warm up
+			//Note: Calibration takes a few seconds, measured at about 26 seconds to begin	
+			analogSignals->calibrateGasSensor(mqGasSensor, roverUptime->getSeconds());//DEBUG, speed it up to 3 seconds. But the code will think the seconds are minutes as the function is expecting minutes as the input
+		#else
+			//Wait for a >= 3 minute warm up
+			//Note: Calibration takes a few seconds, measured at about 26 seconds to begin	
+			analogSignals->calibrateGasSensor(mqGasSensor, roverUptime->getMinutes());
+		#endif
+	
+	}
+
+
 	delay(1000);
 
 	Serial.println(F("--START--"));
 	Serial.println("");
 
-	#ifdef _OUTPUT_MUX1
+	#ifdef _OUTPUT_MUX1_
 		//AMUX 1
 		Serial.println(F("==AMUX1=="));
 
@@ -114,7 +136,7 @@ void loop() {
 
 	#endif
 
-	#ifdef _OUTPUT_MUX2
+	#ifdef _OUTPUT_MUX2_
 		//AMUX 2
 		Serial.println(F("==AMUX2=="));
 
@@ -180,7 +202,7 @@ void loop() {
 
 	#endif
 
-	#ifdef _OUTPUT_MUX3
+	#ifdef _OUTPUT_MUX3_
 		//AMUX 3
 		Serial.println(F("==AMUX3=="));
 
@@ -238,7 +260,7 @@ void loop() {
 		Serial.println("");
 	#endif
 
-	#ifdef _OUTPUT_MUX4
+	#ifdef _OUTPUT_MUX4_
 		//AMUX 4
 		Serial.println(F("==AMUX4=="));
 
@@ -246,9 +268,20 @@ void loop() {
 		val = analogSignals->getRawADCValueOf(GAS_BEACONCCA_RIGHTPOINTING);
 		Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_RAW: "));
 		Serial.println(val);
-		val = analogSignals->getGasValueOf(mqGasSensor);
-		Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL: "));
-		Serial.println(val);
+
+		//only output the MQ gas sensor actual values once the MQ sensor has warmed up for at least 3 minutes and is calibrated
+		if (analogSignals->gasSensorIsCalibrated())
+		{
+			val = analogSignals->getGasValueOf(mqGasSensor);
+			Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL: "));
+			Serial.println(val);
+		}
+		else
+		{
+			Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL: "));
+			Serial.println(F("Still Initializing..."));
+		}
+		
 
 		//Ch 1
 		val = analogSignals->getRawADCValueOf(CURRENT_MOTORCTRLR_CH2_12D5A);

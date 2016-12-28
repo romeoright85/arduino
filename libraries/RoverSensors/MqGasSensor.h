@@ -63,11 +63,7 @@ public:
 	float getX();//gets the X point on the data curve (from _mqGasSensorDataCurve[])
 	float getY();//gets the Y point on the data curve (from _mqGasSensorDataCurve[])
 	float getSlope();//gets the slope of the curve (from _mqGasSensorDataCurve[])
-	
-//MOVE THIS mqGasSensorDataCurve TO BE A PRIVATE VARIABLE AND MAKE A GETTER METHOD	
-	
-//ALSO WRITE CODE FOR IT TO WAIT FOR THE UPTIME TO BE 3 MINUTES BEFORE CALIBRATION
-//GO BACK AND WRITE CALIBRATION FUNCTIONS FOR OTHER SENSORS	
+	boolean gasSensorWarmedUp(byte);//(minutes of uptime) returns true when the gas sensor has warmed up for at least GAS_SENSOR_WARM_UP_TIME, else it returns false
 	
 private:
 	//Non-SW Resettable		

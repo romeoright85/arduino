@@ -146,4 +146,17 @@ float MqGasSensor::getSlope()
 {
 	return this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE];
 }	
+boolean MqGasSensor::gasSensorWarmedUp(byte minutes)
+{
 	
+	if(minutes >= GAS_SENSOR_WARM_UP_TIME)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+	
+}	
+		

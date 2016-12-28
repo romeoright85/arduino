@@ -26,6 +26,7 @@
 	
 
 	//uncomment defines below for debugging
+	#define _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
 	//#define _DEBUG_CALIBRATED_R0_	
 	//#define _DEBUG_RS_R0_RATIO_
 	//#define _DEBUG_RS_
@@ -62,14 +63,14 @@
 		RoverAnalogSignals();//constructor
 		~RoverAnalogSignals();//destructor
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-		void calibrateGasSensor(MqGasSensor *);//(MqGasSensor object) calibrates the MQ Gas Sensor
+		void calibrateGasSensor(MqGasSensor *, byte);//(MqGasSensor object, minutes of Rover Uptime) calibrates the MQ Gas Sensor.
 		unsigned int getRawADCValueOf(byte);//returns the raw analog value by Analog Signal Name (Analog Signal Name)
 		double getVoltageValueOf(byte);//returns the voltage value by Analog Signal Name (Analog Signal Name)
 		double getCurrentValueOf(byte, byte);//returns the current value by Analog Signal Name based on the current sensor model (Analog Signal Name, current sensor model)
 		double getLightValueOf(byte, double);//returns the current value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
 		double getTempValueOf(byte, double);//returns the temperature value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
 		int getGasValueOf(MqGasSensor *);//(MqGasSensor object) Returns the ppm of the target gas of the MqGasSensor object (Note: the ppm can be greater than 255, so return int instead of byte)
-		
+		boolean gasSensorIsCalibrated();//Returns true when the gas sensor has warmed up and is calibrated.
 		
 		
 	private:
@@ -108,6 +109,9 @@
 		
 		//SW Resettable
 		
+		//Gas sensor flags
+		boolean _isGasSensorIsCalibrated;
+		
 		//AnalogMuxSensor objects
 		AnalogMuxSensor * _amux1;
 		AnalogMuxSensor * _amux2;
@@ -118,7 +122,7 @@
 		AnalogMuxSensor * _amux7;
 		AnalogMuxSensor * _amux8;	
 
-				
+		
 				
 				
 				

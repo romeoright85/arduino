@@ -61,6 +61,9 @@
 		#define MQ9_SLOPE				-0.33 //DEBUG, get values later. For now create random fake values.
 		#define MQ9_RO_CLEAN_AIR_FACTOR			9.87 //DEBUG, get values later. For now create random fake values.
 		
+		
+		#define GAS_SENSOR_WARM_UP_TIME 3 //warm up for 3 minutes (or more) before doing a calibration and using the mq gas sensor
+		
 		//Also see "RESISTOR_GAS_BEACONCCA_RIGHTPOINTING"
 		
 	#endif
