@@ -15,11 +15,11 @@
 //Global Variables
 
 
-
-DelayCounter * counter500mS = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods
-GlobalDelayTimer * timer500mS = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, counter500mS);//set each period to be 5ms long (delay interval)
-DelayCounter * counter50mS = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods
-GlobalDelayTimer * timer50mS = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, counter50mS);//set each period to be 5ms long (delay interval)
+//Note the timers aren't very accurate due to delay caused by the loop() code, such as Serial.println(). But good enough for parallel processing.
+DelayCounter * counterGasCal = new DelayCounter(DELAY_1_PERIODS);//initialize it to count to 1 periods
+GlobalDelayTimer * timerGasCal = new GlobalDelayTimer(DELAY_TIMER_RES_1ms, counterGasCal);//set each period to be 5ms long (delay interval)
+DelayCounter * counterGasRead = new DelayCounter(DELAY_1_PERIODS);//initialize it to count to 1 periods
+GlobalDelayTimer * timerGasRead = new GlobalDelayTimer(DELAY_TIMER_RES_1ms, counterGasRead);//set each period to be 5ms long (delay interval)
 
 
 UpTime * roverUptime = new UpTime();
@@ -31,10 +31,10 @@ double val_Dbl = 0;
 
 
 RoverReset * resetArray[] = {	
-	counter500mS,
-	timer500mS,
-	counter50mS,
-	timer50mS,
+	counterGasCal,
+	timerGasCal,
+	counterGasRead,
+	timerGasRead,
 	roverUptime,
 	mqGasSensor,
 	analogSignals	
@@ -59,12 +59,12 @@ void setup() {
 
 
 void loop() {
-	
+
 
 	//Background running tasks
 	roverUptime->run();//active the uptime monitor
-	timer50mS->Running();//activate the 50mS timer
-	timer500mS->Running();//activate the 500mS timer
+	timerGasRead->Running();//activate the 50mS timer
+	timerGasCal->Running();//activate the 500mS timer
 	
 
 	//wait for warm up of the MQ gas sensor, the calibrate once
@@ -72,8 +72,8 @@ void loop() {
 	{
 		#ifdef _DEBUG_3SEC_WARM_UP_
 			//Wait for a >= 3 second warm up
-			//Note: Calibration takes a few seconds, measured at about 26 seconds to begin	
-			analogSignals->calibrateGasSensor(mqGasSensor, roverUptime->getSeconds(), counter500mS);//DEBUG, speed it up to 3 seconds. But the code will think the seconds are minutes as the function is expecting minutes as the input
+			//Note: Calibration takes about 20 secs (due to the parallel processing code)
+			analogSignals->calibrateGasSensor(mqGasSensor, roverUptime->getSeconds(), counterGasCal);//DEBUG, speed it up to 3 seconds. But the code will think the seconds are minutes as the function is expecting minutes as the input
 		#else
 			//Wait for a >= 3 minute warm up
 			//Note: Calibration takes a few seconds, measured at about 26 seconds to begin	
@@ -81,9 +81,6 @@ void loop() {
 		#endif
 	
 	}
-
-
-	delay(1000);
 
 	Serial.println(F("--START--"));
 	Serial.println("");
@@ -149,7 +146,7 @@ void loop() {
 		Serial.println(val_Dbl);
 
 
-		delay(1000);
+		//delay(1000);
 		Serial.println("");
 
 	#endif
@@ -215,7 +212,7 @@ void loop() {
 		Serial.print(F("TEMPSENSOR_DIGITALCCA_MIDDLESIDE_ACTUAL: "));
 		Serial.println(val_Dbl);
 
-		delay(1000);
+		//delay(1000);
 		Serial.println("");
 
 	#endif
@@ -274,7 +271,7 @@ void loop() {
 		Serial.println(val_Dbl);
 
 	
-		delay(1000);
+		//delay(1000);
 		Serial.println("");
 	#endif
 
@@ -344,7 +341,7 @@ void loop() {
 		Serial.println(val_Dbl);
 		
 
-		delay(1000);
+		//delay(1000);
 		Serial.println("");
 
 	#endif
@@ -354,7 +351,23 @@ void loop() {
 	Serial.println("");
 	Serial.println("");
 
-	delay(4000);
+	//delay(4000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
 }
 
 

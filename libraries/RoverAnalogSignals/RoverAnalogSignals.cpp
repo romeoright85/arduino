@@ -439,60 +439,78 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minu
 			//Initialize variables						
 			mqGasSensor->setCalibrationRuns(0);
 			mqGasSensor->setCalibrationSum(0.0);
+			counter->counterReset();//reset the counter
+			
 //Serial.println("initial");//DEBUG AND DELETE
 //Serial.println(val);//DEBUG AND DELETE
-Serial.println("Run Once");//DEBUG					
+
 			//clear the flag since it has been ran once already
 			this->_firstRunOfCalibration = false;
-		}			
-
-		
-		//take multiple samples
-		while( mqGasSensor->getCalibrationRuns() < GAS_SENSOR_CALIBRATION_SAMPLE_TIMES )
-		//for (byte i=0; i<GAS_SENSOR_CALIBRATION_SAMPLE_TIMES; i++)
-		{
-			//accumulate sensor resistance measurements (to be averaged later on)
 			
-			mqGasSensor->setCalibrationSum( this->calculateGasSensorResistance(mqGasSensor) + mqGasSensor->getCalibrationSum() );
+
+			#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
+				Serial.print(F("Start Cal Time: "));//DEBUG				
+				Serial.println(millis());//DEBUG				
+			#endif
+		}//end if	
+		
+	
+		//delay between measurements by using a counter
+		if (counter->countReached())
+		{
+			
+			//take multiple samples			
+			if( mqGasSensor->getCalibrationRuns() < GAS_SENSOR_CALIBRATION_SAMPLE_TIMES )
+			{
+				//accumulate sensor resistance measurements (to be averaged later on)
+				mqGasSensor->setCalibrationSum( this->calculateGasSensorResistance(mqGasSensor) + mqGasSensor->getCalibrationSum() );
 
 //Serial.println("loop");//DEBUG AND DELETE
 //Serial.println(val);//DEBUG AND DELETE
-			
-			//delay between measurements
-			//delay(GAS_SENSOR_CALIBRATION_SAMPLE_INTERVAL);
-//WRITE CODE TO USE COUNTER FOR DELAY
-			
-			mqGasSensor->setCalibrationRuns( mqGasSensor->getCalibrationRuns() + 1 );//increment the number of sample runs
 
-		}
-		
+				mqGasSensor->setCalibrationRuns( mqGasSensor->getCalibrationRuns() + 1 );//increment the number of sample runs
+
+
+				
+
+			}//end if
+			else //sampling is complete. Proceed with other calculations.
+			{
+
+			
 //Serial.println("sum");//DEBUG AND DELETE
 //Serial.println(val);//DEBUG AND DELETE
-		
-		//calculate the average value
-		mqGasSensor->setCalibrationSum(mqGasSensor->getCalibrationSum()/GAS_SENSOR_CALIBRATION_SAMPLE_TIMES);
 
-		//divided by _mqGasSensorR0CleanAirFactor yields the Ro according to the chart in the datasheet 
-		mqGasSensor->setCalibrationSum( mqGasSensor->getCalibrationSum() / mqGasSensor->getR0CleanAirFactor() );
+				//calculate the average value
+				mqGasSensor->setCalibrationSum(mqGasSensor->getCalibrationSum()/GAS_SENSOR_CALIBRATION_SAMPLE_TIMES);
 
-		//Assign the calculated value of R0 to the variable R0
-		mqGasSensor->setR0( mqGasSensor->getCalibrationSum()) ;
-		
-		//Set the falg to note that the MQ Gas sensor is now calibrated
-		this->_isGasSensorIsCalibrated = true;
-		#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_
-			Serial.println(F("Gas Sensor Calibrated"));
-		#endif
-		
-		
-		#ifdef _DEBUG_CALIBRATED_R0_
-			//Prints Calibrated R0 Value
-			Serial.print(F("Calibrated R0: "));//DEBUG
-			Serial.println( mqGasSensor->getCalibrationSum() );//DEBUG
-		#endif
-	}//end if
-	//else do nothing
-	//Need to keep calling calibrateGasSensor() until the GAS_SENSOR_WARM_UP_TIME has passed, then calibration will commence and complete.	
+				//divided by _mqGasSensorR0CleanAirFactor yields the Ro according to the chart in the datasheet 
+				mqGasSensor->setCalibrationSum( mqGasSensor->getCalibrationSum() / mqGasSensor->getR0CleanAirFactor() );
+
+				//Assign the calculated value of R0 to the variable R0
+				mqGasSensor->setR0( mqGasSensor->getCalibrationSum()) ;
+
+				//Set the falg to note that the MQ Gas sensor is now calibrated
+				this->_isGasSensorIsCalibrated = true;
+				#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_					
+					Serial.println(F("Gas Sensor Calibrated"));//DEBUG
+					Serial.println(F("End Cal Time:"));//DEBUG				
+					Serial.println(millis());//DEBUG				
+				#endif
+
+
+				#ifdef _DEBUG_CALIBRATED_R0_
+					//Prints Calibrated R0 Value
+					Serial.print(F("Calibrated R0: "));//DEBUG
+					Serial.println( mqGasSensor->getCalibrationSum() );//DEBUG
+				#endif
+			}//end else
+			
+			counter->counterReset();//reset the counter
+		}//end if			
+	}//end if		
+		//else do nothing
+		//Need to keep calling calibrateGasSensor() until the GAS_SENSOR_WARM_UP_TIME has passed, then calibration will commence and complete.
 }
 
 boolean RoverAnalogSignals::gasSensorIsCalibrated()

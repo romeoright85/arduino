@@ -20,6 +20,8 @@ So for the total desired delay, you multiply delayInterval by the number of coun
 i.e. for a 5ms delayInterval with a stop value to count up to of 10, you get 5ms x 10 = 50ms
 
 
+//Note: Careful not using delay() in the loop when using timers as it will slow everything down in proportion
+//Note: The timer/delay won't be accurate because things like Serial.println() will also slow it down. But good enough if you want parallel processing (using the poll method).
 
 --------------------
 Example Use:

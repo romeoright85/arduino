@@ -42,12 +42,7 @@
 		#define GAS_SENSOR_CURVE_SLOPE	2
 		
 		
-		//Reference: http://sandboxelectronics.com/?p=165
-		#define GAS_SENSOR_CALIBARAION_SAMPLE_TIMES				50 //number of samples to take
-		#define GAS_SENSOR_CALIBRATION_SAMPLE_INTERVAL		500 //in ms, used for delay()
-		#define GAS_SENSOR_READ_SAMPLE_TIMES							5 //number of samples to take
-		#define GAS_SENSOR_READ_SAMPLE_INTERVAL					50 //in ms, used for delay()
-		
+
 	#endif	
 
 
@@ -192,8 +187,8 @@
 		#define DELAY_1_PERIODS 1
 		#define DELAY_2_PERIODS 2
 		#define DELAY_4_PERIODS 4
-		#define DELAY_10_PERIODS 10
-		#define DELAY_80_PERIODS 80
+		#define DELAY_10_PERIODS 10		
+		#define DELAY_80_PERIODS 80		
 		#define DELAY_200_PERIODS 200
 	#endif
 
@@ -201,7 +196,11 @@
 	//definition for DelayTimer Resolutions
 	#ifdef _DELAYTIMER_RESOLUTIONS
 		#define DELAY_TIMER_RES_1ms 1
+		#define DELAY_TIMER_RES_2ms 2
 		#define DELAY_TIMER_RES_5ms 5
+		#define DELAY_TIMER_RES_10ms 10
+		#define DELAY_TIMER_RES_50ms 50
+		#define DELAY_TIMER_RES_500ms 50
 	#endif
 		
 	//definition for MotorPowerControl

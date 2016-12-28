@@ -15,6 +15,8 @@ Use DelayCounter::getCnt() to get the current count the counter is at.
 Use DelayCounter::counterReset() to reset the counter to the startValue and clear the counterDone flag.
 
 
+//Note: Careful not using delay() in the loop when using timers as it will slow everything down in proportion
+//Note: The timer/delay won't be accurate because things like Serial.println() will also slow it down. But good enough if you want parallel processing (using the poll method).
 
 --------------------
 Example Use:

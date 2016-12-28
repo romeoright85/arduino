@@ -66,14 +66,12 @@ unsigned int DelayCounter::getCnt()
 
 boolean DelayCounter::countReached()
 {
-	
 	return this->_counterDone;
 }
 void DelayCounter::counterReset()
 {
 	this->_count = this->_startValue;//reset the count
-	this->_counterDone = false;//reset counter done flag
-		
+	this->_counterDone = false;//reset counter done flag		
 }
 void DelayCounter::setStopValue(unsigned int stopValue)
 {
