@@ -1,3 +1,5 @@
+//Used for AUXI - 2
+
 #include <CurrentSensorFault.h>
 
 

@@ -7,6 +7,14 @@
 	#include <DistanceSensor.h>
 	#include <RoverReset.h>
 	
+	
+	//uncomment of one the test cases below to simulate the ultrasonic read values
+	//#define _DEBUG_TEST_CASE_1
+	//#define _DEBUG_TEST_CASE_2
+	//#define _DEBUG_TEST_CASE_3
+	//#define _DEBUG_TEST_CASE_4
+	
+	
 	/*******************************************************************
 	Configure (define) flags before calling #include <RoverConfig.h>
 	/********************************************************************/
@@ -17,13 +25,14 @@
 	#endif
 
 	/********************************************************************/
+	
+	#define _ULTRASONIC_SENSOR_DEFINITIONS
+	
 	#include <RoverConfig.h>
 
 
 
 
-	//Used to set ultrasonic timeout
-	#define USON_TIMEOUT 30000		
 
 
 
@@ -32,9 +41,10 @@
 		public:
 			UltrasonicSensor(byte, byte);//constructor. (trigger pin, echo pin)
 			~UltrasonicSensor();//destructor
-			int getDistance(byte);//returns distance (mode: UNIT_CM, UNIT_M, UNIT_FT, UNIT_IN). Also see RoverConfig.h
+			int getDistance(byte);//reads the sensor a designated amount of times and returns the average distance (mode: UNIT_CM, UNIT_M, UNIT_FT, UNIT_IN). Also see RoverConfig.h
 			virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 		private:
+			int readSensor();//reads the pulse width of the sensor returns the raw value used for averaging
 			byte _triggerPin;
 			byte _echoPin;
 	};

@@ -1,3 +1,6 @@
+//Used for AUXI - 2
+//Used for the Gas Sensor, etc.
+
 #include <UpTime.h>
 
 

@@ -1,3 +1,5 @@
+//Used for AUXI - 2
+
 //Note: The test cases varies for different Arduinos
 
 //Note: Can send this (about max size) to test: "/-c3--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"

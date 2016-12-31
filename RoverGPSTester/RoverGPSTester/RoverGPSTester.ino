@@ -1,3 +1,5 @@
+//Used for NAVI - 1
+
 #include <RoverGpsSensor.h>
 
 //#define _DEBUG_ //Uncomment this flag to turn on debug outputs

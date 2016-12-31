@@ -503,27 +503,27 @@
 		#define RIGHT_RED_TAILLIGHT_5_PIN			51
 		#define FRONT_BEACON_BLUE_PIN				52
 		#define RIGHT_WHITE_TAILLIGHT_PIN				53
-		#define SIDE_LEFT_IR_DIST_SENSOR_PIN		0
-		#define REAR_CENTER_IR_DIST_SENSOR_PIN		1
-		#define FORWARD_CENTER_IR_DIST_SENSOR_PIN	2
-		#define SIDE_RIGHT_IR_DIST_SENSOR_PIN		3
-		#define SIDE_LEFT_ULTSNC_TRIG_PIN			4
-		#define SIDE_LEFT_ULTSNC_ECHO_PIN			5
-		#define REAR_CENTER_ULTSNC_TRIG_PIN			6
-		#define REAR_CENTER_ULTSNC_ECHO_PIN			7
-		#define FORWARD_LEFT_ULTSNC_TRIG_PIN		8
-		#define FORWARD_LEFT_ULTSNC_ECHO_PIN		9
-		#define FORWARD_CENTER_ULTSNC_TRIG_PIN		10
-		#define FORWARD_CENTER_ULTSNC_ECHO_PIN		11
-		#define FORWARD_RIGHT_ULTSNC_TRIG_PIN		12
-		#define FORWARD_RIGHT_ULTSNC_ECHO_PIN		13
-		#define SIDE_RIGHT_ULTSNC_TRIG_PIN			14
-		#define SIDE_RIGHT_ULTSNC_ECHO_PIN			15
+		#define SIDE_LEFT_IR_DIST_SENSOR_PIN		A0 //analog used as digital
+		#define REAR_CENTER_IR_DIST_SENSOR_PIN		A1 //analog used as digital
+		#define FORWARD_CENTER_IR_DIST_SENSOR_PIN	A2 //analog used as digital
+		#define SIDE_RIGHT_IR_DIST_SENSOR_PIN		A3 //analog used as digital
+		#define SIDE_LEFT_ULTSNC_TRIG_PIN			A4 //analog used as digital
+		#define SIDE_LEFT_ULTSNC_ECHO_PIN			A5 //analog used as digital
+		#define REAR_CENTER_ULTSNC_TRIG_PIN			A6 //analog used as digital
+		#define REAR_CENTER_ULTSNC_ECHO_PIN			A7 //analog used as digital
+		#define FORWARD_LEFT_ULTSNC_TRIG_PIN		A8 //analog used as digital
+		#define FORWARD_LEFT_ULTSNC_ECHO_PIN		A9 //analog used as digital
+		#define FORWARD_CENTER_ULTSNC_TRIG_PIN		A10 //analog used as digital
+		#define FORWARD_CENTER_ULTSNC_ECHO_PIN		A11 //analog used as digital
+		#define FORWARD_RIGHT_ULTSNC_TRIG_PIN		A12 //analog used as digital
+		#define FORWARD_RIGHT_ULTSNC_ECHO_PIN		A13 //analog used as digital
+		#define SIDE_RIGHT_ULTSNC_TRIG_PIN			A14 //analog used as digital
+		#define SIDE_RIGHT_ULTSNC_ECHO_PIN			A15 //analog used as digital
 
 	#endif
 
 
-	//Used for	 distance sensors like ultrasonic or infrared sensors
+	//Used for	DistanceSensors (like ultrasonic and infrared sensors)
 	#ifdef _DISTANCE_UNITS_MODES
 		#define UNIT_CM	 0
 		#define UNIT_M	 1
@@ -531,6 +531,14 @@
 		#define UNIT_FT	 3
 	#endif	
 
+	//definitions for Ultrasonic sensor
+	#ifdef _ULTRASONIC_SENSOR_DEFINITIONS	
+		#define ULTRASONIC_SENSOR_TIMEOUT 30000		
+		#define ULTRASONIC_SENSOR_SAMPLE_TIMES	5 //the number times to sample and average the ultrasonic data
+		#define ULTRASONIC_SENSOR_NO_OBJECT_SAMPLES	3 //the number of times no objects detect threshold before declaring no objects detected. Should be <= ULTRASONIC_SENSOR_SAMPLE_TIMES.
+	#endif
+	
+	
 	
 	
 	

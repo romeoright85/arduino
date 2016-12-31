@@ -1,5 +1,5 @@
 //UpTime.h
-
+//Used for the Gas Sensor, etc.
 
 /*
 Millis outputs an unsigned long

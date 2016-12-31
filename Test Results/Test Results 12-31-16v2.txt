@@ -1,0 +1,202 @@
+===============
+TESTED
+===============
+
+
+-------------
+12-31-16
+-------------
+
+UltrasonicSensorTester
+	Updated code 12-31-16:
+		Fixed config pins to use A0, A1, etc. since they're analog pins.
+		Take several readings and average.	
+		Added debug options, and simulated the data in software.
+	Retest Comments:
+	
+	
+
+PirSensorTester	
+	Updated code 12-31-16:
+		Added Reset
+	Retest Comments:
+	
+
+
+
+
+-------------
+12-30-16
+-------------
+
+Make sure you upload the code to the right arduino.
+Write a universal blank IDE to upload to clear out the program in any arduino.
+Make sure to clear out all other Arduinos of any reset (HW or SW) testers before you run your new code or it might reset and you might be confused as what is going on.
+Make sure all USBs are plugged into all the Arduinos during testing. You can unplug them for programming, but plug them back in when you use it in order to have enough power.
+
+
+
+
+
+DigitalLedTester
+NEEDS TROUBLESHOOTING
+Some reason it flashes really quick. Also the serial stops outputting when the 5V power switch is on.
+Maybe try to use delay() instead of loop. And flash some at a time at a slower rate.
+Had a hard time uploading to NAVI. Had to turn off the 5V SW power and just use the USB power to upload to it.
+
+
+
+AnalogLedTester
+Comments:
+NEEDS TROUBLESHOOTING
+	Some reason it only works when the USB is plugged in.
+	
+	
+	
+HwResetTester_COMM
+HwResetTester_MAIN
+Comments:
+	Done run the MAIN and COMM code at the same time as they will interrupt and reset each other.
+	NEEDS REWORK
+	Write new extra code for MAIN, NAVI, AUXI, COMM to print any text. Then monitor with anther usb/terminal as you HW reset with the other Arduino.
+
+
+
+CurrentSensorControlTester (Current Faults and Resets)
+Comments:
+	For some reason when the 5V switched power is off no fault is detected, but when you turn it on, it faults constantly and resets constantly.
+	
+	
+	
+LaserControlTester
+Remember to move the jumper over to enable the laser.
+Comments:
+NEEDS TROUBLESHOOTING
+	Right laser isn't working.
+	For some reason the negative line for the right laser isn't being pulled low.
+	
+	
+	
+MotorAndServoTester_MAIN
+MotorAndServoTester_NAVI
+Comments:
+	Software isn't working as expected. Getting no movement on motors and servo jitter.
+	Try to write it where I can use two usb/terminals to send control signals, enable, read encoders, etc.
+
+
+WakeUpTester_AUXI
+WakeUpTester_NAVI
+WakeUpTester_MAIN	
+WakeUpTester_COMM
+Comments:
+	All four of this code needs to be uploaded in a set.
+	Use at least USB cords and two terminals.
+	One to monitor Arduino going to sleep and the other to control the sleep/wake.
+	
+	NEEDS REWORK
+	
+		Update comment for COMM to type any key to wake it up.
+		AUXI not waking after going to sleep.
+		MAIN not waking after going to sleep.
+		NAVI doesn't sleep at all.
+		
+
+		
+	
+
+IrDistanceSensor
+Comments:
+	NEEDS REWORK
+	Works okay but not very accurate.
+	Need to take several samples and average.
+
+	
+	
+	
+	
+	
+	
+	
+	
+UltrasonicSensorTester
+	Comments:
+	NEEDS REWORK
+	Fix config pins to use A0, A1, etc. since they're analog pins.
+	Take several readings and average.
+	Not very accurate but good enough.
+	Check to see if a distance it too long, to set it to something else instead of 0.
+	
+-------------
+12-29-16
+-------------
+
+PirSensorTester
+	Comments:
+	NEEDS REWORK
+	Once motion is detected, it stays latched for some reason.
+	Fix:
+		Do a pirSensor.reset() once you read in the data.
+
+
+
+
+
+
+
+
+
+
+============================================================
+Not Yet Tested
+============================================================
+
+
+DigitalLedTester
+
+	[done, need to test on rover]			
+		LedTester (
+								[done, need to retest due to updates]write global delay counter (see Rover_Heart_LED_Testerv3.ino). pass this to the heart led
+								[done, need to retest due to updates]AnalogLed->HeartLed
+								UnderglowLeds->DigitalLed->Underglow
+								SideSignalLight(left, right)
+								BeaconAssembly->DigitalLed->Beacon[ir, blue]
+								TailLightAssembly->DigitalLed->Taillights
+								HeadlightAssembly->DigitalLed->(Headlight Left, Headlight Right, Signal Left, Signal Right, Fog Left, Fog Right)
+								
+						)
+					
+	
+	
+				
+	[done, need to test on rover] GpsTester
+		see these text files for sample gps data
+			arduino filtered gps position fixed
+			arduino filtered gps on startup
+	
+	
+	
+		
+			
+		[done, need to test on rover] RoverAnalogSignalsTester (mux control, op amp output) : temp, voltage, light, current
+
+	
+	
+
+	[done, need to test on rover] ImuTester
+		
+		
+		[done, need to test on rover] RoverCommTester_COMM
+		[done, need to test on rover] RoverCommTester_MAIN
+		[done, need to test on rover] RoverCommTester_AUXI
+		[done, need to test on rover] RoverCommTester_NAVI
+
+			
+			
+		[done, need to test on rover] Write an uptime counter classes using example for the UNO COMM
+
+		
+		[done, maybe buggy, need to test]MQGasSensor	
+			Note: The output is still zero. Debug it later once plug the sensor in and measure and update the fixed resistor value.		
+			[do later after hook sensor to see if it's really an issue with the code or the simulation]debug why gas sensor is output 0's
+				see "DEBUG AND DELETE" lines
+	

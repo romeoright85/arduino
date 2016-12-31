@@ -1,3 +1,5 @@
+//Used for COMM - 4
+
 //NOTE: txData() in the RoverCommTester will output any data sent to the COMM with the destination CMNC back out to the CMNC. So if you want to test a loopback, send from CMNC with the destination CMNC to get a loopback
 
 //Note: The test cases varies for different Arduinos
