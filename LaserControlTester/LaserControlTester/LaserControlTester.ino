@@ -36,12 +36,17 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
-	Serial.begin(9600);
+	Serial.begin(PC_USB_BAUD_RATE);
 }
 
 
 void loop() {
-	
+
+	rightSidelaser->laserEnable(LASER_ON);//DEBUG
+	leftSidelaser->laserEnable(LASER_ON);//DEBUG
+
+
+	/*
 
 	//Counter Delays
 	//increment the counters
@@ -152,7 +157,7 @@ void loop() {
 
 
 
-	
+	*/
 
 
 

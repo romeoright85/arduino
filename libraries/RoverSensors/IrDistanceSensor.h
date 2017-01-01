@@ -8,6 +8,11 @@
 #include <RoverAdc.h>
 #include <RoverReset.h>
 
+
+//uncomment of one the test cases below to simulate the ultrasonic read values
+//#define _DEBUG_TEST_CASE
+
+	
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
@@ -18,6 +23,9 @@ Configure (define) flags before calling #include <RoverConfig.h>
 #endif
 
 /********************************************************************/
+
+#define _INFRARED_SENSOR_DEFINITIONS
+
 #include <RoverConfig.h>
 
 

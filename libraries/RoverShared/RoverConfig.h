@@ -523,7 +523,7 @@
 	#endif
 
 
-	//Used for	DistanceSensors (like ultrasonic and infrared sensors)
+	//Used for	Distance Sensors (like ultrasonic and infrared sensors)
 	#ifdef _DISTANCE_UNITS_MODES
 		#define UNIT_CM	 0
 		#define UNIT_M	 1
@@ -531,7 +531,7 @@
 		#define UNIT_FT	 3
 	#endif	
 
-	//definitions for Ultrasonic sensor
+	//definitions for Ultrasonic Sensor
 	#ifdef _ULTRASONIC_SENSOR_DEFINITIONS	
 		#define ULTRASONIC_SENSOR_TIMEOUT 30000		
 		#define ULTRASONIC_SENSOR_SAMPLE_TIMES	5 //the number times to sample and average the ultrasonic data
@@ -540,7 +540,12 @@
 	
 	
 	
+//definitions for Infrared Sensor
+	#ifdef _INFRARED_SENSOR_DEFINITIONS	
+		#define INFRARED_SENSOR_SAMPLE_TIMES	5 //the number times to sample and average the IR sensor data		
+	#endif
 	
+		
 	
 	
 

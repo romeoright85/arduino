@@ -57,40 +57,43 @@ void loop()
 		
 	for (byte i = 0; i <= 5; i++)
 	{
-		distanceMeasured = uSonSensors[i]->getDistance(UNIT_CM);
+		for (byte j = 0; j < 4; j++)
+		{
+			distanceMeasured = uSonSensors[i]->getDistance(UNIT_CM);
 
-		switch (i)
-		{
-			case 0:
-				Serial.print("uSon_FwdLeft: ");
-				break;
-			case 1:
-				Serial.print("uSon_FwdCenter: ");
-				break;
-			case 2:
-				Serial.print("uSon_FwdRight: ");
-				break;
-			case 3:
-				Serial.print("uSon_SideRight: ");
-				break;
-			case 4:
-				Serial.print("uSon_RearCenter: ");
-				break;
-			case 5:
-				Serial.print("uSon_SideLeft: ");
-				break;
-		}
-		//if objects are detected...
-		if(distanceMeasured >= 0)
-		{
-			Serial.print(distanceMeasured);
-			Serial.println(" cm");
-		}
-		else//no objects detected...
-		{
-			Serial.println(F("No Object Detected"));
-		}
-		delay(1000);
+			switch (i)
+			{
+				case 0:
+					Serial.print("uSon_FwdLeft: ");
+					break;
+				case 1:
+					Serial.print("uSon_FwdCenter: ");
+					break;
+				case 2:
+					Serial.print("uSon_FwdRight: ");
+					break;
+				case 3:
+					Serial.print("uSon_SideRight: ");
+					break;
+				case 4:
+					Serial.print("uSon_RearCenter: ");
+					break;
+				case 5:
+					Serial.print("uSon_SideLeft: ");
+					break;
+			}
+			//if objects are detected...
+			if(distanceMeasured >= 0)
+			{
+				Serial.print(distanceMeasured);
+				Serial.println(" cm");
+			}
+			else//no objects detected...
+			{
+				Serial.println(F("No Object Detected"));
+			}
+			delay(1000);
+		}//end for
 	}//end for
 	
 		

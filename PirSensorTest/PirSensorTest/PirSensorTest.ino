@@ -5,11 +5,13 @@
 void InterruptDispatch1();
 
 //Global Variables
-PirSensor pirSensor = PirSensor(PIR_PIN, &InterruptDispatch1);//Note: This is my custom function and not attachInterrupt (though it calls it)
+PirSensor * pirSensor = new PirSensor(PIR_PIN, &InterruptDispatch1);//Note: This is my custom function and not attachInterrupt (though it calls it)
 volatile boolean motionDetected;
 
 
-RoverReset * resetArray[] = { &pirSensor };
+RoverReset * resetArray[] = { 
+	pirSensor
+};
 
 
 void setup() {
@@ -22,27 +24,28 @@ void setup() {
 		}
 
 	}
-	Serial.begin(9600);
+	Serial.begin(PC_USB_BAUD_RATE);
 
 }
 
 // the loop function runs over and over again until power down or reset
 void loop() {
 	
-	motionDetected = pirSensor.monitorMotion();
 
-	if (motionDetected)
+
+
+	if (pirSensor->monitorMotion())
 	{
 		//motion detected, take action
 		Serial.println("motion detected");
-		pirSensor.reset();//reset the pir sensor once action is taken
+		
 	}
 	else
 	{
 		Serial.println("no motion");
-		delay(900);
 	}
-	delay(100);
+	pirSensor->reset();//reset the pir sensor once samples are processed
+	delay(250);
 	
 
 
@@ -51,5 +54,5 @@ void loop() {
 
 
 void InterruptDispatch1() {
-	pirSensor.isrUpdate();
+	pirSensor->isrUpdate();
 }

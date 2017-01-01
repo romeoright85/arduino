@@ -187,10 +187,11 @@ int UltrasonicSensor::getDistance(byte mode)
 
 	//take the average of the pulse widths by using the sum above and dividing it by (the number of samples taken minus the samples where no object was detected)
 	avgPulseWidth = avgPulseWidth/(ULTRASONIC_SENSOR_SAMPLE_TIMES - noObjectDetected);
-		#if defined (_DEBUG_TEST_CASE_1) || defined(_DEBUG_TEST_CASE_2) || defined(_DEBUG_TEST_CASE_3) || defined(_DEBUG_TEST_CASE_4)
-			Serial.print(F("Avg Pulse Width: "));//DEBUG
-			Serial.println(avgPulseWidth);//DEBUG
-		#endif
+	
+	#if defined (_DEBUG_TEST_CASE_1) || defined(_DEBUG_TEST_CASE_2) || defined(_DEBUG_TEST_CASE_3) || defined(_DEBUG_TEST_CASE_4)
+		Serial.print(F("Avg Pulse Width: "));//DEBUG
+		Serial.println(avgPulseWidth);//DEBUG
+	#endif
 
 		
 	//select mode for returning the distance value

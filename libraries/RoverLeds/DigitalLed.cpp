@@ -25,7 +25,7 @@ void DigitalLed::ledOn()
 void DigitalLed::ledOff()
 {
 	this->_ledIsOn = false;
-	digitalWrite(this->_ledIsOn, LOW);
+	digitalWrite(this->_ledPin, LOW);
 }
 boolean DigitalLed::isLedOn()
 {

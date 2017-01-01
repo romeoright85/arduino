@@ -15,7 +15,7 @@
 
 //counter delays
 //using a counter to create delays while still allowing the loop() to run (i.e. for messages, etc.)
-unsigned int modesToggleDelay = 0;
+unsigned long modesToggleDelay = 0;
 
 
 //A counter use to increment through the different modes
@@ -59,7 +59,7 @@ void setup() {
 
 	}
 
-	Serial.begin(9600);
+	Serial.begin(PC_USB_BAUD_RATE);
 	delay(15);//add a little delay so the serial port has time to start up
 	Serial.println("Test running");
 }
@@ -74,7 +74,7 @@ void loop() {
 	
 
 	//Motor Power Control
-	if (modesToggleDelay >= 40000)//about once every second
+	if (modesToggleDelay >= 80000)//about once every second
 	{
 
 		if (modesTester==1)//if in on mode

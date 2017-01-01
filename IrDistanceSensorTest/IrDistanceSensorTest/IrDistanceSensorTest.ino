@@ -4,28 +4,28 @@
 
 
 //Global Variables
-IrDistanceSensor * irDistanceSideLeft = new IrDistanceSensor(SIDE_LEFT_IR_DIST_SENSOR_PIN);
+IrDistanceSensor * irDistanceForwardCenter = new  IrDistanceSensor(FORWARD_CENTER_IR_DIST_SENSOR_PIN);
 IrDistanceSensor * irDistanceSideRight = new  IrDistanceSensor(SIDE_RIGHT_IR_DIST_SENSOR_PIN);
 IrDistanceSensor * irDistanceRearCenter = new  IrDistanceSensor(REAR_CENTER_IR_DIST_SENSOR_PIN);
-IrDistanceSensor * irDistanceForwardCenter = new  IrDistanceSensor(FORWARD_CENTER_IR_DIST_SENSOR_PIN);
+IrDistanceSensor * irDistanceSideLeft = new IrDistanceSensor(SIDE_LEFT_IR_DIST_SENSOR_PIN);
 
 int distanceMeasured;
 
 IrDistanceSensor * irDistanceSensors[4] =
 {
-	irDistanceSideLeft,
+	irDistanceForwardCenter,
 	irDistanceSideRight,
 	irDistanceRearCenter,
-	irDistanceForwardCenter
+	irDistanceSideLeft	
 };
 
 
 
 RoverReset * resetArray[] = { 
-	irDistanceSideLeft , 
-	irDistanceSideRight, 
+	irDistanceForwardCenter,
+	irDistanceSideRight,
 	irDistanceRearCenter, 
-	irDistanceForwardCenter
+	irDistanceSideLeft
 };
 
 
@@ -41,7 +41,7 @@ void setup() {
 
 	}
 
-	Serial.begin(9600);
+	Serial.begin(PC_USB_BAUD_RATE);
 }
 
 // the loop function runs over and over again until power down or reset
@@ -50,24 +50,31 @@ void loop() {
 
 	for (byte i = 0; i <= 3; i++)
 	{
-		switch (i)
+		for (byte j = 0; j < 5; j++)
 		{
-		case 0:
-			Serial.print("irDistanceSideLeft: ");
-			break;
-		case 1:
-			Serial.print("irDistanceSideRight: ");
-			break;
-		case 2:
-			Serial.print("irDistanceRearCenter: ");
-			break;
-		case 3:
-			Serial.print("irDistanceForwardCenter: ");
-			break;
-		}//end switch
-		distanceMeasured = irDistanceSensors[i]->getDistance(UNIT_CM);
-		Serial.print(distanceMeasured);
-		Serial.println(" cm");
+			
+			distanceMeasured = irDistanceSensors[i]->getDistance(UNIT_CM);
+
+			switch (i)
+			{
+			case 0:
+				Serial.print("irDistanceForwardCenter: ");				
+				break;
+			case 1:
+				Serial.print("irDistanceSideRight: ");				
+				break;
+			case 2:
+				Serial.print("irDistanceRearCenter: ");
+				break;
+			case 3:
+				Serial.print("irDistanceSideLeft: ");
+				break;
+			}//end switch			
+			Serial.print(distanceMeasured);
+			Serial.println(" cm");
+			delay(750);
+		}
+		Serial.println();
 		delay(1000);
 	}//end for
 }

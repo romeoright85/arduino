@@ -2,6 +2,12 @@
 
 TailLightAssembly::TailLightAssembly( byte redLed1Pin, byte redLed2Pin, byte redLed3Pin, byte redLed4Pin, byte redLed5Pin, byte whiteLedPin)
 {
+	this->_redLed1 = new DigitalLed(redLed1Pin);
+	this->_redLed2 = new DigitalLed(redLed2Pin);
+	this->_redLed3 = new DigitalLed(redLed3Pin);
+	this->_redLed4 = new DigitalLed(redLed4Pin);	
+	this->_redLed5 = new DigitalLed(redLed5Pin);
+	this->_whiteLed = new DigitalLed(whiteLedPin);	
 }
 TailLightAssembly::~TailLightAssembly()
 {
