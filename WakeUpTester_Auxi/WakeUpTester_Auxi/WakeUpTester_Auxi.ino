@@ -1,5 +1,26 @@
 //Used for AUXI - 2
 
+
+
+//Note: Since all the Arduinos use this class, you have to define them in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
+
+/*******************************************************************
+Configure (define) flags before calling #include <RoverConfig.h>
+/********************************************************************/
+			
+//define Arduino 1: AUXI in order to use it's config pins
+#ifndef _ARD_2_AUXI_H
+	#define _ARD_2_AUXI_H		
+#endif
+	
+/********************************************************************/
+
+#include <RoverConfig.h>
+
+
+
+
+
 //Note: Make sure to set the IDE to Mega.
 
 #include <RoverSleeperServer.h>

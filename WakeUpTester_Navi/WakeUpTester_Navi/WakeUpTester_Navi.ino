@@ -1,5 +1,40 @@
 //Used for NAVI - 1
 
+//Note: Since all the Arduinos use this class, you have to define them in each of it's .ino as there are shared naming conventions and will cause a conflict otherwise.
+
+
+/*******************************************************************
+Configure (define) flags before calling #include <RoverConfig.h>
+/********************************************************************/
+			
+//define Arduino 2: NAVI in order to use it's config pins
+#ifndef _ARD_1_NAVI_H
+	#define _ARD_1_NAVI_H		
+#endif
+	
+/********************************************************************/
+
+#include <RoverConfig.h>
+
+
+
+
+/*******************************************************************
+Configure (define) flags before calling #include <RoverConfig.h>
+/********************************************************************/
+			
+//define Arduino 2: NAVI in order to use it's config pins
+#ifndef _ARD_1_NAVI_H
+	#define _ARD_1_NAVI_H		
+#endif
+
+/********************************************************************/
+
+#include <RoverConfig.h>
+
+
+
+
 //Note: Make sure to set the IDE to Mega.
 
 #include <RoverSleeperServer.h>

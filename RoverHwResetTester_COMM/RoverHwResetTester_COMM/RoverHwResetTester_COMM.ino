@@ -3,6 +3,34 @@
 #include <RoverHwReset.h>
 
 
+
+//Note: Since all the Arduinos use this class, you have to define them in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
+
+
+/*******************************************************************
+Configure (define) flags before calling #include <RoverConfig.h>
+/********************************************************************/
+
+//define Arduino 4: COMM in order to use it's config pins
+#ifndef _ARD_4_COMM_H
+#define _ARD_4_COMM_H		
+#endif
+
+
+
+/********************************************************************/
+
+
+#include <RoverConfig.h>
+
+
+
+
+
+
+
+
+
 //Global Variables
 
 RoverHwReset * naviHwResetter = new RoverHwReset(NAVI_HW_RESET_CTRL_PIN);

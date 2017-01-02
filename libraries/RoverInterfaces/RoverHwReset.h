@@ -7,6 +7,8 @@
 	#include <RoverReset.h>
 	
 	
+	//Note: Since all the Arduinos use this class, you have to define them (i.e. #define _ARD_2_AUXI_H, #define _ARD_1_NAVI_H, #define _ARD_3_MAIN_H, or #define _ARD_4_COMM_H) in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
+	
 	//Arduino HW Resets are active low
 	//UNO:
 	//http://arduino.cc/en/uploads/Main/Arduino_Uno_Rev3-schematic.pdf
@@ -14,22 +16,6 @@
     //http://arduino.cc/en/uploads/Main/arduino-mega2560_R3-sch.pdf
   
   
-  
-	/*******************************************************************
-	Configure (define) flags before calling #include <RoverConfig.h>
-	/********************************************************************/
-
-	//define Arduino 3: MAIN in order to use it's config pins
-	#ifndef _ARD_3_MAIN_H
-		#define _ARD_3_MAIN_H
-	#endif
-	
-	//define Arduino 4: COMM in order to use it's config pins
-	#ifndef _ARD_4_COMM_H
-		#define _ARD_4_COMM_H		
-	#endif
-	
-	/********************************************************************/
 
 	#include <RoverConfig.h>
 	

@@ -1,7 +1,82 @@
+Note: See "**LEFT OFF..." comments below.
+
+
+
+
+
+
 ===============
 TESTED
 ===============
 
+-------------
+01-01-17
+-------------
+	
+GpsTester
+AnalogLedTester	
+CurrentSensorControlTester (Current Faults and Resets)
+ImuTester
+
+
+
+
+
+	
+
+Created New Code: ClearProgram
+	Wrote a universal blank IDE to upload to clear out the program in any arduino.
+	
+	Comments:
+		
+		
+		
+HwResetTester_COMM
+HwResetTester_MAIN
+		Updated code 01-01-17:
+			Created New Code: PrintSerialAlive
+		
+		Updated HwResetTester_COM, HwResetTester_MAIN
+			
+		Found out the RoverHwReset.h called out multiple Arduino types
+			
+			i.e.
+			#define _ARD_3_MAIN_H, or #define _ARD_4_COMM_H
+			and that RoverConfig.h had repeated names in the defines since it's a two way connection.
+			Since the pin number changed based on which Arduino was being used, the configation should not be in the shared file RoverHwReset.h but called out specifically in each of the .ino files.
+
+	Retest Comments:
+
+	
+	
+	
+
+
+WakeUpTester_AUXI
+WakeUpTester_NAVI
+WakeUpTester_MAIN	
+WakeUpTester_COMM
+	Updated code 01-01-17:
+		Created New Code: PrintSerialAlive
+		
+		Updated WakeUpTester_COMM:
+			Updated comment for COMM to type any key to wake it up.
+		Updated WakeUpTester_COMM, WakeUpTester_AUXI, WakeUpTester_NAVI, WakeUpTester_MAIN
+			Found out the RoverSleeperServer.h called out all the Arduino types
+			
+			i.e.
+			#define _ARD_2_AUXI_H, #define _ARD_1_NAVI_H, #define _ARD_3_MAIN_H, or #define _ARD_4_COMM_H
+			and that RoverConfig.h had repeated names in the defines since it's a two way connection.
+			Since the pin number changed based on which Arduino was being used, the configation should not be in the shared file RoverSleeperServer.h but called out specifically in each of the .ino files.
+
+			For WakeUpTester_COMM added #include <RoverConfig.h> since no longer in the parent class RoverSleeperServer.h
+			
+	Retest Comments:
+
+	
+	
+**LEFT OFF RETESTING HERE (SEE ABOVE)**	
+		
 
 -------------
 12-31-16
@@ -30,14 +105,6 @@ DigitalLedTester
 	Retest Comments:
 		Just needed to update the counter type from unsigned int to unsigned long. Else works great.
 
-	
-	
-	
-	
-	
-	
-	
-	
 	
 DigitalLedTester
 	Reran code with no updates.
@@ -94,23 +161,12 @@ PirSensorTester
 12-30-16
 -------------
 
-Note:
+Notes:
 Make sure you upload the code to the right arduino.
 Make sure to clear out all other Arduinos of any reset (HW or SW) testers before you run your new code or it might reset and you might be confused as what is going on.
 Make sure all USBs are plugged into all the Arduinos during testing. You can unplug them for programming, but plug them back in when you use it in order to have enough power.
 
 
-
-
-
-Write a universal blank IDE to upload to clear out the program in any arduino.
-
-DigitalLedTester
-NEEDS TROUBLESHOOTING
-Some reason it flashes really quick. Also the serial stops outputting when the 5V power switch is on.
-	Update 12-31-16: Need to plug in USB for other Arduinos when not using them in order to power them.
-Maybe try to use delay() instead of loop. And flash some at a time at a slower rate.
-Had a hard time uploading to NAVI. Had to turn off the 5V SW power and just use the USB power to upload to it.
 
 
 
@@ -144,6 +200,19 @@ Comments:
 	Software isn't working as expected. Getting no movement on motors and servo jitter.
 	Try to write it where I can use two usb/terminals to send control signals, enable, read encoders, etc.
 
+	
+	
+	
+**LEFT OFF FIXING HERE (SEE ABOVE)**
+	
+	
+	
+	
+	
+Write a universal blank IDE to upload to clear out the program in any arduino.
+	
+	
+	
 
 WakeUpTester_AUXI
 WakeUpTester_NAVI
@@ -165,6 +234,14 @@ Comments:
 
 		
 		
+
+DigitalLedTester
+NEEDS TROUBLESHOOTING
+Some reason it flashes really quick. Also the serial stops outputting when the 5V power switch is on.
+	Update 12-31-16: Need to plug in USB for other Arduinos when not using them in order to power them.
+Maybe try to use delay() instead of loop. And flash some at a time at a slower rate.
+Had a hard time uploading to NAVI. Had to turn off the 5V SW power and just use the USB power to upload to it.
+
 		
 		
 		
@@ -201,24 +278,14 @@ PirSensorTester
 Not Yet Tested
 ============================================================
 
-
-DigitalLedTester
-
-	[done, need to test on rover]			
-		LedTester (
-								[done, need to retest due to updates]write global delay counter (see Rover_Heart_LED_Testerv3.ino). pass this to the heart led
-								[done, need to retest due to updates]AnalogLed->HeartLed
-								UnderglowLeds->DigitalLed->Underglow
-								SideSignalLight(left, right)
-								BeaconAssembly->DigitalLed->Beacon[ir, blue]
-								TailLightAssembly->DigitalLed->Taillights
-								HeadlightAssembly->DigitalLed->(Headlight Left, Headlight Right, Signal Left, Signal Right, Fog Left, Fog Right)
-								
-						)
-					
-	
-	
 				
+	
+**LEFT OFF TEST HERE (SEE BELOW)**
+	
+	
+	
+	
+	
 	[done, need to test on rover] GpsTester
 		see these text files for sample gps data
 			arduino filtered gps position fixed

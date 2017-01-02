@@ -5,6 +5,7 @@
 #include <SoftwareSerial.h>
 #include <RoverSleeperServer.h>
 #include <RoverSleeperClient.h>
+#include <RoverConfig.h>
 
 char rxData;
 void InterruptDispatch1();
@@ -35,14 +36,17 @@ to make it sleep, any UART Rx will wake up both the COMM and MAIN at the same ti
 //Used to communicate between COMM and MAIN
 SoftwareSerial comm2MainSerial(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX, TX, Note declare this in global and not setup() else it won't work
 
-																		  //Controls the self wakeup of COMM
-RoverSleeperServer sleeperCOMM(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch1);//COMM Wakeup Pin Control
-RoverSleeperClient sleeperMAIN(MAIN_WAKEUP_CTRL_PIN);
+//Controls the self wakeup of COMM
+RoverSleeperServer * sleeperCOMM = new RoverSleeperServer(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch1);//COMM Wakeup Pin Control
+RoverSleeperClient * sleeperMAIN = new RoverSleeperClient(MAIN_WAKEUP_CTRL_PIN);
 
 
 
 //Holds all custom objects created by this sketch
-RoverReset * resetArray[] = { &sleeperCOMM, &sleeperMAIN };
+RoverReset * resetArray[] = { 
+	sleeperCOMM,
+	sleeperMAIN
+};
 
 
 void setup() {
@@ -83,7 +87,7 @@ void loop()
 		{
 			goToSleepCOMM();
 
-			//The COMM will go to sleep here. Then it will resume below once it's awoken.
+			//The COMM will go to sleep here. Then it will resume below once it's awoken by pressing any key.
 
 			wakeUpCOMM();
 
@@ -109,7 +113,7 @@ void loop()
 
 	}//end if
 
-	if (sleeperCOMM.isAwake())
+	if (sleeperCOMM->isAwake())
 	{
 		Serial.println(F("COMM is still awake..."));
 	}
@@ -125,7 +129,7 @@ void loop()
 
 void InterruptDispatch1() {
 	//Have to keep the ISR short else the program won't work
-	sleeperCOMM.isrUpdate();//update the awake flag to reflect current status
+	sleeperCOMM->isrUpdate();//update the awake flag to reflect current status
 }
 
 
@@ -137,12 +141,12 @@ void goToSleepCOMM() {
 			   //Go to sleep
 			   //Note: Make sure to end any Software Serial here
 	comm2MainSerial.end();// IMPORTANT! You have to stop the software serial function before sleep, or it won't sleep!
-	sleeperCOMM.goToSleep();//will sleep and wakeup the COMM
+	sleeperCOMM->goToSleep();//will sleep and wakeup the COMM
 
 }
 void wakeUpCOMM() {
 	//Wake Up
-	sleeperCOMM.hasAwoken();
+	sleeperCOMM->hasAwoken();
 	//Note: Make sure to begin (again) any Software Serial here
 	comm2MainSerial.begin(MAIN_BAUD_RATE);//Turn on SW Serial again
 
@@ -158,17 +162,17 @@ void goToSleepMegas() {
 
 	//Go to sleep
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
-	sleeperMAIN.goToSleep();//update awake flag status
+	sleeperMAIN->goToSleep();//update awake flag status
 							//Send command over software serial to shutdown the MAIN, AUXI, and NAVI
 	comm2MainSerial.println('s');//send 's' to the MAIN
 
 }
 void wakeUpMegas() {
 
-	if (!sleeperMAIN.isAwake())
+	if (!sleeperMAIN->isAwake())
 	{
 		//Wake Up
-		sleeperMAIN.wakeUp();//Creates a rising edge on the interrupt pin to wake up MAIN, which then wakes up all others
+		sleeperMAIN->wakeUp();//Creates a rising edge on the interrupt pin to wake up MAIN, which then wakes up all others
 
 							 //Post Wake Up tasks
 		Serial.println(F("Megas Awoken!"));
