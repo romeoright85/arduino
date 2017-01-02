@@ -3,6 +3,13 @@
 //Note: Since all the Arduinos use this class, you have to define them in each of it's .ino as there are shared naming conventions and will cause a conflict otherwise.
 
 
+
+//uncomment below to use PC to simulate the COMM Arduino and be able to send sleep commands to NAVI
+//#define _DEBUG_W_PC_INPUT
+//Also see the debug flag _DEBUG_STAY_AWAKE in RoverSleeperServer.h
+
+
+
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
@@ -17,24 +24,6 @@ Configure (define) flags before calling #include <RoverConfig.h>
 #include <RoverConfig.h>
 
 
-
-
-/*******************************************************************
-Configure (define) flags before calling #include <RoverConfig.h>
-/********************************************************************/
-			
-//define Arduino 2: NAVI in order to use it's config pins
-#ifndef _ARD_1_NAVI_H
-	#define _ARD_1_NAVI_H		
-#endif
-
-/********************************************************************/
-
-#include <RoverConfig.h>
-
-
-
-
 //Note: Make sure to set the IDE to Mega.
 
 #include <RoverSleeperServer.h>
@@ -43,10 +32,12 @@ char rxData;
 void InterruptDispatch1();
 
 //Controls the self wakeup of NAVI
-RoverSleeperServer sleeperNAVI(NAVI_WAKEUP_CTRL_PIN, &InterruptDispatch1);//NAVI Wakeup Pin Control
+RoverSleeperServer * sleeperNAVI = new RoverSleeperServer(NAVI_WAKEUP_CTRL_PIN, &InterruptDispatch1);//NAVI Wakeup Pin Control
 
 //Holds all custom objects created by this sketch
-RoverReset * resetArray[] = { &sleeperNAVI };
+RoverReset * resetArray[] = { 
+	sleeperNAVI
+};
 
 
 void setup() {
@@ -69,10 +60,19 @@ void loop()
 
 
 	//MAIN puts NAVI to Sleep or Wakes it up.
+#ifdef _DEBUG_W_PC_INPUT	
+	if (Serial.available() > 0)//Check MAIN to NAVI serial bus
+#else	
 	if (Serial2.available() > 0)//Check MAIN to NAVI serial bus
+#endif	
 	{
-
-		rxData = Serial2.read();//Get data from the MAIN to NAVI serial bus
+	
+		#ifdef _DEBUG_W_PC_INPUT
+			rxData = Serial.read();//Get data from the MAIN to NAVI serial bus
+		#else
+			rxData = Serial2.read();//Get data from the MAIN to NAVI serial bus
+		#endif
+		
 		if (rxData == 's')//NAVI sleep
 		{
 			goToSleepNAVI();
@@ -84,7 +84,7 @@ void loop()
 		}//end if
 	}//end if
 
-	if (sleeperNAVI.isAwake())
+	if (sleeperNAVI->isAwake())
 	{
 		Serial.println(F("NAVI is still awake..."));//output to PC for debug
 	}
@@ -100,7 +100,7 @@ void loop()
 
 void InterruptDispatch1() {
 	//Have to keep the ISR short else the program won't work
-	sleeperNAVI.isrUpdate();//update the awake flag to reflect current status
+	sleeperNAVI->isrUpdate();//update the awake flag to reflect current status
 }
 
 
@@ -112,11 +112,11 @@ void goToSleepNAVI() {
 			   //Go to sleep
 			   //Note: Make sure to end any Software Serial here
 			   //No SW Serials used for NAVI
-	sleeperNAVI.goToSleep();//will sleep and wakeup the MAIN
+	sleeperNAVI->goToSleep();//will sleep and wakeup the MAIN
 }
 void wakeUpNAVI() {
 	//Wake Up
-	sleeperNAVI.hasAwoken();
+	sleeperNAVI->hasAwoken();
 	//Note: Make sure to begin (again) any Software Serial here
 	//No SW Serials used for NAVI
 

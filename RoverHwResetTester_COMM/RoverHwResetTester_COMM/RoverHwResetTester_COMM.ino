@@ -51,7 +51,7 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
-	Serial.begin(9600);
+	Serial.begin(PC_USB_BAUD_RATE);
 }
 
 
@@ -59,7 +59,7 @@ void loop() {
 
 	delay(1000);
 	Serial.println(F("Running..."));
-	delay(4000);
+	delay(7000);
 	Serial.println(F("Resetting NAVI..."));
 	naviHwResetter->performHwReset();
 	Serial.println(F("Resetting AUXI..."));

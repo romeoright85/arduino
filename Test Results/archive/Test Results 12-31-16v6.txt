@@ -1,0 +1,320 @@
+Note: See "**LEFT OFF..." comments below.
+
+
+
+
+
+
+===============
+TESTED
+===============
+
+-------------
+01-01-17
+-------------
+	
+GpsTester
+AnalogLedTester	
+CurrentSensorControlTester (Current Faults and Resets)
+ImuTester
+
+
+
+
+
+	
+
+Created New Code: ClearProgram
+	Wrote a universal blank IDE to upload to clear out the program in any arduino.
+	
+	Comments:
+		
+		
+		
+HwResetTester_COMM
+HwResetTester_MAIN
+		Updated code 01-01-17:
+			Created New Code: PrintSerialAlive
+		
+		Updated HwResetTester_COM, HwResetTester_MAIN
+			
+		Found out the RoverHwReset.h called out multiple Arduino types
+			
+			i.e.
+			#define _ARD_3_MAIN_H, or #define _ARD_4_COMM_H
+			and that RoverConfig.h had repeated names in the defines since it's a two way connection.
+			Since the pin number changed based on which Arduino was being used, the configation should not be in the shared file RoverHwReset.h but called out specifically in each of the .ino files.
+
+	Retest Comments:
+
+	
+	
+	
+
+
+WakeUpTester_AUXI
+WakeUpTester_NAVI
+WakeUpTester_MAIN	
+WakeUpTester_COMM
+	Updated code 01-01-17:
+		Created New Code: PrintSerialAlive
+		
+		Updated WakeUpTester_COMM:
+			Updated comment for COMM to type any key to wake it up.
+		Updated WakeUpTester_COMM, WakeUpTester_AUXI, WakeUpTester_NAVI, WakeUpTester_MAIN
+			Found out the RoverSleeperServer.h called out all the Arduino types
+			
+			i.e.
+			#define _ARD_2_AUXI_H, #define _ARD_1_NAVI_H, #define _ARD_3_MAIN_H, or #define _ARD_4_COMM_H
+			and that RoverConfig.h had repeated names in the defines since it's a two way connection.
+			Since the pin number changed based on which Arduino was being used, the configation should not be in the shared file RoverSleeperServer.h but called out specifically in each of the .ino files.
+
+			For WakeUpTester_COMM added #define _ARD_4_COMM_H and #include <RoverConfig.h> in the .ino file since no longer in the parent class RoverSleeperServer.h
+			
+	Retest Comments:
+
+	
+	
+**LEFT OFF RETESTING HERE (SEE ABOVE)**	
+		
+
+-------------
+12-31-16
+-------------
+	
+
+IrDistanceSensor
+	Updated code 12-31-16v2:
+		Just reorder the sensor sampling from front, right, back left.
+	Retest Comments:
+		Works great!
+	
+	
+	
+DigitalLedTester
+	Updated code 12-31-16:
+		In DigitalLed.cpp
+		Found error:
+			digitalWrite(this->_ledIsOn, LOW);
+		Should be:
+			digitalWrite(this->_ledPin, LOW);
+		In TailLightAssembly.cpp
+		Found error:
+		No objects were instantiated in the constructor.
+		So updated to instantiate objects			
+	Retest Comments:
+		Just needed to update the counter type from unsigned int to unsigned long. Else works great.
+
+	
+DigitalLedTester
+	Reran code with no updates.
+	Retest Comments:
+	Taillights not working.
+	The other lights turn on, but not off.
+	
+	
+
+LaserControlTester
+Remember to move the jumper over to enable the laser.
+	Write test code 12-31-16:
+		Enabled both lasers to see if there's something wrong with the hardware or the OOP code.
+	Retest Comments:
+		Test code at first didn't work.
+		Probed and measured around. Then it work.
+		Must have been a loose wire or something.
+		Revert to the original code.
+		One laser is brighter than the other. Oh well.
+	
+	
+IrDistanceSensor
+	Updated code 12-31-16:
+		Take several readings and average.	
+		Added debug options, and simulated the data in software.
+	Retest Comments:
+		Works great. Just reorder the sensor sampling from front, right, back left.
+	
+	
+	
+	
+	
+	
+	
+UltrasonicSensorTester
+	Updated code 12-31-16:
+		Fixed config pins to use A0, A1, etc. since they're analog pins.
+		Take several readings and average.	
+		Added debug options, and simulated the data in software.
+	Retest Comments:
+		Works great!
+	
+
+PirSensorTester	
+	Updated code 12-31-16:
+		Added Reset
+	Retest Comments:
+		Works well. Doesn't always catch every motion, but good enough.
+
+
+
+
+-------------
+12-30-16
+-------------
+
+Notes:
+Make sure you upload the code to the right arduino.
+Make sure to clear out all other Arduinos of any reset (HW or SW) testers before you run your new code or it might reset and you might be confused as what is going on.
+Make sure all USBs are plugged into all the Arduinos during testing. You can unplug them for programming, but plug them back in when you use it in order to have enough power.
+
+
+
+
+
+AnalogLedTester
+Comments:
+NEEDS TROUBLESHOOTING
+	Some reason it only works when the USB is plugged in.
+	
+	
+	
+HwResetTester_COMM
+HwResetTester_MAIN
+Comments:
+	Done run the MAIN and COMM code at the same time as they will interrupt and reset each other.
+	NEEDS REWORK
+	Write new extra code for MAIN, NAVI, AUXI, COMM to print any text. Then monitor with anther usb/terminal as you HW reset with the other Arduino.
+
+
+
+CurrentSensorControlTester (Current Faults and Resets)
+Comments:
+	For some reason when the 5V switched power is off no fault is detected, but when you turn it on, it faults constantly and resets constantly.
+	
+	
+	
+	
+	
+MotorAndServoTester_MAIN
+MotorAndServoTester_NAVI
+Comments:
+	Software isn't working as expected. Getting no movement on motors and servo jitter.
+	Try to write it where I can use two usb/terminals to send control signals, enable, read encoders, etc.
+
+	
+	
+	
+**LEFT OFF FIXING HERE (SEE ABOVE)**
+	
+	
+	
+	
+	
+Write a universal blank IDE to upload to clear out the program in any arduino.
+	
+	
+	
+
+WakeUpTester_AUXI
+WakeUpTester_NAVI
+WakeUpTester_MAIN	
+WakeUpTester_COMM
+Comments:
+	All four of this code needs to be uploaded in a set.
+	Use at least USB cords and two terminals.
+	One to monitor Arduino going to sleep and the other to control the sleep/wake.
+	
+	NEEDS REWORK
+		Write new extra code for MAIN, NAVI, AUXI, COMM to print any text. Then monitor with anther usb/terminal as you HW reset with the other Arduino.
+
+		Update comment for COMM to type any key to wake it up.
+		AUXI not waking after going to sleep.
+		MAIN not waking after going to sleep.
+		NAVI doesn't sleep at all.
+		
+
+		
+		
+
+DigitalLedTester
+NEEDS TROUBLESHOOTING
+Some reason it flashes really quick. Also the serial stops outputting when the 5V power switch is on.
+	Update 12-31-16: Need to plug in USB for other Arduinos when not using them in order to power them.
+Maybe try to use delay() instead of loop. And flash some at a time at a slower rate.
+Had a hard time uploading to NAVI. Had to turn off the 5V SW power and just use the USB power to upload to it.
+
+		
+		
+		
+	
+
+IrDistanceSensor
+Comments:
+	NEEDS REWORK
+	Works okay but not very accurate.
+	Need to take several samples and average.
+		
+	
+-------------
+12-29-16
+-------------
+
+PirSensorTester
+	Comments:
+	NEEDS REWORK
+	Once motion is detected, it stays latched for some reason.
+	Fix:
+		Do a pirSensor.reset() once you read in the data.
+
+
+
+
+
+
+
+
+
+
+============================================================
+Not Yet Tested
+============================================================
+
+				
+	
+**LEFT OFF TEST HERE (SEE BELOW)**
+	
+	
+	
+	
+	
+	[done, need to test on rover] GpsTester
+		see these text files for sample gps data
+			arduino filtered gps position fixed
+			arduino filtered gps on startup
+	
+	
+	
+		
+			
+		[done, need to test on rover] RoverAnalogSignalsTester (mux control, op amp output) : temp, voltage, light, current
+
+	
+	
+
+	[done, need to test on rover] ImuTester
+		
+		
+		[done, need to test on rover] RoverCommTester_COMM
+		[done, need to test on rover] RoverCommTester_MAIN
+		[done, need to test on rover] RoverCommTester_AUXI
+		[done, need to test on rover] RoverCommTester_NAVI
+
+			
+			
+		[done, need to test on rover] Write an uptime counter classes using example for the UNO COMM
+
+		
+		[done, maybe buggy, need to test]MQGasSensor	
+			Note: The output is still zero. Debug it later once plug the sensor in and measure and update the fixed resistor value.		
+			[do later after hook sensor to see if it's really an issue with the code or the simulation]debug why gas sensor is output 0's
+				see "DEBUG AND DELETE" lines
+	

@@ -21,13 +21,21 @@ void RoverSleeperServer::goToSleep()
    
    //NOTE: Make sure to stop any software serials before calling this function or it won't go to sleep.
    
-   
-   //attach the interrupt on the wakeUpPin, call the  interruptDispatch, and do it when the pin rises from 5V to 0V  
-	attachInterrupt(this->_interruptChannel, this->_interruptDispatch, RISING); //calling an Arduino function attachInterrupt()
-   
-   
+
+
+   //attach the interrupt on the wakeUpPin, call the  interruptDispatch, and do it when the pin goes low
+/*
+	Note:
+	Rising interrupts do work on the Mega, but when you use it for sleep it won't work.
+	It seems that only level works for the interrupt waking up. Probably because
+	when you use attackInterrupt(0) (aka int.0) it is actually int4, and according
+	to the datasheet, int4 will only work on level mode to wake up in sleep mode.
+*/
+	attachInterrupt(this->_interruptChannel, this->_interruptDispatch, LOW); //calling an Arduino function attachInterrupt()
+
    this->_awake = false;//update the awake flag to reflect current status
-   
+
+
   /*
     See 9.11.1 SMCR – Sleep Mode Control Register of pdf below:
     http://www.atmel.com/Images/doc8161.pdf
@@ -43,9 +51,14 @@ void RoverSleeperServer::goToSleep()
     SMCR = B00000101
    
   */
-   
-   SMCR = B00000101;//Sleep mode control register, Power Down mode and Enable Sleep
-   __asm__  __volatile__("sleep");// In line assembler to execute the sleep function
+	#ifdef _DEBUG_STAY_AWAKE
+		Serial.println(F("Debug Sleep"));//DEBUG
+		//Note: In _DEBUG_STAY_AWAKE mode, the Arduino never actually sleeps. It will call the hasAwoken() function on it's own after the delay below.
+		delay(10000);//DEBUG, allow some time to test the interrupts.
+	#else
+		SMCR = B00000101;//Sleep mode control register, Power Down mode and Enable Sleep
+		__asm__  __volatile__("sleep");// In line assembler to execute the sleep function
+   	#endif
    //once wakeUpPin receives the right signal level or edge, the interrupt will call interruptDispatch, then the program will resume here after waking up
 
   /*
@@ -74,18 +87,32 @@ void RoverSleeperServer::goToSleep()
 
 
 void RoverSleeperServer::hasAwoken()
-{
+{	
+	#ifdef _DEBUG_STAY_AWAKE
+		Serial.println(F("Debug Wake"));
+		this->_awake = true;//update the awake flag to reflect current status
+	#endif
+	
+	
 	if(this->_awake)//awake flag will be updated by isrUpdate() 
 	{
 		SMCR = B00000100;// turn off bit 0 to disable the ability to sleep
 		detachInterrupt(this->_interruptChannel);//turn off the interrupt, so the program doesn't go crazy when awake
-	}
+	}	
+   	
+	
 	return;	
 }
 
 void RoverSleeperServer::isrUpdate()
 {
-	this->_awake = true;//update the awake flag to reflect current status
+	#ifdef _DEBUG_STAY_AWAKE
+		Serial.println(F("Debug ISR Update"));	
+	#else
+		this->_awake = true;//update the awake flag to reflect current status
+   	#endif
+
+	
 	return;	
 }
 

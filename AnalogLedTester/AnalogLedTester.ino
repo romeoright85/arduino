@@ -30,8 +30,8 @@ void setup() {
 	}
 
 	Serial.begin(9600);
-	delay(15);//add a little delay so the serial port has time to start up
-	Serial.println(F("Test Running"));	
+	delay(100);//add a little delay so the serial port has time to start up
+	Serial.println(F("Heart LED Test Running"));	
 }
 
 

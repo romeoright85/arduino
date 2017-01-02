@@ -21,6 +21,8 @@ etc.
 
 void setup() {
 	Serial.begin(PC_USB_BAUD_RATE);
+	delay(1000);
+	Serial.println("Arduino Starting Up");
 }
 
 

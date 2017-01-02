@@ -4,6 +4,14 @@
 
 //Note: Since all the Arduinos use this class, you have to define them in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
 
+
+//uncomment below to use PC to simulate the COMM Arduino and be able to send sleep commands to AUXI
+//#define _DEBUG_W_PC_INPUT
+//Also see the debug flag _DEBUG_STAY_AWAKE in RoverSleeperServer.h
+
+
+
+
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
@@ -29,11 +37,13 @@ char rxData;
 void InterruptDispatch1();
 
 //Controls the self wakeup of AUXI
-RoverSleeperServer sleeperAUXI(AUXI_WAKEUP_CTRL_PIN, &InterruptDispatch1);//AUXI Wakeup Pin Control
+RoverSleeperServer * sleeperAUXI = new RoverSleeperServer(AUXI_WAKEUP_CTRL_PIN, &InterruptDispatch1);//AUXI Wakeup Pin Control
 
 
 
-RoverReset * resetArray[] = { &sleeperAUXI };
+RoverReset * resetArray[] = { 
+	sleeperAUXI
+};
 
 
 void setup() {
@@ -57,10 +67,18 @@ void loop()
 
 
 	//MAIN puts AUXI to Sleep or Wakes it up.
-	if (Serial2.available() > 0)//Check MAIN to AUXI serial bus
+#ifdef _DEBUG_W_PC_INPUT
+	if (Serial.available() > 0)//Check MAIN to AUXI serial bus
+#else	
+	if (Serial2.available() > 0)//Check MAIN to AUXI serial bus	
+#endif
 	{
-
-		rxData = Serial2.read();//Get data from the MAIN to AUXI serial bus
+		#ifdef _DEBUG_W_PC_INPUT
+			rxData = Serial.read();//Get data from the MAIN to AUXI serial bus
+		#else		
+			rxData = Serial2.read();//Get data from the MAIN to AUXI serial bus
+		#endif				
+		
 		if (rxData == 's')//AUXI sleep
 		{
 			goToSleepAUXI();
@@ -72,7 +90,7 @@ void loop()
 		}//end if
 	}//end if
 
-	if (sleeperAUXI.isAwake())
+	if (sleeperAUXI->isAwake())
 	{
 		Serial.println(F("AUXI is still awake..."));//output to PC for debug
 	}
@@ -88,7 +106,7 @@ void loop()
 
 void InterruptDispatch1() {
 	//Have to keep the ISR short else the program won't work
-	sleeperAUXI.isrUpdate();//update the awake flag to reflect current status
+	sleeperAUXI->isrUpdate();//update the awake flag to reflect current status
 }
 
 
@@ -100,11 +118,11 @@ void goToSleepAUXI() {
 			   //Go to sleep
 			   //Note: Make sure to end any Software Serial here
 			   //No SW Serials used for AUXI
-	sleeperAUXI.goToSleep();//will sleep and wakeup the MAIN
+	sleeperAUXI->goToSleep();//will sleep and wakeup the MAIN
 }
 void wakeUpAUXI() {
 	//Wake Up
-	sleeperAUXI.hasAwoken();
+	sleeperAUXI->hasAwoken();
 	//Note: Make sure to begin (again) any Software Serial here
 	//No SW Serials used for AUXI
 

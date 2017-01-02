@@ -88,7 +88,8 @@ void loop() {
 		Serial.print(F("Date"));
 		Serial.println((String)roverGps->getGpsDate());
 		
-
+		//Add some white space/ new lines for clarity
+		Serial.println();
 
 	}
 
@@ -97,8 +98,7 @@ void loop() {
 	{
 		Serial.println(F("GPS Data Not Ready"));
 	}
-	//Add some white space/ new lines for clarity
-	Serial.println();
+	//Add some white space/ new lines for clarity	
 	Serial.println();
 	
 	delay(1000);
@@ -120,7 +120,7 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 			//Wait for the GPS start of data (i.e. $) else for a time out
 			do			
 			{				
-				if ((char)Serial.read() == '$')//look for the start of the GPS data (do NOT include it in the gps data string if found)
+				if ((char)Serial3.read() == '$')//look for the start of the GPS data (do NOT include it in the gps data string if found)
 				{
 					break;//break out of the loop since the header was found
 				}
@@ -137,7 +137,7 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 				{
 					//Read one character of serial data at a time
 					//Note: Must type cast the Serial.Read to a char since not saving it to a char type first					
-					roverGps->appendToRxGPSData((char)Serial.read());//construct the string one char at a time
+					roverGps->appendToRxGPSData((char)Serial3.read());//construct the string one char at a time
 					//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
 				}//end while
 

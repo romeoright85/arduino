@@ -5,6 +5,20 @@
 #include <SoftwareSerial.h>
 #include <RoverSleeperServer.h>
 #include <RoverSleeperClient.h>
+
+
+/*******************************************************************
+Configure (define) flags before calling #include <RoverConfig.h>
+/********************************************************************/
+			
+//define Arduino 4: COMM in order to use it's config pins
+#ifndef _ARD_4_COMM_H
+#define _ARD_4_COMM_H		
+#endif
+	
+/********************************************************************/
+
+
 #include <RoverConfig.h>
 
 char rxData;

@@ -3,6 +3,10 @@
 
 //Note: Since all the Arduinos use this class, you have to define them in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
 
+//uncomment below to use PC to simulate the COMM Arduino and be able to send sleep commands to MAIN
+//#define _DEBUG_W_PC_INPUT
+//Also see the debug flag _DEBUG_STAY_AWAKE in RoverSleeperServer.h
+
 
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
@@ -31,16 +35,20 @@ char rxData;
 void InterruptDispatch1();
 
 //Controls the self wakeup of MAIN
-RoverSleeperServer sleeperMAIN(MAIN_WAKEUP_CTRL_PIN, &InterruptDispatch1);//MAIN Wakeup Pin Control
-RoverSleeperClient sleeperAUXI(AUXI_WAKEUP_CTRL_PIN);
-RoverSleeperClient sleeperNAVI(NAVI_WAKEUP_CTRL_PIN);
+RoverSleeperServer * sleeperMAIN = new RoverSleeperServer(MAIN_WAKEUP_CTRL_PIN, &InterruptDispatch1);//MAIN Wakeup Pin Control
+RoverSleeperClient * sleeperAUXI = new RoverSleeperClient(AUXI_WAKEUP_CTRL_PIN);
+RoverSleeperClient * sleeperNAVI = new RoverSleeperClient(NAVI_WAKEUP_CTRL_PIN);
 
 
 
 
 //Holds all custom objects created by this sketch
 
-RoverReset * resetArray[] = { &sleeperMAIN , &sleeperAUXI, &sleeperNAVI };
+RoverReset * resetArray[] = { 
+	sleeperMAIN, 
+	sleeperAUXI, 
+	sleeperNAVI
+};
 
 
 void setup() {
@@ -66,10 +74,18 @@ void loop()
 
 
 	//COMM puts MAIN to Sleep or Wakes it up. When MAIN goes to sleep it also sends a command for AUXI and NAVI to sleep as well.
+#ifdef _DEBUG_W_PC_INPUT
+	if (Serial.available() > 0)//Check COMM to MAIN serial bus
+#else
 	if (Serial1.available() > 0)//Check COMM to MAIN serial bus
+#endif
 	{
+		#ifdef _DEBUG_W_PC_INPUT
+			rxData = Serial.read();//Get data from the PC to MAIN serial bus
+		#else
+			rxData = Serial1.read();//Get data from the COMM to MAIN serial bus
+		#endif
 		
-		rxData = Serial1.read();//Get data from the COMM to MAIN serial bus
 		if (rxData == 's')//AUXI, NAVI, MAIN sleep
 		{
 			goToSleepAUXI();
@@ -90,7 +106,7 @@ void loop()
 		}//end if
 	}//end if
 
-	if (sleeperMAIN.isAwake())
+	if (sleeperMAIN->isAwake())
 	{
 		Serial.println(F("MAIN is still awake..."));//output to PC for debug
 	}
@@ -106,7 +122,7 @@ void loop()
 
 void InterruptDispatch1() {
 	//Have to keep the ISR short else the program won't work
-	sleeperMAIN.isrUpdate();//update the awake flag to reflect current status
+	sleeperMAIN->isrUpdate();//update the awake flag to reflect current status
 }
 
 
@@ -118,11 +134,13 @@ void goToSleepMAIN() {
 	//Go to sleep
 	//Note: Make sure to end any Software Serial here
 	//No SW Serials used for MAIN
-	sleeperMAIN.goToSleep();//will sleep and wakeup the MAIN
+	sleeperMAIN->goToSleep();//will sleep and wakeup the MAIN
+//sleeperMAIN->goToSleep(&InterruptDispatch1);//DEBUG
+	
 }
 void wakeUpMAIN() {
 	//Wake Up
-	sleeperMAIN.hasAwoken();
+	sleeperMAIN->hasAwoken();
 	//Note: Make sure to begin (again) any Software Serial here
 	//No SW Serials used for MAIN
 
@@ -138,17 +156,17 @@ void goToSleepNAVI() {
 
 	//Go to sleep
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
-	sleeperNAVI.goToSleep();//update awake flag status
+	sleeperNAVI->goToSleep();//update awake flag status
 	//Send command over software serial to shutdown the NAVI
 	Serial2.println('s');//send 's' to the NAVI over NAVI's dedicated serial bus
 
 }
 void wakeUpNAVI() {
 
-	if (!sleeperNAVI.isAwake())
+	if (!sleeperNAVI->isAwake())
 	{
 		//Wake Up
-		sleeperNAVI.wakeUp();//Creates a rising edge on the interrupt pin to wake up NAVI
+		sleeperNAVI->wakeUp();//Creates a rising edge on the interrupt pin to wake up NAVI
 
 		//Post Wake Up tasks
 		Serial.println(F("NAVI Awoken!"));//output to PC for debug
@@ -167,17 +185,17 @@ void goToSleepAUXI() {
 
 	//Go to sleep
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
-	sleeperAUXI.goToSleep();//update awake flag status
+	sleeperAUXI->goToSleep();//update awake flag status
 	//Send command over software serial to shutdown the AUXI
 	Serial3.println('s');//send 's' to the AUXI over AUXI's dedicated serial bus
 
 }
 void wakeUpAUXI() {
 
-	if (!sleeperAUXI.isAwake())
+	if (!sleeperAUXI->isAwake())
 	{
 		//Wake Up
-		sleeperAUXI.wakeUp();//Creates a rising edge on the interrupt pin to wake up AUXI
+		sleeperAUXI->wakeUp();//Creates a rising edge on the interrupt pin to wake up AUXI
 
 		//Post Wake Up tasks
 		Serial.println(F("AUXI Awoken!"));//output to PC for debug

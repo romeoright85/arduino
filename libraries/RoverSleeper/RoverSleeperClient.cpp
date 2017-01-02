@@ -22,7 +22,7 @@ boolean RoverSleeperClient::isAwake()
 }
 void RoverSleeperClient::wakeUp()
 {
-  //Toggle the wakeup pin to create a rising edge for the interrupt
+  //Toggle the wakeup pin to create a LOW level for the interrupt
   digitalWrite(this->_wakeUpPin,HIGH);//make sure it starts high
   delay(100);
   digitalWrite(this->_wakeUpPin,LOW);//make a low level

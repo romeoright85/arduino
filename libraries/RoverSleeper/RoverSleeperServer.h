@@ -7,11 +7,23 @@
 	#include <RoverReset.h>
 
 	
+	//uncomment line below to test the interrupt function without sending the Arduino to sleep
+	//#define _DEBUG_STAY_AWAKE
+	
 //Note: Since all the Arduinos use this class, you have to define them (i.e. #define _ARD_2_AUXI_H, #define _ARD_1_NAVI_H, #define _ARD_3_MAIN_H, or #define _ARD_4_COMM_H) in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
 
 //The sleeper local is used to locally control the sleep and wakeup of itself
 //The sleeper server is used to control the sleep and wakeup of itself, controlled remotely
 //The sleeper client is used to remotely control the sleep and wakeup on a server
+
+
+/*
+	Note:
+	Rising interrupts do work on the Mega, but when you use it for sleep it won't work.
+	It seems that only level works for the interrupt waking up. Probably because
+	when you use attackInterrupt(0) (aka int.0) it is actually int4, and according
+	to the datasheet, int4 will only work on level mode to wake up in sleep mode.
+*/
 
 	typedef void (*voidFuncPtr)(void);//defining the type voidFuncPtr that is a function pointer that takes no arguments and returns void. It is used later on for the interrupt service routine.
 	
