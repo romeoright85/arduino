@@ -14,7 +14,9 @@ RoverSleeperClient::~RoverSleeperClient()
 }
 void RoverSleeperClient::goToSleep()
 {
+	digitalWrite(this->_wakeUpPin,HIGH);//reset the controlling pin to the server interrupt to high to allow it to sleep
 	this->_awake = false;//update the awake flag to reflect current status
+	//The actuallly sleep is done by sending it a command over serial, which is processed and the server goes to sleep at that time
 }
 boolean RoverSleeperClient::isAwake()
 {
@@ -23,11 +25,7 @@ boolean RoverSleeperClient::isAwake()
 void RoverSleeperClient::wakeUp()
 {
   //Toggle the wakeup pin to create a LOW level for the interrupt
-  digitalWrite(this->_wakeUpPin,HIGH);//make sure it starts high
-  delay(100);
-  digitalWrite(this->_wakeUpPin,LOW);//make a low level
-  delay(100);
-  digitalWrite(this->_wakeUpPin,HIGH);//reset back to high
+  digitalWrite(this->_wakeUpPin,LOW);//set the controlling pin to the server interrupt to low to wake it up
   this->_awake = true;//update the awake flag to reflect current status
 }
 void RoverSleeperClient::reset()

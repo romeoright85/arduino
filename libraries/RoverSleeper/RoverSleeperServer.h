@@ -9,6 +9,14 @@
 	
 	//uncomment line below to test the interrupt function without sending the Arduino to sleep
 	//#define _DEBUG_STAY_AWAKE
+	//#define _DEBUG_PRINT_ISR_TRIGGERED
+	
+	
+//Note: Allow about 8+ seconds for each Arduino to wake up and initialize from sleep.
+	//So if you're waking up more than one Arduino serially by toggling the digital pin levels with a single parent ".ino" you have to take into account for the sum of all the 8+ seconds for each of the Arduinos.
+	//Or you don't have to use delays and just send a low and keep it low for all the Arduinos. This is how it is currently implemented.
+//Future Idea: You could send a low and poll for acknowledge of waking up if you real time closed loop feedback updates.
+
 	
 //Note: Since all the Arduinos use this class, you have to define them (i.e. #define _ARD_2_AUXI_H, #define _ARD_1_NAVI_H, #define _ARD_3_MAIN_H, or #define _ARD_4_COMM_H) in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
 

@@ -3,7 +3,7 @@
 
 //Note: Since all the Arduinos use this class, you have to define them in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
 
-//uncomment below to use PC to simulate the COMM Arduino and be able to send sleep commands to MAIN
+//Uncomment below to use PC to simulate the COMM Arduino and be able to send sleep commands to MAIN
 //#define _DEBUG_W_PC_INPUT
 //Also see the debug flag _DEBUG_STAY_AWAKE in RoverSleeperServer.h
 
@@ -102,7 +102,9 @@ void loop()
 			wakeUpNAVI();
 
 			wakeUpAUXI();
-
+		
+			Serial.println(F("All Megas Now Awake"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
+		
 		}//end if
 	}//end if
 
@@ -128,7 +130,7 @@ void InterruptDispatch1() {
 
 void goToSleepMAIN() {
 	//Pre sleep tasks
-	Serial.println(F("MAIN sleeping..."));//output to PC for debug
+	Serial.println(F("MAIN sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	delay(100);//add some delay to allow the serial print to finish before going to sleep
 
 	//Go to sleep
@@ -152,7 +154,7 @@ void wakeUpMAIN() {
 
 void goToSleepNAVI() {
 	//Pre sleep tasks
-	Serial.println(F("NAVI Sleeping..."));//output to PC for debug
+	Serial.println(F("NAVI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 
 	//Go to sleep
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
@@ -169,11 +171,11 @@ void wakeUpNAVI() {
 		sleeperNAVI->wakeUp();//Creates a rising edge on the interrupt pin to wake up NAVI
 
 		//Post Wake Up tasks
-		Serial.println(F("NAVI Awoken!"));//output to PC for debug
+		Serial.println(F("NAVI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 	else
 	{
-		Serial.println(F("NAVI already awoken."));//output to PC for debug
+		Serial.println(F("NAVI already awoken."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 
 }
@@ -181,7 +183,7 @@ void wakeUpNAVI() {
 
 void goToSleepAUXI() {
 	//Pre sleep tasks
-	Serial.println(F("AUXI Sleeping..."));//output to PC for debug
+	Serial.println(F("AUXI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 
 	//Go to sleep
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
@@ -198,11 +200,11 @@ void wakeUpAUXI() {
 		sleeperAUXI->wakeUp();//Creates a rising edge on the interrupt pin to wake up AUXI
 
 		//Post Wake Up tasks
-		Serial.println(F("AUXI Awoken!"));//output to PC for debug
+		Serial.println(F("AUXI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 	else
 	{
-		Serial.println(F("AUXI already awoken."));//output to PC for debug
+		Serial.println(F("AUXI already awoken."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 
 }

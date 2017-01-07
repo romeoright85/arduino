@@ -9,6 +9,8 @@ RoverSleeperServer::RoverSleeperServer(byte wakeUpPin, voidFuncPtr interruptDisp
 	this->_interruptChannel = digitalPinToInterrupt(this->_wakeUpPin); //calling an Arduino function
 	pinMode(this->_wakeUpPin, INPUT);
 	this->_awake = true;//initialize variable
+	
+
 }
 RoverSleeperServer::~RoverSleeperServer()
 {
@@ -32,6 +34,7 @@ void RoverSleeperServer::goToSleep()
 	to the datasheet, int4 will only work on level mode to wake up in sleep mode.
 */
 	attachInterrupt(this->_interruptChannel, this->_interruptDispatch, LOW); //calling an Arduino function attachInterrupt()
+	
 
    this->_awake = false;//update the awake flag to reflect current status
 
@@ -52,7 +55,7 @@ void RoverSleeperServer::goToSleep()
    
   */
 	#ifdef _DEBUG_STAY_AWAKE
-		Serial.println(F("Debug Sleep"));//DEBUG
+		Serial.println(F("Debug Sleep W/ Timed Auto Wakeup"));//DEBUG
 		//Note: In _DEBUG_STAY_AWAKE mode, the Arduino never actually sleeps. It will call the hasAwoken() function on it's own after the delay below.
 		delay(10000);//DEBUG, allow some time to test the interrupts.
 	#else
@@ -106,13 +109,17 @@ void RoverSleeperServer::hasAwoken()
 
 void RoverSleeperServer::isrUpdate()
 {
-	#ifdef _DEBUG_STAY_AWAKE
-		Serial.println(F("Debug ISR Update"));	
-	#else
-		this->_awake = true;//update the awake flag to reflect current status
-   	#endif
-
 	
+	#ifdef _DEBUG_PRINT_ISR_TRIGGERED
+	
+		Serial.println(F("Sleeper ISR Update"));//DEBUG
+		
+	#endif
+	
+	this->_awake = true;//update the awake flag to reflect current status
+   	
+	
+
 	return;	
 }
 
@@ -125,20 +132,14 @@ void RoverSleeperServer::reset()
 	//software reset
 	
 	
-	this->_interruptChannel = digitalPinToInterrupt(this->_wakeUpPin); //calling an Arduino function
+	
 	pinMode(this->_wakeUpPin, INPUT);
 	
 	//it is assumed the rover is awake since if it isn't, it couldn't sw reset anyways	
 	this->_awake = true;//initialize variable
 	this->hasAwoken();
+	
 }
-
-
-
-
-
-
-
 
 
 
