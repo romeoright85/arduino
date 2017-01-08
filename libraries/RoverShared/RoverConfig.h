@@ -57,18 +57,35 @@
 	
 	//definition for RoverGpsSensor
 	#ifdef _GPS_SENSOR
+		/*
+			ex: GPGGA,011217.800,3916.1627,N,07636.6598,W,1,5,1.27,39.2,M,-33.6,M,,*59//DEBUG AND DELETE
+			
+			GPGGA = Sentence ID
+			011217.800 = Data Fix Time
+			3916.1627 - Latitude
+			N = Latitude Direction
+			07636.6598 = Longitude
+			W = Longitude Direction
+			1 = Fix Quality
+			5 = Number Of Satellites
+			1.27 = Horizontal Dilution
+			39.2 = Altitude
+			M = Unit of Altitude
+			-33.6 =Height of geiod above WGS84 Ellipsoid
+			M = Unit of Height
+			 = Blank
+			 = Blank
+			*59 = Checksum
+		*/
+		
 		//GPS Number of Attempts To Obtain A Valid Data String
 		#define GPS_RX_DATA_ATTEMPTS 	5
 		//GPS Number of Characters to receive while waiting for the start of the GPS data (i.e. $) before timing out
 		#define GPS_CHARACTERS_TO_RX_BEFORE_TIMEOUT 	100
 		//GPS Header Types
-		#define GPS_GPGGA_FIXED_DATA			"GPGGA"
-		#define GPS_GPRMC_MIN_RECOMMENDED_DATA	"GPRMC"		
-		//GPS Data Index - Both GPGGA and GPRMC		
-		#define GPS_GENERIC_INDEX_OF_HEADER													0
-		#define GPS_GENERIC_INDEX_OF_CHECKSUM												13 //Not the 13th field in the GPGGA or GPRMC string, but will store it in the array as the 13th element as it's the last unused element
+		#define GPS_GPGGA_SENTENCE_ID			"GPGGA"		
 		//GPS Data Index - GPGGA (holds the GPGGA GPS data)
-		#define GPS_GPGGA_INDEX_OF_HEADER														0
+		#define GPS_GPGGA_INDEX_OF_SENTENCE_ID											0
 		#define GPS_GPGGA_INDEX_OF_DATA_FIX_TIME											1 
 		#define GPS_GPGGA_INDEX_OF_LATITUDE													2
 		#define GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION								3 //N (North) or S (South)
@@ -81,40 +98,9 @@
 		#define GPS_GPGGA_INDEX_OF_ALTITUDE_UNIT											10 //Should always be M (meters)
 		#define GPS_GPGGA_INDEX_OF_HEIGHT_OF_GEOID									11
 		#define GPS_GPGGA_INDEX_OF_GEOID_UNIT												12 //Should always be M (meters)
-		//GPS Data Index - GPRMC (holds the GPRMC GPS data)
-		#define GPS_GPRMC_INDEX_OF_HEADER														0
-		#define GPS_GPRMC_INDEX_OF_DATA_FIX_TIME											1
-		#define GPS_GPRMC_INDEX_OF_STATUS														2 //Status - A (Active) Or V (Void)
-		#define GPS_GPRMC_INDEX_OF_LATITUDE													3
-		#define GPS_GPRMC_INDEX_OF_LATITUDE_DIRECTION								4 //N (North) or S (South)
-		#define GPS_GPRMC_INDEX_OF_LONGITUDE												5
-		#define GPS_GPRMC_INDEX_OF_LONGITUDE_DIRECTION							6 //E (East) or W (West)
-		#define GPS_GPRMC_INDEX_OF_SPEED														7 //Speedover the ground in knots
-		#define GPS_GPRMC_INDEX_OF_TRACK_ANGLE											8 //In degrees True
-		#define GPS_GPRMC_INDEX_OF_DATE															9 //DD/MM/YY		
-		//GPS Data Index - Master (holds the merged GPS data between GPGGA and GPRMC)
-		#define GPS_POST_PROCESSED_INDEX_OF_DATA_FIX_TIME												0 //GPGGA and GPRMC
-		#define GPS_POST_PROCESSED_INDEX_OF_STATUS															1 //Status - A (Active) Or V (Void), GPRMC only
-		#define GPS_POST_PROCESSED_INDEX_OF_LATITUDE															2//GPGGA and GPRMC
-		#define GPS_POST_PROCESSED_INDEX_OF_LATITUDE_DIRECTION										3 //N (North) or S (South), GPGGA and GPRMC
-		#define GPS_POST_PROCESSED_INDEX_OF_LONGITUDE														4 //GPGGA and GPRMC
-		#define GPS_POST_PROCESSED_INDEX_OF_LONGITUDE_DIRECTION									5 //E (East) or W (West), GPGGA and GPRMC
-		#define GPS_POST_PROCESSED_INDEX_OF_FIX_QUALITY													6 //GPGGA only
-		#define GPS_POST_PROCESSED_INDEX_OF_SATELLITES_TRACKED										7 //GPGGA only
-		#define GPS_POST_PROCESSED_INDEX_OF_HORIZONTAL_DILUTION_OF_POSITION			8 //GPGGA only
-		#define GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_ABOVE_MEAN_SEA_LEVEL				9 //GPGGA only
-		#define GPS_POST_PROCESSED_INDEX_OF_ALTITUDE_UNIT												10 //Should always be M (meters), GPGGA only
-		#define GPS_POST_PROCESSED_INDEX_OF_SPEED																11 //Speedover the ground in knots, GPRMC only
-		#define GPS_POST_PROCESSED_INDEX_OF_HEIGHT_OF_GEOID											12 //GPGGA only
-		#define GPS_POST_PROCESSED_INDEX_OF_GEOID_UNIT													13 //Should always be M (meters), GPGGA only
-		#define GPS_POST_PROCESSED_INDEX_OF_TRACK_ANGLE													14 //In degrees True, GPRMC only
-		#define GPS_POST_PROCESSED_INDEX_OF_DATE																15 //DD/MM/YY, GPRMC only
-		#define GPS_POST_PROCESSED_INDEX_OF_GPGGA_CHECKSUM												16 //Received Checksum of GPGGA
-		#define GPS_POST_PROCESSED_INDEX_OF_GPRMC_CHECKSUM												17 //Received Checksum of GPRMC
+		#define GPS_GPGGA_INDEX_OF_CHECKSUM												13 
 		//GPS Number of Fields for the specific header type
-		#define GPS_GPGGA_FIELDS		13			
-		#define GPS_GPRMC_FIELDS		10
-		#define GPS_POST_PROCESSED_FIELDS		16
+		#define GPS_GPGGA_FIELDS		14		
 		//GPS Direction Types
 		#define GPS_DIR_UNKOWN 0//Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
 		#define GPS_DIR_NORTH				1//Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
@@ -126,15 +112,9 @@
 		#define GPS_DIR_WEST					7
 		#define GPS_DIR_NORTHWEST		8
 		//GPS Fix Quality Types	
-		#define GPS_FQ_INVALID								0
-		#define GPS_FQ_SPS										1
-		#define GPS_FQ_DGPS									2
-		#define GPS_FQ_PPS										3
-		#define GPS_FQ_REAL_TIME_KINEMATIC			4
-		#define GPS_FQ_FLOAT_RTK							5
-		#define GPS_FQ_EST_DEAD_RECKONING		6
-		#define GPS_FQ_EST_MANUAL_INPUT				7
-		#define GPS_FQ_EST_SIMULATION					8
+		#define GPS_GPGGA_FQ_INVALID								0
+		#define GPS_GPGGA_FQ_GPS_FIX								1
+		#define GPS_GPGGA_DGPS											2
 	#endif	
 	
 	

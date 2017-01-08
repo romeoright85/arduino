@@ -130,7 +130,7 @@ void InterruptDispatch1() {
 
 void goToSleepMAIN() {
 	//Pre sleep tasks
-	Serial.println(F("MAIN sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
+	Serial.println(F("MAIN Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	delay(100);//add some delay to allow the serial print to finish before going to sleep
 
 	//Go to sleep
