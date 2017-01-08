@@ -27,6 +27,7 @@ GpsTester
 		The GPS doesn't always seem to output GPRMC, so jsut use it for GPGGA for now.
 		Adding a delay(1) between reads helps prevent noise and garbage characters.
 		Added Google Maps Format
+		Added way to customize data output
 	Re-Comments:
 		
 		
@@ -144,9 +145,6 @@ Maybe turn off Checksum Failed and Filtered out with debug define flags.
 The debug flags aren't working for some reason. Need to see the original output before it's filtered out.
 
 
-	
-**LEFT OFF REWORK HERE (SEE ABOVE)**		
-	
 	
 	
 
