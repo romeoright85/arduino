@@ -63,7 +63,7 @@ boolean RoverGpsSensor::processRxGPSData()
 	
 	//==Data Filtering==
 	//Note: Only keep and process GPGGA data. Ignore everything else.
-	if (!dataPassedFiltering(this->_rxData, this->_gpsDataArray[GPS_GPGGA_INDEX_OF_SENTENCE_ID]))//Save the GPS Sentence ID into _gpsDataArray[GPS_GPGGA_INDEX_OF_SENTENCE_ID] where GPS_GPGGA_INDEX_OF_SENTENCE_ID = 0;
+	if (!dataPassedFiltering(this->_rxData))
 	{
 		#ifdef _DEBUG_OUTPUT_FILTERED_DATA_STATUS
 			Serial.println(F("Filtered Out"));
@@ -82,86 +82,69 @@ boolean RoverGpsSensor::processRxGPSData()
 	//Make a copy of the data string. This copy will be manipulated.
 	String dataStringToParse = this->_rxData;
 		
-	//==Validating the Checksum==
-	if (!this->validateChecksum(this->_rxData, dataStringToParse, this->_gpsDataArray[GPS_GPGGA_INDEX_OF_CHECKSUM]))//if checksum failed
+					
+	//==Parsing and extracting the GPS GPGGA data==
+	
+	//Note: The dataStringToParse starts after the $ since the function in the .ino (rxGPSData) that runs before this code will strip out the $	
+
+	
+	
+	//Example Data Received by this function: GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B	
+	
+	
+	
+	//Parse and extract the GPS data string for GPGGA
+	for (byte i = 0; i < GPS_GPGGA_FIELDS; i++) 
 	{
+		this->_endIndex = dataStringToParse.indexOf(',', this->_startIndex);//search for the first/next comma			
 		
-		#ifdef _DEBUG_OUTPUT_CHECKSUM_STATUS
-			Serial.println(F("Checksum Failed"));
-		#endif
+		this->_gpsDataArray[i] = dataStringToParse.substring(this->_startIndex, this->_endIndex);//grab the substring the start and the first commas (for the first field) or the substring between two commas
+
 		
+		#ifdef _DEBUG_OUTPUT_PARSING_PROCESS
+			Serial.print(F("Data Being Parsed: "));//DEBUG
+			Serial.println(dataStringToParse);//DEBUG
+			Serial.print(F("Start Index: "));//DEBUG
+			Serial.println(this->_startIndex);//DEBUG
+			Serial.print(F("End Index: "));//DEBUG
+			Serial.println(this->_endIndex);//DEBUG
+			Serial.print(F("Parsed Data: "));//DEBUG
+			Serial.println(this->_gpsDataArray[i]);//DEBUG
+		#endif			
+		
+		dataStringToParse = dataStringToParse.substring(this->_endIndex + 1);//prepare the data for the next interation of the loop by skipping over the current comma
+		
+	}//end for
+
+
+	#ifdef _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
+
+		Serial.println("==BEGIN==");
+		for (byte i = 0; i < GPS_GPGGA_FIELDS; i++)
+		{
+			Serial.println(this->_gpsDataArray[i]);
+		}
+		Serial.println("==END==");
+		Serial.println();
+
+	#endif
+
+	
+	//Return from the function if the GPS data is invalid (status is extracted from the parsed GPS data) or the GPS checksum is invalid
+	if(!this->isGpsDataValid())
+	{
+		//End the function if the GPS data in not valid
 		this->clearRxGpsDataString();//clear the gps data
-		this->_validChecksum = false;
-		return false;//do nothing if the data isn't desired
+		return false;
 	}//end if
-	else //checksum passed
+	else
 	{
-		
-		#ifdef _DEBUG_OUTPUT_CHECKSUM_STATUS
-			Serial.println(F("Checksum Passed"));
-		#endif
-		
-		this->_validChecksum = true;
-			
-						
-		//==Parsing and extracting the GPS GPGGA data==
+		//Clear the GPS data string for future use
+		this->clearRxGpsDataString();
+		return true;
+	}//end else					
+	
 
-		//Notes:
-		//dataStringToParse is the GPS data without the $ at the beginning or the ending part (i.e. without the * or anything after, like the checksum)
-
-
-		//Parse and extract the GPS data string for GPGGA
-		for (byte i = 0; i < GPS_GPGGA_FIELDS - 1; i++) //Subtract 1 from GPS_GPGGA_FIELDS since the checksum was already extracted above
-		{
-			this->_endIndex = dataStringToParse.indexOf(',', this->_startIndex);//search for the first/next comma			
-			
-			this->_gpsDataArray[i] = dataStringToParse.substring(this->_startIndex, this->_endIndex);//grab the substring the start and the first commas (for the first field) or the substring between two commas
-
-			
-			#ifdef _DEBUG_OUTPUT_PARSING_PROCESS
-				Serial.print(F("Data Being Parsed: "));//DEBUG
-				Serial.println(dataStringToParse);//DEBUG
-				Serial.print(F("Start Index: "));//DEBUG
-				Serial.println(this->_startIndex);//DEBUG
-				Serial.print(F("End Index: "));//DEBUG
-				Serial.println(this->_endIndex);//DEBUG
-				Serial.print(F("Parsed Data: "));//DEBUG
-				Serial.println(this->_gpsDataArray[i]);//DEBUG
-			#endif			
-			
-			dataStringToParse = dataStringToParse.substring(this->_endIndex + 1);//prepare the data for the next interation of the loop by skipping over the current comma
-			
-		}//end for
-
-
-		#ifdef _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
-
-			Serial.println("==BEGIN==");
-			for (byte i = 0; i < GPS_GPGGA_FIELDS; i++)
-			{
-				Serial.println(this->_gpsDataArray[i]);
-			}
-			Serial.println("==END==");
-			Serial.println();
-
-		#endif
-
-		
-		//Return from the function if the GPS data is invalid (status is extracted from the parsed GPS data) or the GPS checksum is invalid
-		if(!this->isGpsDataValid())
-		{
-			//End the function if the GPS data in not valid
-			this->clearRxGpsDataString();//clear the gps data
-			return false;
-		}//end if
-		else
-		{
-			//Clear the GPS data string for future use
-			this->clearRxGpsDataString();
-			return true;
-		}//end else					
-		
-	}//end else
 	
 }
 boolean RoverGpsSensor::isGpsDataValid()
@@ -216,40 +199,6 @@ byte RoverGpsSensor::getGpsSatellitesTracked()
 {
 	return (this->_gpsDataArray[GPS_GPGGA_INDEX_OF_SATELLITES_TRACKED]).toInt();		
 }
-double RoverGpsSensor::getGpsHorizontalDilution()
-{
-	return (this->_gpsDataArray[GPS_GPGGA_INDEX_OF_HORIZONTAL_DILUTION_OF_POSITION]).toFloat();
-}
-double RoverGpsSensor::getGpsAltitude()
-{
-	return (this->_gpsDataArray[GPS_GPGGA_INDEX_OF_ALTITUDE_ABOVE_MEAN_SEA_LEVEL]).toFloat();
-}
-char RoverGpsSensor::getGpsAltitudeUnit()
-{
-	byte charBufferSize = (this->_gpsDataArray[GPS_GPGGA_INDEX_OF_ALTITUDE_UNIT]).length() + 1;
-	char charArray[charBufferSize];
-	(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_ALTITUDE_UNIT]).toCharArray(charArray,charBufferSize);
-	return charArray[0];
-}
-double RoverGpsSensor::getGpsGeoidHeight()
-{
-	return (this->_gpsDataArray[GPS_GPGGA_INDEX_OF_HEIGHT_OF_GEOID]).toFloat();	
-}
-String RoverGpsSensor::getGpsReceivedChecksum()
-{
-	return this->_gpsDataArray[GPS_GPGGA_INDEX_OF_CHECKSUM];
-}
-char RoverGpsSensor::getGpsGeoidHeightUnit()
-{
-	byte charBufferSize = (this->_gpsDataArray[GPS_GPGGA_INDEX_OF_GEOID_UNIT]).length() + 1;
-	char charArray[charBufferSize];
-	(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_GEOID_UNIT]).toCharArray(charArray,charBufferSize);
-	return charArray[0];
-}
-String RoverGpsSensor::getGpsGPGGAChecksum()
-{
-	return this->_gpsDataArray[GPS_GPGGA_INDEX_OF_CHECKSUM];
-}
 String RoverGpsSensor::getGoogleMapsCoordinates()
 {
 	
@@ -264,7 +213,7 @@ String RoverGpsSensor::getGoogleMapsCoordinates()
 	
 	
 }
-boolean RoverGpsSensor::dataPassedFiltering(String gpsRxdData, String & gpsHeader)
+boolean RoverGpsSensor::dataPassedFiltering(String gpsRxdData)
 {
 
 //This function will return true if the GPS data passes the filtering and false if it doesn't.
@@ -284,151 +233,24 @@ boolean RoverGpsSensor::dataPassedFiltering(String gpsRxdData, String & gpsHeade
 	//Grab the GPS Sentence ID
 	tempString = gpsRxdData.substring(startIndex, endIndex);//grab the substring from the start to the first comma
 
+	
+	#ifdef _DEBUG_OUTPUT_PARSED_HEADER
+			Serial.print(F("Start Index: "));//DEBUG
+			Serial.println(startIndex);//DEBUG
+			Serial.print(F("End Index: "));//DEBUG
+			Serial.println(endIndex);//DEBUG
+			Serial.print(F("Parsed Header: "));//DEBUG
+			Serial.println(tempString);//DEBUG			
+	#endif			
+		
+	
+	
 	if (tempString.equals(GPS_GPGGA_SENTENCE_ID) )
 	{
-		gpsHeader = tempString;
 		return true;
 	}//end if
 	else
 	{
-		gpsHeader = "";
 		return false;
 	}//end else
-}
-boolean RoverGpsSensor::validateChecksum(String inputString, String & outputString, String & receivedChecksumInHex)
-{
-	//This function will return true if the checksum is valid and false if it isn't.
-	//This function will pass by reference the variable outputString as... :
-		//For Valid Checksums: ...the GPS data without the $ at the beginning or the ending part (i.e. without the * or anything after, like the checksum)
-		//For Invalid Checksums: ...a blank string
-
-	//Note: This checksum calculation algorithm works for GPGGA
-	//Note: The checksum doesn't include the $ at the beginning or the * or anything after that
-
-	//Declare and initialize variables
-	byte startIndex = 0;
-	byte endIndex = 0;
-	byte calculatedChecksumInDecimal = 0;
-	String calculatedChecksumInHex = "";	
-
-	//Make a copy of the original string in order to calculate the checksum
-	String tempString = inputString;
-
-	//Search for the *
-	endIndex = tempString.indexOf('*');
-
-	//Grab the substring to use in the checksum calculation
-	tempString = tempString.substring(startIndex, endIndex);//grab the substring of GPS data without the ending part (i.e. without the * or anything after, like the checksum)
-
-	//Calculate the Checksum In Decimal
-	for (byte i = 0; i < tempString.length(); i++)
-	{
-		calculatedChecksumInDecimal ^= tempString.charAt(i);
-	}//end for
-
-	//Convert the Checksum into Hex
-	calculatedChecksumInHex = twoDigitDecimalToHexConverter(calculatedChecksumInDecimal);
-
-
-	#ifdef _DEBUG_OUTPUT_CALCULATED_CHECKSUM
-		Serial.println(calculatedChecksumInHex);//DEBUG
-	#endif
-
-	//Grab the received checksum
-	receivedChecksumInHex = inputString.substring(endIndex + 1, endIndex + 3);//It is the two characters after the *
-
-	
-	#ifdef _DEBUG_OUTPUT_RECEIVED_CHECKSUM
-		Serial.println(receivedChecksumInHex);//DEBUG
-	#endif
-	
-	
-	//Set the outputString as the tempString
-	outputString = tempString;
-	
-	if (receivedChecksumInHex.equals(calculatedChecksumInHex))
-	{	
-		return true;
-	}//end if
-	else
-	{		
-		return false;
-	}//end else
-}
-String RoverGpsSensor::twoDigitDecimalToHexConverter(byte decimalValue)
-{
-	char upperDigit;
-	char lowerDigit;
-	String output = "";
-	if (decimalValue > 255 || decimalValue < 0)//the range is o to FF aka 0 to 255
-	{
-		return "ZZ";//error value
-	}//end if
-	else
-	{
-
-		//Convert the decimal values into hex (upper and lower digits)
-		upperDigit = decimalToHex(decimalValue / 16);
-		lowerDigit = decimalToHex(decimalValue % 16);
-
-		//Construct and return the 2 digit hex string		
-		return (String)upperDigit + (String)lowerDigit;
-	}//end else
-}
-char RoverGpsSensor::decimalToHex(byte decimalValue)
-{
-	switch (decimalValue)
-	{
-	case 0:
-		return '0';
-		break;
-	case 1:
-		return '1';
-		break;
-	case 2:
-		return '2';
-		break;
-	case 3:
-		return '3';
-		break;
-	case 4:
-		return '4';
-		break;
-	case 5:
-		return '5';
-		break;
-	case 6:
-		return '6';
-		break;
-	case 7:
-		return '7';
-		break;
-	case 8:
-		return '8';
-		break;
-	case 9:
-		return '9';
-		break;
-	case 10:
-		return 'A';
-		break;
-	case 11:
-		return 'B';
-		break;
-	case 12:
-		return 'C';
-		break;
-	case 13:
-		return 'D';
-		break;
-	case 14:
-		return 'E';
-		break;
-	case 15:
-		return 'F';
-		break;
-	default:
-		return 'Z';//error, for numbers out of the range of hex, 0 to 16
-		break;
-	}//end switch
 }

@@ -10,14 +10,8 @@
 #define _OUTPUT_LONGITUDE
 #define _OUTPUT_FIX_QUALITY
 #define _OUTPUT_SATELLITES_TRACKED
-#define _OUTPUT_HORIZONTAL_DILUTION_OF_POSITION
-#define _OUTPUT_ALTITUDE_ABOVE_MEAN_SEA_LEVEL
-#define _OUTPUT_HEIGHT_OF_GEOID
-#define _OUTPUT_RXD_CHECKSUM
 #define _OUTPUT_GOOGLE_MAPS
-#define _OUTPUT_ENDING_BLANK_LINE
 #define _OUTPUT_DATA_NOT_READY_STATUS
-
 
 
 //Global Variables
@@ -101,29 +95,6 @@ void loop() {
 			Serial.println((String)roverGps->getGpsSatellitesTracked());
 		#endif
 
-		#ifdef _OUTPUT_HORIZONTAL_DILUTION_OF_POSITION
-			Serial.print(F("Horiontal Dilution Of Position: "));
-			Serial.println((String)roverGps->getGpsHorizontalDilution());
-		#endif
-
-		#ifdef _OUTPUT_ALTITUDE_ABOVE_MEAN_SEA_LEVEL
-			Serial.print(F("Altitude Above Mean Sea Level: "));
-			Serial.print((String)roverGps->getGpsAltitude());
-			Serial.println((String)roverGps->getGpsAltitudeUnit());
-		#endif
-
-		#ifdef _OUTPUT_HEIGHT_OF_GEOID
-			Serial.print(F("Height OF Geoid: "));
-			Serial.print((String)roverGps->getGpsGeoidHeight());
-			Serial.println((String)roverGps->getGpsGeoidHeightUnit());
-		#endif
-
-		#ifdef _OUTPUT_RXD_CHECKSUM
-			Serial.print(F("Received Checksum: "));
-			Serial.println((String)roverGps->getGpsReceivedChecksum());
-		#endif
-
-
 		#ifdef _OUTPUT_GOOGLE_MAPS
 			Serial.print(F("For Google Maps: "));		
 			Serial.println((String)roverGps->getGoogleMapsCoordinates());
@@ -150,38 +121,45 @@ void loop() {
 boolean rxGPSData(RoverGpsSensor * roverGps) {
 
 	byte numberOfAttempts = 0;//counts the number of times attempting to wait for a valid gps data string
-	byte gpsCharactersToReceiveBeforeTimeout = 0;//counts the number of characters received while waiting for the start of the gps data (i.e. $) before timing out
+	byte gpsCharactersToReceiveBeforeTimeout;//counts the number of characters received while waiting for the start of the gps data (i.e. $) before timing out
+	boolean foundStart = false;
 	boolean validGpsData = false;
-	
+	byte counter;
 
 	while (numberOfAttempts <= GPS_RX_DATA_ATTEMPTS)
 	{
 		//Check availabiltiy of serial data
-		if (Serial3.available() >= 1)
+		if (Serial3.available() )
 		{	
+			//initialize the counter
+			gpsCharactersToReceiveBeforeTimeout = 0;
 			//Wait for the GPS start of data (i.e. $) else for a time out
 			do			
 			{				
 				if ((char)Serial3.read() == '$')//look for the start of the GPS data (do NOT include it in the gps data string if found)
 				{
+					foundStart = true;
 					break;//break out of the loop since the header was found
 				}
-			} while (gpsCharactersToReceiveBeforeTimeout <= GPS_CHARACTERS_TO_RX_BEFORE_TIMEOUT);		
+			} while (gpsCharactersToReceiveBeforeTimeout <= GPS_SENTENCE_LENGTH);
 			
 
 
-			//If timeout has NOT occured, keep processing the GPS data
-			if (gpsCharactersToReceiveBeforeTimeout <= GPS_CHARACTERS_TO_RX_BEFORE_TIMEOUT)
-			{
 
+			//If timeout has NOT occured, keep processing the GPS data
+			if (foundStart)
+			{
+				//initialize the counter
+				counter = 0;
 
 				//Gather the rest of the GPS String (AFTER the $, so $ is not included)
-				while ( Serial3.available() )//while there is still data on the Serial RX Buffer				
+				while ( Serial3.available() && Serial.peek() != '$' && counter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
 				{
 					//Read one character of serial data at a time
 					//Note: Must type cast the Serial.Read to a char since not saving it to a char type first					
 					roverGps->appendToRxGPSData((char)Serial3.read());//construct the string one char at a time
 					//DEBUG: Add as needed
+					counter++;
 					delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 				}//end while
 				

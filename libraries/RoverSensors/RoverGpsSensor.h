@@ -12,12 +12,10 @@
 
 
 //Uncomment debug flags below to use them
-//#define _DEBUG_OUTPUT_PRE_FILTERED_RAW_RX_DATA
-//#define _DEBUG_OUTPUT_FILTERED_DATA_STATUS
+#define _DEBUG_OUTPUT_PRE_FILTERED_RAW_RX_DATA
+#define _DEBUG_OUTPUT_PARSED_HEADER
+#define _DEBUG_OUTPUT_FILTERED_DATA_STATUS
 //#define _DEBUG_OUTPUT_POST_FILTERED_RAW_RX_DATA
-//#define _DEBUG_OUTPUT_CALCULATED_CHECKSUM
-//#define _DEBUG_OUTPUT_RECEIVED_CHECKSUM
-//#define _DEBUG_OUTPUT_CHECKSUM_STATUS
 //#define _DEBUG_OUTPUT_PARSING_PROCESS
 //#define _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
 
@@ -70,7 +68,7 @@ public:
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)	
 	void appendToRxGPSData(char);//append a char to the _rxData string
 	String getRxGPSData();//print _rxData string
-	boolean processRxGPSData();//processes/parses the received gps _rxData string. Returns true if the data is valid and the checksum is valid	
+	boolean processRxGPSData();//processes/parses the received gps _rxData string. Returns true if the data is valid
 	boolean isGpsDataValid();//Checks the GPS Status and the Fix Quality to see if the data is valid. Usually ran internal to the class (privately), but can be ran outside the class if needed (publicly).
 	String getGpsSentenceId();//returns the GPS sentence ID
 	double getGpsTimeWhenDataWasFixed();//returns the time the data was fixed	
@@ -80,13 +78,6 @@ public:
 	char getGpsLongitudeDirection();//returns the gps longitude direction	
 	byte getGpsFixQuality(); //returns the gps fix quality (gps fix quality types defined in RoverConfig)
 	byte getGpsSatellitesTracked();//returns the number of gps satellites being tracked	
-	double getGpsHorizontalDilution();//Horizontal dilution of position
-	double getGpsAltitude();//returns the gps altitude
-	char getGpsAltitudeUnit();//returns the unit of the Altitude (should be M)
-	double getGpsGeoidHeight();//Height of geoid (mean sea level) above WGS84 ellipsoid
-	char getGpsGeoidHeightUnit();//returns the unit of the Geoid Height (should be M)
-	String getGpsReceivedChecksum();//returns the GPS received checksum
-	String getGpsGPGGAChecksum();//returns the last received GPGGA checksum in hex.
 	String getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format
 	
 	
@@ -95,10 +86,10 @@ private:
 	//Non-SW Resettable
 	void clearGpsHelperVariables();//clears the GPS Helper Variables
 	void clearRxGpsDataString();//clears the _rxData string
-	boolean dataPassedFiltering(String , String & );//(input: received GPS data, output: GPS header) returns true if the data passes the filtering (only GPGGA and GPRMC data is passed through, everything else is discarded). It also passes by reference the gps header (GPGGA, GPRMC, or <blank>)	
-	boolean validateChecksum(String , String &, String & );//(input: received GPS data, output: GPS data between the $ and *, output: checksum in two digit hex). Returns true if the checksum is valid, else returns false. Also returns by reference the GPS data without the $ at the beginning or the ending part (i.e. without the * or anything after, like the checksum) and also by reference the two digit checksum hex that was extracted from the received GPS data.
-	String twoDigitDecimalToHexConverter(byte);//returns the two digit hex of the two digit decimal
-	char decimalToHex(byte);//returns the one digit hex of the single digit decimal
+	boolean dataPassedFiltering(String);//(input: received GPS data) returns true if the data passes the filtering (only GPGGA is passed through, everything else is discarded).
+	
+	
+	
 	//SW Resettable
 	//Flags
 	boolean _validChecksum;	
@@ -107,7 +98,7 @@ private:
 	//GPS Helper Variables
 	byte _startIndex;
 	byte _endIndex;	
-	String _gpsDataArray[14];//(max) size 14, GPGGA is from 0 to 13
+	String _gpsDataArray[GPS_GPGGA_FIELDS];//(max) size 14, but using only the first 8 fields for GPGGA (since sometimes the data gets corrupted and doesn't complete the transmission), from 0 to 7
 	   
 	
 	
