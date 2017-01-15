@@ -19,6 +19,8 @@ RoverGpsSensor * roverGps = new RoverGpsSensor();
 
 //flags for data ready
 boolean gpsDataReady;
+char numCharArray[10];
+char charBuffer[100];
 
 RoverReset * resetArray[] = {
 	roverGps
@@ -62,42 +64,49 @@ void loop() {
 		//Print Valid GPS Data
 		#ifdef _OUTPUT_SENTENCE_ID
 			Serial.print(F("Sentence ID: "));
-			Serial.println((String)roverGps->getGpsSentenceId());
+			Serial.println(roverGps->getGpsSentenceId());
 		#endif
 
 			
 				
 		#ifdef _OUTPUT_DATA_FIX_TIME
 			Serial.print(F("Time Of Data Fix: "));
-			Serial.println((String)roverGps->getGpsTimeWhenDataWasFixed());
+			dtostrf(roverGps->getGpsTimeWhenDataWasFixed(), 4, 3, numCharArray);//convert double to char array			
+			Serial.println(numCharArray);//print char array
 		#endif
 
 
 		#ifdef _OUTPUT_LATITUDE
 			Serial.print(F("Latitude: "));
-			Serial.print((String)roverGps->getGpsLatitude());
-			Serial.println((String)roverGps->getGpsLatitudeDirection());
+
+			dtostrf(roverGps->getGpsLatitude(), 5, 4, numCharArray);//convert double to char array
+			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLatitudeDirection());//optional step, if you want to add other text too, you have to send it to another buffer though
+			Serial.println(charBuffer);
+
 		#endif
 
 		#ifdef _OUTPUT_LONGITUDE
 			Serial.print(F("Longitude: "));
-			Serial.print((String)roverGps->getGpsLongitude());		
-			Serial.println((String)roverGps->getGpsLongitudeDirection());
+			dtostrf(roverGps->getGpsLongitude(), 5, 4, numCharArray);//convert double to char array
+			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLongitudeDirection());
+			Serial.println(charBuffer);
 		#endif
 
 		#ifdef _OUTPUT_FIX_QUALITY
 			Serial.print(F("Fix Quality: "));
-			Serial.println((String)roverGps->getGpsFixQuality());
+			sprintf(charBuffer, "%u", roverGps->getGpsFixQuality());
+			Serial.println(charBuffer);
 		#endif
 
 		#ifdef _OUTPUT_SATELLITES_TRACKED
-			Serial.print(F("Satellites Tracked: "));
-			Serial.println((String)roverGps->getGpsSatellitesTracked());
+			Serial.print(F("Satellites Tracked: "));			
+			sprintf(charBuffer, "%u", roverGps->getGpsSatellitesTracked());
+			Serial.println(charBuffer);
 		#endif
 
 		#ifdef _OUTPUT_GOOGLE_MAPS
 			Serial.print(F("For Google Maps: "));		
-			Serial.println((String)roverGps->getGoogleMapsCoordinates());
+			Serial.println(roverGps->getGoogleMapsCoordinates());
 		#endif
 
 		#ifdef _OUTPUT_ENDING_BLANK_LINE

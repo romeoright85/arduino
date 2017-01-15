@@ -78,6 +78,9 @@
 			*59 = Checksum
 		*/
 		
+		
+		//Char Array Sizes		
+		#define GPS_DATA_CHAR_BUFFER_SIZE 100
 		//GPS Number of Attempts To Obtain A Valid Data String
 		#define GPS_RX_DATA_ATTEMPTS 	5
 		//GPS Number of Characters to receive while waiting for the start of the GPS data (i.e. $) before timing out

@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include <RoverDebug.h>
 #include <RoverReset.h>
-#include <string.h>
+
 
 
 #define _GPS_SENSOR
@@ -20,6 +20,9 @@
 //#define _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
 
 
+
+
+//Note: I use the term string, when it's really stored in a char array. But I still consider the actual data a string (while being implemented as a char array due to Arduino limitations).
 
 //Reference:
 //http://www.gpsinformation.org/dale/nmea.htm
@@ -67,10 +70,10 @@ public:
 	~RoverGpsSensor();//destructor
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)	
 	void appendToRxGPSData(char);//append a char to the _rxData string
-	String getRxGPSData();//print _rxData string
+	char * getRxGPSData();//print _rxData string
 	boolean processRxGPSData();//processes/parses the received gps _rxData string. Returns true if the data is valid
 	boolean isGpsDataValid();//Checks the GPS Status and the Fix Quality to see if the data is valid. Usually ran internal to the class (privately), but can be ran outside the class if needed (publicly).
-	String getGpsSentenceId();//returns the GPS sentence ID
+	char * getGpsSentenceId();//returns the GPS sentence ID
 	double getGpsTimeWhenDataWasFixed();//returns the time the data was fixed	
 	double getGpsLatitude();//returns the gps latitude
 	char  getGpsLatitudeDirection();//returns the gps latitude direction	
@@ -78,7 +81,7 @@ public:
 	char getGpsLongitudeDirection();//returns the gps longitude direction	
 	byte getGpsFixQuality(); //returns the gps fix quality (gps fix quality types defined in RoverConfig)
 	byte getGpsSatellitesTracked();//returns the number of gps satellites being tracked	
-	String getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format
+	char * getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format
 	
 	
 	
@@ -86,7 +89,7 @@ private:
 	//Non-SW Resettable
 	void clearGpsHelperVariables();//clears the GPS Helper Variables
 	void clearRxGpsDataString();//clears the _rxData string
-	boolean dataPassedFiltering(String);//(input: received GPS data) returns true if the data passes the filtering (only GPGGA is passed through, everything else is discarded).
+	boolean dataPassedFiltering(char *);//(input: received GPS data) returns true if the data passes the filtering (only GPGGA is passed through, everything else is discarded).
 	
 	
 	
@@ -94,11 +97,11 @@ private:
 	//Flags
 	boolean _validChecksum;	
 	//GPS Received Data
-	String _rxData;
+	char _rxData[GPS_DATA_CHAR_BUFFER_SIZE];
 	//GPS Helper Variables
 	byte _startIndex;
 	byte _endIndex;	
-	String _gpsDataArray[GPS_GPGGA_FIELDS];//(max) size 14, but using only the first 8 fields for GPGGA (since sometimes the data gets corrupted and doesn't complete the transmission), from 0 to 7
+	char * _gpsDataArray[GPS_GPGGA_FIELDS];//(max) field size is 14, but using only the first 8 fields for GPGGA (since sometimes the data gets corrupted and doesn't complete the transmission), from 0 to 7.
 	   
 	
 	
