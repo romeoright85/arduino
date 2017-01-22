@@ -31,7 +31,10 @@ void RoverGpsSensor::clearRxGpsDataString()
 }
 void RoverGpsSensor::appendToRxGPSData(char dataIn)
 {	
-	sprintf(this->_rxData, "%s%s", this->_rxData, dataIn);
+	//sprintf(this->_rxData, "%s%s", this->_rxData, dataIn);
+
+	strcat (this->_rxData, &dataIn);	
+	
 }
 void RoverGpsSensor::setRxGPSData(char * dataString, byte arraySize)
 {			
@@ -48,8 +51,7 @@ boolean RoverGpsSensor::processRxGPSData()
 {
 
 	//Note: The data starts after the $ since the function in the .ino (rxGPSData) that runs before this code will strip out the $	
-	
-Serial.println("processRxGPSData");//DEBUG
+
 	//Example Raw Data: $GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B
 	//Example Data Received by this function: GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B	
 		
@@ -126,15 +128,8 @@ Serial.println("processRxGPSData");//DEBUG
 	
 
 
-//FINISH DEBUGGING WHY THE STRING ISN'T MOVING TO THE NEXT FIELD
+		//Get the position of the next comma
 		endIndex = CharArray::indexOf(dataStringToParse, stringSize, ',', startIndex);
-//Serial.println("dataStringToParse-1");//DEBUG
-//Serial.println(dataStringToParse);//DEBUG			
-//Serial.print("i1: ");
-//Serial.println(i);
-//Serial.println("endIndex1");
-//Serial.println(endIndex);
-//delay(1000);	
 		
 		//if no comma found, the function would have returned a -1, so break out of the for loop early when a -1 was found
 		if( endIndex < 0)
@@ -142,7 +137,8 @@ Serial.println("processRxGPSData");//DEBUG
 			break;
 		}
 		
-		CharArray::substring(dataStringToParse, stringSize, startIndex, endIndex, this->_gpsDataArray[i]);//grab the substring the start and the first commas (for the first field) or the substring between two commas
+		//Grab the substring the start and the first commas (for the first field) or the substring between two commas
+		CharArray::substring(dataStringToParse, stringSize, startIndex, endIndex, this->_gpsDataArray[i]);
 				
 		#ifdef _DEBUG_OUTPUT_PARSING_PROCESS
 			Serial.print(F("Data Being Parsed: "));//DEBUG
@@ -156,19 +152,10 @@ Serial.println("processRxGPSData");//DEBUG
 		#endif			
 
 
-		
-		CharArray::substring(dataStringToParse, stringSize, endIndex+1, dataStringToParse);//prepare the data for the next interation of the loop by skipping over the current comma
+		//Prepare the data for the next interation of the loop by skipping over the current comma
+		CharArray::substring(dataStringToParse, stringSize, endIndex+1, dataStringToParse);
 				
-		
-//Serial.println("dataStringToParse-2");//DEBUG
-//Serial.println(dataStringToParse);//DEBUG			
-//Serial.print("i2: ");
-//Serial.println(i);
-//Serial.println("endIndex2");
-//Serial.println(endIndex);
-//Serial.println("endIndex2");
-//Serial.println(endIndex);
-//delay(1000);
+
 		
 	}//end for
 
@@ -230,17 +217,17 @@ double RoverGpsSensor::getGpsLatitude()
 
 	return atof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE]);	
 }
-char RoverGpsSensor::getGpsLatitudeDirection()
+char * RoverGpsSensor::getGpsLatitudeDirection()
 {	
-	return *this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION];
+	return this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION];
 }
 double RoverGpsSensor::getGpsLongitude()
 {	
 	return atof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE]);		
 }
-char RoverGpsSensor::getGpsLongitudeDirection()
+char * RoverGpsSensor::getGpsLongitudeDirection()
 {	
-	return *this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE_DIRECTION];
+	return this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE_DIRECTION];
 }
 byte RoverGpsSensor::getGpsFixQuality()
 {		
@@ -254,14 +241,53 @@ char * RoverGpsSensor::getGoogleMapsCoordinates()
 {
 	
 	//Example Google Maps Format: 39 16.10 N, 76 36.66 W
+		
+	//Use the original string (i.e.  this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE] and not getGpsLatitude()) before it's converted to a double for latitude and longitude to prevent round off or conversion errors
 	
-	//Use the original string before it's converted to a double for latitude and longitude to prevent round off or conversion errors
-//REWRITE ME//	String latitude = this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE];
-//REWRITE ME//	String longitude = this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE];
+	//Get the string sizes
+	int stringSizeLatitude = CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE], sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE])/sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE][0]));
+	int stringSizeLongitude = CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE], sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE])/sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE][0]));
 	
+	//Create temp/placeholder and output char arrays
+	char tempCharArray[GPS_DATA_CHAR_BUFFER_SIZE]; 
+	char outputCharArray[GPS_DATA_CHAR_BUFFER_SIZE];
+			
+		
+	//Constructing the output array
+		
 	//Remember: Latitude is 0 to 90 and Longitude is 0 to 180. So Grab the first two characters for longitude and the first three characters for longitude.
-//REWRITE ME//	return latitude.substring(0,2) + " " + latitude.substring(2) + " " + this->getGpsLatitudeDirection() + ", " +  longitude.substring(0,3) + " " + longitude.substring(3) + " " + this->getGpsLongitudeDirection();
-	
+			
+	//Grab the first two characters of latitude, into the outputCharArray
+	CharArray::substring(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE], stringSizeLatitude, 0, 2, outputCharArray);
+	//Add a space to the outputCharArray
+	strcat (outputCharArray, " ");
+	//Grab the remainining characters of latitude, into the tempCharArray
+	CharArray::substring(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE], stringSizeLatitude, 2, tempCharArray);
+	//Concatenate the tempCharArray into the outputCharArray
+	strcat (outputCharArray, tempCharArray);
+	//Add a space to the outputCharArray
+	strcat (outputCharArray, " ");	
+	//Concatenate the Latitude Direction into the outputCharArray
+	strcat (outputCharArray, this->getGpsLatitudeDirection());
+	//Add a space and comma to the outputCharArray
+	strcat (outputCharArray, ", ");
+	//Grab the first three characters of longitude, into the tempCharArray
+	CharArray::substring(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE], stringSizeLongitude, 0, 3, tempCharArray);
+	//Concatenate the tempCharArray into the outputCharArray
+	strcat (outputCharArray, tempCharArray);
+	//Add a space to the outputCharArray
+	strcat (outputCharArray, " ");	
+	//Grab the remainining characters of longitude, into the tempCharArray
+	CharArray::substring(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE], stringSizeLatitude, 3, tempCharArray);
+	//Concatenate the tempCharArray into the outputCharArray
+	strcat (outputCharArray, tempCharArray);	
+	//Add a space to the outputCharArray
+	strcat (outputCharArray, " ");	
+	//Concatenate the Latitude Direction into the outputCharArray
+	strcat (outputCharArray, this->getGpsLongitudeDirection());	
+
+	return outputCharArray;
+
 	
 }
 

@@ -12,12 +12,12 @@
 
 
 //Uncomment debug flags below to use them
-//#define _DEBUG_OUTPUT_PRE_FILTERED_RAW_RX_DATA
-//#define _DEBUG_OUTPUT_PARSED_HEADER
-//#define _DEBUG_OUTPUT_FILTERED_DATA_STATUS
-//#define _DEBUG_OUTPUT_POST_FILTERED_RAW_RX_DATA
-//#define _DEBUG_OUTPUT_PARSING_PROCESS
-//#define _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
+#define _DEBUG_OUTPUT_PRE_FILTERED_RAW_RX_DATA
+#define _DEBUG_OUTPUT_PARSED_HEADER
+#define _DEBUG_OUTPUT_FILTERED_DATA_STATUS
+#define _DEBUG_OUTPUT_POST_FILTERED_RAW_RX_DATA
+#define _DEBUG_OUTPUT_PARSING_PROCESS
+#define _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
 
 
 
@@ -69,7 +69,7 @@ public:
 	RoverGpsSensor();//constructor
 	~RoverGpsSensor();//destructor
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)	
-	void appendToRxGPSData(char);//append a char to the _rxData string
+	void appendToRxGPSData(char );//append a char to the _rxData string
 	void setRxGPSData(char *, byte);//used for debugging, sets the _rxData string to a value (charArray, array size)
 	char * getRxGPSData();//print _rxData string
 	boolean processRxGPSData();//processes/parses the received gps _rxData string. Returns true if the data is valid
@@ -77,9 +77,9 @@ public:
 	char * getGpsSentenceId();//returns the GPS sentence ID
 	double getGpsTimeWhenDataWasFixed();//returns the time the data was fixed	
 	double getGpsLatitude();//returns the gps latitude
-	char  getGpsLatitudeDirection();//returns the gps latitude direction	
+	char *  getGpsLatitudeDirection();//returns the gps latitude direction	
 	double getGpsLongitude();//returns the gps longitude
-	char getGpsLongitudeDirection();//returns the gps longitude direction	
+	char * getGpsLongitudeDirection();//returns the gps longitude direction	
 	byte getGpsFixQuality(); //returns the gps fix quality (gps fix quality types defined in RoverConfig)
 	byte getGpsSatellitesTracked();//returns the number of gps satellites being tracked	
 	char * getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format

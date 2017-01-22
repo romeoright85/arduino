@@ -3,7 +3,7 @@
 #include <RoverGpsSensor.h>
 
 //Uncomment to used fixed GPS example data to test parsing algorithm
-#define _DEBUG_PARSING_WITH_FIXED_DATA
+//#define _DEBUG_PARSING_WITH_FIXED_DATA
 //Uncomment to customize output data
 #define _OUTPUT_STARTING_BLANK_LINE
 #define _OUTPUT_SENTENCE_ID
@@ -12,7 +12,7 @@
 #define _OUTPUT_LONGITUDE
 #define _OUTPUT_FIX_QUALITY
 #define _OUTPUT_SATELLITES_TRACKED
-//#define _OUTPUT_GOOGLE_MAPS
+#define _OUTPUT_GOOGLE_MAPS
 #define _OUTPUT_DATA_NOT_READY_STATUS
 
 
@@ -82,7 +82,7 @@ void loop() {
 			Serial.print(F("Latitude: "));
 
 			dtostrf(roverGps->getGpsLatitude(), 5, 4, numCharArray);//convert double to char array
-			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLatitudeDirection());//optional step, if you want to add other text too, you have to send it to another buffer though
+			sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
 			Serial.println(charBuffer);
 
 		#endif
@@ -90,7 +90,7 @@ void loop() {
 		#ifdef _OUTPUT_LONGITUDE
 			Serial.print(F("Longitude: "));
 			dtostrf(roverGps->getGpsLongitude(), 5, 4, numCharArray);//convert double to char array
-			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLongitudeDirection());
+			sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
 			Serial.println(charBuffer);
 		#endif
 
@@ -169,15 +169,20 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 				//Gather the rest of the GPS String (AFTER the $, so $ is not included)
 				while ( Serial3.available() && Serial.peek() != '$' && counter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
 				{
-					//Read one character of serial data at a time
-					//Note: Must type cast the Serial.Read to a char since not saving it to a char type first					
-					roverGps->appendToRxGPSData((char)Serial3.read());//construct the string one char at a time
-					//DEBUG: Add as needed
-					counter++;
-					delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
-				}//end while
 	
+			
+						//Read one character of serial data at a time
+						//Note: Must type cast the Serial.Read to a char since not saving it to a char type first					
 						
+						roverGps->appendToRxGPSData((char)Serial3.read());//construct the string one char at a time
+															 //DEBUG: Add as needed
+						counter++;
+						delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
+	
+
+				}//end while
+						
+
 
 				//Process and validate GPS Data
 				validGpsData = roverGps->processRxGPSData();
