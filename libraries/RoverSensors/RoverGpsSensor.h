@@ -12,12 +12,12 @@
 
 
 //Uncomment debug flags below to use them
-#define _DEBUG_OUTPUT_PRE_FILTERED_RAW_RX_DATA
-#define _DEBUG_OUTPUT_PARSED_HEADER
-#define _DEBUG_OUTPUT_FILTERED_DATA_STATUS
-#define _DEBUG_OUTPUT_POST_FILTERED_RAW_RX_DATA
-#define _DEBUG_OUTPUT_PARSING_PROCESS
-#define _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
+//#define _DEBUG_OUTPUT_PRE_FILTERED_RAW_RX_DATA
+//#define _DEBUG_OUTPUT_PARSED_HEADER
+//#define _DEBUG_OUTPUT_FILTERED_DATA_STATUS
+//#define _DEBUG_OUTPUT_POST_FILTERED_RAW_RX_DATA
+//#define _DEBUG_OUTPUT_PARSING_PROCESS
+//#define _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
 
 
 
@@ -103,7 +103,7 @@ private:
 	//GPS Received Data
 	char _rxData[GPS_DATA_CHAR_BUFFER_SIZE];
 	//GPS Helper Variables		
-	char * _gpsDataArray[GPS_GPGGA_FIELDS];//array of character arrays, (max) field size is 14, but using only the first 8 fields for GPGGA (since sometimes the data gets corrupted and doesn't complete the transmission), from 0 to 7.
+	char _gpsDataArray[GPS_GPGGA_FIELDS][GPS_DATA_CHAR_BUFFER_SIZE];//array of character arrays, (max) field size is 14, but using only the first 8 fields for GPGGA (since sometimes the data gets corrupted and doesn't complete the transmission), from 0 to 7.
 	
 		
 };

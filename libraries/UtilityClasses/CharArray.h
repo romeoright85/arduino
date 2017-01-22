@@ -17,8 +17,11 @@ class CharArray {
 		~CharArray();//destructor
 		static int indexOf(char *, byte, char, byte);//Index Of - With start index provided (charArray, array size, char to find, start index), where array size is typically: sizeof(charArray) / sizeof(charArray[0])
 		static int indexOf(char *, byte, char);//Index Of - With no start index provided (charArray, array size, char to find), where array size is typically: sizeof(charArray) / sizeof(charArray[0])
-		static char * substring(char * , byte, byte );//Substring - With no start index provided (charArray, startIndex, endIndex)
-		static char * substring(char * , byte );//Substring - With no start index provided (charArray, endIndex)
+				
+		static void substring(char *, byte, byte, byte, char *);//With End Index (input char array, array size, start index, end index, output char array)
+		static void substring(char *, byte, byte, char *);//With No End Index, goes to the end of the array or to the terminating character (input char array, array size, start index, output char array)
+		
+		
 		static int stringSize(char *, byte );//(charArray, array size) finds the number of characters until it reaches the first null character. The count includes the null character in the count.
 		
 	private:

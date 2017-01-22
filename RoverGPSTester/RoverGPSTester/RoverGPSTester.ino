@@ -6,13 +6,13 @@
 #define _DEBUG_PARSING_WITH_FIXED_DATA
 //Uncomment to customize output data
 #define _OUTPUT_STARTING_BLANK_LINE
-//#define _OUTPUT_SENTENCE_ID
+#define _OUTPUT_SENTENCE_ID
 #define _OUTPUT_DATA_FIX_TIME
 #define _OUTPUT_LATITUDE
 #define _OUTPUT_LONGITUDE
 #define _OUTPUT_FIX_QUALITY
 #define _OUTPUT_SATELLITES_TRACKED
-#define _OUTPUT_GOOGLE_MAPS
+//#define _OUTPUT_GOOGLE_MAPS
 #define _OUTPUT_DATA_NOT_READY_STATUS
 
 
@@ -138,10 +138,10 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 	byte counter;
 
 
-
+#ifndef _DEBUG_PARSING_WITH_FIXED_DATA
 	while (numberOfAttempts <= GPS_RX_DATA_ATTEMPTS)
 	{
-		#ifndef _DEBUG_PARSING_WITH_FIXED_DATA
+	
 		//Check availabiltiy of serial data
 		if (Serial3.available() )
 		{	
@@ -197,61 +197,36 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 		}//end if
 		//else if there is no serial data available do nothing, go to the next trial
 
-
-		#else
-
-			char debugFixedData[] = "GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B";
-			roverGps->setRxGPSData(debugFixedData, sizeof(debugFixedData)/sizeof(debugFixedData[0]));
-			
-			Serial.print(F("Set to: "));//DEBUG
-			Serial.println(roverGps->getRxGPSData());//DEBUG			
-
-
-			//Process and validate GPS Data
-			validGpsData = roverGps->processRxGPSData();
-
-
-			//If the received gps data is valid, return validGpsData and exit out of this function (no more trial attempts needed)
-			if (validGpsData)
-			{
-				return validGpsData;
-			}
-			//else the GPS data was invalid, so make another attempt to find valid GPS data				
-
-		#endif	
-
-
-
 		//Increment trial counter
 		numberOfAttempts++;
 
 	}//end while
-	//Reached the max attempts to receive valid GPS Data
+
+	 //Reached the max attempts to receive valid GPS Data
 	return validGpsData;//If the code has reached this point, this value will be false. No valid GPS data found, and max attempts to find it has been reached.
+
+#else
+
+	char debugFixedData[] = "GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B";
+	roverGps->setRxGPSData(debugFixedData, sizeof(debugFixedData) / sizeof(debugFixedData[0]));
+
+	Serial.print(F("Set to: "));//DEBUG
+	Serial.println(roverGps->getRxGPSData());//DEBUG			
+
+
+	//Process and validate GPS Data
+	validGpsData = roverGps->processRxGPSData();
+
+	
+
+	//If the received gps data is valid, return validGpsData and exit out of this function (no more trial attempts needed)
+	if (validGpsData)
+	{
+		return validGpsData;
+	}
+	//else the GPS data was invalid, so make another attempt to find valid GPS data				
+
+#endif	
+
+	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -44,47 +44,69 @@ int CharArray::indexOf(char * array, byte arraySize, char charToFind)
 }
 
 
-
-
-
-//Substring - With no start index provided
-char * CharArray::substring(char * charArray, byte startIndex, byte endIndex)
+void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex, byte endIndex, char * outputCharArray)
 {
 	
-	byte tempIndex;
-	byte size;
-	char * tempCharArray;
+	//Note: arraySize not used, but kept, in order to do function overloading
 	
-	//startIndex should be smaller (before) the endIndex. Else swap the numbers if the user input them in wrong
-	if(startIndex > endIndex)
-	{		
+	char tempCharArray[arraySize];
+		
+	byte j = 0;	
+	byte tempIndex = 0;
+	
+	//do a swap if the start and end indices are in the wrong order
+	if(endIndex < startIndex)
+	{
 		tempIndex = endIndex;
 		endIndex = startIndex;
 		startIndex = tempIndex;
 	}
+		
 	
-	size = endIndex - startIndex;
-	tempCharArray = (char*)malloc(size * sizeof(char));
-	strncpy(tempCharArray, charArray + startIndex, size * sizeof(char));
-	tempCharArray[size * sizeof(char)] = 0;
-	return tempCharArray;
+	//make a copy of the input array, just in case it is also used as the output array, this allows it to be read and write to at the same time
+	strncpy(tempCharArray, inputCharArray, arraySize);
+	
+	
+	
+	for(byte i = startIndex; i < endIndex; i++)
+	{
+		outputCharArray[j] = tempCharArray[i];
+		j++;
+	}
+	outputCharArray[j] = '\0';
+	return;
 }
-//Substring - With no start index provided
-char * CharArray::substring(char * charArray, byte endIndex)
+void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex, char * outputCharArray)
 {
 	
-	byte size;
-	char * tempCharArray;
+	char tempCharArray[arraySize];
+		
+		
+	byte j = 0;	
+	byte endIndex = arraySize;
+	byte tempIndex = 0;
 	
-	size = endIndex;
-	tempCharArray = (char*)malloc(size * sizeof(char));
-	strncpy(tempCharArray, charArray, size * sizeof(char));
-	tempCharArray[size * sizeof(char)] = 0;
-	return tempCharArray;
+	//do a swap if the start and end indices are in the wrong order
+	if(endIndex < startIndex)
+	{
+		tempIndex = endIndex;
+		endIndex = startIndex;
+		startIndex = tempIndex;
+	}
+		
+		
+	//make a copy of the input array, just in case it is also used as the output array, this allows it to be read and write to at the same time
+	strncpy(tempCharArray, inputCharArray, arraySize);
+		
 
+	for(byte i = startIndex; i <endIndex; i++)
+	{
+		outputCharArray[j] = tempCharArray[i];
+		j++;
+	}
+	outputCharArray[j] = '\0';
+	return;	
 }
-
-
 
 
 
@@ -100,6 +122,7 @@ int CharArray::stringSize(char * charArray, byte arraySize)
 	{
 		if(charArray[i] == '\0')
 		{
+			i++;//add one more for the null character
 			return i;
 		}
 	}
