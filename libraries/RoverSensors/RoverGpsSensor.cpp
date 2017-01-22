@@ -35,7 +35,7 @@ void RoverGpsSensor::appendToRxGPSData(char dataIn)
 }
 void RoverGpsSensor::setRxGPSData(char * dataString, byte arraySize)
 {			
-	strncpy(this->_rxData, dataString, arraySize);		
+	strncpy(this->_rxData, dataString, arraySize);
 }
 
 char * RoverGpsSensor::getRxGPSData()
@@ -53,21 +53,49 @@ boolean RoverGpsSensor::processRxGPSData()
 	//Example Raw Data: $GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B
 	//Example Data Received by this function: GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B	
 		
+
 	
 	#ifdef _DEBUG_OUTPUT_PRE_FILTERED_RAW_RX_DATA
 		Serial.println(this->_rxData);//DEBUG	
 	#endif
 
+		
+
 
 	//Initialize variable(s)		
 	this->clearGpsDataArray();
 	byte startIndex = 0;
-	byte endIndex = 0;		
+	byte endIndex = 0;
+	int stringSize = 0;	
+	char dataStringToParse[GPS_DATA_CHAR_BUFFER_SIZE];
 	
+
+	stringSize = CharArray::stringSize(this->_rxData, sizeof(this->_rxData)/sizeof(this->_rxData[0]));
+
+	//if no null terminated character found, it's a bad string so end the function
+	if( stringSize < 0)
+	{
+Serial.println(F("HELLO3"));	//DEBUG
+
+		
+		this->clearRxGpsDataString();//clear the gps data
+		return false;//do nothing if the data isn't desired
+	}
+	
+
+
+	//Make a copy of the data char array. This copy will be manipulated.	
+	strncpy(dataStringToParse, this->_rxData, stringSize);	//copy rxData to the temp buffer char array dataStringToParse
+	
+Serial.println(F("HELLO7"));	//DEBUG	
+
+
 	//==Data Filtering==
 	//Note: Only keep and process GPGGA data. Ignore everything else.
-	if (!dataPassedFiltering(this->_rxData, sizeof(this->_rxData)/sizeof(this->_rxData[0])))
+	if ( !dataPassedFiltering(dataStringToParse, stringSize) )
 	{
+Serial.println(F("HELLO4"));	//DEBUG
+		
 		#ifdef _DEBUG_OUTPUT_FILTERED_DATA_STATUS
 			Serial.println(F("Filtered Out"));
 		#endif
@@ -78,17 +106,15 @@ boolean RoverGpsSensor::processRxGPSData()
 	//else continue
 
 	#ifdef _DEBUG_OUTPUT_POST_FILTERED_RAW_RX_DATA
-		Serial.println(this->_rxData);//DEBUG	
+		Serial.println(dataStringToParse);//DEBUG	
 	#endif
+
 	
+	
+Serial.println(F("HELLO2"));	//DEBUG
+
+
 		
-	//Make a copy of the data char array. This copy will be manipulated.
-	
-	
-	//char * dataStringToParse[GPS_DATA_CHAR_BUFFER_SIZE];
-	char * dataStringToParse;
-	
-	strncpy(dataStringToParse, this->_rxData, sizeof(this->_rxData)/sizeof(this->_rxData[0]));	//copy rxData to the temp buffer char array dataStringToParse
 			
 					
 	//==Parsing and extracting the GPS GPGGA data==
@@ -99,11 +125,17 @@ boolean RoverGpsSensor::processRxGPSData()
 	//Example Data Received by this function: GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B	
 	
 	
-
 	//Parse and extract the GPS data string for GPGGA
 	for (byte i = 0; i < GPS_GPGGA_FIELDS; i++) 
 	{
-		endIndex = CharArray::indexOf(dataStringToParse, sizeof(dataStringToParse) / sizeof(dataStringToParse[0]), ',', startIndex);
+		
+		endIndex = CharArray::indexOf(dataStringToParse, stringSize, ',', startIndex);
+		
+		//if no comma found, the function would have returned a -1, so break out of the for loop early when a -1 was found
+		if( endIndex < 0)
+		{
+			break;
+		}
 			
 		this->_gpsDataArray[i] = CharArray::substring(dataStringToParse, startIndex, endIndex);//grab the substring the start and the first commas (for the first field) or the substring between two commas
 				
@@ -117,8 +149,11 @@ boolean RoverGpsSensor::processRxGPSData()
 			Serial.print(F("Parsed Data: "));//DEBUG
 			Serial.println(this->_gpsDataArray[i]);//DEBUG
 		#endif			
-					
+				
+				
 		dataStringToParse = CharArray::substring(dataStringToParse, endIndex + 1);//prepare the data for the next interation of the loop by skipping over the current comma
+		
+		
 		
 	}//end for
 
@@ -232,10 +267,11 @@ boolean RoverGpsSensor::dataPassedFiltering(char * gpsRxdData, byte arraySize)
 	byte startIndex = 0;
 	byte endIndex = 0;
 	char * tempString;
+	
 
 	//GPS Sentence ID (i.e. GPGGA )
 	//Search for the first comma
-	endIndex = CharArray::indexOf(gpsRxdData, arraySize, startIndex);
+	endIndex = CharArray::indexOf(gpsRxdData, arraySize, ',');
 
 
 	//Grab the GPS Sentence ID
@@ -259,6 +295,3 @@ boolean RoverGpsSensor::dataPassedFiltering(char * gpsRxdData, byte arraySize)
 		return false;
 	}//end else
 }
-
-
-

@@ -84,11 +84,18 @@ public:
 	byte getGpsSatellitesTracked();//returns the number of gps satellites being tracked	
 	char * getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format
 	
+	
+//	char _rxData[GPS_DATA_CHAR_BUFFER_SIZE];//DEBUG
+
+	
 private:
 	//Non-SW Resettable
 	void clearGpsDataArray();//clears the GPS Helper Variables
 	void clearRxGpsDataString();//clears the _rxData string
 	boolean dataPassedFiltering(char *, byte);//(input: received GPS data, array size) returns true if the data passes the filtering (only GPGGA is passed through, everything else is discarded).
+	
+	
+
 
 	//SW Resettable
 	//Flags
