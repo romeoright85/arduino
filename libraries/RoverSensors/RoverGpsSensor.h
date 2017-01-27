@@ -12,12 +12,12 @@
 
 
 //Uncomment debug flags below to use them
-#define _DEBUG_OUTPUT_PRE_FILTERED_RAW_RX_DATA
-#define _DEBUG_OUTPUT_PARSED_HEADER
-#define _DEBUG_OUTPUT_FILTERED_DATA_STATUS
-#define _DEBUG_OUTPUT_POST_FILTERED_RAW_RX_DATA
-#define _DEBUG_OUTPUT_PARSING_PROCESS
-#define _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
+//#define _DEBUG_OUTPUT_PRE_FILTERED_RAW_RX_DATA
+//#define _DEBUG_OUTPUT_PARSED_HEADER
+//#define _DEBUG_OUTPUT_FILTERED_DATA_STATUS
+//#define _DEBUG_OUTPUT_POST_FILTERED_RAW_RX_DATA
+//#define _DEBUG_OUTPUT_PARSING_PROCESS
+//#define _DEBUG_OUTPUT_PARSED_GPS_DATA_ARRAY
 
 
 
@@ -91,7 +91,7 @@ public:
 private:
 	//Non-SW Resettable
 	void clearGpsDataArray();//clears the GPS Helper Variables
-	void clearRxGpsDataString();//clears the _rxData string
+	void clearRxGpsVariables();//clears the _rxData string
 	boolean dataPassedFiltering(char *, byte);//(input: received GPS data, array size) returns true if the data passes the filtering (only GPGGA is passed through, everything else is discarded).
 	
 	
@@ -100,6 +100,7 @@ private:
 	//SW Resettable
 	//Flags
 	boolean _validChecksum;	
+	byte _rxdCharacterIndex;//tracks how many characters was received for array indexing
 	//GPS Received Data
 	char _rxData[GPS_DATA_CHAR_BUFFER_SIZE];
 	//GPS Helper Variables		

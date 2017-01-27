@@ -17,23 +17,33 @@ void RoverGpsSensor::reset()
 	//GPS Helper Variables	
 	this->clearGpsDataArray();
 	//GPS Received Data	
-	this->clearRxGpsDataString();
+	this->clearRxGpsVariables();
 	
 }
 void RoverGpsSensor::clearGpsDataArray()
 {	
 	memset(this->_gpsDataArray,0,sizeof(this->_gpsDataArray));	
 }
-void RoverGpsSensor::clearRxGpsDataString()
+void RoverGpsSensor::clearRxGpsVariables()
 {
+	
+	this->_rxdCharacterIndex = 0;
 	
 	memset(this->_rxData,0,sizeof(this->_rxData));		
 }
 void RoverGpsSensor::appendToRxGPSData(char dataIn)
 {	
-	//sprintf(this->_rxData, "%s%s", this->_rxData, dataIn);
-
-	strcat (this->_rxData, &dataIn);	
+		
+	if(this->_rxdCharacterIndex <= GPS_DATA_CHAR_BUFFER_SIZE)//make sure there is no buffer overflow
+	{
+		this->_rxData[this->_rxdCharacterIndex] = dataIn;
+		this->_rxdCharacterIndex++;//move the cursor to the next position in the array		
+	}
+	else
+	{
+		Serial.println(F("BuffOvrFlw"));
+	}
+	
 	
 }
 void RoverGpsSensor::setRxGPSData(char * dataString, byte arraySize)
@@ -81,7 +91,7 @@ boolean RoverGpsSensor::processRxGPSData()
 	if( stringSize < 0)
 	{
 		
-		this->clearRxGpsDataString();//clear the gps data
+		this->clearRxGpsVariables();//clear the gps data
 		return false;//do nothing if the data isn't desired
 	}
 	
@@ -102,7 +112,7 @@ boolean RoverGpsSensor::processRxGPSData()
 			Serial.println(F("Filtered Out"));
 		#endif
 		
-		this->clearRxGpsDataString();//clear the gps data
+		this->clearRxGpsVariables();//clear the gps data
 		return false;//do nothing if the data isn't desired
 	}//end if
 	//else continue
@@ -172,18 +182,16 @@ boolean RoverGpsSensor::processRxGPSData()
 
 	#endif
 
+	//Clear the GPS data string for future use
+	this->clearRxGpsVariables();
 	
 	//Return from the function if the GPS data is invalid (status is extracted from the parsed GPS data) or the GPS checksum is invalid
 	if(!this->isGpsDataValid())
 	{
-		//End the function if the GPS data in not valid
-		this->clearRxGpsDataString();//clear the gps data
 		return false;
 	}//end if
 	else
-	{
-		//Clear the GPS data string for future use
-		this->clearRxGpsDataString();
+	{	
 		return true;
 	}//end else					
 	
