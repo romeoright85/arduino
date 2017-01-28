@@ -9,11 +9,11 @@ RoverData::~RoverData()
 {
 	//do nothing
 }
-void RoverData::setData(String dataString)
-{	
-	this->_dataString = dataString;
+void RoverData::setData(char * dataString, byte arraySize)
+{		 
+	strncpy(this->_dataString, dataString, arraySize);
 }
-String RoverData::getData()
+char * RoverData::getData()
 {	
 	return this->_dataString;
 }
@@ -29,9 +29,13 @@ void RoverData::setCommType(byte roverCommType)
 void RoverData::reset()
 {	
 	this->_roverCommType = ROVERCOMM_NONE;
-	this->_dataString = "";
+	this->clearData();
 }
 void RoverData::clearData()
-{	
-	this->_dataString = "";	
+{		 
+	memset(this->_dataString,0,sizeof(this->_dataString));	
+}
+byte RoverData::getDataLength()
+{		 
+	return sizeof(this->_dataString);
 }

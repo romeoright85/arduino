@@ -74,6 +74,8 @@
 		double getTempValueOf(byte, double);//returns the temperature value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
 		int getGasValueOf(MqGasSensor *);//(MqGasSensor object) Returns the ppm of the target gas of the MqGasSensor object (Note: the ppm can be greater than 255, so return int instead of byte).
 			//Note: Make sure to check for analogSignals->gasSensorIsCalibrated() to be true before using values from the getGasValueOf()
+		char * getMqGasSensorName(MqGasSensor *);//prints the MQ Gas Sensor's Name
+		char * getMqGasSensorUnit(MqGasSensor *);//prints the MQ Gas Sensor's Unit			
 		boolean gasSensorIsCalibrated();//Returns true when the gas sensor has warmed up and is calibrated.
 		boolean gasSensorDoneReading();//Returns true when the gas sensor is done reading.
 		void readGasSensor(MqGasSensor *, DelayCounter *);//(MqGasSensor object, delay counter object) Returns the sensing resistance. Samples are taken by reading the MQ Gas sensor based on values set by GAS_SENSOR_READ_SAMPLE_INTERVAL and GAS_SENSOR_READ_SAMPLE_TIMES.  The DelayCounter object is used for delays in between sampling.	

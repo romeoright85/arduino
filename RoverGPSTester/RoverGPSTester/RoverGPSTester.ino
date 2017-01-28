@@ -13,7 +13,7 @@
 #define _OUTPUT_FIX_QUALITY
 #define _OUTPUT_SATELLITES_TRACKED
 #define _OUTPUT_GOOGLE_MAPS
-#define _OUTPUT_DATA_NOT_READY_STATUS
+//#define _OUTPUT_DATA_NOT_READY_STATUS
 
 
 //Global Variables
@@ -167,7 +167,7 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 				counter = 0;
 
 				//Gather the rest of the GPS String (AFTER the $, so $ is not included)
-				while ( Serial3.available() && Serial.peek() != '$' && counter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
+				while ( Serial3.available() && Serial3.peek() != '$' && counter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
 				{
 	
 			

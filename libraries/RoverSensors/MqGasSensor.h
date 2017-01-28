@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include <RoverDebug.h>
 #include <RoverReset.h>
-#include <string.h>
+
 
 
 
@@ -72,12 +72,17 @@ public:
 	float getReadSum();//used for MQ sensor reads. Returns the number of samples that have been taken.
 	void setReadRuns(byte);//(the value to set the sample runs at) used for MQ sensor reads. Keeps track of the number of samples that have been taken.
 	byte getReadRuns();//used for MQ sensor reads. Returns the accumulated/sum value use for averaging.
+	char * getMqGasSensorName();//print _mqGasSensorName string
+	char * getMqGasSensorUnit();//print _mqGasSensorUnit string
+	byte getMqGasSensorNameLength();//get length of _mqGasSensorName string
+	byte getMqGasSensorUnitLength();//get length of _mqGasSensorUnit string
+	
 	
 private:
 	//Non-SW Resettable		
 	float _mqGasSensorDataCurve[3];//need to make this variable public so the array data can be read from	
-	String _mqGasSensorName;//holds the string of the mq sensor's name
-	String _mqGasSensorUnit;//holds the string of the mq sensor's unit	
+	char _mqGasSensorName[MQ_SENSOR_NAME_BUFFER_SIZE];//holds the string of the mq sensor's name
+	char _mqGasSensorUnit[MQ_SENSOR_UNIT_BUFFER_SIZE];//holds the string of the mq sensor's unit	
 	byte _mqGasSensorType;//holds the sensor type.
 	float _mqGasSensorR0CleanAirFactor;
 	double _mqGasSensorFixedResistorValue;

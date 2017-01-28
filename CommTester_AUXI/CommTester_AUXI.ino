@@ -138,11 +138,11 @@ void loop() {
 	//Note: The debug code below varies for different Arduinos
 	//DEBUG Code: Data Injection (from MAIN to AUXI)	
 	#ifdef _DEBUG_IMU_TEST_CASE_
-		roverAuxi_Ch1->setRxData("!ANG:1.23,4.56,78.90");
+		roverAuxi_Ch1->setRxData("!ANG:1.23,4.56,78.90", sizeof("!ANG:1.23,4.56,78.90"));
 		dataReadyCh1 = true;
 	#endif
 	#ifdef _DEBUG_ROVER_TEST_CASE_		
-		roverAuxi_Ch1->setRxData("/4c301*HelloMAINtoAUXI");
+		roverAuxi_Ch1->setRxData("/4c301*HelloMAINtoAUXI", sizeof("/4c301*HelloMAINtoAUXI");
 		dataReadyCh1 = true;
 	#endif
 
@@ -179,7 +179,7 @@ void loop() {
 		{
 
 			//send the RoverData to the roverCommand's parser to get the command
-			roverCommand->parseCommand(roverDataCh1_AUXI->getData());
+			roverCommand->parseCommand(roverDataCh1_AUXI->getData(), roverDataCh1_AUXI->getDataLength());
 			commandDirector(roverCommand->getCommand());
 		}
 	}
@@ -204,7 +204,7 @@ void loop() {
 		{
 
 			//send the RoverData to the roverCommand's parser to get the command
-			roverCommand->parseCommand(roverDataCh2_AUXI->getData());
+			roverCommand->parseCommand(roverDataCh2_AUXI->getData(), roverDataCh2_AUXI->getDataLength());
 			commandDirector(roverCommand->getCommand());
 		}
 	}
@@ -220,7 +220,7 @@ void loop() {
 }//end loop
 
 
-
+///////////////////FIX ME STRING TO CHAR ARRAY BELOW////////////////
 
 
 boolean rxData(RoverComm * roverComm, byte roverCommType) {
@@ -233,8 +233,9 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
-//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+//FIXME				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
+//FIXME, use the gps code's method for appending data
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
 			return true;
 		}//end if
@@ -252,8 +253,9 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)Serial2.read());//construct the string one char at a time
-//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+//FIXME				roverComm->appendToRxData((char)Serial2.read());//construct the string one char at a time
+//FIXME, use the gps code's method for appending data
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
 			return true;
 		}//end if
@@ -306,7 +308,7 @@ void dataDirector(RoverData * roverData)
 	return;
 }
 
-void txData(String txData, byte roverCommType)
+void txData(char * txData, byte roverCommType)
 {
 	//Note: This function varies for different Arduinos
 
@@ -327,18 +329,20 @@ void txData(String txData, byte roverCommType)
 	}//end else
 }
 
-void commandDirector(String roverCommand)
+void commandDirector(char * roverCommand)
 {
 	//Note: This function varies for different Arduinos
 
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
-	if (roverCommand.equals("hi"))
+
+
+//FIXME	if (roverCommand.equals("hi"))
 	{
 		txData(F("Valid Cmd! =)"), ROVERCOMM_AUXI);
 		txData(F("Rx'd:"), ROVERCOMM_AUXI);
 		txData(roverCommand, ROVERCOMM_AUXI);
 	}
-	else if (roverCommand.equals("bye"))
+//FIXME	else if (roverCommand.equals("bye"))
 	{
 		txData(F("Valid Cmd! =)"), ROVERCOMM_AUXI);
 		txData(F("Rx'd:"), ROVERCOMM_AUXI);

@@ -56,11 +56,12 @@
 #ifndef _ROVERDATA_H
 #define _ROVERDATA_H
 #define _ROVERCOMMTYPES 
+#define _ROVERDATA
+
 	
 	#include <Arduino.h>
 	#include <RoverDebug.h>
-	#include <RoverReset.h>
-	#include <String.h>
+	#include <RoverReset.h>	
 	#include <RoverConfig.h>
 	
 
@@ -72,13 +73,14 @@
 		byte getCommType();//returns the RoverComm Type
 		void setCommType(byte);//set the RoverComm type
 		
-		void setData(String);//save the data string in _dataString
+		void setData(char *, byte);//save the data string in _dataString (charArray, array size)		
 		void clearData();//clear the stored data in _dataString
-		String getData();//retrieve the data string
+		char * getData();//retrieve the _dataString
+		byte getDataLength();//retrieve the _dataString length
 		
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)		
 	private:		
-		String _dataString;//holds the data string
+		char _dataString[ROVER_DATA_BUFFER_SIZE];//holds the data string
 		byte _roverCommType;
 	};
 

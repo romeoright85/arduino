@@ -16,8 +16,8 @@ void setup()
 
 void loop()
 {	
-
-
+	
+	
 
 	strncpy(charArray, "hello", strlen("hello")+1);
 	sandboxObject->write(charArray, sizeof(charArray)/sizeof(charArray[0]));

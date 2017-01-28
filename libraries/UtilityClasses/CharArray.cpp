@@ -107,14 +107,6 @@ void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex
 	outputCharArray[j] = '\0';
 	return;	
 }
-
-
-
-
-
-
-
-
 int CharArray::stringSize(char * charArray, byte arraySize)
 {
 	
@@ -129,3 +121,32 @@ int CharArray::stringSize(char * charArray, byte arraySize)
 	return -1;//if not found
 }	
 
+
+
+void CharArray::LTrim(char * charArray)
+{
+	//Reference: http://stackoverflow.com/questions/11401609/is-memmove-necessary-for-trim-function-in-c
+  char *ptr;
+  int len;
+
+  for (ptr = charArray; *ptr && isspace((int)*ptr); ++ptr);
+
+  len = strlen(ptr);
+  memmove(charArray, ptr, len + 1);
+
+}
+
+void CharArray::RTrim(char* charArray)
+{
+	//Reference: http://stackoverflow.com/questions/25345598/c-implementation-to-trim-char-array-of-leading-trailing-white-space-not-workin
+	int i = strlen(charArray);
+	while (' ' == charArray[--i]) charArray[i] = 0;	
+}
+
+void CharArray::Trim(char* charArray)
+{	
+	//Reference: http://stackoverflow.com/questions/25345598/c-implementation-to-trim-char-array-of-leading-trailing-white-space-not-workin
+	LTrim(charArray);
+	RTrim(charArray);
+	//return charArray;
+}

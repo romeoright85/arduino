@@ -41,12 +41,27 @@
 		#define GAS_SENSOR_CURVE_Y			1
 		#define GAS_SENSOR_CURVE_SLOPE	2
 		
-		
+		//Char Array Sizes		
+		#define MQ_SENSOR_NAME_BUFFER_SIZE 50
+		#define MQ_SENSOR_UNIT_BUFFER_SIZE 15
 
 	#endif	
 
+	//definition for Rover Data
+	#ifdef _ROVERDATA
+		//Char Array Sizes				
+		#define ROVER_DATA_BUFFER_SIZE		120				
+	#endif
 
-	
+	//definition for Character Buffer Array Sizes
+	#ifdef _CHAR_BUFFER_ARRAY_SIZES
+		//Char Array Sizes		
+		#define BUFFER_SIZE_1		1
+		#define BUFFER_SIZE_4		4		
+	#endif
+
+
+		
 	//definition for UpTime
 	#ifdef _UPTIME_DEFINITIONS
 		//value was arbitrarily chosen to be somewhat near the max value for millis() of 4,294,967,295 but not too close to the max to account for any loop delay

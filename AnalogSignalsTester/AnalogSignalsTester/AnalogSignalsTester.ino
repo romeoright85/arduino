@@ -284,7 +284,7 @@ void loop() {
 		//Ch 0
 		val = analogSignals->getRawADCValueOf(GAS_BEACONCCA_RIGHTPOINTING);
 		Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_RAW: "));
-		Serial.println(val);
+		Serial.println(val);		
 
 		//only output the MQ gas sensor actual values once the MQ sensor has warmed up for at least 3 minutes and is calibrated
 		if (analogSignals->gasSensorIsCalibrated())
@@ -299,13 +299,17 @@ void loop() {
 			{				
 				val = analogSignals->getGasValueOf(mqGasSensor);
 				Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (new): "));				
-				Serial.println(val);
+				Serial.print(val);
+				Serial.print(F(" "));//add a space
+				Serial.println(analogSignals->getMqGasSensorUnit(mqGasSensor));
 			}	
 			else
 			{
 				val = analogSignals->getGasValueOf(mqGasSensor);
 				Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (old): "));				
-				Serial.println(val);				
+				Serial.print(val);				
+				Serial.print(F(" "));//add a space
+				Serial.println(analogSignals->getMqGasSensorUnit(mqGasSensor));
 			}
 			
 		}

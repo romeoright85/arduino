@@ -72,26 +72,28 @@ public:
 	void appendToRxGPSData(char );//append a char to the _rxData string
 	void setRxGPSData(char *, byte);//used for debugging, sets the _rxData string to a value (charArray, array size)
 	char * getRxGPSData();//print _rxData string
+	byte getRxGPSDataLength();//returns the length of the corresponding string
 	boolean processRxGPSData();//processes/parses the received gps _rxData string. Returns true if the data is valid
 	boolean isGpsDataValid();//Checks the GPS Status and the Fix Quality to see if the data is valid. Usually ran internal to the class (privately), but can be ran outside the class if needed (publicly).
 	char * getGpsSentenceId();//returns the GPS sentence ID
+	byte getGpsSentenceIdLength();//returns the length of the corresponding string
 	double getGpsTimeWhenDataWasFixed();//returns the time the data was fixed	
 	double getGpsLatitude();//returns the gps latitude
 	char *  getGpsLatitudeDirection();//returns the gps latitude direction	
+	byte getGpsLatitudeDirectionLength();//returns the length of the corresponding string
 	double getGpsLongitude();//returns the gps longitude
 	char * getGpsLongitudeDirection();//returns the gps longitude direction	
+	byte getGpsLongitudeDirectionLength();//returns the length of the corresponding string
 	byte getGpsFixQuality(); //returns the gps fix quality (gps fix quality types defined in RoverConfig)
 	byte getGpsSatellitesTracked();//returns the number of gps satellites being tracked	
 	char * getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format
-	
-	
-//	char _rxData[GPS_DATA_CHAR_BUFFER_SIZE];//DEBUG
-
+	byte getGoogleMapsCoordinatesLength();//returns the length of the corresponding string
+	void clearGoogleMapsCoordinates();//clears _googleMapsCoordinates
 	
 private:
 	//Non-SW Resettable
 	void clearGpsDataArray();//clears the GPS Helper Variables
-	void clearRxGpsVariables();//clears the _rxData string
+	void clearRxGpsVariables();//clears the _rxData string and index counter
 	boolean dataPassedFiltering(char *, byte);//(input: received GPS data, array size) returns true if the data passes the filtering (only GPGGA is passed through, everything else is discarded).
 	
 	
@@ -105,7 +107,7 @@ private:
 	char _rxData[GPS_DATA_CHAR_BUFFER_SIZE];
 	//GPS Helper Variables		
 	char _gpsDataArray[GPS_GPGGA_FIELDS][GPS_DATA_CHAR_BUFFER_SIZE];//array of character arrays, (max) field size is 14, but using only the first 8 fields for GPGGA (since sometimes the data gets corrupted and doesn't complete the transmission), from 0 to 7.
-	
+	char _googleMapsCoordinates[GPS_DATA_CHAR_BUFFER_SIZE];
 		
 };
 

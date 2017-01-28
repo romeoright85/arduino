@@ -585,3 +585,12 @@ float RoverAnalogSignals::getAverageRead()
 {
 	return this->_averageRead;
 }
+char * RoverAnalogSignals::getMqGasSensorName(MqGasSensor * mqGasSensor)
+{
+	return mqGasSensor->getMqGasSensorName();
+}
+char * RoverAnalogSignals::getMqGasSensorUnit(MqGasSensor * mqGasSensor)
+{
+	return mqGasSensor->getMqGasSensorUnit();
+}
+
