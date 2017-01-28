@@ -74,9 +74,9 @@ RoverCommand * roverCommand = new RoverCommand();
 //SW resettable variables
 //flag for data for this Arduino
 boolean dataWasForAUXI;
-//flags for data ready
-boolean dataReadyCh1;//for PC USB
-boolean dataReadyCh2;//for MAIN
+//flags for valid data ready
+boolean ch1Valid;//for PC USB
+boolean ch2Valid;//for MAIN
 
 
 
@@ -101,8 +101,8 @@ void setup() {
 	}
 	//Reset flags
 	dataWasForAUXI = false;
-	dataReadyCh1 = false;
-	dataReadyCh2 = false;
+	ch1Valid = false;
+	ch2Valid = false;
 
 
 	//Setup the HW_UART
@@ -116,22 +116,19 @@ void setup() {
 
 void loop() {
 
+	//Reset flags
+	ch1Valid = false;
+	ch2Valid = false;
 
-	//reset flags
-	dataReadyCh1 = false;
-	dataReadyCh2 = false;
+	//1. Receive and process data
 
+	//1a. receive and process data from PC USB
+	roverDataCh1_AUXI->clearData();//clear data before getting new data, though validateData() also needs to be called
+	ch1Valid = rxData(roverAuxi_Ch1, ROVERCOMM_PC_USB);
 
-
-	//1. receive all data first
-
-	//1a. receive data from PC USB
-	roverDataCh1_AUXI->clearData();//clear data before getting new data
-	dataReadyCh1 = rxData(roverAuxi_Ch1, ROVERCOMM_PC_USB);
-
-	//1b. receive data from MAIN
+	//1b. receive and process data from MAIN
 	roverDataCh2_AUXI->clearData();//clear data before getting new data
-	dataReadyCh2 = rxData(roverAuxi_Ch2, MAIN_BAUD_RATE);
+	ch2Valid = rxData(roverAuxi_Ch2, MAIN_BAUD_RATE);
 
 
 
@@ -139,45 +136,29 @@ void loop() {
 	//DEBUG Code: Data Injection (from MAIN to AUXI)	
 	#ifdef _DEBUG_IMU_TEST_CASE_
 		roverAuxi_Ch1->setRxData("!ANG:1.23,4.56,78.90", sizeof("!ANG:1.23,4.56,78.90"));
-		dataReadyCh1 = true;
+		ch1Valid = true;
 	#endif
 	#ifdef _DEBUG_ROVER_TEST_CASE_		
 		roverAuxi_Ch1->setRxData("/4c301*HelloMAINtoAUXI", sizeof("/4c301*HelloMAINtoAUXI");
-		dataReadyCh1 = true;
+		ch1Valid = true;
 	#endif
 
 
-	//2. process data	
-
-	//2a. process received data from PC USB
-	if (dataReadyCh1)
-	{
-		roverAuxi_Ch1->validateData();
-	}
-
-	//2b. process received data from MAIN
-	if (dataReadyCh2)
-	{
-		roverAuxi_Ch2->validateData();
-	}
 
 
+  //2. Transmit data and/or execute command
 
-
-	//3a. For data from PC USB, transmit the data to it's proper destination if it was meant for another Arduino
+	//2a. For data from PC USB, transmit the data to it's proper destination if it was meant for another Arduino
 	//		or take any actions if the data was meant for this unit, AUXI
-	if (roverAuxi_Ch1->isDataValid() && dataReadyCh1)
+	if (ch1Valid)
 	{
-
-
+		
 		//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
 		dataDirector(roverDataCh1_AUXI);//Note: this is a local .ino function
 
-
-		//if the data was for this unit
+				//if the data was for this unit
 		if (dataWasForAUXI)
 		{
-
 			//send the RoverData to the roverCommand's parser to get the command
 			roverCommand->parseCommand(roverDataCh1_AUXI->getData(), roverDataCh1_AUXI->getDataLength());
 			commandDirector(roverCommand->getCommand());
@@ -189,12 +170,11 @@ void loop() {
 	}
 
 
-	//3b. For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+	//2b. For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
 	//		or take any actions if the data was meant for this unit, AUXI
-	if (roverAuxi_Ch2->isDataValid() && dataReadyCh2)
+	if (ch2Valid)
 	{
-
-
+		
 		//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
 		dataDirector(roverDataCh2_AUXI);//Note: this is a local .ino function
 
@@ -202,7 +182,6 @@ void loop() {
 		//if the data was for this unit
 		if (dataWasForAUXI)
 		{
-
 			//send the RoverData to the roverCommand's parser to get the command
 			roverCommand->parseCommand(roverDataCh2_AUXI->getData(), roverDataCh2_AUXI->getDataLength());
 			commandDirector(roverCommand->getCommand());
@@ -218,61 +197,77 @@ void loop() {
 
 
 }//end loop
-
-
-///////////////////FIX ME STRING TO CHAR ARRAY BELOW////////////////
-
-
 boolean rxData(RoverComm * roverComm, byte roverCommType) {
+
+	byte counter;
+	boolean dataReady = false;
+	boolean validData = false;
+
+
+	//Note: Make sure validateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
 	if (roverCommType == ROVERCOMM_PC_USB)
 	{
 
 		if (Serial.available() > 1)
 		{
-			while (Serial.available() > 0)//while there is data on the Serial RX Buffer
+			//initialize the counter
+			counter = 0;
+
+			while (Serial.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-//FIXME				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
-//FIXME, use the gps code's method for appending data
+				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
+				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
-			return true;
+			dataReady = true;
 		}//end if
 		else
 		{
-			return false;
+			dataReady = false;
 		}//end else
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{
-
 		if (Serial2.available() > 1)
 		{
-			while (Serial2.available() > 0)//while there is data on the Serial RX Buffer
+			//initialize the counter
+			counter = 0;
+
+			while (Serial2.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-//FIXME				roverComm->appendToRxData((char)Serial2.read());//construct the string one char at a time
-//FIXME, use the gps code's method for appending data
+				roverComm->appendToRxData((char)Serial2.read());//construct the string one char at a time
+				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
-			return true;
+			dataReady = true;
 		}//end if
 		else
 		{
-			return false;
+			dataReady = false;
 		}//end else
 	}//end if	
 	else
 	{
 		//invalid RoverComm Type, so do nothing
+		dataReady = false;
 	}//end else
 
 
+	//Process data received data
+	if (dataReady)
+	{
+		validData = roverComm->validateData();
+	}
+	else
+	{
+		validData = false;
+	}
 
-
-
+	return validData;
 }
 
 void dataDirector(RoverData * roverData)
@@ -335,27 +330,24 @@ void commandDirector(char * roverCommand)
 
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
 
-
-//FIXME	if (roverCommand.equals("hi"))
+	
+	if (strcmp(roverCommand, "hi") == 0)
 	{
-		txData(F("Valid Cmd! =)"), ROVERCOMM_AUXI);
-		txData(F("Rx'd:"), ROVERCOMM_AUXI);
+		txData("Valid Cmd! =)", ROVERCOMM_AUXI);
+		txData("Rx'd:", ROVERCOMM_AUXI);
 		txData(roverCommand, ROVERCOMM_AUXI);
 	}
-//FIXME	else if (roverCommand.equals("bye"))
+	else if (strcmp(roverCommand, "bye") == 0)
 	{
-		txData(F("Valid Cmd! =)"), ROVERCOMM_AUXI);
-		txData(F("Rx'd:"), ROVERCOMM_AUXI);
+		txData("Valid Cmd! =)", ROVERCOMM_AUXI);
+		txData("Rx'd:", ROVERCOMM_AUXI);
 		txData(roverCommand, ROVERCOMM_AUXI);
 	}
 	else
 	{
-		txData(F("Invalid Cmd! =("), ROVERCOMM_AUXI);
-		txData(F("Rx'd:"), ROVERCOMM_AUXI);
+		txData("Invalid Cmd! =(", ROVERCOMM_AUXI);
+		txData("Rx'd:", ROVERCOMM_AUXI);
 		txData(roverCommand, ROVERCOMM_AUXI);
-
-
-
 	}
 }
 

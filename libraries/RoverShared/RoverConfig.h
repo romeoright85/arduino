@@ -60,6 +60,8 @@
 		#define BUFFER_SIZE_4		4		
 	#endif
 
+	
+
 
 		
 	//definition for UpTime
@@ -95,11 +97,11 @@
 		
 		
 		//Char Array Sizes		
-		#define GPS_DATA_CHAR_BUFFER_SIZE 100
+		#define GPS_DATA_CHAR_BUFFER_SIZE 100//should be equal or greater than GPS_SENTENCE_LENGTH
 		//GPS Number of Attempts To Obtain A Valid Data String
 		#define GPS_RX_DATA_ATTEMPTS 	5
 		//GPS Number of Characters to receive while waiting for the start of the GPS data (i.e. $) before timing out
-		#define GPS_SENTENCE_LENGTH 	75
+		#define GPS_SENTENCE_LENGTH 	75//should match the same size as ROVER_COMM_SENTENCE_LENGTH
 		//GPS Header Types
 		#define GPS_GPGGA_SENTENCE_ID			"GPGGA"		
 		//GPS Data Index - GPGGA (holds the GPGGA GPS data)
@@ -162,9 +164,10 @@
 		#define WHITE_TAILLIGHT			5	
 	#endif
 		
-	//definition for RoverComm (which rover communication source/destination)
-	#ifdef _ROVERCOMMTYPES
-		//RoverCommTypes
+	//definitions for RoverComm 
+	#ifdef _ROVERCOMM_DEFINITIONS
+		//RoverCommTypes (which rover communication source/destination)
+		#define ROVER_COMM_SENTENCE_LENGTH		75//should match the same size as GPS_SENTENCE_LENGTH
 		#define ROVERCOMM_NONE 0 //Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
 		#define ROVERCOMM_CMNC 1
 		#define ROVERCOMM_NAVI 2

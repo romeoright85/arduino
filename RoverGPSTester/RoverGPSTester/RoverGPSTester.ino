@@ -131,6 +131,9 @@ void loop() {
 
 boolean rxGPSData(RoverGpsSensor * roverGps) {
 
+	//Note: Make sure processRxGPSData() is called between (before, after, or in) successive rxGPSData() function calls, as it will clear the string and reset the index (required for the code to work properly)
+
+
 	byte numberOfAttempts = 0;//counts the number of times attempting to wait for a valid gps data string
 	byte gpsCharactersToReceiveBeforeTimeout;//counts the number of characters received while waiting for the start of the gps data (i.e. $) before timing out
 	boolean foundStart = false;

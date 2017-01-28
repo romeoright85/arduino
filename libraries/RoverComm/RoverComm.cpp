@@ -38,16 +38,14 @@ byte RoverComm::getRxDataLength()
 void RoverComm::reset()
 {
 		this->clearRxData();
-		this->_destinationCommType = ROVERCOMM_NONE;
-		this->_dataIsValid = false;
-		
+		this->_destinationCommType = ROVERCOMM_NONE;		
 }
 byte RoverComm::getDestinationCommType()
 {
 	return _destinationCommType;
 }
 
-void RoverComm::validateData()
+boolean RoverComm::validateData()
 {
 	char tempSubstring1[BUFFER_SIZE_4];
 	char tempSubstring2[BUFFER_SIZE_1];	
@@ -63,11 +61,10 @@ void RoverComm::validateData()
 	if(strcmp(this->_rxDataString,"") == 0)
 	{
 			//the string was empty
-			this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);
-			this->_dataIsValid = false;//sets the flag for whether the data is valid or not
+			this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);			
  			this->_rxRoverDataPointer->clearData();//clear the RoverData since there is no data			
 			this->clearRxDataVariables();//clear RoverComm's _rxDataString and index before exiting this function
-			return;//end the data validation if the RoverComm Type is invalid, no reason to move on
+			return false;//end the data validation if the RoverComm Type is invalid, no reason to move on. Returns false for invalid data.
 	}
 			
 	//==Process for IMU AHRS Data Format==	
@@ -93,17 +90,14 @@ void RoverComm::validateData()
 		
 		//Reroute the IMU AHRS data to CMNC	
 		//set the RoverComm Type in the RoverData object
-		this->_rxRoverDataPointer->setCommType(ROVERCOMM_CMNC);
-		
-		
-		this->_dataIsValid = true;//sets the flag for whether the data is valid or not
-		this->_rxRoverDataPointer->setData(this->_rxDataString);//save the raw data to the RoverData object
+		this->_rxRoverDataPointer->setCommType(ROVERCOMM_CMNC);				
+		this->_rxRoverDataPointer->setData(this->_rxDataString, this->getRxDataLength());//save the raw data to the RoverData object
 		this->clearRxDataVariables();//clear RoverComm's _rxDataString and index before exiting this function
-		return;
+		return true;//Returns true for valid data.
 
 	}//end if
 	//==Process for the Rover Data Format==				
-	else if( strcmp(tempSubstring2,"/") == 0 && strcmp(tempSubstring3,"c") && strcmp(tempSubstring4,"*")
+	else if( strcmp(tempSubstring2,"/") == 0 && strcmp(tempSubstring3,"c") && strcmp(tempSubstring4,"*"))
 	{	
 
 		#ifdef _DEBUG_OUTPUT_RXDATA_
@@ -144,18 +138,16 @@ void RoverComm::validateData()
 			break;
 			default:
 				//the RoverComm Type didn't match any of the results
-				this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);
-				this->_dataIsValid = false;//sets the flag for whether the data is valid or not
+				this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);				
 				this->_rxRoverDataPointer->clearData();//clear the RoverData since there is no data			
 				this->clearRxDataVariables();//clear RoverComm's _rxDataString and index before exiting this function
-				return;//end the data validation if the RoverComm Type is invalid, no reason to move on
+				return false;//end the data validation if the RoverComm Type is invalid, no reason to move on. Returns false for invalid data.
 		}//end switch
 		
-		//For valid RoverComm Types
-		this->_dataIsValid = true;//sets the flag for whether the data is valid or not
-		this->_rxRoverDataPointer->setData(this->_rxDataString);//save the raw data to the RoverData object
+		//For valid RoverComm Types		
+		this->_rxRoverDataPointer->setData(this->_rxDataString, this->getRxDataLength());//save the raw data to the RoverData object
 		this->clearRxDataVariables();//clear RoverComm's _rxDataString and index before exiting this function
-		return;
+		return true;//Returns true for valid data.
 			
 	}//end else if
 	else
@@ -164,18 +156,13 @@ void RoverComm::validateData()
 		//else the data format was incorrect
 		
 		this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);
-		this->_dataIsValid = false;//sets the flag for whether the data is valid or not
+		
 		this->_rxRoverDataPointer->clearData();//clear the RoverData since there is no data			
 		this->clearRxDataVariables();//clear RoverComm's _rxDataString and index before exiting this function
-		return;//end the data validation if the RoverComm Type is invalid, no reason to move on
+		return false;//end the data validation if the RoverComm Type is invalid, no reason to move on. Returns false for invalid data.
 		
 	}//end else	
 }
-boolean RoverComm::isDataValid()
-{
-	return this->_dataIsValid;
-}
-
 void RoverComm::clearRxData()
 {		 
 	memset(this->_rxDataString,0,sizeof(this->_rxDataString));	

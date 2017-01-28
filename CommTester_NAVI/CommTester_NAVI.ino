@@ -74,9 +74,9 @@ RoverCommand * roverCommand = new RoverCommand();
 //SW resettable variables
 //flag for data for this Arduino
 boolean dataWasForNAVI;
-//flags for data ready
-boolean dataReadyCh1;//for PC USB
-boolean dataReadyCh2;//for MAIN
+//flags for valid data ready
+boolean ch1Valid;//for PC USB
+boolean ch2Valid;//for MAIN
 
 
 
@@ -101,8 +101,8 @@ void setup() {
 	}
 	//Reset flags
 	dataWasForNAVI = false;
-	dataReadyCh1 = false;
-	dataReadyCh2 = false;	
+	ch1Valid = false;
+	ch2Valid = false;
 
 
 	//Setup the HW_UART
@@ -117,56 +117,42 @@ void setup() {
 void loop() {
 
 
-	//reset flags
-	dataReadyCh1 = false;
-	dataReadyCh2 = false;
+	//Reset flags
+	ch1Valid = false;
+	ch2Valid = false;
 
 
 
-	//1. receive all data first
+	//1. Receive and process data
 
-	//1a. receive data from PC USB
+	//1a. receive data and process data from PC USB
 	roverDataCh1_NAVI->clearData();//clear data before getting new data
-	dataReadyCh1 = rxData(roverNavi_Ch1, ROVERCOMM_PC_USB);
+	ch1Valid = rxData(roverNavi_Ch1, ROVERCOMM_PC_USB);
 
-	//1b. receive data from MAIN
+	//1b. receive data and process data from MAIN
 	roverDataCh2_NAVI->clearData();//clear data before getting new data
-	dataReadyCh2 = rxData(roverNavi_Ch2, MAIN_BAUD_RATE);
+	ch2Valid = rxData(roverNavi_Ch2, MAIN_BAUD_RATE);
 
 
 
 	//Note: The debug code below varies for different Arduinos
 	//DEBUG Code: Data Injection (from MAIN to NAVI)	
 	#ifdef _DEBUG_IMU_TEST_CASE_
-		roverNavi_Ch1->setRxData("!ANG:1.23,4.56,78.90");
-		dataReadyCh1 = true;
+		roverNavi_Ch1->setRxData("!ANG:1.23,4.56,78.90", sizeof("!ANG:1.23,4.56,78.90"));
+		ch1Valid = true;
 	#endif
 	#ifdef _DEBUG_ROVER_TEST_CASE_		
-		roverNavi_Ch1->setRxData("/4c201*HelloMAINtoNAVI");
-		dataReadyCh1 = true;
+		roverNavi_Ch1->setRxData("/4c201*HelloMAINtoNAVI", sizeof("/4c201*HelloMAINtoNAVI");
+		ch1Valid = true;
 	#endif
 
 
-	//2. process data	
 
-	//2a. process received data from PC USB
-	if (dataReadyCh1)
-	{
-		roverNavi_Ch1->validateData();
-	}
+	//2. Transmit data and/or execute command
 
-	//2b. process received data from MAIN
-	if (dataReadyCh2)
-	{
-		roverNavi_Ch2->validateData();
-	}
-
-
-
-
-	//3a. For data from PC USB, transmit the data to it's proper destination if it was meant for another Arduino
+	//2a. For data from PC USB, transmit the data to it's proper destination if it was meant for another Arduino
 	//		or take any actions if the data was meant for this unit, NAVI
-	if (roverNavi_Ch1->isDataValid() && dataReadyCh1)
+	if (ch1Valid)
 	{
 
 
@@ -179,7 +165,7 @@ void loop() {
 		{
 
 			//send the RoverData to the roverCommand's parser to get the command
-			roverCommand->parseCommand(roverDataCh1_NAVI->getData());
+			roverCommand->parseCommand(roverDataCh1_NAVI->getData(), roverDataCh1_NAVI->getDataLength());
 			commandDirector(roverCommand->getCommand());
 		}
 	}
@@ -189,9 +175,9 @@ void loop() {
 	}
 
 
-	//3b. For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+	//2b. For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
 	//		or take any actions if the data was meant for this unit, NAVI
-	if (roverNavi_Ch2->isDataValid() && dataReadyCh2)
+	if (ch2Valid)
 	{
 
 
@@ -204,7 +190,7 @@ void loop() {
 		{
 
 			//send the RoverData to the roverCommand's parser to get the command
-			roverCommand->parseCommand(roverDataCh2_NAVI->getData());
+			roverCommand->parseCommand(roverDataCh2_NAVI->getData(), roverDataCh2_NAVI->getDataLength());
 			commandDirector(roverCommand->getCommand());
 		}
 	}
@@ -224,23 +210,33 @@ void loop() {
 
 
 boolean rxData(RoverComm * roverComm, byte roverCommType) {
+
+	byte counter;
+	boolean dataReady = false;
+	boolean validData = false;
+
+
 	if (roverCommType == ROVERCOMM_PC_USB)
 	{
 
 		if (Serial.available() > 1)
 		{
-			while (Serial.available() > 0)//while there is data on the Serial RX Buffer
+			//initialize the counter
+			counter = 0;
+
+			while (Serial.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
 				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
-//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
-			return true;
+			dataReady = true;
 		}//end if
 		else
 		{
-			return false;
+			dataReady = false;
 		}//end else
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
@@ -248,18 +244,22 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 
 		if (Serial2.available() > 1)
 		{
-			while (Serial2.available() > 0)//while there is data on the Serial RX Buffer
+			//initialize the counter
+			counter = 0;
+
+			while (Serial2.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
 				roverComm->appendToRxData((char)Serial2.read());//construct the string one char at a time
-//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
-			return true;
+			dataReady = true;
 		}//end if
 		else
 		{
-			return false;
+			dataReady = false;
 		}//end else
 	}//end if	
 	else
@@ -267,9 +267,17 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 		//invalid RoverComm Type, so do nothing
 	}//end else
 
+	//Process data received data
+	if (dataReady)
+	{
+		validData = roverComm->validateData();
+	}
+	else
+	{
+		validData = false;
+	}
 
-
-
+	return validData;
 
 }
 
@@ -306,7 +314,7 @@ void dataDirector(RoverData * roverData)
 	return;
 }
 
-void txData(String txData, byte roverCommType)
+void txData(char * txData, byte roverCommType)
 {
 	//Note: This function varies for different Arduinos
 
@@ -327,31 +335,28 @@ void txData(String txData, byte roverCommType)
 	}//end else
 }
 
-void commandDirector(String roverCommand)
+void commandDirector(char * roverCommand)
 {
 	//Note: This function varies for different Arduinos
 
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
-	if (roverCommand.equals("hi"))
+	if (strcmp(roverCommand, "hi") == 0)
 	{
-		txData(F("Valid Cmd! =)"), ROVERCOMM_NAVI);
-		txData(F("Rx'd:"), ROVERCOMM_NAVI);
+		txData("Valid Cmd! =)", ROVERCOMM_NAVI);
+		txData("Rx'd:", ROVERCOMM_NAVI);
 		txData(roverCommand, ROVERCOMM_NAVI);
 	}
-	else if (roverCommand.equals("bye"))
+	else if (strcmp(roverCommand, "bye") == 0)
 	{
-		txData(F("Valid Cmd! =)"), ROVERCOMM_NAVI);
-		txData(F("Rx'd:"), ROVERCOMM_NAVI);
+		txData("Valid Cmd! =)", ROVERCOMM_NAVI);
+		txData("Rx'd:", ROVERCOMM_NAVI);
 		txData(roverCommand, ROVERCOMM_NAVI);
 	}
 	else
 	{
-		txData(F("Invalid Cmd! =("), ROVERCOMM_NAVI);
-		txData(F("Rx'd:"), ROVERCOMM_NAVI);
+		txData("Invalid Cmd! =(", ROVERCOMM_NAVI);
+		txData("Rx'd:", ROVERCOMM_NAVI);
 		txData(roverCommand, ROVERCOMM_NAVI);
-
-
-
 	}
 }
 

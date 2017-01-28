@@ -49,5 +49,5 @@ extern "C" void __cxa_pure_virtual() {;}
 #define F(string_literal) ((const PROGMEM char *)(string_literal))
 #undef PSTR
 #define PSTR(string_literal) ((const PROGMEM char *)(string_literal))")
-#include <CommTester_COMM.ino>
+#include <..\CommTester_COMM\CommTester_COMM.ino>
 #endif

@@ -55,7 +55,7 @@
 
 #ifndef _ROVERDATA_H
 #define _ROVERDATA_H
-#define _ROVERCOMMTYPES 
+#define _ROVERCOMM_DEFINITIONS 
 #define _ROVERDATA
 
 	

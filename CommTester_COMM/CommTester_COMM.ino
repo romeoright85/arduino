@@ -79,9 +79,9 @@ RoverCommand * roverCommand = new RoverCommand();
 //SW resettable variables
 //flag for data for this Arduino
 boolean dataWasForCOMM;
-//flags for data ready
-boolean dataReadyCh1;//For COMM
-boolean dataReadyCh2;//For MAIN
+//flags for valid data ready
+boolean ch1Valid;//for PC USB/CNMC
+boolean ch2Valid;//for MAIN
 
 RoverReset * resetArray[] = {
 	roverDataCh1_COMM,
@@ -104,8 +104,8 @@ void setup() {
 	}
 	//Reset flags
 	dataWasForCOMM = false;
-	dataReadyCh1 = false;
-	dataReadyCh2 = false;
+	ch1Valid = false;
+	ch2Valid = false;
 
 
 	//Setup the HW_UART
@@ -119,55 +119,39 @@ void setup() {
 void loop() {
 
 
-	//reset flags
-	dataReadyCh1 = false;
-	dataReadyCh2 = false;
-
+	//Reset flags
+	ch1Valid = false;
+	ch2Valid = false;
 	
 
+	//1. Receive and process data
 
-	//1. receive all data first
-
-	//1a. receive data from CMNC (the PC)
+	//1a. receive data and process data from CMNC (the PC)
 	roverDataCh1_COMM->clearData();//clear data before getting new data
-	dataReadyCh1 = rxData(roverComm_Ch1, ROVERCOMM_CMNC);
+	ch1Valid = rxData(roverComm_Ch1, ROVERCOMM_CMNC);
 		
-	//1b. receive data from MAIN
+	//1b. receive data and process data from MAIN
 	roverDataCh2_COMM->clearData();//clear data before getting new data
-	dataReadyCh2 = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+	ch2Valid = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
 
 
 	//Note: The debug code below varies for different Arduinos
 	//DEBUG Code: Data Injection (from MAIN to CMNC)	
 	#ifdef _DEBUG_IMU_TEST_CASE_
-		roverComm_Ch2->setRxData("!ANG:1.23,4.56,78.90");
-		dataReadyCh2 = true;
+		roverComm_Ch2->setRxData("!ANG:1.23,4.56,78.90", sizeof("!ANG:1.23,4.56,78.90"));
+		ch2Valid = true;
 	#endif
 	#ifdef _DEBUG_ROVER_TEST_CASE_
-		roverComm_Ch2->setRxData("/3c101*HelloMAINtoCMNC");
-		dataReadyCh2 = true;
+		roverComm_Ch2->setRxData("/3c101*HelloMAINtoCMNC", sizeof("/3c101*HelloMAINtoCMNC");
+		ch2Valid = true;
 	#endif
 			
 
-	//2. process data	
-
-	//2a. process received data from CMNC (the PC)
-	if (dataReadyCh1)
-	{
-		roverComm_Ch1->validateData();
-	}
-
-
-	//2b. process received data from MAIN
-	if (dataReadyCh2)
-	{
-		roverComm_Ch2->validateData();
-	}
-
+	//2. Transmit data and/or execute command
 	
-	//3a. For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+	//2a. For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
 	//		or take any actions if the data was meant for this unit, COMM
-	if (roverComm_Ch1->isDataValid() && dataReadyCh1)
+	if (ch1Valid)
 	{
 
 		
@@ -180,7 +164,7 @@ void loop() {
 		{
 			
 			//send the RoverData to the roverCommand's parser to get the command
-			roverCommand->parseCommand(roverDataCh1_COMM->getData());
+			roverCommand->parseCommand(roverDataCh1_COMM->getData(), roverDataCh1_COMM->getDataLength());
 			commandDirector(roverCommand->getCommand());
 		}
 	}
@@ -189,9 +173,9 @@ void loop() {
 		//The data was invalid, so do nothing			
 	}
 
-	//3b. For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
+	//2b. For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
 	//		or take any actions if the data was meant for this unit, COMM
-	if (roverComm_Ch2->isDataValid() && dataReadyCh2)
+	if (ch2Valid)
 	{
 
 		
@@ -203,7 +187,7 @@ void loop() {
 		{
 			
 			//send the RoverData to the roverCommand's parser to get the command
-			roverCommand->parseCommand(roverDataCh2_COMM->getData());
+			roverCommand->parseCommand(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
 			commandDirector(roverCommand->getCommand());
 
 		}
@@ -221,49 +205,72 @@ void loop() {
 
 boolean rxData(RoverComm * roverComm, byte roverCommType) {
 
+	byte counter;
+	boolean dataReady = false;
+	boolean validData = false;
+
 	if (roverCommType == ROVERCOMM_CMNC)
 	{
 
 		if (Serial.available() > 1)
 		{
-			while (Serial.available() > 0)//while there is data on the Serial RX Buffer
+			//initialize the counter
+			counter = 0;
+
+			while (Serial.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
 				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
-//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
-			return true;
+			dataReady = true;
 		}//end if
 		else
 		{
-			return false;
+			dataReady = false;
 		}//end else
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{
 		if (swSerialMAIN.available() > 1)
 		{
-			while (swSerialMAIN.available() > 0)//while there is data on the Serial RX Buffer
+			//initialize the counter
+			counter = 0;
+
+			while (swSerialMAIN.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
 				roverComm->appendToRxData((char)swSerialMAIN.read());//construct the string one char at a time
-//DEBUG: Add as needed//delay(1);//add a 1 us delay between each transmission
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
-			return true;
+			dataReady = true;
 		}//end if
 		else
 		{
-			return false;
+			dataReady = false;
 		}//end else
 	}//end else if
 	else
 	{
 		//invalid RoverComm Type, so do nothing
+		dataReady = false;
 	}//end else
 
+	 //Process data received data
+	if (dataReady)
+	{
+		validData = roverComm->validateData();
+	}
+	else
+	{
+		validData = false;
+	}
 
+	return validData;
 
 
 
@@ -322,30 +329,27 @@ void txData(String txData, byte roverCommType)
 	}//end else
 }
 
-void commandDirector(String roverCommand)
+void commandDirector(char * roverCommand)
 {
 	//Note: This function varies for different Arduinos
 
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
-	if (roverCommand.equals("hi"))
+	if (strcmp(roverCommand, "hi") == 0)
 	{
-		txData(F("Valid Cmd! =)"), ROVERCOMM_CMNC);
-		txData(F("Rx'd:"), ROVERCOMM_CMNC);
+		txData("Valid Cmd! =)", ROVERCOMM_CMNC);
+		txData("Rx'd:", ROVERCOMM_CMNC);
 		txData(roverCommand, ROVERCOMM_CMNC);
 	}
-	else if (roverCommand.equals("bye"))
+	else if (strcmp(roverCommand, "bye") == 0)
 	{
-		txData(F("Valid Cmd! =)"), ROVERCOMM_CMNC);
-		txData(F("Rx'd:"), ROVERCOMM_CMNC);
+		txData("Valid Cmd! =)", ROVERCOMM_CMNC);
+		txData("Rx'd:", ROVERCOMM_CMNC);
 		txData(roverCommand, ROVERCOMM_CMNC);
 	}
 	else
 	{
-		txData(F("Invalid Cmd! =("), ROVERCOMM_CMNC);
-		txData(F("Rx'd:"), ROVERCOMM_CMNC);
+		txData("Invalid Cmd! =(", ROVERCOMM_CMNC);
+		txData("Rx'd:", ROVERCOMM_CMNC);
 		txData(roverCommand, ROVERCOMM_CMNC);
-
-
-
 	}
 }

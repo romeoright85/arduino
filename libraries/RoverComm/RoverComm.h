@@ -54,7 +54,7 @@
 
 #ifndef _ROVERCOMM_H
 #define _ROVERCOMM_H
-#define _ROVERCOMMTYPES
+#define _ROVERCOMM_DEFINITIONS
 #define _ROVERDATA
 #define _CHAR_BUFFER_ARRAY_SIZES
 
@@ -83,17 +83,14 @@
 		void clearRxData();//clear the stored data in _rxDataString	
 		void clearRxDataVariables();//clears the _rxData string and index counter
 		byte getRxDataLength();//returns the length of the corresponding string
-
 		byte getDestinationCommType();//returns the RoverData's destination RoverComm Type
-		boolean isDataValid();//returns the validity state of the data
-		void validateData();//validate the data to see if the data is not empty, is in the correct format, and has a valid RoverComm type
+		boolean validateData();//validate the data to see if the data is not empty, is in the correct format, and has a valid RoverComm type. Returns true if the data is valid, else returns false.
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	private:
 		
 		//SW Resetted
 			char _rxDataString[ROVER_DATA_BUFFER_SIZE];
 			byte _destinationCommType = ROVERCOMM_NONE;//holds the RoverComm Type where the data is meant to go to
-			boolean _dataIsValid;//returns true if the data is not empty, is in the correct format, and has a valid RoverComm type	
 			byte _rxDataStringCharacterIndex;//tracks how many characters was received for array indexing
 		//Not SW Resetted
 			RoverData * _rxRoverDataPointer;
