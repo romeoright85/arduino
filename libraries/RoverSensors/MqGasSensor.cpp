@@ -208,11 +208,11 @@ char * MqGasSensor::getMqGasSensorUnit()
 }
 byte MqGasSensor::getMqGasSensorNameLength()
 {
-	return sizeof(this->_mqGasSensorName);
+	return CharArray::stringSize(this->_mqGasSensorName,sizeof(this->_mqGasSensorName));	
 }
 byte MqGasSensor::getMqGasSensorUnitLength()
 {
-	return sizeof(this->_mqGasSensorUnit);
+	return CharArray::stringSize(this->_mqGasSensorUnit,sizeof(this->_mqGasSensorUnit));
 }
 
 

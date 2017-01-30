@@ -56,8 +56,8 @@
 	//definition for Character Buffer Array Sizes
 	#ifdef _CHAR_BUFFER_ARRAY_SIZES
 		//Char Array Sizes		
-		#define BUFFER_SIZE_1		1
-		#define BUFFER_SIZE_4		4		
+		#define BUFFER_SIZE_2		2
+		#define BUFFER_SIZE_6		6
 	#endif
 
 	

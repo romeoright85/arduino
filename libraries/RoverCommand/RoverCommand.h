@@ -63,6 +63,8 @@
 	#include <CharArray.h>
 	#include <RoverConfig.h>
 	
+	
+	
 	class RoverCommand : public virtual RoverReset {
 	public:
 		RoverCommand();//constructor

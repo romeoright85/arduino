@@ -37,5 +37,5 @@ void RoverData::clearData()
 }
 byte RoverData::getDataLength()
 {		 
-	return sizeof(this->_dataString);
+	return CharArray::stringSize(this->_dataString,sizeof(this->_dataString));	
 }

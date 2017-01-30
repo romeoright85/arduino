@@ -136,11 +136,11 @@ void loop() {
 	//DEBUG Code: Data Injection (from MAIN to AUXI)	
 	#ifdef _DEBUG_IMU_TEST_CASE_
 		roverAuxi_Ch1->setRxData("!ANG:1.23,4.56,78.90", sizeof("!ANG:1.23,4.56,78.90"));
-		ch1Valid = true;
+		ch1Valid = roverAuxi_Ch1->validateData();
 	#endif
 	#ifdef _DEBUG_ROVER_TEST_CASE_		
-		roverAuxi_Ch1->setRxData("/4c301*HelloMAINtoAUXI", sizeof("/4c301*HelloMAINtoAUXI");
-		ch1Valid = true;
+		roverAuxi_Ch1->setRxData("/4c301*HelloMAINtoAUXI", sizeof("/4c301*HelloMAINtoAUXI"));
+		ch1Valid = roverAuxi_Ch1->validateData();
 	#endif
 
 

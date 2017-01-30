@@ -21,7 +21,7 @@ Also uncomment the _DEBUG_OUTPUT_RXDATA_ in RoverComm.h to see the received stri
 	//#define _DEBUG_ROVER_TEST_CASE_
 /*
 Uncomment the line above to test the Rover formatted data
-Debug data: /3c101*HelloMAINtoCMNC
+Debug data: /4c101*HelloMAINtoCMNC
 Also uncomment flag(s) in RoverComm.h to see the received string, etc.
 */
 
@@ -139,11 +139,11 @@ void loop() {
 	//DEBUG Code: Data Injection (from MAIN to CMNC)	
 	#ifdef _DEBUG_IMU_TEST_CASE_
 		roverComm_Ch2->setRxData("!ANG:1.23,4.56,78.90", sizeof("!ANG:1.23,4.56,78.90"));
-		ch2Valid = true;
+		ch2Valid = roverComm_Ch2->validateData();		
 	#endif
 	#ifdef _DEBUG_ROVER_TEST_CASE_
-		roverComm_Ch2->setRxData("/3c101*HelloMAINtoCMNC", sizeof("/3c101*HelloMAINtoCMNC");
-		ch2Valid = true;
+		roverComm_Ch2->setRxData("/4c101*HelloMAINtoCMNC", sizeof("/4c101*HelloMAINtoCMNC"));
+		ch2Valid = roverComm_Ch2->validateData();
 	#endif
 			
 
@@ -178,7 +178,6 @@ void loop() {
 	if (ch2Valid)
 	{
 
-		
 		//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
 		dataDirector(roverDataCh2_COMM);//Note: this is a local .ino function
 
@@ -225,6 +224,7 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
+
 			dataReady = true;
 		}//end if
 		else
@@ -281,7 +281,6 @@ void dataDirector(RoverData * roverData)
 	//Note: This function varies for different Arduinos
 
 	byte roverCommType = roverData->getCommType();
-
 	dataWasForCOMM = false;//reset the flag
 
 	if (roverCommType == ROVERCOMM_COMM)

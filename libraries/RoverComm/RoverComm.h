@@ -66,13 +66,20 @@
 	#include <RoverData.h>
 	#include <CharArray.h>
 	
+	
 	//uncomment the debug flag below to print the received data string
 	//#define _DEBUG_OUTPUT_RXDATA_
+	
+	//uncomment the debug flag below to see the stages in the code that is processed
+	//#define _DEBUG_RX_STAGES_
+	
+	//uncomment the debug flag below to see the temp substrings
+	//#define _DEBUG_SHOW_TEMPSUBSTRINGS_
 	
 	//uncomment the debug flag below to see other data as required
 	//#define _DEBUG_OUTPUT_CMDTYPE_
 	
-
+	
 	class RoverComm : public virtual RoverReset {
 	public:
 		RoverComm(RoverData *);//constructor (RoverData Pointer)
@@ -82,7 +89,7 @@
 		char * getRxData();//returns _rxDataString
 		void clearRxData();//clear the stored data in _rxDataString	
 		void clearRxDataVariables();//clears the _rxData string and index counter
-		byte getRxDataLength();//returns the length of the corresponding string
+		int getRxDataLength();//returns the length of the corresponding string
 		byte getDestinationCommType();//returns the RoverData's destination RoverComm Type
 		boolean validateData();//validate the data to see if the data is not empty, is in the correct format, and has a valid RoverComm type. Returns true if the data is valid, else returns false.
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)

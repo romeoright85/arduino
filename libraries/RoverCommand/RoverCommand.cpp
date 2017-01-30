@@ -27,7 +27,7 @@ char * RoverCommand::getCommand()
 }
 byte RoverCommand::getCommandLength()
 {
-	return sizeof(this->_roverCommand);
+	return CharArray::stringSize(this->_roverCommand,sizeof(this->_roverCommand));
 }
 void RoverCommand::clearCommand()
 {

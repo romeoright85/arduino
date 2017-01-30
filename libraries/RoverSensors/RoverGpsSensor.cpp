@@ -57,7 +57,7 @@ char * RoverGpsSensor::getRxGPSData()
 }
 byte RoverGpsSensor::getRxGPSDataLength()
 {
-	return sizeof(this->_rxData);
+	return CharArray::stringSize(this->_rxData,sizeof(this->_rxData));
 }
 boolean RoverGpsSensor::processRxGPSData()
 {
@@ -219,7 +219,7 @@ char * RoverGpsSensor::getGpsSentenceId()
 }
 byte RoverGpsSensor::getGpsSentenceIdLength()
 {
-	return sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_SENTENCE_ID]);
+	return CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_SENTENCE_ID],sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_SENTENCE_ID]));
 }
 double RoverGpsSensor::getGpsTimeWhenDataWasFixed()
 {	
@@ -237,7 +237,7 @@ char * RoverGpsSensor::getGpsLatitudeDirection()
 }
 byte RoverGpsSensor::getGpsLatitudeDirectionLength()
 {	
-	return sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION]);
+	return CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION],sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION]));
 }
 double RoverGpsSensor::getGpsLongitude()
 {	
@@ -249,7 +249,7 @@ char * RoverGpsSensor::getGpsLongitudeDirection()
 }
 byte RoverGpsSensor::getGpsLongitudeDirectionLength()
 {	
-	return sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE_DIRECTION]);
+	return CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE_DIRECTION],sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE_DIRECTION]));
 }
 byte RoverGpsSensor::getGpsFixQuality()
 {		
@@ -312,7 +312,7 @@ char * RoverGpsSensor::getGoogleMapsCoordinates()
 }
 byte RoverGpsSensor::getGoogleMapsCoordinatesLength()
 {
-	return sizeof(this->_googleMapsCoordinates);
+	return CharArray::stringSize(this->_googleMapsCoordinates,sizeof(this->_googleMapsCoordinates));	
 }
 void RoverGpsSensor::clearGoogleMapsCoordinates()
 {

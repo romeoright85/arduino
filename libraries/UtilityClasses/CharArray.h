@@ -18,6 +18,8 @@ class CharArray {
 		static int indexOf(char *, byte, char, byte);//Index Of - With start index provided (charArray, array size, char to find, start index), where array size is typically: sizeof(charArray) / sizeof(charArray[0])
 		static int indexOf(char *, byte, char);//Index Of - With no start index provided (charArray, array size, char to find), where array size is typically: sizeof(charArray) / sizeof(charArray[0])
 				
+				
+		//Note: When using char array substrings, make sure the buffer size is 1 more bigger than the characters as you need room for the null terminating character
 		static void substring(char *, byte, byte, byte, char *);//With End Index (input char array, array size, start index, end index, output char array)
 		static void substring(char *, byte, byte, char *);//With No End Index, goes to the end of the array or to the terminating character (input char array, array size, start index, output char array)
 		

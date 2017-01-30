@@ -46,7 +46,6 @@ int CharArray::indexOf(char * array, byte arraySize, char charToFind)
 
 void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex, byte endIndex, char * outputCharArray)
 {
-	
 	//Note: arraySize not used, but kept, in order to do function overloading
 	
 	char tempCharArray[arraySize];
@@ -54,6 +53,7 @@ void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex
 	byte j = 0;	
 	byte tempIndex = 0;
 	
+		
 	//do a swap if the start and end indices are in the wrong order
 	if(endIndex < startIndex)
 	{
@@ -61,23 +61,32 @@ void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex
 		endIndex = startIndex;
 		startIndex = tempIndex;
 	}
+	
+	//Check to see if the endIndex is larger than the arraySize, then max out at the arraySize
+	if(endIndex > arraySize)
+	{
+		endIndex = arraySize;
+	}
 		
 	
 	//make a copy of the input array, just in case it is also used as the output array, this allows it to be read and write to at the same time
 	strncpy(tempCharArray, inputCharArray, arraySize);
 	
-	
-	
 	for(byte i = startIndex; i < endIndex; i++)
 	{
 		outputCharArray[j] = tempCharArray[i];
-		j++;
+		j++;	
 	}
 	outputCharArray[j] = '\0';
 	return;
 }
 void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex, char * outputCharArray)
 {
+
+//Serial.println("substring");//DEBUG
+//Serial.println(inputCharArray);//DEBUG
+//Serial.println(arraySize);//DEBUG
+//Serial.println(startIndex);//DEBUG
 	
 	char tempCharArray[arraySize];
 		
@@ -105,6 +114,8 @@ void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex
 		j++;
 	}
 	outputCharArray[j] = '\0';
+//Serial.println("outputCharArray:");//DEBUG	
+//Serial.println(outputCharArray);//DEBUG
 	return;	
 }
 int CharArray::stringSize(char * charArray, byte arraySize)
@@ -139,8 +150,10 @@ void CharArray::LTrim(char * charArray)
 void CharArray::RTrim(char* charArray)
 {
 	//Reference: http://stackoverflow.com/questions/25345598/c-implementation-to-trim-char-array-of-leading-trailing-white-space-not-workin
-	int i = strlen(charArray);
-	while (' ' == charArray[--i]) charArray[i] = 0;	
+	//Note: Modified and using isspace to remove all white space characters (i..e \r, \n, etc.), not just a space.
+	//http://www.cplusplus.com/reference/cctype/isspace/
+	int i = strlen(charArray);	
+	while (isspace((int)charArray[--i])) charArray[i] = 0;	
 }
 
 void CharArray::Trim(char* charArray)
@@ -148,5 +161,4 @@ void CharArray::Trim(char* charArray)
 	//Reference: http://stackoverflow.com/questions/25345598/c-implementation-to-trim-char-array-of-leading-trailing-white-space-not-workin
 	LTrim(charArray);
 	RTrim(charArray);
-	//return charArray;
 }

@@ -31,9 +31,9 @@ char * RoverComm::getRxData()
 {	
 	return this->_rxDataString;
 }
-byte RoverComm::getRxDataLength()
+int RoverComm::getRxDataLength()
 {	
-	return sizeof(this->_rxDataString);
+	return CharArray::stringSize(this->_rxDataString,sizeof(this->_rxDataString));
 }
 void RoverComm::reset()
 {
@@ -47,24 +47,43 @@ byte RoverComm::getDestinationCommType()
 
 boolean RoverComm::validateData()
 {
-	char tempSubstring1[BUFFER_SIZE_4];
-	char tempSubstring2[BUFFER_SIZE_1];	
-	char tempSubstring3[BUFFER_SIZE_1];	
-	char tempSubstring4[BUFFER_SIZE_1];	
-	char tempSubstring5[BUFFER_SIZE_1];	
+	char tempSubstring1[BUFFER_SIZE_6];
+	char tempSubstring2[BUFFER_SIZE_2];	
+	char tempSubstring3[BUFFER_SIZE_2];	
+	char tempSubstring4[BUFFER_SIZE_2];	
+	char tempSubstring5[BUFFER_SIZE_2];	
 	
 	byte commandType;
+
+	#ifdef _DEBUG_OUTPUT_RXDATA_
+		Serial.println(F("Pre Trim Rx Data:"));//DEBUG
+		Serial.println(this->_rxDataString);//DEBUG
+		Serial.println(F("Data length:"));//DEBUG
+		Serial.println(this->getRxDataLength());//DEBUG
+	#endif
+
 	
 	CharArray::Trim(this->_rxDataString);//remove any leading and trailing whitespaces
+	
+	#ifdef _DEBUG_OUTPUT_RXDATA_
+		Serial.println(F("Post Trim Rx Data:"));//DEBUG
+		Serial.println(this->_rxDataString);//DEBUG
+		Serial.println(F("Data length:"));//DEBUG
+		Serial.println(this->getRxDataLength());//DEBUG		
+	#endif
 	
 	//check to see if the data is empty
 	if(strcmp(this->_rxDataString,"") == 0)
 	{
-			//the string was empty
-			this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);			
- 			this->_rxRoverDataPointer->clearData();//clear the RoverData since there is no data			
-			this->clearRxDataVariables();//clear RoverComm's _rxDataString and index before exiting this function
-			return false;//end the data validation if the RoverComm Type is invalid, no reason to move on. Returns false for invalid data.
+		#ifdef _DEBUG_RX_STAGES_
+			Serial.println(F("Empty Rx Data"));//DEBUG			
+		#endif
+		
+		//the string was empty
+		this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);			
+		this->_rxRoverDataPointer->clearData();//clear the RoverData since there is no data			
+		this->clearRxDataVariables();//clear RoverComm's _rxDataString and index before exiting this function
+		return false;//end the data validation if the RoverComm Type is invalid, no reason to move on. Returns false for invalid data.
 	}
 			
 	//==Process for IMU AHRS Data Format==	
@@ -76,15 +95,27 @@ boolean RoverComm::validateData()
 	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 2, 3, tempSubstring3);//get the 3rd character
 	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 6, 7, tempSubstring4);//get the 7th character
 	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 3, 4, tempSubstring5);//get the 4th character
+
+	#ifdef _DEBUG_SHOW_TEMPSUBSTRINGS_
+		Serial.println(F("Tempsubstring 1:"));//DEBUG
+		Serial.println(tempSubstring1);//DEBUG	
+		Serial.println(F("Tempsubstring 2:"));//DEBUG
+		Serial.println(tempSubstring2);//DEBUG	
+		Serial.println(F("Tempsubstring 3:"));//DEBUG
+		Serial.println(tempSubstring3);//DEBUG	
+		Serial.println(F("Tempsubstring 4:"));//DEBUG
+		Serial.println(tempSubstring4);//DEBUG	
+		Serial.println(F("Tempsubstring 5:"));//DEBUG
+		Serial.println(tempSubstring5);//DEBUG	
+	#endif
 	
 	if( strcmp(tempSubstring1,"!ANG:") == 0 )//compare the first 4 characters to see if it starts with "!ANG:", which means it's IMU data
 	{
 		//check for correct format - !ANG:...
 		//if the rover data format was correct, continue		
 		
-		#ifdef _DEBUG_OUTPUT_RXDATA_
-			Serial.println(F("Raw Rx Data:"));//DEBUG
-			Serial.println(this->_rxDataString);//DEBUG
+		#ifdef _DEBUG_RX_STAGES_
+			Serial.println(F("IMU Rx Data"));//DEBUG			
 		#endif
 
 		
@@ -97,12 +128,11 @@ boolean RoverComm::validateData()
 
 	}//end if
 	//==Process for the Rover Data Format==				
-	else if( strcmp(tempSubstring2,"/") == 0 && strcmp(tempSubstring3,"c") && strcmp(tempSubstring4,"*"))
+	else if( strcmp(tempSubstring2,"/") == 0 && strcmp(tempSubstring3,"c") == 0 && strcmp(tempSubstring4,"*") == 0)
 	{	
 
-		#ifdef _DEBUG_OUTPUT_RXDATA_
-			Serial.println(F("Raw Rx Data:"));//DEBUG
-			Serial.println(this->_rxDataString);//DEBUG
+		#ifdef _DEBUG_RX_STAGES_
+			Serial.println(F("Cmd Rx Data"));//DEBUG			
 		#endif
 
 	//check for correct format - for proper delimeters, /-c---*-..., where - are don't cares and ... means the length may vary
@@ -152,7 +182,10 @@ boolean RoverComm::validateData()
 	}//end else if
 	else
 	{
-
+		#ifdef _DEBUG_RX_STAGES_
+			Serial.println(F("Not Valid Rx Data"));//DEBUG			
+		#endif
+		
 		//else the data format was incorrect
 		
 		this->_rxRoverDataPointer->setCommType(ROVERCOMM_NONE);

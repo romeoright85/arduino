@@ -162,11 +162,11 @@ void loop() {
 	//DEBUG Code: Data Injection (from COMM to MAIN)	
 	#ifdef _DEBUG_IMU_TEST_CASE_
 		roverMain_Ch1->setRxData("!ANG:1.23,4.56,78.90", sizeof("!ANG:1.23,4.56,78.90"));
-		ch1Valid = true;
+		ch1Valid = roverMain_Ch1->validateData();
 	#endif
 	#ifdef _DEBUG_ROVER_TEST_CASE_		
-		roverMain_Ch1->setRxData("/5c401*HelloCOMMtoMAIN", sizeof("/5c401*HelloCOMMtoMAIN");
-		ch1Valid = true;
+		roverMain_Ch1->setRxData("/5c401*HelloCOMMtoMAIN", sizeof("/5c401*HelloCOMMtoMAIN"));
+		ch1Valid = roverMain_Ch1->validateData();
 	#endif
 
 
