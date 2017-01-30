@@ -8,7 +8,7 @@
 //Test cases for debugging
 
 //Test case 1:
-//#define _DEBUG_IMU_TEST_CASE_
+	//#define _DEBUG_IMU_TEST_CASE_
 /*
 Uncomment the line above to test the IMU AHRS formatted data
 Debug data: !ANG:1.23,4.56,78.90
@@ -16,11 +16,12 @@ Also uncomment the _DEBUG_OUTPUT_RXDATA_ in RoverComm.h to see the received stri
 */
 
 //Test case 2:
-//#define _DEBUG_ROVER_TEST_CASE_
+	//#define _DEBUG_ROVER_TEST_CASE_
 /*
 Uncomment the line above to test the Rover formatted data
 Debug data: /5c401*HelloCOMMtoMAIN
 Also uncomment flag(s) in RoverComm.h to see the received string, etc.
+Note: You will get an "Invalid Cmd! =(" but that is expected and fine since "HelloCOMMtoMAIN" isn't a registered command. But this test the routing of the data is correct.
 */
 
 
@@ -186,7 +187,6 @@ void loop() {
 		//if the data was for this unit
 		if (dataWasForMAIN)
 		{
-
 			//send the RoverData to the roverCommand's parser to get the command
 			roverCommand->parseCommand(roverDataCh1_MAIN->getData(), roverDataCh1_MAIN->getDataLength());
 			commandDirector(roverCommand->getCommand());
@@ -284,7 +284,7 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	boolean validData = false;
 
 
-
+	//Note: Make sure validateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
 	if (roverCommType == ROVERCOMM_PC_USB)
 	{
 
@@ -352,7 +352,7 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 		{
 			dataReady = false;
 		}//end else
-	}//end if
+	}//end else if
 	else if (roverCommType == ROVERCOMM_AUXI)
 	{
 		if (Serial3.available() > 1)
@@ -374,7 +374,7 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 		{
 			dataReady = false;
 		}//end else
-	}//end if
+	}//end else if
 	else
 	{
 		//invalid RoverComm Type, so do nothing
@@ -415,9 +415,9 @@ void dataDirector(RoverData * roverData)
 		//if the data is for the PC USB, transmit the data out from MAIN to PC USB
 		txData(roverData->getData(), ROVERCOMM_PC_USB);
 	}//end else if
-	else if (roverCommType == ROVERCOMM_COMM)
+	else if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC)
 	{
-		//if the data is for COMM, transmit the data out from MAIN to COMM
+		//if the data is for COMM or CMNC, transmit the data out from MAIN to COMM
 		txData(roverData->getData(), ROVERCOMM_COMM);
 	}//end else if
 	else if (roverCommType == ROVERCOMM_NAVI)
@@ -451,18 +451,21 @@ void txData(char * txData, byte roverCommType)
 	{
 		//transmit the data to COMM
 		Serial1.println(txData);
-		
-	}//end if
+		#ifdef _DEBUG_IMU_TEST_CASE_
+			Serial.println(F("Out to COMM"));//DEBUG
+			Serial.println(txData);//DEBUG. Normally this output would get sent back to COMM without going out of the USB
+		#endif
+	}//end else if
 	else if (roverCommType == ROVERCOMM_NAVI)
 	{
 		//transmit the data to NAVI
 		Serial2.println(txData);
-	}//end if
+	}//end else if
 	else if (roverCommType == ROVERCOMM_AUXI)
 	{
 		//transmit the data to AUXI
 		Serial3.println(txData);
-	}//end if
+	}//end else if
 	else
 	{
 		//do nothing
@@ -479,18 +482,18 @@ void commandDirector(char * roverCommand)
 		txData("Valid Cmd! =)", ROVERCOMM_MAIN);
 		txData("Rx'd:", ROVERCOMM_MAIN);
 		txData(roverCommand, ROVERCOMM_MAIN);
-	}
+	}//end if
 	else if (strcmp(roverCommand, "bye") == 0)
 	{
 		txData("Valid Cmd! =)", ROVERCOMM_MAIN);
 		txData("Rx'd:", ROVERCOMM_MAIN);
 		txData(roverCommand, ROVERCOMM_MAIN);
-	}
+	}//end else if
 	else
 	{
 		txData("Invalid Cmd! =(", ROVERCOMM_MAIN);
 		txData("Rx'd:", ROVERCOMM_MAIN);
 		txData(roverCommand, ROVERCOMM_MAIN);
-	}
+	}//end else
 }
 

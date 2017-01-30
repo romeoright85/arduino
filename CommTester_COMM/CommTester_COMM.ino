@@ -17,13 +17,29 @@ Debug data: !ANG:1.23,4.56,78.90
 Also uncomment the _DEBUG_OUTPUT_RXDATA_ in RoverComm.h to see the received string
 */
 
-//Test case 2:
-	//#define _DEBUG_ROVER_TEST_CASE_
+//Test case 2a:
+	//#define _DEBUG_ROVER_TEST_CASE_A_
 /*
 Uncomment the line above to test the Rover formatted data
 Debug data: /4c101*HelloMAINtoCMNC
 Also uncomment flag(s) in RoverComm.h to see the received string, etc.
+Note: The data is meant to route to the PC USB (i.e. CMNC) without any command processing, so it will be a clean output of "/4c101*HelloMAINtoCMNC"
 */
+//Test case 2b:
+	//#define _DEBUG_ROVER_TEST_CASE_B_
+/*
+Uncomment the line above to test the Rover formatted data
+Debug data: /4c501*HelloMAINtoCOMM
+Also uncomment flag(s) in RoverComm.h to see the received string, etc.
+Note: You will get an "Invalid Cmd! =(" but that is expected and fine since "HelloMAINtoCOMM" isn't a registered command. But this test the routing of the data is correct.
+*/
+
+
+
+
+
+
+
 
 
 //Test case 3a:
@@ -141,11 +157,15 @@ void loop() {
 		roverComm_Ch2->setRxData("!ANG:1.23,4.56,78.90", sizeof("!ANG:1.23,4.56,78.90"));
 		ch2Valid = roverComm_Ch2->validateData();		
 	#endif
-	#ifdef _DEBUG_ROVER_TEST_CASE_
+	#ifdef _DEBUG_ROVER_TEST_CASE_A_
 		roverComm_Ch2->setRxData("/4c101*HelloMAINtoCMNC", sizeof("/4c101*HelloMAINtoCMNC"));
 		ch2Valid = roverComm_Ch2->validateData();
 	#endif
-			
+	#ifdef _DEBUG_ROVER_TEST_CASE_B_
+		roverComm_Ch2->setRxData("/4c501*HelloMAINtoCOMM", sizeof("/4c501*HelloMAINtoCOMM"));
+		ch2Valid = roverComm_Ch2->validateData();
+	#endif
+
 
 	//2. Transmit data and/or execute command
 	
@@ -181,7 +201,7 @@ void loop() {
 		//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
 		dataDirector(roverDataCh2_COMM);//Note: this is a local .ino function
 
-		//4. Take any actions if the data was meant for this unit, COMM
+		
 		if (dataWasForCOMM)
 		{
 			
@@ -208,6 +228,7 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	boolean dataReady = false;
 	boolean validData = false;
 
+	//Note: Make sure validateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
 	if (roverCommType == ROVERCOMM_CMNC)
 	{
 
@@ -308,11 +329,11 @@ void dataDirector(RoverData * roverData)
 	return;
 }
 
-void txData(String txData, byte roverCommType)
+void txData(char * txData, byte roverCommType)
 {
 	//Note: This function varies for different Arduinos
 
-	if (roverCommType == ROVERCOMM_CMNC)
+	if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
 	{
 		//transmit the data to CMNC or through the USB of this Arduino (i.e. for debug) [in this case, it means the same thing]
 		Serial.println(txData);
@@ -338,17 +359,17 @@ void commandDirector(char * roverCommand)
 		txData("Valid Cmd! =)", ROVERCOMM_CMNC);
 		txData("Rx'd:", ROVERCOMM_CMNC);
 		txData(roverCommand, ROVERCOMM_CMNC);
-	}
+	}//end if
 	else if (strcmp(roverCommand, "bye") == 0)
 	{
 		txData("Valid Cmd! =)", ROVERCOMM_CMNC);
 		txData("Rx'd:", ROVERCOMM_CMNC);
 		txData(roverCommand, ROVERCOMM_CMNC);
-	}
+	}//end else if
 	else
 	{
 		txData("Invalid Cmd! =(", ROVERCOMM_CMNC);
 		txData("Rx'd:", ROVERCOMM_CMNC);
 		txData(roverCommand, ROVERCOMM_CMNC);
-	}
+	}//end else
 }
