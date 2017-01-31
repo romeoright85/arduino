@@ -2,6 +2,8 @@
 
 #include <RoverGpsSensor.h>
 
+
+//Note: To hook up the GPS for testing, look up GPS_DATA_TX_PIN, i.e. #define GPS_DATA_TX_PIN						15
 //Uncomment to used fixed GPS example data to test parsing algorithm
 //#define _DEBUG_PARSING_WITH_FIXED_DATA
 //Uncomment to customize output data
@@ -13,7 +15,7 @@
 #define _OUTPUT_FIX_QUALITY
 #define _OUTPUT_SATELLITES_TRACKED
 #define _OUTPUT_GOOGLE_MAPS
-//#define _OUTPUT_DATA_NOT_READY_STATUS
+#define _OUTPUT_DATA_NOT_READY_STATUS
 
 
 //Global Variables

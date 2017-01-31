@@ -462,7 +462,7 @@
 		#define SERVO_PAN_PIN						9
 		#define SERVO_TILT_PIN						10
 		#define BUFFER_SELECT_PIN					11
-		#define GPS_DATA_TX_PIN						15 //Not really used, Referenced by Serial3
+		#define GPS_DATA_TX_PIN						15 //The definition is not really used in the code, but the pin is for Serial3
 		#define NAVI_HW_UART2_TX_PIN		16
 		#define NAVI_HW_UART2_RX_PIN		17		
 		#define ENCODER_A_FRONT_LEFT						18

@@ -6,7 +6,7 @@
 #include <DelayCounter.h>
 
 
-//uncomment the follow defines below in order to see the output (can choose as many or as little as you want
+//Debug: uncomment the follow defines below in order to see the output (can choose as many or as little as you want
 //#define _OUTPUT_MUX1_
 //#define _OUTPUT_MUX2_
 //#define _OUTPUT_MUX3_
