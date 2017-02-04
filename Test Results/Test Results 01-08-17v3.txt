@@ -52,9 +52,12 @@ GpsTester
 	Updated code 01-08-17:
 		Removed checksum and all the other fields. Kept only the basic fields in front since the data seems to get corrupted and filtered out too often otherwise.
 	Re-Comments:
-			
-				
-
+			It seemed to say the GPS data wasn't ready when the red led is flashing and should be ready.
+			It seemed to drop data once the code ran for a while. I think since I had it read while the data was ready it was running out of memory, as the word has a max length, but the data was always ready.
+			Seems to parse now, but need to get reception and do more tests.
+			Once I got reception, the code seems to stop parsing after a while.
+NEEDS REWORK
+			Try rewriting it with manual character comparison instead of using the substring method.
 **LEFT OFF RETESTING HERE (SEE ABOVE)**	
 		
 		

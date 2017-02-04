@@ -27,41 +27,35 @@
 	#include <RoverCalibration.h>
 		
 	
-	
-	class GimbalController : public virtual RoverReset {
-	public:
-		GimbalController(byte,byte);//constructor (pan pin, tilt pin)
-		~GimbalController();//destructor
-		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-		
-		void setPan(int);//sets the current pan (pan amount)
-		void setTilt(int);//sets the current throttle (throttle amount)
-		int getPanSet();//returns the amount of pan
-		int getTiltSet();//returns the amount of tilt
-		//Send the amount with setPan() until the Rover is center, then use calibrationSetAsCenter()
-		void calibrationSetAsCenter();//set the current pan as the center amount		
-		//Send the amount with setTilt() until the Rover is middle, then use calibrationSetAsMiddle()
-		void calibrationSetAsMiddle();//set the current tilt as the middle amount		
-		
-	private:
-		//Non-SW Resettable
-			void calibratePan(int);// (steering amount to get the center position, ideal is 90)
-			void calibrateTilt(int);// (throttle amount to get the stop position, ideal is 90)
-			int boundToServoLimits(int);//bounds the amount (steering or calibration) to the limits of the servo
-			byte _panPin;
-			byte _tiltPin;
-			//Calibration values are between 0 and 180 where 90 is center/stop.
-			int _panCalibrationOffset;
-			int _tiltCalibrationOffset;		
-			Servo * _panControl;
-			Servo * _tiltControl;	
-	
-		//SW Resettable
-		int _panAmount;
-		int _tiltAmount;
-	};
+	void gimbalReset();//resets the gimbal controller
+	void gimbalSetPins(byte, byte);//(pan pin, tilt pin) sets the pin otus for the pan and tilt servos
+	void gimbalSetPan(int);//sets the current pan (pan amount)
+	void gimbalSetTilt(int);//sets the current throttle (throttle amount)
+	int gimbalGetPanSet();//returns the amount of pan
+	int gimbalGetTiltSet();//returns the amount of tilt
+	//Send the amount with setPan() until the Rover is center, then use calibrationSetAsCenter()
+	void gimbalCalibrationSetAsCenter();//set the current pan as the center amount		
+	//Send the amount with setTilt() until the Rover is middle, then use calibrationSetAsMiddle()
+	void gimbalCalibrationSetAsMiddle();//set the current tilt as the middle amount		
 
-	#endif 
+	
+
+	void gimbalCalibratePan(int);// (steering amount to get the center position, ideal is 90)
+	void gimbalCalibrateTilt(int);// (throttle amount to get the stop position, ideal is 90)
+	int gimbalBoundToServoLimits(int);//bounds the amount (steering or calibration) to the limits of the servo
+	byte gimbalPanPin;
+	byte gimbalTiltPin;
+	//Calibration values are between 0 and 180 where 90 is center/stop.
+	int gimbalPanCalibrationOffset;
+	int gimbalTiltCalibrationOffset;		
+//	Servo gimbalPanControl;
+//	Servo gimbalTiltControl;	
+
+	//SW Resettable
+	int gimbalPanAmount;
+	int gimbalTiltAmount;
+
+#endif 
 	
 	
 	

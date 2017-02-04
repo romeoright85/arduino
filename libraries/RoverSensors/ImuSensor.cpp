@@ -2,7 +2,7 @@
 
 
 //uncomment to print debugging information
-//Note: Since ImuSensor.cpp isn't calling ImuSensor.h (since global variables are define it in and can't have duplication since ImuSensor.h is called by the main .ino file already), then put this debug verbose flag here
+//Note: Since ImuSensor.cpp isn't calling ImuSensor.h (since global variables define it in and can't have duplication since ImuSensor.h is called by the main .ino file already), then put this debug verbose flag here
 //#define _DEBUG_VERBOSE
 
 

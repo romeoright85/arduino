@@ -1,4 +1,8 @@
 //ImuSensor.h
+#ifndef _IMUSENSOR_H
+#define _IMUSENSOR_H
+//ImuSensor.h and ImuSensor.cpp are not class files but function prototypes and functions.
+//This is because it requires other libraries that already uses classes. (i.e. LSM6, LIS3MDL, L3G, LSM303)
 
 
 
@@ -159,3 +163,6 @@ float getHeading();
 float getRoll();
 float getPitch();
 float getYaw();
+
+
+#endif

@@ -158,8 +158,10 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 				if ((char)Serial3.read() == '$')//look for the start of the GPS data (do NOT include it in the gps data string if found)
 				{
 					foundStart = true;
+					delay(1);
 					break;//break out of the loop since the header was found
 				}
+				delay(1);
 			} while (gpsCharactersToReceiveBeforeTimeout <= GPS_SENTENCE_LENGTH);
 			
 
