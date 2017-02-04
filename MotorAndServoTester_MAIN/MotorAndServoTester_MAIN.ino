@@ -10,11 +10,6 @@
 
 //Global Variables
 
-//counter delays
-//using a counter to create delays while still allowing the loop() to run (i.e. for messages, etc.)
-unsigned int outputMessageDelay = 0;
-unsigned int mtrPowerToggleDelay = 0;
-
 MotorPowerControl * mtrPowerCtrlr = new MotorPowerControl(MTR_FET_CTRL_PIN, MTR_ENABLE_STATUS);
 
 //The WheelEncoder will wait for 1sec (1000 periods * 1mS) between each wheel encoder calculation
@@ -54,6 +49,11 @@ void setup() {
 		resetArray[i]->reset();
 	}
 	Serial.begin(9600);
+	delay(100);
+	mtrPowerCtrlr->setMotorPower(MTR_ON);
+	Serial.println(F("SWITCHING MTR ON"));
+	getMotorStatus();
+	delay(1000);
 }
 
 
@@ -66,117 +66,89 @@ void loop() {
 	//Wheel Encoders
 	wheelEncoder_MidLeft->sensorOnline();
 	wheelEncoder_MidRight->sensorOnline();
-	//Counter Delays
-	//increment the counters
-	outputMessageDelay++;
-	mtrPowerToggleDelay++;
 
 
+	char rxData;
+	
+	if (Serial.available() > 0)
+	{		
+		rxData = Serial.read();//Get data from the computer
+		delay(1);
 
-	//Motor Power Control
-	if (mtrPowerToggleDelay >= 40000)//about once a 1 seconds
-	{
-		//toggle motor power on and off
-		Serial.print(F("SWITCHING MTR "));
-		if (mtrPowerCtrlr->motorIsOn())//motor is currently on, so turn it off
+		switch (rxData)
 		{
-			mtrPowerCtrlr->setMotorPower(MTR_OFF);
-			Serial.println(F("OFF"));
-		}
-		else//motor is currently off, so turn it on
-		{
-			mtrPowerCtrlr->setMotorPower(MTR_ON);
-			Serial.println(F("ON"));
-		}
-		Serial.println();
-		mtrPowerToggleDelay = 0;//reset the counter
-	}
-
-
-
-	if (outputMessageDelay >= 40000)//about once a second
-	{
-
-
-
-
-		//Print Motor Power Status
-		Serial.println(F("=MTR STATUS="));
-		if (mtrPowerCtrlr->motorIsOn())//motor is currently on
-		{
-			Serial.println(F("MTR ON"));
-		}
-		else//motor is currently off
-		{
-			
-			Serial.println(F("MTR OFF"));
-		}
-		Serial.println();
-
-		
-
-		//Wheel Encoder Control and Status
-		//========Mid Left Motor===========
-		byte direction_MidLeft = wheelEncoder_MidLeft->getDirection();
-		Serial.println(F("=MID LEFT MTR="));
-		Serial.print(F("Dir: "));
-		if (direction_MidLeft == MOTOR_FORWARD)//forward, reverse, stopped
-		{
-			Serial.println(F("Fwd"));
-		}
-		else if (direction_MidLeft == MOTOR_REVERSE)
-		{
-			Serial.println(F("Rev"));
-		}
-		else//MOTOR_STOPPED
-		{
-			Serial.println(F("Stopped"));
-		}
-		Serial.print(F("Dist: "));//in inches
-		Serial.println(wheelEncoder_MidLeft->getFootage());//distance traveled in feet
-		Serial.print(F("Spd: "));//in inches per second
-		Serial.println(wheelEncoder_MidLeft->getSpeed());//in inches per second
-
-
-														 //========Mid Right Motor===========
-		byte direction_MidRight = wheelEncoder_MidRight->getDirection();
-		Serial.println(F("=MID RIGHT MTR="));
-		Serial.print(F("Dir: "));
-		if (direction_MidRight == MOTOR_FORWARD)//forward, reverse, stopped
-		{
-			Serial.println(F("Fwd"));
-		}
-		else if (direction_MidRight == MOTOR_REVERSE)
-		{
-			Serial.println(F("Rev"));
-		}
-		else//MOTOR_STOPPED
-		{
-			Serial.println(F("Stopped"));
-		}
-		Serial.print(F("Dist: "));//in inches
-		Serial.println(wheelEncoder_MidRight->getFootage());//distance traveled in feet
-		Serial.print(F("Spd: "));//in inches per second
-		Serial.println(wheelEncoder_MidRight->getSpeed());//in inches per second
-
-
-
-		Serial.println();
-
-
-
-
-		outputMessageDelay = 0;//reset the counter
-	}
+			case 'M'://turn motors on
+				mtrPowerCtrlr->setMotorPower(MTR_ON);
+				Serial.println(F("SWITCHING MTR ON"));
+				getMotorStatus();
+				delay(500);
+				break;
+			case 'm'://turn motors off
+				mtrPowerCtrlr->setMotorPower(MTR_OFF);
+				Serial.println(F("SWITCHING MTR OFF"));
+				getMotorStatus();
+				delay(500);
+				break;
+			default:
+				break;
+		}//end switch
+	}//end if
 	
 
 
+	//Wheel Encoder Control and Status
+	//========Mid Left Motor===========
+	byte direction_MidLeft = wheelEncoder_MidLeft->getDirection();
+	Serial.println(F("=MID LEFT MTR="));
+	Serial.print(F("Dir: "));
+	if (direction_MidLeft == MOTOR_FORWARD)//forward, reverse, stopped
+	{
+		Serial.println(F("Fwd"));
+	}
+	else if (direction_MidLeft == MOTOR_REVERSE)
+	{
+		Serial.println(F("Rev"));
+	}
+	else//MOTOR_STOPPED
+	{
+		Serial.println(F("Stopped"));
+	}
+	Serial.print(F("Dist: "));//in inches
+	Serial.println(wheelEncoder_MidLeft->getFootage());//distance traveled in feet
+	Serial.print(F("Spd: "));//in inches per second
+	Serial.println(wheelEncoder_MidLeft->getSpeed());//in inches per second
 
 
-}
+	//========Mid Right Motor===========
+	byte direction_MidRight = wheelEncoder_MidRight->getDirection();
+	Serial.println(F("=MID RIGHT MTR="));
+	Serial.print(F("Dir: "));
+	if (direction_MidRight == MOTOR_FORWARD)//forward, reverse, stopped
+	{
+		Serial.println(F("Fwd"));
+	}
+	else if (direction_MidRight == MOTOR_REVERSE)
+	{
+		Serial.println(F("Rev"));
+	}
+	else//MOTOR_STOPPED
+	{
+		Serial.println(F("Stopped"));
+	}
+	Serial.print(F("Dist: "));//in inches
+	Serial.println(wheelEncoder_MidRight->getFootage());//distance traveled in feet
+	Serial.print(F("Spd: "));//in inches per second
+	Serial.println(wheelEncoder_MidRight->getSpeed());//in inches per second
 
 
 
+	Serial.println();
+
+
+	delay(500);
+	
+
+}//end loop()
 
 
 void InterruptDispatch_wheelEncoder_MidLeft() {
@@ -184,4 +156,20 @@ void InterruptDispatch_wheelEncoder_MidLeft() {
 }
 void InterruptDispatch_wheelEncoder_MidRight() {
 	wheelEncoder_MidRight->isrUpdate();
+}
+
+void getMotorStatus()
+{
+	//Print Motor Power Status
+	Serial.println(F("=MTR STATUS="));
+	if (mtrPowerCtrlr->motorIsOn())//motor is currently on
+	{
+		Serial.println(F("MTR ON"));
+	}
+	else//motor is currently off
+	{
+
+		Serial.println(F("MTR OFF"));
+	}
+	Serial.println();
 }
