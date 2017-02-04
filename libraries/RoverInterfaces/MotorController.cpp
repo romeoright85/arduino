@@ -1,99 +1,52 @@
-#include <MotorController.h>
-MotorController::MotorController( byte steeringPin, byte throttlePin)
-{
-	
-	//Set the pins
-	this->_steeringPin = steeringPin;
-	this->_throttlePin = throttlePin;	
-
-	//Create "servo" signal objects	
-	this->_steeringControl = new Servo();
-	this->_throttleControl = new Servo();	
-	
-	//set the pins
-	this->_steeringControl->attach(this->_steeringPin);
-	this->_throttleControl->attach(this->_throttlePin);	
-	
-	//Initialize
-	this->reset();
-	
-}
-MotorController::~MotorController()
-{
-	//do nothing
-}
-void MotorController::reset()
-{	
-	//At HW or SW Reset, the values will be set to MC_CENTER_POSITION_AFTER_POR and MC_NO_THROTTLE_AFTER_POR as defined in RoverCalibration.h
-	this->calibrateSteering(MC_CENTER_POSITION_AFTER_POR);
-	this->calibrateThrottle(MC_NO_THROTTLE_AFTER_POR);
-}
-void MotorController::setSteering(int steeringAmount)
-{
-	//Add the calibration offset amount (could be a positive or negative offset) to the desired amount to get the adjusted amount
-	steeringAmount = steeringAmount + this->_steeringCalibrationOffset;
-	
-	//Adjust the amount to boundary limitations	
-	this->_steeringAmount = boundToServoLimits(steeringAmount);
-	
-	//Execute with the final adjusted amount
-	this->_steeringControl->write(this->_steeringAmount);	
-	
-}
-void MotorController::setThrottle(int throttleAmount)
-{
-
-
-	//Add the calibration offset amount (could be a positive or negative offset) to the desired amount to get the adjusted amount
-	throttleAmount = throttleAmount + this->_throttleCalibrationOffset;
-		
-	//Adjust the amount to boundary limitations	
-	this->_throttleAmount = boundToServoLimits(throttleAmount);
-		
-	//Execute with the final adjusted amount
-	this->_throttleControl->write(this->_throttleAmount);		
-
-}
-int MotorController::getSteeringSet()
-{
-	
-	return this->_steeringAmount;//can be values between SRVO_MIN_RANGE to SRVO_MAX_RANGE
-	
-}
-int MotorController::getThrottleSet()
-{
-	
-	return this->_throttleAmount;//can be values between SRVO_MIN_RANGE to SRVO_MAX_RANGE
-		
-}
-void MotorController::calibrateSteering(int steeringActualAmount)
-{
-	
-	//Example 1: If the ideal is 90 for center but the actual center is 92 then 92 - 90 = 2, which is the _steeringCalibrationOffset 
-	//Example 2: If the ideal is 90 for center but the actual center is 87 then 87 - 90 = -3, which is the _steeringCalibrationOffset 
-	this->_steeringCalibrationOffset = steeringActualAmount - MC_CENTER_POSITION_IDEAL;
-	
-}
-void MotorController::calibrateThrottle(int throttleActualAmount)
-{
-	
-	//Example 1: If the ideal is 90 for stop but the actual stop is 92 then 92 - 90 = 2, which is the _throttleCalibrationOffset 
-	//Example 2: If the ideal is 90 for stop but the actual stop is 87 then 87 - 90 = -3, which is the _throttleCalibrationOffset 
-	this->_throttleCalibrationOffset = throttleActualAmount - MC_NO_THROTTLE_IDEAL;
-	
-}
-void MotorController::calibrationSetAsCenter()
-{	
-	this->calibrateSteering(this->getSteeringSet());//get the current amount set and use it as the calibration amount
-}
-void MotorController::calibrationSetAsStop()
-{
-	this->calibrateThrottle(this->getThrottleSet());//get the current amount set and use it as the calibration amount
-}
+//uncomment to print debugging information
+//Note: Since MotorController.cpp isn't calling MotorController.h (since global variables define it in and can't have duplication since MotorController.h is called by the main .ino file already), then put this debug verbose flag here
+#define _DEBUG_VERBOSE
 
 
 
-int MotorController::boundToServoLimits(int amount)
+#include <Arduino.h>
+#include <RoverDebug.h>
+#include <RoverReset.h>
+#include <Servo.h>
+
+
+
+
+/*******************************************************************
+Configure (define) flags before calling #include <RoverConfig.h>
+/********************************************************************/
+//define Arduino 1: NAVI in order to use it's config pins
+#ifndef _ARD_1_NAVI_H
+	#define _ARD_1_NAVI_H
+#endif
+
+#define _MOTORCONTROLLER_DEFINITIONS
+
+/********************************************************************/
+#include <RoverConfig.h>
+
+#define _SERVOSIGNAL_CALIBRATIONS
+#define _MOTORCONTROLLER_CALIBRATIONS
+#include <RoverCalibration.h>
+
+
+//Non-SW Resettable			
+extern byte motorControllerSteeringPin;
+extern byte motorControllerThrottlePin;
+extern Servo motorControllerSteeringControl;
+extern Servo motorControllerThrottleControl;	
+
+//SW Resettable
+//Calibration values are between 0 and 180 where 90 is the center/middle/stop.
+extern int motorControllerSteeringCalibrationOffset;
+extern int motorControllerThrottleCalibrationOffset;
+extern int motorControllerSteeringAmount;
+extern int motorControllerThrottleAmount;	
+
+
+//Note: Some functions have to be on top of another if one is calling the other, then the calling one has to be defined after the one being called.
+
+int motorControllerBoundToServoLimits(int amount)
 {
 	//Adjust the amount to boundary limitations
 	if(amount>=SRVO_MAX_RANGE)
@@ -109,3 +62,90 @@ int MotorController::boundToServoLimits(int amount)
 		return amount;
 	}
 }
+void motorControllerCalibrateSteering(int steeringActualAmount)
+{
+	
+	//Example 1: If the ideal is 90 for center but the actual center is 92 then 92 - 90 = 2, which is the _steeringCalibrationOffset 
+	//Example 2: If the ideal is 90 for center but the actual center is 87 then 87 - 90 = -3, which is the _steeringCalibrationOffset 
+	motorControllerSteeringCalibrationOffset = steeringActualAmount - MC_CENTER_POSITION_IDEAL;
+	
+}
+void motorControllerCalibrateThrottle(int throttleActualAmount)
+{
+	
+	//Example 1: If the ideal is 90 for stop but the actual stop is 92 then 92 - 90 = 2, which is the _throttleCalibrationOffset 
+	//Example 2: If the ideal is 90 for stop but the actual stop is 87 then 87 - 90 = -3, which is the _throttleCalibrationOffset 
+	motorControllerThrottleCalibrationOffset = throttleActualAmount - MC_NO_THROTTLE_IDEAL;
+	
+}
+void motorControllerReset()
+{	
+	//At HW or SW Reset, the values will be set to MC_CENTER_POSITION_AFTER_POR and MC_NO_THROTTLE_AFTER_POR as defined in RoverCalibration.h
+	motorControllerCalibrateSteering(MC_CENTER_POSITION_AFTER_POR);
+	motorControllerCalibrateThrottle(MC_NO_THROTTLE_AFTER_POR);
+}
+void motorControllerSetPins( byte steeringPin, byte throttlePin)
+{
+	
+	//Set the pins
+	motorControllerSteeringPin = steeringPin;
+	motorControllerThrottlePin = throttlePin;	
+	
+	//set the pins
+	motorControllerSteeringControl.attach(motorControllerSteeringPin);
+	motorControllerThrottleControl.attach(motorControllerThrottlePin);	
+	
+	//Initialize
+	motorControllerReset();
+	
+}
+
+
+void motorControllerSetSteering(int steeringAmount)
+{
+	//Add the calibration offset amount (could be a positive or negative offset) to the desired amount to get the adjusted amount
+	steeringAmount = steeringAmount + motorControllerSteeringCalibrationOffset;
+	
+	//Adjust the amount to boundary limitations	
+	motorControllerSteeringAmount = motorControllerBoundToServoLimits(steeringAmount);
+	
+	//Execute with the final adjusted amount
+	motorControllerSteeringControl.write(motorControllerSteeringAmount);	
+	
+}
+void motorControllerSetThrottle(int throttleAmount)
+{
+
+
+	//Add the calibration offset amount (could be a positive or negative offset) to the desired amount to get the adjusted amount
+	throttleAmount = throttleAmount + motorControllerThrottleCalibrationOffset;
+		
+	//Adjust the amount to boundary limitations	
+	motorControllerThrottleAmount = motorControllerBoundToServoLimits(throttleAmount);
+		
+	//Execute with the final adjusted amount
+	motorControllerThrottleControl.write(motorControllerThrottleAmount);		
+
+}
+int motorControllerGetSteeringSet()
+{
+	
+	return motorControllerSteeringAmount;//can be values between SRVO_MIN_RANGE to SRVO_MAX_RANGE
+	
+}
+int motorControllerGetThrottleSet()
+{
+	
+	return motorControllerThrottleAmount;//can be values between SRVO_MIN_RANGE to SRVO_MAX_RANGE
+		
+}
+
+void motorControllerCalibrationSetAsCenter()
+{	
+	motorControllerCalibrateSteering(motorControllerGetSteeringSet());//get the current amount set and use it as the calibration amount
+}
+void motorControllerCalibrationSetAsStop()
+{
+	motorControllerCalibrateThrottle(motorControllerGetThrottleSet());//get the current amount set and use it as the calibration amount
+}
+

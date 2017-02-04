@@ -9,19 +9,6 @@
 #include <Servo.h>
 
 
-extern byte gimbalPanPin;
-extern byte gimbalTiltPin;
-//Calibration values are between 0 and 180 where 90 is center/stop.
-extern int gimbalPanCalibrationOffset;
-extern int gimbalTiltCalibrationOffset;		
-Servo gimbalPanControl;
-Servo gimbalTiltControl;	
-
-//SW Resettable
-extern int gimbalPanAmount;
-extern int gimbalTiltAmount;
-
-
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
@@ -39,7 +26,25 @@ Configure (define) flags before calling #include <RoverConfig.h>
 #define _SERVOSIGNAL_CALIBRATIONS
 #define _GIMBALCONTROLLER_CALIBRATIONS
 #include <RoverCalibration.h>
-	
+
+
+
+
+//Non-SW Resettable
+extern byte gimbalPanPin;
+extern byte gimbalTiltPin;	
+extern Servo gimbalPanControl;
+extern Servo gimbalTiltControl;	
+
+//SW Resettable
+//Calibration values are between 0 and 180 where 90 is the center/middle/stop.
+extern int gimbalPanCalibrationOffset;
+extern int gimbalTiltCalibrationOffset;
+extern int gimbalPanAmount;
+extern int gimbalTiltAmount;
+
+
+//Note: Some functions have to be on top of another if one is calling the other, then the calling one has to be defined after the one being called.
 	
 int gimbalBoundToServoLimits(int amount)
 {
@@ -86,8 +91,6 @@ void gimbalSetPins( byte panPin, byte tiltPin)
 	gimbalPanPin = panPin;
 	gimbalTiltPin = tiltPin;	
 
-	
-	
 	//set the pins
 	gimbalPanControl.attach(gimbalPanPin);
 	gimbalTiltControl.attach(gimbalTiltPin);	

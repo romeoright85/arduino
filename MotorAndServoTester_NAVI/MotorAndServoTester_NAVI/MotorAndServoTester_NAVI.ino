@@ -4,6 +4,7 @@
 
 #include <RoverCalibration.h>
 #include <GimbalController.h>
+#include <MotorController.h>
 //Global Variables
 
 
@@ -21,9 +22,13 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
+	gimbalReset();
+
+
+
 	Serial.begin(9600);
 	gimbalSetPins(SERVO_PAN_PIN, SERVO_TILT_PIN);
-	gimbalReset();
+	motorControllerSetPins(MTR_RC_CTRL_STEERING_PIN, MTR_RC_CTRL_THROTTLE_PIN);
 }
 
 
@@ -31,20 +36,37 @@ void loop() {
 
 	//Tasks always running in the background with every loop() cycle
 
-	gimbalSetPan(0);
-	gimbalSetTilt(0);
+	int val;
+
+	val = 0;
+	motorControllerSetSteering(val);
+	motorControllerSetThrottle(val);
+	gimbalSetPan(val);
+	gimbalSetTilt(val);
 	delay(1000);
-	gimbalSetPan(45);
-	gimbalSetTilt(45);
+	val = 45;
+	motorControllerSetSteering(val);
+	motorControllerSetThrottle(val);
+	gimbalSetPan(val);
+	gimbalSetTilt(val);
 	delay(1000);
-	gimbalSetPan(90);
-	gimbalSetTilt(90);
+	val = 90;
+	motorControllerSetSteering(val);
+	motorControllerSetThrottle(val);
+	gimbalSetPan(val);
+	gimbalSetTilt(val);
 	delay(1000);	
-	gimbalSetPan(135);
-	gimbalSetTilt(135);
+	val = 135;
+	motorControllerSetSteering(val);
+	motorControllerSetThrottle(val);
+	gimbalSetPan(val);
+	gimbalSetTilt(val);
 	delay(1000);
-	gimbalSetPan(180);
-	gimbalSetTilt(180);
+	val = 180;
+	motorControllerSetSteering(val);
+	motorControllerSetThrottle(val);
+	gimbalSetPan(val);
+	gimbalSetTilt(val);
 	delay(1000);
 	
 

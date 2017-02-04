@@ -27,31 +27,36 @@
 	#include <RoverCalibration.h>
 		
 	
-	void gimbalReset();//resets the gimbal controller
-	void gimbalSetPins(byte, byte);//(pan pin, tilt pin) sets the pin otus for the pan and tilt servos
+	
+	
+	
+	//Note: By design, the reset will clear any current calibration values and go back to the 	GC_CENTER_POSITION_AFTER_POR and GC_MIDDLE_POSITION_AFTER_POR and MC_NO_THROTTLE_AFTER_POR values as defined in RoverConfig.h	
+	void gimbalReset();//software resets the gimbal controller
+	void gimbalSetPins(byte, byte);//(pan pin, tilt pin) sets the pinouts for the pan and tilt servos
+	//Note: The int type has to be used since the calibration values may be positive or negative
 	void gimbalSetPan(int);//sets the current pan (pan amount)
 	void gimbalSetTilt(int);//sets the current throttle (throttle amount)
 	int gimbalGetPanSet();//returns the amount of pan
-	int gimbalGetTiltSet();//returns the amount of tilt
-	//Send the amount with setPan() until the Rover is center, then use calibrationSetAsCenter()
+	int gimbalGetTiltSet();//returns the amount of tilt	
+	//Note: On initial power up the calibration values will be set to the GC_CENTER_POSITION_AFTER_POR and GC_MIDDLE_POSITION_AFTER_POR values as defined in RoverConfig.h
+	//Send the amount with gimbalSetPan() until the Rover is center, then use gimbalCalibrationSetAsCenter()
 	void gimbalCalibrationSetAsCenter();//set the current pan as the center amount		
-	//Send the amount with setTilt() until the Rover is middle, then use calibrationSetAsMiddle()
+	//Send the amount with gimbalSetTilt() until the Rover is middle, then use gimbalCalibrationSetAsMiddle()
 	void gimbalCalibrationSetAsMiddle();//set the current tilt as the middle amount		
-
-	
-
 	void gimbalCalibratePan(int);// (steering amount to get the center position, ideal is 90)
 	void gimbalCalibrateTilt(int);// (throttle amount to get the stop position, ideal is 90)
 	int gimbalBoundToServoLimits(int);//bounds the amount (steering or calibration) to the limits of the servo
+	
+	//Non-SW Resettable
 	byte gimbalPanPin;
-	byte gimbalTiltPin;
-	//Calibration values are between 0 and 180 where 90 is center/stop.
-	int gimbalPanCalibrationOffset;
-	int gimbalTiltCalibrationOffset;		
-//	Servo gimbalPanControl;
-//	Servo gimbalTiltControl;	
-
+	byte gimbalTiltPin;	
+	Servo gimbalPanControl;
+	Servo gimbalTiltControl;	
+	
 	//SW Resettable
+	//Calibration values are between 0 and 180 where 90 is the center/middle/stop.
+	int gimbalPanCalibrationOffset;
+	int gimbalTiltCalibrationOffset;
 	int gimbalPanAmount;
 	int gimbalTiltAmount;
 
