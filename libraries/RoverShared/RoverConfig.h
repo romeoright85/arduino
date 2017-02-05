@@ -168,7 +168,7 @@
 	#ifdef _ROVERCOMM_DEFINITIONS
 		//RoverCommTypes (which rover communication source/destination)
 		#define ROVER_COMM_SENTENCE_LENGTH		75//should match the same size as GPS_SENTENCE_LENGTH
-		#define ROVERCOMM_NONE 0 //Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0
+		#define ROVERCOMM_NONE 0 //Save 0 for invalid since when you convert a string to an integer, if it's not a valid conversion, the default output is 0		
 		#define ROVERCOMM_CMNC 1
 		#define ROVERCOMM_NAVI 2
 		#define ROVERCOMM_AUXI 3
@@ -200,8 +200,8 @@
 		
 	//definition for MotorPowerControl
 	#ifdef _MOTORPOWERCONTROL_DEFINITIONS
-		#define MTR_OFF 0
-		#define MTR_ON 1	
+		#define MTR_DISABLED 0
+		#define MTR_ENABLED 1	
 	#endif
 	
 
@@ -291,7 +291,13 @@
 		//Ideal/theoretical value, before calibration adjusted
 		//Note: These values should not change. These are  from manufacturing/RC signal specifications.
 		#define MC_CENTER_POSITION_IDEAL		90		
+		
+		#define MC_MAX_RIGHT_POSITION_IDEAL		180		
+		#define MC_MAX_LEFT_POSITION_IDEAL		0
+		
 		#define MC_NO_THROTTLE_IDEAL	90
+		#define MC_MAX_THROTTLE_IDEAL 180
+		#define MC_MIN_THROTTLE_IDEAL 0
 	#endif	
 	
 	//definition for GimbalController

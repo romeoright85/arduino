@@ -30,13 +30,13 @@
 		MotorPowerControl(byte, byte);//constructor (motor fet control output pin, motor enable status input pin)
 		~MotorPowerControl();//destructor
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-		void setMotorPower(byte);//use constants MTR_ON and MTR_OFF for arguments
+		void setMotorPower(byte);//use constants MTR_ENABLED and MTR_DISABLED for arguments
 		boolean motorIsOn();//true if motor is on, else false if motor is off
 		
 	private:
 		//Non SW Resettable
 		byte _motorMosfetPin;
-		byte _motorEnableStatusPin;		
+		byte _motorEnableStatusPin;//closed loop feedback. it will read the actual digital level controlling the MOSFET to let you know if the motor's MOSFET is actually enabled (motor is actually enabled)
 	};
 
 	#endif 

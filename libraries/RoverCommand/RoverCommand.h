@@ -27,7 +27,7 @@
 		The O shows the origin where the message came from (Origin ID): See definitions below.
 		The D shows the destination Arduino it's going to (Destination ID): See definitions below.
 		Definitions:
-			0=NONE, 1=CMNC (external), 2=NAVI (internal), 3=AUXI (internal), 4=MAIN (internal), 5=COMM (internal)
+			0=NONE, 1=CMNC (external), 2=NAVI (internal), 3=AUXI (internal), 4=MAIN (internal), 5=COMM (internal), 6=PC_USB (internal)
 		The LL shows command priority level it should be in the lookup table
 		The C's (four or more) are the letters that designate the command. The length of the letters will be determined by the lookup's priority and destination
 		
@@ -44,7 +44,8 @@
 				/-c4--*----.... 				
 			COMM:
 				/-c5--*----.... 
-				
+			PC_USB:
+				/-c6--*----.... 
 				
 	Example:
 		/3c101*HelloMAINtoCMNC

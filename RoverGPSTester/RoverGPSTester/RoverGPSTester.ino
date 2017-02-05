@@ -84,7 +84,8 @@ void loop() {
 			Serial.print(F("Latitude: "));
 
 			dtostrf(roverGps->getGpsLatitude(), 5, 4, numCharArray);//convert double to char array
-			sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
+			//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
+			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
 			Serial.println(charBuffer);
 
 		#endif
@@ -92,7 +93,8 @@ void loop() {
 		#ifdef _OUTPUT_LONGITUDE
 			Serial.print(F("Longitude: "));
 			dtostrf(roverGps->getGpsLongitude(), 5, 4, numCharArray);//convert double to char array
-			sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
+			//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
+			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
 			Serial.println(charBuffer);
 		#endif
 

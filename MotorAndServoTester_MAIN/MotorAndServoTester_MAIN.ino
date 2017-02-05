@@ -50,8 +50,8 @@ void setup() {
 	}
 	Serial.begin(9600);
 	delay(100);
-	mtrPowerCtrlr->setMotorPower(MTR_ON);
-	Serial.println(F("SWITCHING MTR ON"));
+	mtrPowerCtrlr->setMotorPower(MTR_ENABLED);
+	Serial.println(F("ENABLING MTR"));
 	getMotorStatus();
 	delay(1000);
 }
@@ -77,15 +77,15 @@ void loop() {
 
 		switch (rxData)
 		{
-			case 'M'://turn motors on
-				mtrPowerCtrlr->setMotorPower(MTR_ON);
-				Serial.println(F("SWITCHING MTR ON"));
+			case '1'://turn motors on
+				mtrPowerCtrlr->setMotorPower(MTR_ENABLED);
+				Serial.println(F("ENABLING MTR"));
 				getMotorStatus();
 				delay(500);
 				break;
-			case 'm'://turn motors off
-				mtrPowerCtrlr->setMotorPower(MTR_OFF);
-				Serial.println(F("SWITCHING MTR OFF"));
+			case '0'://turn motors off
+				mtrPowerCtrlr->setMotorPower(MTR_DISABLED);
+				Serial.println(F("DISABLING MTR"));
 				getMotorStatus();
 				delay(500);
 				break;
@@ -164,12 +164,12 @@ void getMotorStatus()
 	Serial.println(F("=MTR STATUS="));
 	if (mtrPowerCtrlr->motorIsOn())//motor is currently on
 	{
-		Serial.println(F("MTR ON"));
+		Serial.println(F("ENABLED"));
 	}
 	else//motor is currently off
 	{
 
-		Serial.println(F("MTR OFF"));
+		Serial.println(F("DISABLED"));
 	}
 	Serial.println();
 }

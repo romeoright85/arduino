@@ -1,4 +1,5 @@
 #include <Sandbox.h>
+#include <DataType.h>
 
 Sandbox * sandboxObject = new Sandbox();
 
@@ -16,23 +17,13 @@ void setup()
 
 void loop()
 {	
-	
-	
-
-	strncpy(charArray, "hello", strlen("hello")+1);
-	sandboxObject->write(charArray, sizeof(charArray)/sizeof(charArray[0]));
-	Serial.println(sandboxObject->read());
-		
-
-
-
-	Serial.print(sandboxObject->getLat());
-	Serial.println(sandboxObject->getLatUnit());
-	
-	Serial.println();
-
-	Serial.print(sandboxObject->getLon());
-	Serial.println(sandboxObject->getLonUnit());
-
+	byte num = 123;
+	byte success;
+	char tempCharArray[4] = "";//it needs to be at least 4 chars long for the null character
+	success = DataType::byteToChars(num, tempCharArray, sizeof(tempCharArray));
+	if (success)
+	{
+		Serial.println(tempCharArray);
+	}
 	while (1);
 }

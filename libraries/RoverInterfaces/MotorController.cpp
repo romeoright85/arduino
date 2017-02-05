@@ -84,6 +84,14 @@ void motorControllerReset()
 	motorControllerCalibrateSteering(MC_CENTER_POSITION_AFTER_POR);
 	motorControllerCalibrateThrottle(MC_NO_THROTTLE_AFTER_POR);
 }
+
+
+
+
+
+
+
+
 void motorControllerSetPins( byte steeringPin, byte throttlePin)
 {
 	
@@ -147,5 +155,18 @@ void motorControllerCalibrationSetAsCenter()
 void motorControllerCalibrationSetAsStop()
 {
 	motorControllerCalibrateThrottle(motorControllerGetThrottleSet());//get the current amount set and use it as the calibration amount
+}
+
+void motorControllerPowerOnCalibration()
+{
+	motorControllerSetSteering(MC_MAX_RIGHT_POSITION_IDEAL);
+	delay(1000);
+	motorControllerSetSteering(MC_MAX_LEFT_POSITION_IDEAL);
+	delay(1000);
+	motorControllerSetThrottle(MC_MAX_THROTTLE_IDEAL);
+	delay(1000);
+	motorControllerSetThrottle(MC_MIN_THROTTLE_IDEAL);
+	delay(1000);
+	Serial.println(F("Pwr On Cal - Done"));
 }
 

@@ -13,17 +13,19 @@
 //Global Variables
 
 #define SET_LEFT_TURN		45
-#define SET_RIGHT_TURN		135	
 #define SET_GO_STRAIGHT		90
-#define SET_STOP_SPEED		90
+#define SET_RIGHT_TURN		135	
+
 #define SET_REV_HIGH_SPEED	0
 #define SET_REV_LOW_SPEED	45
 #define SET_STOP_SPEED		90
 #define SET_FWD_LOW_SPEED	135
 #define SET_FWD_HIGH_SPEED	180
+
 #define SET_LEFT_PAN		45
 #define SET_CENTER_PAN		90
 #define SET_RIGHT_PAN		135
+
 #define SET_DOWN_TILT		45
 #define SET_MIDDLE_TILT		90
 #define SET_UP_TILT			135
@@ -92,7 +94,9 @@ void setup() {
 
 	//Reset the gimbal and motor controller
 	gimbalReset();
+	motorControllerPowerOnCalibration();
 	motorControllerReset();
+	
 }
 
 
@@ -120,72 +124,72 @@ void loop() {
 
 		switch (rxData)
 		{
-		case 'a'://Set to auto drive
-			Serial.println(F("SWITCHING TO AUTO DRIVE"));
-			roverBuffer->driverMode(AUTO_DRIVE);			
-			break;
-		case 'm'://Set to manual drive
-			Serial.println(F("SWITCHING TO MANUAL DRIVE"));
-			roverBuffer->driverMode(MANUAL_DRIVE);			
-			break;
-		case '0'://Reset
-			Serial.println(F("RESET"));
-			motorControllerSetSteering(SET_GO_STRAIGHT);
-			motorControllerSetThrottle(SET_STOP_SPEED);
-			gimbalSetPan(SET_CENTER_PAN);
-			gimbalSetTilt(SET_MIDDLE_TILT);			
-			break;
-		case 'r'://steer right			
-			Serial.println(F("STEER RIGHT"));
-			motorControllerSetSteering(SET_RIGHT_TURN);
-			motorControllerSetThrottle(SET_FWD_LOW_SPEED);			
-			break;
-		case 'f'://go forward straight
-			Serial.println(F("FORWARD STRAIGHT"));
-			motorControllerSetSteering(SET_GO_STRAIGHT);
-			motorControllerSetThrottle(SET_FWD_HIGH_SPEED);
-			break;
-		case 's'://stop motors
-			Serial.println(F("STOP MOTORS"));
-			motorControllerSetSteering(SET_GO_STRAIGHT);
-			motorControllerSetThrottle(SET_STOP_SPEED);
-			break;
-		case 'b'://go backwards straight
-			Serial.println(F("BACKWARDS STRAIGHT"));
-			motorControllerSetSteering(SET_GO_STRAIGHT);
-			motorControllerSetThrottle(SET_REV_HIGH_SPEED);
-			break;
-		case 'l'://steer left				 
-			Serial.println(F("STEER LEFT"));
-			motorControllerSetSteering(SET_LEFT_TURN);
-			motorControllerSetThrottle(SET_FWD_LOW_SPEED);			
-			break;
-		case 'R'://pan right			
-			Serial.println(F("PAN RIGHT"));
-			gimbalSetPan(SET_RIGHT_PAN);			
-			break;
-		case 'S'://pan straight
-			Serial.println(F("PAN STRAIGHT"));
-			gimbalSetPan(SET_CENTER_PAN);			
-			break;
-		case 'L'://pan left				 
-			Serial.println(F("PAN LEFT"));
-			gimbalSetPan(SET_LEFT_PAN);			
-			break;
-		case 'D'://tilt down
-			Serial.println(F("TILT DOWN"));
-			gimbalSetTilt(SET_DOWN_TILT);
-			break;
-		case 'M'://tilt middle
-			Serial.println(F("TILT MIDDLE"));
-			gimbalSetTilt(SET_MIDDLE_TILT);
-			break;
-		case 'U'://tilt up
-			Serial.println(F("TILT UP"));
-			gimbalSetTilt(SET_UP_TILT);
-			break;
-		default:
-			break;
+			case '1'://Reset
+				Serial.println(F("RESET"));
+				motorControllerSetSteering(SET_GO_STRAIGHT);
+				motorControllerSetThrottle(SET_STOP_SPEED);
+				gimbalSetPan(SET_CENTER_PAN);
+				gimbalSetTilt(SET_MIDDLE_TILT);
+				break;
+			case '2'://Set to manual drive
+				Serial.println(F("SWITCHING TO MANUAL DRIVE"));
+				roverBuffer->driverMode(MANUAL_DRIVE);			
+				break;
+			case '3'://Set to auto drive
+				Serial.println(F("SWITCHING TO AUTO DRIVE"));
+				roverBuffer->driverMode(AUTO_DRIVE);
+				break;		
+			case 'd'://steer right			
+				Serial.println(F("STEER RIGHT"));
+				motorControllerSetSteering(SET_RIGHT_TURN);
+				motorControllerSetThrottle(SET_FWD_LOW_SPEED);			
+				break;
+			case 'w'://go forward straight
+				Serial.println(F("FORWARD STRAIGHT"));
+				motorControllerSetSteering(SET_GO_STRAIGHT);
+				motorControllerSetThrottle(SET_FWD_HIGH_SPEED);
+				break;
+			case 's'://stop motors
+				Serial.println(F("STOP MOTORS"));
+				motorControllerSetSteering(SET_GO_STRAIGHT);
+				motorControllerSetThrottle(SET_STOP_SPEED);
+				break;
+			case 'x'://go backwards straight
+				Serial.println(F("BACKWARDS STRAIGHT"));
+				motorControllerSetSteering(SET_GO_STRAIGHT);
+				motorControllerSetThrottle(SET_REV_HIGH_SPEED);
+				break;
+			case 'a'://steer left				 
+				Serial.println(F("STEER LEFT"));
+				motorControllerSetSteering(SET_LEFT_TURN);
+				motorControllerSetThrottle(SET_FWD_LOW_SPEED);			
+				break;
+			case 'k'://pan left				 
+				Serial.println(F("PAN LEFT"));
+				gimbalSetPan(SET_LEFT_PAN);
+				break;			
+			case 'l'://pan center
+				Serial.println(F("PAN CENTER"));
+				gimbalSetPan(SET_CENTER_PAN);			
+				break;
+			case ';'://pan right			
+				Serial.println(F("PAN RIGHT"));
+				gimbalSetPan(SET_RIGHT_PAN);
+				break;
+			case 'u'://tilt up
+				Serial.println(F("TILT UP"));
+				gimbalSetTilt(SET_UP_TILT);
+				break;
+			case 'j'://tilt middle
+				Serial.println(F("TILT MIDDLE"));
+				gimbalSetTilt(SET_MIDDLE_TILT);
+				break;
+			case 'm'://tilt down
+				Serial.println(F("TILT DOWN"));
+				gimbalSetTilt(SET_DOWN_TILT);
+				break;			
+			default:
+				break;
 		}//end switch
 	}//end if
 

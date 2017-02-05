@@ -100,8 +100,7 @@ private:
 
 
 	//SW Resettable
-	//Flags
-	boolean _validChecksum;	
+	//Flags	
 	byte _rxdCharacterIndex;//tracks how many characters was received for array indexing
 	//GPS Received Data
 	char _rxData[GPS_DATA_CHAR_BUFFER_SIZE];

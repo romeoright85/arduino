@@ -12,8 +12,7 @@ RoverGpsSensor::~RoverGpsSensor()
 void RoverGpsSensor::reset()
 {
 	
-	//Flags
-	this->_validChecksum = false;		
+	//Flags	
 	//GPS Helper Variables	
 	this->clearGpsDataArray();
 	//GPS Received Data	
@@ -187,7 +186,7 @@ boolean RoverGpsSensor::processRxGPSData()
 	//Clear the GPS data string for future use
 	this->clearRxGpsVariables();
 	
-	//Return from the function if the GPS data is invalid (status is extracted from the parsed GPS data) or the GPS checksum is invalid
+	//Return from the function if the GPS data is invalid (status is extracted from the parsed GPS data)
 	if(!this->isGpsDataValid())
 	{
 		return false;
@@ -281,31 +280,31 @@ char * RoverGpsSensor::getGoogleMapsCoordinates()
 	//Grab the first two characters of latitude, into the this->_googleMapsCoordinates
 	CharArray::substring(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE], stringSizeLatitude, 0, 2, this->_googleMapsCoordinates);
 	//Add a space to the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, " ");
+	strcat(this->_googleMapsCoordinates, " ");
 	//Grab the remaining characters of latitude, into the tempCharArray
 	CharArray::substring(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE], stringSizeLatitude, 2, tempCharArray);
 	//Concatenate the tempCharArray into the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, tempCharArray);
+	strcat(this->_googleMapsCoordinates, tempCharArray);
 	//Add a space to the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, " ");	
+	strcat(this->_googleMapsCoordinates, " ");	
 	//Concatenate the Latitude Direction into the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, this->getGpsLatitudeDirection());
+	strcat(this->_googleMapsCoordinates, this->getGpsLatitudeDirection());
 	//Add a space and comma to the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, ", ");
+	strcat(this->_googleMapsCoordinates, ", ");
 	//Grab the first three characters of longitude, into the tempCharArray
 	CharArray::substring(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE], stringSizeLongitude, 0, 3, tempCharArray);
 	//Concatenate the tempCharArray into the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, tempCharArray);
+	strcat(this->_googleMapsCoordinates, tempCharArray);
 	//Add a space to the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, " ");	
+	strcat(this->_googleMapsCoordinates, " ");	
 	//Grab the remainining characters of longitude, into the tempCharArray
 	CharArray::substring(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE], stringSizeLatitude, 3, tempCharArray);
 	//Concatenate the tempCharArray into the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, tempCharArray);	
+	strcat(this->_googleMapsCoordinates, tempCharArray);	
 	//Add a space to the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, " ");	
+	strcat(this->_googleMapsCoordinates, " ");	
 	//Concatenate the Latitude Direction into the this->_googleMapsCoordinates
-	strcat (this->_googleMapsCoordinates, this->getGpsLongitudeDirection());	
+	strcat(this->_googleMapsCoordinates, this->getGpsLongitudeDirection());	
 
 	return this->_googleMapsCoordinates;
 

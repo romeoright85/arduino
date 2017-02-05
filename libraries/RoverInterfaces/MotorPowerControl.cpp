@@ -22,15 +22,15 @@ MotorPowerControl::~MotorPowerControl()
 }
 void MotorPowerControl::reset()
 {
-	this->setMotorPower(MTR_OFF);
+	this->setMotorPower(MTR_DISABLED);
 }
 void MotorPowerControl::setMotorPower(byte motorEnable)
 {
-	if(motorEnable==MTR_ON)
+	if(motorEnable==MTR_ENABLED)
 	{
 		digitalWrite(this->_motorMosfetPin, HIGH);
 	}
-	else//motorEnable==MTR_OFF
+	else//motorEnable==MTR_DISABLED
 	{
 		digitalWrite(this->_motorMosfetPin, LOW);
 	}
