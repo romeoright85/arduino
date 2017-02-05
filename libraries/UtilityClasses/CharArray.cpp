@@ -83,10 +83,7 @@ void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex
 void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex, char * outputCharArray)
 {
 
-//Serial.println("substring");//DEBUG
-//Serial.println(inputCharArray);//DEBUG
-//Serial.println(arraySize);//DEBUG
-//Serial.println(startIndex);//DEBUG
+
 	
 	char tempCharArray[arraySize];
 		
@@ -114,8 +111,7 @@ void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex
 		j++;
 	}
 	outputCharArray[j] = '\0';
-//Serial.println("outputCharArray:");//DEBUG	
-//Serial.println(outputCharArray);//DEBUG
+
 	return;	
 }
 int CharArray::stringSize(char * charArray, byte arraySize)

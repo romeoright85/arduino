@@ -10,5 +10,5 @@
 		//Command Tags
 		#define CMD_TAG_LATITUDE     "0000"
 		#define CMD_TAG_LONGITUDE     "0001"
-		
+				
 	#endif	

@@ -6,7 +6,7 @@
 	#include <RoverDebug.h>
 	#include <RoverReset.h>
 	#include <Servo.h>
-
+	#include <BufferSelect.h>
 	
 	
 	
@@ -31,7 +31,7 @@
 	
 		//Note: By design, the reset will clear any current calibration values and go back to the 	MC_CENTER_POSITION_AFTER_POR and MC_NO_THROTTLE_AFTER_POR values as defined in RoverConfig.h
 		void motorControllerReset();//software resets the motor controller		
-		void motorControllerPowerOnCalibration();//calibrates the motor controller upon start up by exercising the full range of the channels
+		void motorControllerPowerOnCalibration(BufferSelect *);//calibrates the motor controller upon start up by exercising the full range of the channels. Will only work when Rover is in Auto Mode
 		void motorControllerSetPins(byte, byte);//(steering pin, throttle pin) sets the pinouts for the steering and throttle channels
 		//Note: The int type has to be used since the calibration values may be positive or negative
 		void motorControllerSetSteering(int);//sets the current steering (steering amount)

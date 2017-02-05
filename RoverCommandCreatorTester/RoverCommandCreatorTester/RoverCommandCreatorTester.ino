@@ -23,14 +23,12 @@ void setup() {
 
 
 void loop() {
-	//need to emulate the conversion of doubles, bytes, char, char *, etc. like in the GPS class, then pass it to createCmd to see if it works
-
-
-
-
-	Serial.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_LATITUDE, "12.3456N"));
 	
-	Serial.println("Hi!");
+	//Test with the command tag
+	Serial.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_LATITUDE, "12.3456N"));
 
+	//Test without the command tag
+	Serial.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_1, "987601.2545E"));
+		
 	while (1);
 }

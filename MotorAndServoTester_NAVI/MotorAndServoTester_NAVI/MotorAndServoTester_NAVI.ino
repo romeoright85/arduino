@@ -5,7 +5,6 @@
 #include <GlobalDelayTimer.h>
 #include <DelayCounter.h>
 #include <BufferSelect.h>
-#include <MotorPowerControl.h>
 #include <MotorController.h>
 #include <GimbalController.h>
 #include <RoverCalibration.h>
@@ -93,8 +92,15 @@ void setup() {
 	motorControllerSetPins(MTR_RC_CTRL_STEERING_PIN, MTR_RC_CTRL_THROTTLE_PIN);
 
 	//Reset the gimbal and motor controller
-	gimbalReset();
-	motorControllerPowerOnCalibration();
+	gimbalReset();	
+
+	
+	Serial.println(F("SWITCHING TO MANUAL DRIVE"));//DEBUG
+	roverBuffer->driverMode(MANUAL_DRIVE);//DEBUG
+	//Serial.println(F("SWITCHING TO AUTO DRIVE"));
+	//roverBuffer->driverMode(AUTO_DRIVE);
+
+	motorControllerPowerOnCalibration(roverBuffer);//calibrate if buffer select is in auto mode, else do nothing
 	motorControllerReset();
 	
 }

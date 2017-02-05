@@ -8,7 +8,7 @@
 #include <RoverDebug.h>
 #include <RoverReset.h>
 #include <Servo.h>
-
+#include <BufferSelect.h>
 
 
 
@@ -157,16 +157,20 @@ void motorControllerCalibrationSetAsStop()
 	motorControllerCalibrateThrottle(motorControllerGetThrottleSet());//get the current amount set and use it as the calibration amount
 }
 
-void motorControllerPowerOnCalibration()
+void motorControllerPowerOnCalibration(BufferSelect * roverBuffer)
 {
-	motorControllerSetSteering(MC_MAX_RIGHT_POSITION_IDEAL);
-	delay(1000);
-	motorControllerSetSteering(MC_MAX_LEFT_POSITION_IDEAL);
-	delay(1000);
-	motorControllerSetThrottle(MC_MAX_THROTTLE_IDEAL);
-	delay(1000);
-	motorControllerSetThrottle(MC_MIN_THROTTLE_IDEAL);
-	delay(1000);
-	Serial.println(F("Pwr On Cal - Done"));
+	//Only run the power on calibration if the roverBuffer is set to auto mode, else do nothing, since in manual mode, the calibration is done with the R/C remote controller
+	if(roverBuffer->inAutoMode())
+	{
+		motorControllerSetSteering(MC_MAX_RIGHT_POSITION_IDEAL);
+		delay(1000);
+		motorControllerSetSteering(MC_MAX_LEFT_POSITION_IDEAL);
+		delay(1000);
+		motorControllerSetThrottle(MC_MAX_THROTTLE_IDEAL);
+		delay(1000);
+		motorControllerSetThrottle(MC_MIN_THROTTLE_IDEAL);
+		delay(1000);
+		Serial.println(F("Pwr On Cal - Done"));
+	}	
 }
 

@@ -72,8 +72,6 @@ boolean RoverGpsSensor::processRxGPSData()
 		Serial.println(this->_rxData);//DEBUG	
 	#endif
 
-		
-
 
 	//Initialize variable(s)		
 	this->clearGpsDataArray();

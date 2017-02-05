@@ -17,7 +17,7 @@ void setup()
 
 void loop()
 {	
-	byte num = 123;
+	byte num = 10;
 	byte success;
 	char tempCharArray[4] = "";//it needs to be at least 4 chars long for the null character
 	success = DataType::byteToChars(num, tempCharArray, sizeof(tempCharArray));
