@@ -1,6 +1,6 @@
 //uncomment to print debugging information
 //Note: Since GimbalController.cpp isn't calling GimbalController.h (since global variables define it in and can't have duplication since GimbalController.h is called by the main .ino file already), then put this debug verbose flag here
-#define _DEBUG_VERBOSE
+//#define _DEBUG_VERBOSE
 
 
 #include <Arduino.h>
@@ -171,29 +171,29 @@ void gimbalFunctionalDemo()
 		delay(1000);
 		//Tilt max up
 		gimbalSetTilt(GC_MAX_UP_POSITION_IDEAL);
-		delay(100);
+		delay(10);
 		//Pan sweep right to left
 		for(byte panVal = GC_MAX_RIGHT_POSITION_IDEAL; panVal >= GC_MAX_LEFT_POSITION_IDEAL; panVal--)
 		{
 			gimbalSetPan(panVal);
-			delay(100);	
+			delay(10);	
 		}
 		//Tilt middle
 		gimbalSetTilt(GC_MIDDLE_POSITION_IDEAL);
-		delay(100);
+		delay(10);
 		for(byte panVal = GC_MAX_LEFT_POSITION_IDEAL; panVal >= GC_MAX_RIGHT_POSITION_IDEAL; panVal++)
 		{
 			gimbalSetPan(panVal);
-			delay(100);	
+			delay(10);	
 		}
 		//Tilt max down
 		gimbalSetTilt(GC_MAX_DOWN_POSITION_IDEAL);
-		delay(100);
+		delay(10);
 		//Pan sweep right to left
 		for(byte panVal = GC_MAX_RIGHT_POSITION_IDEAL; panVal >= GC_MAX_LEFT_POSITION_IDEAL; panVal--)
 		{
 			gimbalSetPan(panVal);
-			delay(100);	
+			delay(10);	
 		}
 		//End at center and middle
 		gimbalSetPan(GC_CENTER_POSITION_IDEAL);
