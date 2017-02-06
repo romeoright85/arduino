@@ -46,6 +46,7 @@
 	void gimbalCalibratePan(int);// (steering amount to get the center position, ideal is 90)
 	void gimbalCalibrateTilt(int);// (throttle amount to get the stop position, ideal is 90)
 	int gimbalBoundToServoLimits(int);//bounds the amount (steering or calibration) to the limits of the servo
+	void gimbalFunctionalDemo();//demos the functionality of the gimbal pan and tilt (good for demo and/or testing)
 	
 	//Non-SW Resettable
 	byte gimbalPanPin;

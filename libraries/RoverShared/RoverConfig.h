@@ -292,20 +292,30 @@
 		//Note: These values should not change. These are  from manufacturing/RC signal specifications.
 		#define MC_CENTER_POSITION_IDEAL		90		
 		
+		//Steering
 		#define MC_MAX_RIGHT_POSITION_IDEAL		180		
+		#define MC_CENTER_POSITION_IDEAL		90
 		#define MC_MAX_LEFT_POSITION_IDEAL		0
-		
+		//Throttle		
+		#define MC_MAX_FWD_THROTTLE_IDEAL 0
 		#define MC_NO_THROTTLE_IDEAL	90
-		#define MC_MAX_THROTTLE_IDEAL 180
-		#define MC_MIN_THROTTLE_IDEAL 0
+		#define MC_MAX_REV_THROTTLE_IDEAL 180 //use a bigger number is going reverse
 	#endif	
 	
 	//definition for GimbalController
 	#ifdef _GIMBALCONTROLLER_DEFINITIONS		
 		//Ideal/theoretical value, before calibration adjusted
 		//Note: These values should not change. These are  from manufacturing/RC signal specifications.
-		#define GC_CENTER_POSITION_IDEAL		90		//for pan
-		#define GC_MIDDLE_POSITION_IDEAL	90		//for tilt
+		
+		//Pan
+		#define GC_MAX_LEFT_POSITION_IDEAL		0
+		#define GC_CENTER_POSITION_IDEAL			90
+		#define GC_MAX_RIGHT_POSITION_IDEAL		180
+		//Tilt		
+		#define GC_MAX_DOWN_POSITION_IDEAL		0
+		#define GC_MIDDLE_POSITION_IDEAL			90
+		#define GC_MAX_UP_POSITION_IDEAL			180
+		
 	#endif	
 	
 	//Rover Current Sensor Models

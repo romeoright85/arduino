@@ -161,3 +161,44 @@ void gimbalCalibrationSetAsMiddle()
 }
 
 	
+	
+
+void gimbalFunctionalDemo()
+{
+		//Start at center and middle
+		gimbalSetPan(GC_CENTER_POSITION_IDEAL);
+		gimbalSetTilt(GC_MIDDLE_POSITION_IDEAL);		
+		delay(1000);
+		//Tilt max up
+		gimbalSetTilt(GC_MAX_UP_POSITION_IDEAL);
+		delay(100);
+		//Pan sweep right to left
+		for(byte panVal = GC_MAX_RIGHT_POSITION_IDEAL; panVal >= GC_MAX_LEFT_POSITION_IDEAL; panVal--)
+		{
+			gimbalSetPan(panVal);
+			delay(100);	
+		}
+		//Tilt middle
+		gimbalSetTilt(GC_MIDDLE_POSITION_IDEAL);
+		delay(100);
+		for(byte panVal = GC_MAX_LEFT_POSITION_IDEAL; panVal >= GC_MAX_RIGHT_POSITION_IDEAL; panVal++)
+		{
+			gimbalSetPan(panVal);
+			delay(100);	
+		}
+		//Tilt max down
+		gimbalSetTilt(GC_MAX_DOWN_POSITION_IDEAL);
+		delay(100);
+		//Pan sweep right to left
+		for(byte panVal = GC_MAX_RIGHT_POSITION_IDEAL; panVal >= GC_MAX_LEFT_POSITION_IDEAL; panVal--)
+		{
+			gimbalSetPan(panVal);
+			delay(100);	
+		}
+		//End at center and middle
+		gimbalSetPan(GC_CENTER_POSITION_IDEAL);
+		gimbalSetTilt(GC_MIDDLE_POSITION_IDEAL);		
+		Serial.println(F("Gimbal Demo - Done"));
+
+}
+	

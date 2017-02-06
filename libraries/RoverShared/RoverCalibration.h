@@ -8,7 +8,7 @@
 	#ifdef _MOTORCONTROLLER_CALIBRATIONS
 		//Power On Reset Values
 		//Note: These values need to be calibration then the values updated here
-		#define MC_CENTER_POSITION_AFTER_POR		90		
+		#define MC_CENTER_POSITION_AFTER_POR		90
 		#define MC_NO_THROTTLE_AFTER_POR		90				
 	#endif	
 	

@@ -1,5 +1,8 @@
 //Used for NAVI - 1
 
+//Uncomment below to debug
+//#define _DEBUG_START_IN_MANUAL_MODE
+
 #include <RoverConfig.h>
 #include <WheelEncoderSensor.h>
 #include <GlobalDelayTimer.h>
@@ -15,11 +18,11 @@
 #define SET_GO_STRAIGHT		90
 #define SET_RIGHT_TURN		135	
 
-#define SET_REV_HIGH_SPEED	0
-#define SET_REV_LOW_SPEED	45
+#define SET_REV_HIGH_SPEED	180
+#define SET_REV_LOW_SPEED	135
 #define SET_STOP_SPEED		90
-#define SET_FWD_LOW_SPEED	135
-#define SET_FWD_HIGH_SPEED	180
+#define SET_FWD_LOW_SPEED	45
+#define SET_FWD_HIGH_SPEED	0
 
 #define SET_LEFT_PAN		45
 #define SET_CENTER_PAN		90
@@ -93,15 +96,26 @@ void setup() {
 
 	//Reset the gimbal and motor controller
 	gimbalReset();	
-
-	
-	Serial.println(F("SWITCHING TO MANUAL DRIVE"));//DEBUG
-	roverBuffer->driverMode(MANUAL_DRIVE);//DEBUG
-	//Serial.println(F("SWITCHING TO AUTO DRIVE"));
-	//roverBuffer->driverMode(AUTO_DRIVE);
-
-	motorControllerPowerOnCalibration(roverBuffer);//calibrate if buffer select is in auto mode, else do nothing
 	motorControllerReset();
+	
+
+	#ifdef _DEBUG_START_IN_MANUAL_MODE //good for testing if the motor controller mode needs to be reprogrammed
+		Serial.println(F("SWITCHING TO MANUAL DRIVE"));//DEBUG
+		roverBuffer->driverMode(MANUAL_DRIVE);//DEBUG
+	#else //default is auto mode
+		Serial.println(F("SWITCHING TO AUTO DRIVE"));
+		roverBuffer->driverMode(AUTO_DRIVE);
+	#endif
+	
+
+	//Run motor controller calibration
+	motorControllerPowerOnCalibration(roverBuffer);//calibrate if buffer select is in auto mode, else do nothing
+	
+	delay(1000);
+
+	//Run Gimbal Functional Demo
+	gimbalFunctionalDemo();
+	
 	
 }
 
