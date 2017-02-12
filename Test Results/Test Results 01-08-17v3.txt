@@ -12,6 +12,68 @@ TESTED
 
 	
 -------------
+02-04-17 to 02-05-17
+-------------
+	
+MotorAndServoTester_MAIN
+MotorAndServoTester_NAVI
+Updated code around 02-05-17:
+	Reversed servo values for forward vs backward	
+	added #define debug to startup in manual vs auto
+	added a gimbal demo mode on powerup to show it's functioning
+	Fixed code to return to stop after calibration	
+	Found out motors and servo didn't work (i.e. jitter) because I was writing a class to call another class and that seems to be a known issue (i.e. with the compass/imu class, it had the same problem). So instead, don't use classes but functions and globals instead.
+		Used Servo classes directly as writing my own class to call the Servo library had the same issues as with the IMU libraries.
+Comments:
+	Fixed enable not detecting
+		[DONE]check J2 pin 14 on power control CCA and MotorAndServoTester_MAIN and pin 22 of MAIN
+		Found motor enable pin to be off by one. (it was on an unused pin next to the pin 22, which is the desired pin)	
+	Not going forward as i expect
+			motor controller just needed to be reprogrammed to the right setting
+	Careful of usb cable touching other electronics as it's grounded
+	Always power down the rover before moving pins around to prevent a short
+	Use max left and right for calibration in the air. it won't work on the ground.
+	Only calibrate in the air (rover hovering above ground)	
+	You need to hold the motor control max/mins signal for about 1.2 seconds for the motor controller to register for calibration
+	[DONE]test auto to manual buffer select
+	
+NEED TO TEST
+		[NEED TO DO]review rover encoder output when testing these
+		[NEED TO DO] test mosfet off
+	
+	
+	
+			
+GpsTester
+	Updated code 01-08-17:
+		Converted to char arrays and char array functions.
+	Comments:
+		GPS code seems to work at times and maybe hang up at others. Good enough for now. Change terminal programs or PC later if needed to try and get better results.	
+		pc code crashed termite terminal with 10 ms delay. upgraded to 500ms delay
+		at 500ms after a while it seems to crash as well (the gps program crashes and some leds turn on for some reason)
+		try 1sec again. else maybe upload the sram code to see if it's an sram issue)
+		saw a buffer overflow once, but it was on startup, so probably just a glitch
+		curtains does block the gps signal
+			   need to add more buffer overflow detection, just in case things glitch, it could crash. so add buffer overflow protection for serial reads as it can be glitchy
+		http://forum.arduino.cc/index.php?topic=166182.0
+		http://playground.arduino.cc/Code/AvailableMemory
+		gps code seems to work ok on pc, crashes on laptop sometimes. might be the laptop.
+RETEST
+		[RESTEST ON ROVER DUE TO SOME MINOR CHANGES] RoverGpsSensor		
+		Also do a "couple hours" sram test with the gps code
+
+	
+**LEFT OFF RETESTING HERE (SEE ABOVE)**	
+
+	
+	
+	
+	
+	
+	
+	
+	
+-------------
 01-07-17
 -------------
 	

@@ -1,6 +1,7 @@
 //NOTES:
 //Used to test filtering, checksum, parsing, and validating algorithms. Though not kept up to date.
 //After the migration of this practice code to the actual rover code, improvements have been made to the actual rover code (i..e got ride of unnecessary variables, renamed things to make it more clear, etc.)
+//Not for long term use since it uses the string classes
 
 
 #include <string.h>

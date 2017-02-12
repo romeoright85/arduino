@@ -14,13 +14,14 @@ UltrasonicSensor * uSon_SideLeft = new UltrasonicSensor(SIDE_LEFT_ULTSNC_TRIG_PI
 
 int distanceMeasured;
 
+//Alternate the ultrasonics to prevent interference
 UltrasonicSensor * uSonSensors[6] =
 {
 	uSon_FwdLeft,
-	uSon_FwdCenter,
-	uSon_FwdRight,
 	uSon_SideRight,
+	uSon_FwdCenter,
 	uSon_RearCenter,
+	uSon_FwdRight,
 	uSon_SideLeft
 };
 
@@ -53,7 +54,6 @@ void setup() {
 void loop()
 {
 
-	
 		
 	for (byte i = 0; i <= 5; i++)
 	{
@@ -67,16 +67,16 @@ void loop()
 					Serial.print("uSon_FwdLeft: ");
 					break;
 				case 1:
-					Serial.print("uSon_FwdCenter: ");
-					break;
-				case 2:
-					Serial.print("uSon_FwdRight: ");
-					break;
-				case 3:
 					Serial.print("uSon_SideRight: ");
 					break;
-				case 4:
+				case 2:
+					Serial.print("uSon_FwdCenter: ");
+					break;
+				case 3:
 					Serial.print("uSon_RearCenter: ");
+					break;
+				case 4:
+					Serial.print("uSon_FwdRight: ");
 					break;
 				case 5:
 					Serial.print("uSon_SideLeft: ");

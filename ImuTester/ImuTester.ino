@@ -6,6 +6,13 @@
 #include <StopWatch.h>
 
 
+//Uncomment to customize output
+#define _DEBUG_OUTPUT_HEADING_
+//#define _DEBUG_OUTPUT_ROLL_
+//#define _DEBUG_OUTPUT_PITCH_
+//#define _DEBUG_OUTPUT_YAW_
+//#define _DEBUG_OUTPUT_AHRS_
+
 DelayCounter * counter50Hz = new DelayCounter(DELAY_4_PERIODS);//initialize it to count to 4 periods
 DelayCounter * counter10Hz = new DelayCounter(DELAY_2_PERIODS);//initialize it to count to 2 periods
 GlobalDelayTimer * timer50Hz = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, counter50Hz);//set each period to be 5ms long (delay interval)
@@ -81,21 +88,28 @@ void loop() //Main Loop
 		
 		
 
-		
-		Serial.print(F("Heading: "));
-		Serial.println(getHeading());
-		Serial.print(F("Roll: "));
-		Serial.println(getRoll());
-		Serial.print(F("Pitch: "));
-		Serial.println(getPitch());
-		Serial.print(F("Yaw: "));
-		Serial.println(getYaw());
-		
-
-
-		printInAHRSFormat();
-		
+	#ifdef _DEBUG_OUTPUT_HEADING_
+			Serial.print(F("Heading: "));
+			Serial.println(getHeading());
+	#endif
+	#ifdef _DEBUG_OUTPUT_ROLL_
+			Serial.print(F("Roll: "));
+			Serial.println(getRoll());
+	#endif
+	#ifdef _DEBUG_OUTPUT_PITCH_
+			Serial.print(F("Pitch: "));
+			Serial.println(getPitch());
+	#endif
+	#ifdef _DEBUG_OUTPUT_YAW_
+			Serial.print(F("Yaw: "));
+			Serial.println(getYaw());
+	#endif
+	#ifdef _DEBUG_OUTPUT_AHRS_
+			printInAHRSFormat();
+	#endif
 	}
+
+	delay(50);
 
 }
 

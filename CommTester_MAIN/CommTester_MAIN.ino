@@ -48,7 +48,6 @@ to test the command interface for this Arduino
 #include <RoverData.h>
 #include <RoverComm.h> //calls RoverConfig.h
 #include <RoverCommand.h>
-#include <SoftwareSerial.h>
 
 
 
