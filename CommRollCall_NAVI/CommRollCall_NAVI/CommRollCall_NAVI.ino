@@ -40,7 +40,7 @@ void loop() {
 	if (Serial2.available() > 1)
 	{
 		//Adding the NAVI tag to the data chain
-		Serial2.print(F("-NAVI-"));
+		Serial2.print(F("MAIN->NAVI"));
 
 		while (Serial2.available() > 0)
 		{

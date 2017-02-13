@@ -40,6 +40,9 @@ void loop() {
 	//Take any data received from COMM and send it to AUXI and NAVI
 	if (Serial1.available() > 1)
 	{
+		//Output data title/label
+		Serial.println(F("COMM->MAIN:"));
+
 		while (Serial1.available() > 0)
 		{
 			//Read from COMM
@@ -48,32 +51,47 @@ void loop() {
 			Serial3.print(rxdChar);
 			//Transmit out to NAVI
 			Serial2.print(rxdChar);
+			//Also output to PC USB as well for debug
+			Serial.print(rxdChar);
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
-		}//end while		
+		}//end while
+		Serial.println();//Add a new line at the end
 	}//end if
 	//Take any data received from AUXI and send it back to COMM
 	if (Serial3.available() > 1)
 	{
+		//Output data title/label
+		Serial.println(F("AUXI->MAIN:"));
+
 		while (Serial3.available() > 0)
 		{
 			//Read from AUXI
 			rxdChar = (char)Serial3.read();
 			//Transmit out to COMM
 			Serial1.print(rxdChar);
+			//Also output to PC USB as well for debug
+			Serial.print(rxdChar);
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
-		}//end while		
+		}//end while	
+		Serial.println();//Add a new line at the end
 	}//end if	
 	 //Take any data received from NAVI and send it back to COMM
 	if (Serial2.available() > 1)
 	{
+		//Output data title/label
+		Serial.println(F("NAVI->MAIN:"));
+
 		while (Serial2.available() > 0)
 		{
 			//Read from NAVI
 			rxdChar = (char)Serial2.read();
 			//Transmit out to COMM
 			Serial1.print(rxdChar);
+			//Also output to PC USB as well for debug
+			Serial.print(rxdChar);
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
-		}//end while		
+		}//end while	
+		Serial.println();//Add a new line at the end
 	}//end if	
 }//end loop
 

@@ -31,8 +31,23 @@ void setup() {
 
 
 void loop() {
-	//Do Nothing
+	
+	char rxdChar;
 
+	if (Serial2.available() > 1)
+	{
+		//Output data title/label
+		Serial.println(F("CMNC->COMM:"));
 
+		while (Serial2.available() > 0)
+		{
+			//Read from CMNC/PC USB
+			rxdChar = (char)Serial2.read();
+			//Output to PC USB as well for debug
+			Serial.print(rxdChar);
+			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
+		}//end while		
+		Serial.println();//Add a new line at the end
+	}
 }//end loop
 

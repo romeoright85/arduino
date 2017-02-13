@@ -49,5 +49,5 @@ extern "C" void __cxa_pure_virtual() {;}
 #define F(string_literal) ((const PROGMEM char *)(string_literal))
 #undef PSTR
 #define PSTR(string_literal) ((const PROGMEM char *)(string_literal))")
-#include <..\..\CommRollCall_NAVI\CommRollCall_NAVI\CommRollCall_NAVI.ino>
+#include <CommRollCall_NAVI.ino>
 #endif

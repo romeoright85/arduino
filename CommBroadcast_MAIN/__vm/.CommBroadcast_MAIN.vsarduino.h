@@ -49,5 +49,5 @@ extern "C" void __cxa_pure_virtual() {;}
 #define F(string_literal) ((const PROGMEM char *)(string_literal))
 #undef PSTR
 #define PSTR(string_literal) ((const PROGMEM char *)(string_literal))")
-#include <..\..\CommBroadcast_MAIN\CommBroadcast_MAIN.ino>
+#include <CommBroadcast_MAIN.ino>
 #endif
