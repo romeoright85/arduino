@@ -5,6 +5,8 @@
 //Note: Since ImuSensor.cpp isn't calling ImuSensor.h (since global variables define it in and can't have duplication since ImuSensor.h is called by the main .ino file already), then put this debug verbose flag here
 //#define _DEBUG_VERBOSE
 
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 
 
@@ -467,57 +469,115 @@ float getYaw()
 
 void printInAHRSFormat(void)
 {
+#ifdef _DEBUG_COMM_BROADCAST
+		
+	Serial2.print("!");
+
+	#if PRINT_EULER == 1
+		Serial2.print("ANG:");
+		Serial2.print(getRoll());
+		Serial2.print(",");
+		Serial2.print(getPitch());
+		Serial2.print(",");
+		Serial2.print(getYaw());
+			
+	#endif      
+	#if PRINT_ANALOGS==1
+		Serial2.print(",AN:");
+		Serial2.print(AN[0]);  //(int)read_adc(0)
+		Serial2.print(",");
+		Serial2.print(AN[1]);
+		Serial2.print(",");
+		Serial2.print(AN[2]);
+		Serial2.print(",");
+		Serial2.print(AN[3]);
+		Serial2.print(",");
+		Serial2.print(AN[4]);
+		Serial2.print(",");
+		Serial2.print(AN[5]);
+		Serial2.print(",");
+		Serial2.print(c_magnetom_x);
+		Serial2.print(",");
+		Serial2.print(c_magnetom_y);
+		Serial2.print(",");
+		Serial2.print(c_magnetom_z);
+	#endif
+	#if PRINT_DCM == 1
+		Serial2.print(",DCM:");
+		Serial2.print(DCM_Matrix[0][0]);
+		Serial2.print(",");
+		Serial2.print(DCM_Matrix[0][1]);
+		Serial2.print(",");
+		Serial2.print(DCM_Matrix[0][2]);
+		Serial2.print(",");
+		Serial2.print(DCM_Matrix[1][0]);
+		Serial2.print(",");
+		Serial2.print(DCM_Matrix[1][1]);
+		Serial2.print(",");
+		Serial2.print(DCM_Matrix[1][2]);
+		Serial2.print(",");
+		Serial2.print(DCM_Matrix[2][0]);
+		Serial2.print(",");
+		Serial2.print(DCM_Matrix[2][1]);
+		Serial2.print(",");
+		Serial2.print(DCM_Matrix[2][2]);
+	#endif
+	Serial2.println();	
+#else
+		
 	Serial.print("!");
 
-#if PRINT_EULER == 1
-	Serial.print("ANG:");
-	Serial.print(getRoll());
-	Serial.print(",");
-	Serial.print(getPitch());
-	Serial.print(",");
-	Serial.print(getYaw());
-		
-#endif      
-#if PRINT_ANALOGS==1
-	Serial.print(",AN:");
-	Serial.print(AN[0]);  //(int)read_adc(0)
-	Serial.print(",");
-	Serial.print(AN[1]);
-	Serial.print(",");
-	Serial.print(AN[2]);
-	Serial.print(",");
-	Serial.print(AN[3]);
-	Serial.print(",");
-	Serial.print(AN[4]);
-	Serial.print(",");
-	Serial.print(AN[5]);
-	Serial.print(",");
-	Serial.print(c_magnetom_x);
-	Serial.print(",");
-	Serial.print(c_magnetom_y);
-	Serial.print(",");
-	Serial.print(c_magnetom_z);
+	#if PRINT_EULER == 1
+		Serial.print("ANG:");
+		Serial.print(getRoll());
+		Serial.print(",");
+		Serial.print(getPitch());
+		Serial.print(",");
+		Serial.print(getYaw());
+			
+	#endif      
+	#if PRINT_ANALOGS==1
+		Serial.print(",AN:");
+		Serial.print(AN[0]);  //(int)read_adc(0)
+		Serial.print(",");
+		Serial.print(AN[1]);
+		Serial.print(",");
+		Serial.print(AN[2]);
+		Serial.print(",");
+		Serial.print(AN[3]);
+		Serial.print(",");
+		Serial.print(AN[4]);
+		Serial.print(",");
+		Serial.print(AN[5]);
+		Serial.print(",");
+		Serial.print(c_magnetom_x);
+		Serial.print(",");
+		Serial.print(c_magnetom_y);
+		Serial.print(",");
+		Serial.print(c_magnetom_z);
+	#endif
+	#if PRINT_DCM == 1
+		Serial.print(",DCM:");
+		Serial.print(DCM_Matrix[0][0]);
+		Serial.print(",");
+		Serial.print(DCM_Matrix[0][1]);
+		Serial.print(",");
+		Serial.print(DCM_Matrix[0][2]);
+		Serial.print(",");
+		Serial.print(DCM_Matrix[1][0]);
+		Serial.print(",");
+		Serial.print(DCM_Matrix[1][1]);
+		Serial.print(",");
+		Serial.print(DCM_Matrix[1][2]);
+		Serial.print(",");
+		Serial.print(DCM_Matrix[2][0]);
+		Serial.print(",");
+		Serial.print(DCM_Matrix[2][1]);
+		Serial.print(",");
+		Serial.print(DCM_Matrix[2][2]);
+	#endif
+	Serial.println();		
 #endif
-#if PRINT_DCM == 1
-	Serial.print(",DCM:");
-	Serial.print(DCM_Matrix[0][0]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[0][1]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[0][2]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[1][0]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[1][1]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[1][2]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[2][0]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[2][1]);
-	Serial.print(",");
-	Serial.print(DCM_Matrix[2][2]);
-#endif
-	Serial.println();
+
 
 }

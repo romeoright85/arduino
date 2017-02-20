@@ -8,6 +8,8 @@
 #include <HeadLightAssembly.h>
 #include <TailLightAssembly.h>
 
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 
 //Global Variables
@@ -60,8 +62,14 @@ void setup() {
 	}
 
 	Serial.begin(PC_USB_BAUD_RATE);
+	Serial2.begin(MAIN_BAUD_RATE);
 	delay(15);//add a little delay so the serial port has time to start up
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println("Test running");
+#else
 	Serial.println("Test running");
+#endif
+	
 }
 
 
@@ -80,7 +88,12 @@ void loop() {
 		if (modesTester==1)//if in on mode
 		{
 			//Turn all lights on
+		#ifdef _DEBUG_COMM_BROADCAST
+			Serial2.println("tick");
+		#else
 			Serial.println("tick");
+		#endif
+			
 			underglowLight->turnOn();
 			leftSideSignal->turnOn();
 			rightSideSignal->turnOn();
@@ -94,7 +107,11 @@ void loop() {
 		else//if in off mode
 		{
 			//Turn all lights off
+		#ifdef _DEBUG_COMM_BROADCAST
+			Serial2.println("tock");
+		#else
 			Serial.println("tock");
+		#endif		
 			underglowLight->turnOff();
 			leftSideSignal->turnOff();
 			rightSideSignal->turnOff();

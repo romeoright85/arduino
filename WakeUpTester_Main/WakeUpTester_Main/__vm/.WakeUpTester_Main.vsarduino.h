@@ -49,5 +49,5 @@ extern "C" void __cxa_pure_virtual() {;}
 #define F(string_literal) ((const PROGMEM char *)(string_literal))
 #undef PSTR
 #define PSTR(string_literal) ((const PROGMEM char *)(string_literal))")
-#include <WakeUpTester_Main.ino>
+#include <..\..\WakeUpTester_Main\WakeUpTester_Main\WakeUpTester_Main.ino>
 #endif

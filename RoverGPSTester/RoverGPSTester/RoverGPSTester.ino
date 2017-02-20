@@ -3,6 +3,10 @@
 #include <RoverGpsSensor.h>
 
 
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
+
 //Note: To hook up the GPS for testing, look up GPS_DATA_TX_PIN, i.e. #define GPS_DATA_TX_PIN						15
 //Uncomment to used fixed GPS example data to test parsing algorithm
 //#define _DEBUG_PARSING_WITH_FIXED_DATA
@@ -39,13 +43,21 @@ void setup() {
 	}
 
 	Serial.begin(PC_USB_BAUD_RATE);
+	Serial2.begin(MAIN_BAUD_RATE);
 	Serial3.begin(GPS_BAUD_RATE);
 
 
 	delay(1000);
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("GPS Test Started"));
+	Serial2.println();
+	Serial2.println();
+#else
 	Serial.println(F("GPS Test Started"));
 	Serial.println();
 	Serial.println();
+#endif
+	
 }
 
 
@@ -62,70 +74,131 @@ void loop() {
 	{
 		#ifdef _OUTPUT_STARTING_BLANK_LINE
 			//Add some white space/ new lines for clarity
-			Serial.println();
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println();
+			#else
+				Serial.println();
+			#endif			
 		#endif
 
 		//Print Valid GPS Data
 		#ifdef _OUTPUT_SENTENCE_ID
-			Serial.print(F("Sentence ID: "));
-			Serial.println(roverGps->getGpsSentenceId());
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.print(F("Sentence ID: "));
+				Serial2.println(roverGps->getGpsSentenceId());
+			#else
+				Serial.print(F("Sentence ID: "));
+				Serial.println(roverGps->getGpsSentenceId());
+			#endif			
 		#endif
 
 			
 				
 		#ifdef _OUTPUT_DATA_FIX_TIME
-			Serial.print(F("Time Of Data Fix: "));
-			dtostrf(roverGps->getGpsTimeWhenDataWasFixed(), 4, 3, numCharArray);//convert double to char array			
-			Serial.println(numCharArray);//print char array
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.print(F("Time Of Data Fix: "));
+			#else
+				Serial.print(F("Time Of Data Fix: "));
+			#endif
+				dtostrf(roverGps->getGpsTimeWhenDataWasFixed(), 4, 3, numCharArray);//convert double to char array			
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(numCharArray);//print char array
+			#else
+				Serial.println(numCharArray);//print char array
+			#endif
 		#endif
 
 
 		#ifdef _OUTPUT_LATITUDE
-			Serial.print(F("Latitude: "));
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.print(F("Latitude: "));
+			#else
+				Serial.print(F("Latitude: "));
+			#endif
 
 			dtostrf(roverGps->getGpsLatitude(), 5, 4, numCharArray);//convert double to char array
 			//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
 			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
-			Serial.println(charBuffer);
-
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(charBuffer);
+			#else
+				Serial.println(charBuffer);
+			#endif
 		#endif
 
 		#ifdef _OUTPUT_LONGITUDE
-			Serial.print(F("Longitude: "));
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.print(F("Longitude: "));
+			#else
+				Serial.print(F("Longitude: "));
+			#endif
 			dtostrf(roverGps->getGpsLongitude(), 5, 4, numCharArray);//convert double to char array
 			//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
 			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
-			Serial.println(charBuffer);
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(charBuffer);
+			#else
+				Serial.println(charBuffer);
+			#endif
+			
 		#endif
 
 		#ifdef _OUTPUT_FIX_QUALITY
-			Serial.print(F("Fix Quality: "));
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.print(F("Fix Quality: "));
+			#else
+				Serial.print(F("Fix Quality: "));
+			#endif			
 			sprintf(charBuffer, "%u", roverGps->getGpsFixQuality());
-			Serial.println(charBuffer);
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(charBuffer);
+			#else
+				Serial.println(charBuffer);
+			#endif
 		#endif
 
 		#ifdef _OUTPUT_SATELLITES_TRACKED
-			Serial.print(F("Satellites Tracked: "));			
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.print(F("Satellites Tracked: "));
+			#else
+				Serial.print(F("Satellites Tracked: "));
+			#endif			
 			sprintf(charBuffer, "%u", roverGps->getGpsSatellitesTracked());
-			Serial.println(charBuffer);
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(charBuffer);
+			#else
+				Serial.println(charBuffer);
+			#endif			
 		#endif
 
 		#ifdef _OUTPUT_GOOGLE_MAPS
-			Serial.print(F("For Google Maps: "));		
-			Serial.println(roverGps->getGoogleMapsCoordinates());
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.print(F("For Google Maps: "));
+				Serial2.println(roverGps->getGoogleMapsCoordinates());
+			#else
+				Serial.print(F("For Google Maps: "));
+				Serial.println(roverGps->getGoogleMapsCoordinates());
+			#endif			
 		#endif
 
 		#ifdef _OUTPUT_ENDING_BLANK_LINE
 			//Add some white space/ new lines for clarity
-			Serial.println();
-		#endif
-		
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println();
+			#else
+				Serial.println();
+			#endif			
+		#endif		
 	}
 
 #ifdef _OUTPUT_DATA_NOT_READY_STATUS
 	else
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("GPS Data Not Ready"));
+	#else
 		Serial.println(F("GPS Data Not Ready"));
+	#endif
 	}
 #endif	
 
@@ -224,10 +297,14 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 	char debugFixedData[] = "GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B";
 	roverGps->setRxGPSData(debugFixedData, sizeof(debugFixedData) / sizeof(debugFixedData[0]));
 
-	Serial.print(F("Set to: "));//DEBUG
-	Serial.println(roverGps->getRxGPSData());//DEBUG			
-
-
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.print(F("Set to: "));//DEBUG
+		Serial2.println(roverGps->getRxGPSData());//DEBUG			
+	#else
+		Serial.print(F("Set to: "));//DEBUG
+		Serial.println(roverGps->getRxGPSData());//DEBUG			
+	#endif
+		
 	//Process and validate GPS Data
 	validGpsData = roverGps->processRxGPSData();
 

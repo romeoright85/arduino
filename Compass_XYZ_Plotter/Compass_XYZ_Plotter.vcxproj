@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{AC01F412-510E-4010-8F61-2A5D36671752}</ProjectGuid>
-    <RootNamespace>CommTester_MAIN</RootNamespace>
+    <ProjectGuid>{78798F09-4BFF-4ED1-B0CB-A536CD9B243E}</ProjectGuid>
+    <RootNamespace>Compass_XYZ_Plotter</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -74,8 +74,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverComm;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverComm\utility;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverCommand;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverCommand\utility;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverData;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverData\utility;C:\Program Files (x86)\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\g2q5r2yz.pqw\Micro Platforms\default\debuggers;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\mega;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\CommTester_MAIN;C:\Program Files (x86)\Arduino\hardware\tools\avr/avr/include/;C:\Program Files (x86)\Arduino\hardware\tools\avr//avr/include/avr/;C:\Program Files (x86)\Arduino\hardware\tools\avr/lib\gcc\avr\4.8.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\CommTester_MAIN\__vm\.CommTester_MAIN.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\lsm303-arduino-master;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\lsm303-arduino-master\utility;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverShared;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverShared\utility;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\Wire\src;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\Wire\src\utility;C:\Program Files (x86)\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\g2q5r2yz.pqw\Micro Platforms\default\debuggers;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\mega;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\AnalogSignalsTester\AnalogSignalsTester;C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;C:\Program Files (x86)\Arduino\hardware\arduino\avr\variants\mega;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\Wire\src;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\lsm303-arduino-master;C:\Program Files (x86)\Arduino\libraries;C:\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\g2q5r2yz.pqw\Micro Platforms\default\debuggers;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries;C:\Program Files (x86)\Arduino\hardware\tools\avr/avr/include/;C:\Program Files (x86)\Arduino\hardware\tools\avr//avr/include/avr/;C:\Program Files (x86)\Arduino\hardware\tools\avr/lib\gcc\avr\4.8.1\include;K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Compass_XYZ_Plotter;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Compass_XYZ_Plotter\__vm\.Compass_XYZ_Plotter.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PreprocessorDefinitions>__AVR_ATmega2560__;F_CPU=16000000L;ARDUINO=10609;ARDUINO_AVR_MEGA2560;ARDUINO_ARCH_AVR;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -113,12 +113,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="CommTester_MAIN.ino">
+    <None Include="Compass_XYZ_Plotter.ino">
       <FileType>CppCode</FileType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="__vm\.CommTester_MAIN.vsarduino.h" />
+    <ClInclude Include="__vm\.Compass_XYZ_Plotter.vsarduino.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -42,7 +42,6 @@ to test the command interface for this Arduino
 
 
 
-
 //Must define this before calling RoverConfig.h (either directly or through another header file)
 #define _ARD_3_MAIN_H //define this flag to turn on MAIN definitions
 #include <RoverData.h>

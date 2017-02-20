@@ -41,30 +41,27 @@ void loop() {
 	//Take any data received from CMNC/PC USB and send it to MAIN
 	if (Serial.available() > 1)
 	{
-		//Adding the COMM tag to the data chain
-		swSerialMAIN.print(F("-COMM-"));
-
+		//Send tag to PC USB
+		Serial.println(">CMNC>");
 		while (Serial.available() > 0)
 		{
 			//Read from CMNC/PC USB
 			rxdChar = (char)Serial.read();
 			//Transmit out to MAIN
-			swSerialMAIN.print(rxdChar);
+			swSerialMAIN.print(rxdChar);			
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while		
 	}//end if
 	 //Take any data received from MAIN and send it to CMNC/PC USB
 	if (swSerialMAIN.available() > 1)
 	{
-		//Adding the COMM tag to the data chain
-		swSerialMAIN.print(F("-COMM-"));
-
+		Serial.println("<CMNC<");
 		while (swSerialMAIN.available() > 0)
 		{
 			//Read from CMNC/PC USB
 			rxdChar = (char)swSerialMAIN.read();
-			//Transmit out to MAIN
-			Serial.print(rxdChar);
+			//Transmit out to CMNC
+			Serial.print(rxdChar);			
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while		
 	}//end if	

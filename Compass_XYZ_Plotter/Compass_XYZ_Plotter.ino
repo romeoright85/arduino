@@ -1,6 +1,14 @@
+//Used for AUXI - 2
+
 /*
 Outputs Compass Gauss Values for X, Y, and Z
 */
+
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
+#include <RoverConfig.h>
+
 
 #include <Wire.h>
 #include <LSM303.h>
@@ -11,26 +19,34 @@ char report[80];
 
 void setup()
 {
-  Serial.begin(9600);
-  Wire.begin();
-  compass.init();
-  compass.enableDefault();
+	Serial.begin(PC_USB_BAUD_RATE);
+	Serial2.begin(MAIN_BAUD_RATE);
+	Wire.begin();
+	compass.init();
+	compass.enableDefault();
 }
 
 void loop()
 {
-     
-  Serial.println("X:\tY:\tZ:");
-  
-  while(1)
-  {
-    
-    compass.read();
-    snprintf(report, sizeof(report), "%6d\t%6d\t%6d",
-      
-    compass.m.x, compass.m.y, compass.m.z);
-    Serial.println(report);
-  
-    delay(100);
-  }
+
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println("X:\tY:\tZ:");
+#else
+	Serial.println("X:\tY:\tZ:");
+#endif
+	
+
+	while (1)
+	{
+
+		compass.read();
+		snprintf(report, sizeof(report), "%6d\t%6d\t%6d",
+		compass.m.x, compass.m.y, compass.m.z);
+#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(report);
+#else
+		Serial.println(report);
+#endif		
+		delay(100);
+	}
 }

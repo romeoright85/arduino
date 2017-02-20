@@ -9,6 +9,9 @@
 //#define _DEBUG_W_PC_INPUT
 //Also see the debug flag _DEBUG_STAY_AWAKE in RoverSleeperServer.h
 
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
 
 
 
@@ -92,7 +95,11 @@ void loop()
 
 	if (sleeperAUXI->isAwake())
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("AUXI is still awake..."));//output to PC for debug
+	#else
 		Serial.println(F("AUXI is still awake..."));//output to PC for debug
+	#endif		
 	}
 	delay(1000);
 
@@ -112,7 +119,11 @@ void InterruptDispatch1() {
 
 void goToSleepAUXI() {
 	//Pre sleep tasks
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("AUXI sleeping..."));//output to PC for debug
+#else
 	Serial.println(F("AUXI sleeping..."));//output to PC for debug
+#endif	
 	delay(100);//add some delay to allow the serial print to finish before going to sleep
 
 			   //Go to sleep
@@ -128,5 +139,10 @@ void wakeUpAUXI() {
 
 	//Post Wake Up tasks
 	delay(100);// let everybody get up and running for a sec
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("AUXI Awoken!"));//output to PC for debug
+#else
 	Serial.println(F("AUXI Awoken!"));//output to PC for debug
+#endif	
+	
 }

@@ -21,6 +21,16 @@ TESTED
 **LEFT OFF REWORK HERE (SEE ABOVE)**			
 
 
+	
+
+	
+CommBroadcast_COMM
+CommBroadcast_NAVI
+CommBroadcast_AUXI
+CommBroadcast_MAIN
+Comments:
+	Works, though sometimes the data gets cut off in other Arduinos, it comes out fine at the end.
+
 
 AnalogLedTester
 	Updated code 01-02-17:

@@ -38,15 +38,14 @@ void loop() {
 	//Take any data received from MAIN and send it back out to MAIN
 	if (Serial2.available() > 1)
 	{
-		//Adding the AUXI tag to the data chain
-		Serial2.print(F("-AUXI-"));
-
+		//Send tag to PC USB
+		Serial.println(">AUXI<");
 		while (Serial2.available() > 0)
 		{
 			//Read from MAIN
 			rxdChar = (char)Serial2.read();
 			//Transmit back out to MAIN
-			Serial2.print(rxdChar);
+			Serial2.print(rxdChar);			
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while		
 	}//end if

@@ -2,6 +2,8 @@
 
 #include <UltrasonicSensor.h>
 
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
 
 //Global Variables
 UltrasonicSensor * uSon_FwdLeft = new UltrasonicSensor(FORWARD_LEFT_ULTSNC_TRIG_PIN, FORWARD_LEFT_ULTSNC_ECHO_PIN);
@@ -48,6 +50,7 @@ void setup() {
 
 	}
 	Serial.begin(PC_USB_BAUD_RATE);
+	Serial2.begin(MAIN_BAUD_RATE);
 
 }
 
@@ -61,6 +64,39 @@ void loop()
 		{
 			distanceMeasured = uSonSensors[i]->getDistance(UNIT_CM);
 
+		#ifdef _DEBUG_COMM_BROADCAST
+			switch (i)
+			{
+				case 0:
+					Serial2.print("uSon_FwdLeft: ");
+					break;
+				case 1:
+					Serial2.print("uSon_SideRight: ");
+					break;
+				case 2:
+					Serial2.print("uSon_FwdCenter: ");
+					break;
+				case 3:
+					Serial2.print("uSon_RearCenter: ");
+					break;
+				case 4:
+					Serial2.print("uSon_FwdRight: ");
+					break;
+				case 5:
+					Serial2.print("uSon_SideLeft: ");
+					break;
+			}//end switch
+			 //if objects are detected...
+			if (distanceMeasured >= 0)
+			{
+				Serial2.print(distanceMeasured);
+				Serial2.println(" cm");
+			}//end if
+			else//no objects detected...
+			{
+				Serial2.println(F("No Object Detected"));
+			}//end else
+		#else
 			switch (i)
 			{
 				case 0:
@@ -81,17 +117,18 @@ void loop()
 				case 5:
 					Serial.print("uSon_SideLeft: ");
 					break;
-			}
-			//if objects are detected...
-			if(distanceMeasured >= 0)
+			}//end switch
+			 //if objects are detected...
+			if (distanceMeasured >= 0)
 			{
 				Serial.print(distanceMeasured);
 				Serial.println(" cm");
-			}
+			}//end if
 			else//no objects detected...
 			{
 				Serial.println(F("No Object Detected"));
-			}
+			}//end else
+		#endif
 			delay(1000);
 		}//end for
 	}//end for

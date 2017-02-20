@@ -11,7 +11,7 @@ http://www.cplusplus.com/doc/tutorial/ntcs/
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	Serial.begin(9600);
+	Serial.begin(PC_USB_BAUD_RATE);
 
 }
 

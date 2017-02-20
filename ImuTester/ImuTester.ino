@@ -13,6 +13,11 @@
 //#define _DEBUG_OUTPUT_YAW_
 //#define _DEBUG_OUTPUT_AHRS_
 
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+//Note: You also have to uncomment _DEBUG_COMM_BROADCAST in ImuSensor.cpp
+
+
 DelayCounter * counter50Hz = new DelayCounter(DELAY_4_PERIODS);//initialize it to count to 4 periods
 DelayCounter * counter10Hz = new DelayCounter(DELAY_2_PERIODS);//initialize it to count to 2 periods
 GlobalDelayTimer * timer50Hz = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, counter50Hz);//set each period to be 5ms long (delay interval)
@@ -30,6 +35,7 @@ RoverReset * resetArray[] = { counter50Hz, counter10Hz, timer50Hz, timer10Hz, st
 void setup()
 {
 	Serial.begin(PC_USB_BAUD_RATE);
+	Serial2.begin(MAIN_BAUD_RATE);
 	
 	Imu_Init();	
 		
@@ -86,8 +92,27 @@ void loop() //Main Loop
 		// Calculations
 		Imu_Calculations();
 		
-		
-
+#ifdef _DEBUG_COMM_BROADCAST
+	#ifdef _DEBUG_OUTPUT_HEADING_
+			Serial2.print(F("Heading: "));
+			Serial2.println(getHeading());
+	#endif
+	#ifdef _DEBUG_OUTPUT_ROLL_
+			Serial2.print(F("Roll: "));
+			Serial2.println(getRoll());
+	#endif
+	#ifdef _DEBUG_OUTPUT_PITCH_
+			Serial2.print(F("Pitch: "));
+			Serial2.println(getPitch());
+	#endif
+	#ifdef _DEBUG_OUTPUT_YAW_
+			Serial2.print(F("Yaw: "));
+			Serial2.println(getYaw());
+	#endif
+	#ifdef _DEBUG_OUTPUT_AHRS_
+			printInAHRSFormat();
+	#endif
+#else
 	#ifdef _DEBUG_OUTPUT_HEADING_
 			Serial.print(F("Heading: "));
 			Serial.println(getHeading());
@@ -106,7 +131,10 @@ void loop() //Main Loop
 	#endif
 	#ifdef _DEBUG_OUTPUT_AHRS_
 			printInAHRSFormat();
-	#endif
+	#endif	
+#endif		
+
+
 	}
 
 	delay(50);

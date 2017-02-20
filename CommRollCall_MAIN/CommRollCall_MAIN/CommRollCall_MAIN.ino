@@ -40,31 +40,33 @@ void loop() {
 	//Take any data received from COMM and send it to AUXI
 	if (Serial1.available() > 1)
 	{
-		//Adding the MAIN tag to the data chain
-		Serial3.print(F("-MAIN-"));
+		
+		//Send tag to PC USB
+		Serial.println(">MAIN>");
 
 		while (Serial1.available() > 0)
 		{
 			//Read from COMM
 			rxdChar = (char)Serial1.read();
 			//Transmit out to AUXI
-			Serial3.print(rxdChar);
+			Serial3.print(rxdChar);		
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while		
 	}//end if
 
-	 //Take any data received from AUXI and send it to NAVI
+	//Take any data received from AUXI and send it to NAVI
 	if (Serial3.available() > 1)
 	{
-		//Adding the MAIN tag to the data chain
-		Serial2.print(F("-MAIN-"));
+	
+		//Send tag to PC USB
+		Serial.println(">MAIN<");		
 
 		while (Serial3.available() > 0)
 		{
 			//Read from AUXI
 			rxdChar = (char)Serial3.read();
 			//Transmit out to NAVI
-			Serial2.print(rxdChar);
+			Serial2.print(rxdChar);			
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while		
 	}//end if
@@ -72,15 +74,16 @@ void loop() {
 	 //Take any data received from NAVI and send it to CMNC
 	if (Serial2.available() > 1)
 	{
-		//Adding the MAIN tag to the data chain
-		Serial1.print(F("-MAIN-"));
+		
+		//Send tag to PC USB
+		Serial.println("<MAIN>");
 
 		while (Serial2.available() > 0)
 		{
 			//Read from NAVI
 			rxdChar = (char)Serial2.read();
 			//Transmit out to COMM
-			Serial1.print(rxdChar);
+			Serial1.print(rxdChar);			
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while		
 	}//end if

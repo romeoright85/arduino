@@ -24,13 +24,6 @@ Configure (define) flags before calling #include <RoverConfig.h>
 #include <RoverConfig.h>
 
 
-
-
-
-
-
-
-
 //Global Variables
 
 RoverHwReset * naviHwResetter = new RoverHwReset(NAVI_HW_RESET_CTRL_PIN);

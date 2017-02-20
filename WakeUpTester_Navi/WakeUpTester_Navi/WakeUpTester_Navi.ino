@@ -6,7 +6,11 @@
 
 //uncomment below to use PC to simulate the COMM Arduino and be able to send sleep commands to NAVI
 //#define _DEBUG_W_PC_INPUT
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+	//Note: The COMM Broadcast only works if _DEBUG_W_PC_INPUT is commented out
+
 //Also see the debug flag _DEBUG_STAY_AWAKE in RoverSleeperServer.h
+
 
 
 
@@ -51,7 +55,7 @@ void setup() {
 
 	}
 	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
-	Serial2.begin(NAVI_BAUD_RATE);//Use to talk between MAIN and NAVI
+	Serial2.begin(MAIN_BAUD_RATE);//Use to talk between MAIN and NAVI
 
 }
 
@@ -67,11 +71,11 @@ void loop()
 #endif	
 	{
 	
-		#ifdef _DEBUG_W_PC_INPUT
-			rxData = Serial.read();//Get data from the MAIN to NAVI serial bus
-		#else
-			rxData = Serial2.read();//Get data from the MAIN to NAVI serial bus
-		#endif
+	#ifdef _DEBUG_W_PC_INPUT
+		rxData = Serial.read();//Get data from the MAIN to NAVI serial bus
+	#else
+		rxData = Serial2.read();//Get data from the MAIN to NAVI serial bus
+	#endif
 		
 		if (rxData == 's')//NAVI sleep
 		{
@@ -86,7 +90,11 @@ void loop()
 
 	if (sleeperNAVI->isAwake())
 	{
+#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("NAVI is still awake..."));//output to PC for debug
+#else
 		Serial.println(F("NAVI is still awake..."));//output to PC for debug
+#endif
 	}
 	delay(1000);
 
@@ -106,7 +114,12 @@ void InterruptDispatch1() {
 
 void goToSleepNAVI() {
 	//Pre sleep tasks
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("NAVI sleeping..."));//output to PC for debug
+#else
 	Serial.println(F("NAVI sleeping..."));//output to PC for debug
+#endif
+	
 	delay(100);//add some delay to allow the serial print to finish before going to sleep
 
 			   //Go to sleep
@@ -122,5 +135,10 @@ void wakeUpNAVI() {
 
 	//Post Wake Up tasks
 	delay(100);// let everybody get up and running for a sec
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("NAVI Awoken!"));//output to PC for debug
+#else
 	Serial.println(F("NAVI Awoken!"));//output to PC for debug
+#endif
+	
 }

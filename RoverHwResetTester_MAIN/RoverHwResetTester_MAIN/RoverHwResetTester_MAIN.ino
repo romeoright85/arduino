@@ -17,9 +17,12 @@ Configure (define) flags before calling #include <RoverConfig.h>
 
 
 #include <RoverConfig.h>
-
-
 #include <RoverHwReset.h>
+
+
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
 
 
 //Global Variables
@@ -37,17 +40,31 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
-	Serial.begin(9600);
+	Serial.begin(PC_USB_BAUD_RATE);
+	Serial1.begin(COMM_BAUD_RATE);	
 }
 
 
 void loop() {
 
 	delay(1000);
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial1.println(F("Running..."));
+#else
 	Serial.println(F("Running..."));
+#endif
 	delay(4000);
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial1.println(F("Resetting COMM..."));
+#else
 	Serial.println(F("Resetting COMM..."));
+#endif	
 	commHwResetter->performHwReset();	
 	delay(1000);
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial1.println(F("Reset Complete!"));
+#else
 	Serial.println(F("Reset Complete!"));
+#endif
+
 }

@@ -6,6 +6,8 @@
 #include <DelayCounter.h>
 #include <MotorPowerControl.h>
 
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 
 //Global Variables
@@ -48,10 +50,15 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
-	Serial.begin(9600);
+	Serial.begin(PC_USB_BAUD_RATE);
+	Serial1.begin(COMM_BAUD_RATE);
 	delay(100);
 	mtrPowerCtrlr->setMotorPower(MTR_ENABLED);
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial1.println(F("ENABLING MTR"));
+#else
 	Serial.println(F("ENABLING MTR"));
+#endif
 	getMotorStatus();
 	delay(1000);
 }
@@ -70,22 +77,37 @@ void loop() {
 
 	char rxData;
 	
+#ifdef _DEBUG_COMM_BROADCAST
+	if (Serial1.available() > 0)
+	{
+		rxData = Serial1.read();//Get data from COMM
+#else
 	if (Serial.available() > 0)
-	{		
+	{
 		rxData = Serial.read();//Get data from the computer
+#endif
+
 		delay(1);
 
 		switch (rxData)
 		{
 			case '1'://turn motors on
 				mtrPowerCtrlr->setMotorPower(MTR_ENABLED);
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial1.println(F("ENABLING MTR"));
+			#else
 				Serial.println(F("ENABLING MTR"));
+			#endif
 				getMotorStatus();
 				delay(500);
 				break;
 			case '0'://turn motors off
 				mtrPowerCtrlr->setMotorPower(MTR_DISABLED);
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial1.println(F("DISABLING MTR"));
+			#else
 				Serial.println(F("DISABLING MTR"));
+			#endif				
 				getMotorStatus();
 				delay(500);
 				break;
@@ -99,6 +121,49 @@ void loop() {
 	//Wheel Encoder Control and Status
 	//========Mid Left Motor===========
 	byte direction_MidLeft = wheelEncoder_MidLeft->getDirection();
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial1.println(F("=MID LEFT MTR="));
+	Serial1.print(F("Dir: "));
+	if (direction_MidLeft == MOTOR_FORWARD)//forward, reverse, stopped
+	{
+		Serial1.println(F("Fwd"));
+	}
+	else if (direction_MidLeft == MOTOR_REVERSE)
+	{
+		Serial1.println(F("Rev"));
+	}
+	else//MOTOR_STOPPED
+	{
+		Serial1.println(F("Stopped"));
+	}
+	Serial1.print(F("Dist: "));//in inches
+	Serial1.println(wheelEncoder_MidLeft->getFootage());//distance traveled in feet
+	Serial1.print(F("Spd: "));//in inches per second
+	Serial1.println(wheelEncoder_MidLeft->getSpeed());//in inches per second
+
+
+													 //========Mid Right Motor===========
+	byte direction_MidRight = wheelEncoder_MidRight->getDirection();
+	Serial1.println(F("=MID RIGHT MTR="));
+	Serial1.print(F("Dir: "));
+	if (direction_MidRight == MOTOR_FORWARD)//forward, reverse, stopped
+	{
+		Serial1.println(F("Fwd"));
+	}
+	else if (direction_MidRight == MOTOR_REVERSE)
+	{
+		Serial1.println(F("Rev"));
+	}
+	else//MOTOR_STOPPED
+	{
+		Serial1.println(F("Stopped"));
+	}
+	Serial1.print(F("Dist: "));//in inches
+	Serial1.println(wheelEncoder_MidRight->getFootage());//distance traveled in feet
+	Serial1.print(F("Spd: "));//in inches per second
+	Serial1.println(wheelEncoder_MidRight->getSpeed());//in inches per second
+	Serial1.println();
+#else
 	Serial.println(F("=MID LEFT MTR="));
 	Serial.print(F("Dir: "));
 	if (direction_MidLeft == MOTOR_FORWARD)//forward, reverse, stopped
@@ -119,7 +184,7 @@ void loop() {
 	Serial.println(wheelEncoder_MidLeft->getSpeed());//in inches per second
 
 
-	//========Mid Right Motor===========
+													 //========Mid Right Motor===========
 	byte direction_MidRight = wheelEncoder_MidRight->getDirection();
 	Serial.println(F("=MID RIGHT MTR="));
 	Serial.print(F("Dir: "));
@@ -139,10 +204,9 @@ void loop() {
 	Serial.println(wheelEncoder_MidRight->getFootage());//distance traveled in feet
 	Serial.print(F("Spd: "));//in inches per second
 	Serial.println(wheelEncoder_MidRight->getSpeed());//in inches per second
-
-
-
 	Serial.println();
+#endif
+	
 
 
 	delay(500);
@@ -160,16 +224,32 @@ void InterruptDispatch_wheelEncoder_MidRight() {
 
 void getMotorStatus()
 {
+#ifdef _DEBUG_COMM_BROADCAST
+	//Print Motor Power Status
+	Serial1.println(F("=MTR STATUS="));
+	if (mtrPowerCtrlr->motorIsOn())//motor is currently on
+	{
+		Serial1.println(F("ENABLED"));
+	}//end if
+	else//motor is currently off
+	{
+
+		Serial1.println(F("DISABLED"));
+	}//end else
+	Serial1.println();
+#else
 	//Print Motor Power Status
 	Serial.println(F("=MTR STATUS="));
 	if (mtrPowerCtrlr->motorIsOn())//motor is currently on
 	{
 		Serial.println(F("ENABLED"));
-	}
+	}//end if
 	else//motor is currently off
 	{
 
 		Serial.println(F("DISABLED"));
-	}
+	}//end else
 	Serial.println();
+#endif
+
 }

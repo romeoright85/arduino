@@ -2,6 +2,7 @@
 
 //Uncomment below to debug
 //#define _DEBUG_START_IN_MANUAL_MODE
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 #include <RoverConfig.h>
 #include <WheelEncoderSensor.h>
@@ -88,7 +89,8 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
-	Serial.begin(9600);
+	Serial.begin(PC_USB_BAUD_RATE);
+	Serial2.begin(MAIN_BAUD_RATE);
 
 	//Instantiate the gimbal servos and motor controller
 	gimbalSetPins(SERVO_PAN_PIN, SERVO_TILT_PIN);
@@ -100,10 +102,18 @@ void setup() {
 	
 
 	#ifdef _DEBUG_START_IN_MANUAL_MODE //good for testing if the motor controller mode needs to be reprogrammed
-		Serial.println(F("SWITCHING TO MANUAL DRIVE"));//DEBUG
+		#ifdef _DEBUG_COMM_BROADCAST
+			Serial2.println(F("SWITCHING TO MANUAL DRIVE"));//DEBUG
+		#else
+			Serial.println(F("SWITCHING TO MANUAL DRIVE"));//DEBUG
+		#endif
 		roverBuffer->driverMode(MANUAL_DRIVE);//DEBUG
 	#else //default is auto mode
-		Serial.println(F("SWITCHING TO AUTO DRIVE"));
+		#ifdef _DEBUG_COMM_BROADCAST
+			Serial2.println(F("SWITCHING TO AUTO DRIVE"));
+		#else
+			Serial.println(F("SWITCHING TO AUTO DRIVE"));
+		#endif		
 		roverBuffer->driverMode(AUTO_DRIVE);
 	#endif
 	
@@ -136,76 +146,137 @@ void loop() {
 	
 
 	char rxData;
-
+#ifdef _DEBUG_COMM_BROADCAST
+	if (Serial2.available() > 0)
+	{
+		rxData = Serial2.read();//Get data from the computer
+#else
 	if (Serial.available() > 0)
 	{
 		rxData = Serial.read();//Get data from the computer
+#endif		
 		delay(1);
 
 		switch (rxData)
 		{
 			case '1'://Reset
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("RESET"));
+			#else
 				Serial.println(F("RESET"));
+			#endif
 				motorControllerSetSteering(SET_GO_STRAIGHT);
 				motorControllerSetThrottle(SET_STOP_SPEED);
 				gimbalSetPan(SET_CENTER_PAN);
 				gimbalSetTilt(SET_MIDDLE_TILT);
 				break;
 			case '2'://Set to manual drive
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("SWITCHING TO MANUAL DRIVE"));
+			#else
 				Serial.println(F("SWITCHING TO MANUAL DRIVE"));
+			#endif				
 				roverBuffer->driverMode(MANUAL_DRIVE);			
 				break;
 			case '3'://Set to auto drive
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("SWITCHING TO AUTO DRIVE"));
+			#else
 				Serial.println(F("SWITCHING TO AUTO DRIVE"));
+			#endif				
 				roverBuffer->driverMode(AUTO_DRIVE);
 				break;		
 			case 'd'://steer right			
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("STEER RIGHT"));
+			#else
 				Serial.println(F("STEER RIGHT"));
+			#endif				
 				motorControllerSetSteering(SET_RIGHT_TURN);
 				motorControllerSetThrottle(SET_FWD_LOW_SPEED);			
 				break;
 			case 'w'://go forward straight
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("FORWARD STRAIGHT"));
+			#else
 				Serial.println(F("FORWARD STRAIGHT"));
+			#endif							
 				motorControllerSetSteering(SET_GO_STRAIGHT);
 				motorControllerSetThrottle(SET_FWD_HIGH_SPEED);
 				break;
 			case 's'://stop motors
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("STOP MOTORS"));
+			#else
 				Serial.println(F("STOP MOTORS"));
+			#endif						
 				motorControllerSetSteering(SET_GO_STRAIGHT);
 				motorControllerSetThrottle(SET_STOP_SPEED);
 				break;
 			case 'x'://go backwards straight
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("BACKWARDS STRAIGHT"));
+			#else
 				Serial.println(F("BACKWARDS STRAIGHT"));
+			#endif						
 				motorControllerSetSteering(SET_GO_STRAIGHT);
 				motorControllerSetThrottle(SET_REV_HIGH_SPEED);
 				break;
 			case 'a'://steer left				 
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("STEER LEFT"));
+			#else
 				Serial.println(F("STEER LEFT"));
+			#endif								
 				motorControllerSetSteering(SET_LEFT_TURN);
 				motorControllerSetThrottle(SET_FWD_LOW_SPEED);			
 				break;
-			case 'k'://pan left				 
+			case 'k'://pan left			
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("PAN LEFT"));
+			#else
 				Serial.println(F("PAN LEFT"));
+			#endif					
 				gimbalSetPan(SET_LEFT_PAN);
 				break;			
 			case 'l'://pan center
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("PAN CENTER"));
+			#else
 				Serial.println(F("PAN CENTER"));
+			#endif								
 				gimbalSetPan(SET_CENTER_PAN);			
 				break;
-			case ';'://pan right			
+			case ';'://pan right	
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("PAN RIGHT"));
+			#else
 				Serial.println(F("PAN RIGHT"));
+			#endif								
 				gimbalSetPan(SET_RIGHT_PAN);
 				break;
 			case 'u'://tilt up
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("TILT UP"));
+			#else
 				Serial.println(F("TILT UP"));
+			#endif								
 				gimbalSetTilt(SET_UP_TILT);
 				break;
 			case 'j'://tilt middle
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("TILT MIDDLE"));
+			#else
 				Serial.println(F("TILT MIDDLE"));
+			#endif				
 				gimbalSetTilt(SET_MIDDLE_TILT);
 				break;
 			case 'm'://tilt down
+			#ifdef _DEBUG_COMM_BROADCAST
+				Serial2.println(F("TILT DOWN"));
+			#else
 				Serial.println(F("TILT DOWN"));
+			#endif								
 				gimbalSetTilt(SET_DOWN_TILT);
 				break;			
 			default:
@@ -220,95 +291,193 @@ void loop() {
 	//Wheel Encoder Control and Status
 	//========Front Left Motor===========
 	byte direction_FrontLeft = wheelEncoder_FrontLeft->getDirection();
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("=FRONT LEFT MTR="));
+	Serial2.print(F("Dir: "));
+#else
 	Serial.println(F("=FRONT LEFT MTR="));
 	Serial.print(F("Dir: "));
+#endif				
+
+	
 	if (direction_FrontLeft == MOTOR_FORWARD)//forward, reverse, stopped
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Fwd"));
+	#else
 		Serial.println(F("Fwd"));
-	}
+	#endif						
+	}//end if
 	else if (direction_FrontLeft == MOTOR_REVERSE)
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Rev"));
+	#else
 		Serial.println(F("Rev"));
-	}
+	#endif					
+	}//end else if
 	else//MOTOR_STOPPED
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Stopped"));
+	#else
 		Serial.println(F("Stopped"));
-	}
+	#endif				
+	}//end else
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.print(F("Dist: "));//in inches
+	Serial2.println(wheelEncoder_FrontLeft->getFootage());//distance traveled in feet
+	Serial2.print(F("Spd: "));//in inches per second
+	Serial2.println(wheelEncoder_FrontLeft->getSpeed());//in inches per second
+#else
 	Serial.print(F("Dist: "));//in inches
 	Serial.println(wheelEncoder_FrontLeft->getFootage());//distance traveled in feet
 	Serial.print(F("Spd: "));//in inches per second
 	Serial.println(wheelEncoder_FrontLeft->getSpeed());//in inches per second
-
-
+#endif				
+	
 	//========Front Right Motor===========
 	byte direction_FrontRight = wheelEncoder_FrontRight->getDirection();
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("=FRONT RIGHT MTR="));
+	Serial2.print(F("Dir: "));
+#else
 	Serial.println(F("=FRONT RIGHT MTR="));
 	Serial.print(F("Dir: "));
+#endif	
 	if (direction_FrontRight == MOTOR_FORWARD)//forward, reverse, stopped
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Fwd"));
+	#else
 		Serial.println(F("Fwd"));
-	}
+	#endif		
+	}//end if
 	else if (direction_FrontRight == MOTOR_REVERSE)
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Rev"));
+	#else
 		Serial.println(F("Rev"));
-	}
+	#endif				
+
+		
+	}//end else if
 	else//MOTOR_STOPPED
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Stopped"));
+	#else
 		Serial.println(F("Stopped"));
-	}
+	#endif						
+	}//end else
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.print(F("Dist: "));//in inches
+	Serial2.println(wheelEncoder_FrontRight->getFootage());//distance traveled in feet
+	Serial2.print(F("Spd: "));//in inches per second
+	Serial2.println(wheelEncoder_FrontRight->getSpeed());//in inches per second
+#else
 	Serial.print(F("Dist: "));//in inches
 	Serial.println(wheelEncoder_FrontRight->getFootage());//distance traveled in feet
 	Serial.print(F("Spd: "));//in inches per second
 	Serial.println(wheelEncoder_FrontRight->getSpeed());//in inches per second
+#endif				
 
 
 	//========Rear Left Motor===========
 	byte direction_RearLeft = wheelEncoder_RearLeft->getDirection();
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("=REAR LEFT MTR="));
+	Serial2.print(F("Dir: "));
+#else
 	Serial.println(F("=REAR LEFT MTR="));
 	Serial.print(F("Dir: "));
+#endif				
+
+	
 	if (direction_RearLeft == MOTOR_FORWARD)//forward, reverse, stopped
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Fwd"));
+	#else
 		Serial.println(F("Fwd"));
-	}
+	#endif				
+	}//end if
 	else if (direction_RearLeft == MOTOR_REVERSE)
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Rev"));
+	#else
 		Serial.println(F("Rev"));
-	}
+	#endif
+	}//end else if
 	else//MOTOR_STOPPED
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Stopped"));
+	#else
 		Serial.println(F("Stopped"));
-	}
+	#endif						
+	}//end else
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.print(F("Dist: "));//in inches
+	Serial2.println(wheelEncoder_RearLeft->getFootage());//distance traveled in feet
+	Serial2.print(F("Spd: "));//in inches per second
+	Serial2.println(wheelEncoder_RearLeft->getSpeed());//in inches per second
+#else
 	Serial.print(F("Dist: "));//in inches
 	Serial.println(wheelEncoder_RearLeft->getFootage());//distance traveled in feet
 	Serial.print(F("Spd: "));//in inches per second
 	Serial.println(wheelEncoder_RearLeft->getSpeed());//in inches per second
+#endif	
 
 	//========Rear Right Motor===========
 	byte direction_RearRight = wheelEncoder_RearRight->getDirection();
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("=REAR RIGHT MTR="));
+	Serial2.print(F("Dir: "));
+#else
 	Serial.println(F("=REAR RIGHT MTR="));
 	Serial.print(F("Dir: "));
+#endif		
+	
 	if (direction_RearRight == MOTOR_FORWARD)//forward, reverse, stopped
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Fwd"));
+	#else
 		Serial.println(F("Fwd"));
-	}
+	#endif				
+	}//end if
 	else if (direction_RearRight == MOTOR_REVERSE)
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Rev"));
+	#else
 		Serial.println(F("Rev"));
-	}
+	#endif				
+	}//end else if
 	else//MOTOR_STOPPED
 	{
+	#ifdef _DEBUG_COMM_BROADCAST
+		Serial2.println(F("Stopped"));
+	#else
 		Serial.println(F("Stopped"));
-	}
+	#endif				
+	}//end else
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.print(F("Dist: "));//in inches
+	Serial2.println(wheelEncoder_RearRight->getFootage());//distance traveled in feet
+	Serial2.print(F("Spd: "));//in inches per second
+	Serial2.println(wheelEncoder_RearRight->getSpeed());//in inches per second
+	Serial2.println();
+#else
 	Serial.print(F("Dist: "));//in inches
 	Serial.println(wheelEncoder_RearRight->getFootage());//distance traveled in feet
 	Serial.print(F("Spd: "));//in inches per second
 	Serial.println(wheelEncoder_RearRight->getSpeed());//in inches per second
-
-
-
-
 	Serial.println();
-
+#endif				
 
 	delay(500);
 
@@ -334,6 +503,16 @@ void InterruptDispatch_wheelEncoder_RearRight() {
 
 void printMcAndGcOutputs() {
 
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.print(F("Steering: "));
+	Serial2.println(motorControllerGetSteeringSet());
+	Serial2.print(F("Throttle: "));
+	Serial2.println(motorControllerGetThrottleSet());
+	Serial2.print(F("Pan: "));
+	Serial2.println(gimbalGetPanSet());
+	Serial2.print(F("Tilt: "));
+	Serial2.println(gimbalGetTiltSet());
+#else
 	Serial.print(F("Steering: "));
 	Serial.println(motorControllerGetSteeringSet());
 	Serial.print(F("Throttle: "));
@@ -342,19 +521,37 @@ void printMcAndGcOutputs() {
 	Serial.println(gimbalGetPanSet());
 	Serial.print(F("Tilt: "));
 	Serial.println(gimbalGetTiltSet());
+#endif				
+
+
 
 }
 
 
 void getDriveMode()//based on the buffer select
 {
+
+#ifdef _DEBUG_COMM_BROADCAST
+	//Detect drive mode
+	if (roverBuffer->inAutoMode())
+	{
+		Serial2.println(F("IN AUTO DRIVE"));
+	}//end if
+	else
+	{
+		Serial2.println(F("IN MANUAL DRIVE"));
+	}//end else
+#else
 	//Detect drive mode
 	if (roverBuffer->inAutoMode())
 	{
 		Serial.println(F("IN AUTO DRIVE"));
-	}
+	}//end if
 	else
 	{
 		Serial.println(F("IN MANUAL DRIVE"));
-	}
+	}//end else
+#endif				
+
+
 }

@@ -25,6 +25,7 @@ void setup() {
 
 	}
 	Serial.begin(PC_USB_BAUD_RATE);
+	
 
 }
 
@@ -38,7 +39,6 @@ void loop() {
 	{
 		//motion detected, take action
 		Serial.println("motion detected");
-		
 	}
 	else
 	{
