@@ -2,18 +2,18 @@
 #ifndef _ROVERRESET_H
 #define _ROVERRESET_H
 
-	#include <Arduino.h>
-	#include <RoverDebug.h>
+#include <Arduino.h>
+#include <RoverDebug.h>
 
-	class RoverReset {
-		public:
-			// virtual destructor is required if the object may
-			// be deleted through a pointer to RoverReset
-			virtual ~RoverReset();//destructor
-			virtual void reset() = 0;//pure virtual function
-		private:
-			//nothing
-	};
+class RoverReset {
+	public:
+		//Don't make a constructor since treating this like a Java Interface (which means it can't be instantiated, only derived)
+		// virtual destructor is required if the object may be deleted through a pointer to RoverReset
+		virtual ~RoverReset();//destructor
+		virtual void reset() = 0;//pure virtual function
+	private:
+		//nothing
+};
 
 
 
