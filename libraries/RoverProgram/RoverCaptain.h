@@ -40,7 +40,7 @@ private:
 	};
 
 	
-	enum State {
+	enum class State {
 		POWER_ON_RESET,
 		INITIALIZE,
 		ROUTINE,
