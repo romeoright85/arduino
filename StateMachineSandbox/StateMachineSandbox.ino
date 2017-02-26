@@ -2,14 +2,22 @@
 #include <PowerOnResetState.h>
 #include <ShutdownState.h>
 #include <ObstacleDetectedState.h>
+#include <DoSomething.h>
+
 
 
 //Global Variables
 
+
+
+
 RoverState * roverCurrentState;
 RoverState * powerOnResetState = new PowerOnResetState();
-RoverState * obstacleDetectedState = new ObstacleDetectedState();
+DoSomething * doSomething = new DoSomething();
+RoverState * obstacleDetectedState = new ObstacleDetectedState(doSomething);
 RoverState * shutdownState = new ShutdownState();
+
+
 
 RoverReset * resetArray[] = {
 	

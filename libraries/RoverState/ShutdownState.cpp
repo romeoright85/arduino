@@ -1,6 +1,9 @@
 #include <ShutdownState.h>
 
-
+ShutdownState::ShutdownState()
+{
+	//do nothing	
+}
 ShutdownState::~ShutdownState()
 {
 	//do nothing	
@@ -15,5 +18,5 @@ void ShutdownState::process()
 }
 RoverState * ShutdownState::nextState(RoverState * statesArray[])
 {
-	return statesArray[POWER_ON_RESET_STATE];
+	return statesArray[this->_theNextState];
 }

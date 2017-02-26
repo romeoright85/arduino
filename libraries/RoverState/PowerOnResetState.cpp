@@ -1,6 +1,8 @@
 #include <PowerOnResetState.h>
 
-
+PowerOnResetState::PowerOnResetState()
+{
+}
 PowerOnResetState::~PowerOnResetState()
 {
 	//do nothing	
@@ -15,5 +17,5 @@ void PowerOnResetState::process()
 }
 RoverState *  PowerOnResetState::nextState(RoverState * statesArray[])
 {
-	return statesArray[OBSTACLE_DETECTED_STATE];
+	return statesArray[this->_theNextState];
 }

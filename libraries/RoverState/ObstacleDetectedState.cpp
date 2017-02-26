@@ -1,6 +1,9 @@
 #include <ObstacleDetectedState.h>
 
-
+ObstacleDetectedState::ObstacleDetectedState(DoSomething * doSomething)
+{
+	this->doSomething = doSomething;
+}
 ObstacleDetectedState::~ObstacleDetectedState()
 {
 	//do nothing	
@@ -11,9 +14,27 @@ void ObstacleDetectedState::reset()
 }
 void ObstacleDetectedState::process()
 {
-	Serial.println(F("DEBUG2"));//DEBUG
+	
+	
+	if(this->_count == 4)
+	{
+		Serial.println(F("AH HA!"));//DEBUG
+		doSomething->helloWorld();
+		this->_theNextState = SHUTDOWN_STATE;			
+		this->_count = 0;
+	}		
+	else
+	{
+		Serial.println(F("DEBUG2"));//DEBUG
+		doSomething->goodbyeWorld();
+		_theNextState = OBSTACLE_DETECTED_STATE;	
+		this->_count++;		
+	}
+	
+	
+	
 }
 RoverState * ObstacleDetectedState::nextState(RoverState * statesArray[])
 {
-	return statesArray[SHUTDOWN_STATE];
+	return statesArray[this->_theNextState];
 }
