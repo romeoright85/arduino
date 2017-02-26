@@ -1,7 +1,10 @@
 #include <PowerOnResetState.h>
+#include <StateMachine.h>
 
-PowerOnResetState::PowerOnResetState()
+
+PowerOnResetState::PowerOnResetState(StateMachine * stateMachine)
 {
+	this->_stateMachine = stateMachine;
 }
 PowerOnResetState::~PowerOnResetState()
 {
@@ -13,9 +16,7 @@ void PowerOnResetState::reset()
 }
 void PowerOnResetState::process()
 {
-	Serial.println(F("DEBUG1"));//DEBUG
-}
-RoverState *  PowerOnResetState::nextState(RoverState * statesArray[])
-{
-	return statesArray[this->_theNextState];
+	Serial.println(F("1: PowerOnResetState"));//DEBUG
+	this->_stateMachine->setNextState(this->_stateMachine->getObstacleDetectedState());//Set the next state
+	
 }

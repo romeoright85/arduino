@@ -1,8 +1,9 @@
 #include <ShutdownState.h>
+#include <StateMachine.h>
 
-ShutdownState::ShutdownState()
+ShutdownState::ShutdownState(StateMachine * stateMachine)
 {
-	//do nothing	
+	this->_stateMachine = stateMachine;
 }
 ShutdownState::~ShutdownState()
 {
@@ -14,9 +15,16 @@ void ShutdownState::reset()
 }
 void ShutdownState::process()
 {
-	Serial.println(F("DEBUG3"));//DEBUG
+	Serial.println(F("3: ShutdownState"));//DEBUG
+	this->_stateMachine->setNextState(this->_stateMachine->getPowerOnResetState());//Set the next state
 }
-RoverState * ShutdownState::nextState(RoverState * statesArray[])
-{
-	return statesArray[this->_theNextState];
-}
+
+
+
+
+
+
+
+
+
+

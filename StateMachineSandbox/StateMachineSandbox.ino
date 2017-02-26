@@ -1,28 +1,18 @@
-#include <RoverState.h>
-#include <PowerOnResetState.h>
-#include <ShutdownState.h>
-#include <ObstacleDetectedState.h>
-#include <DoSomething.h>
-
+#include <StateMachine.h>
 
 
 //Global Variables
 
 
 
-
-RoverState * roverCurrentState;
-RoverState * powerOnResetState = new PowerOnResetState();
-DoSomething * doSomething = new DoSomething();
-RoverState * obstacleDetectedState = new ObstacleDetectedState(doSomething);
-RoverState * shutdownState = new ShutdownState();
+StateMachine * stateMachine = new StateMachine();
 
 
 
 RoverReset * resetArray[] = {
-	
+	stateMachine
 };
-RoverState * roverStates[3];
+
 
 
 
@@ -35,22 +25,12 @@ void setup() {
 	}
 
 	Serial.begin(PC_USB_BAUD_RATE);
-
-
-	//Note: Make sure to update the size of the roverStates array.
-	//Assign/Register all states in the roverStates Array
-	roverStates[POWER_ON_RESET_STATE] = powerOnResetState;
-	roverStates[OBSTACLE_DETECTED_STATE] = obstacleDetectedState;
-	roverStates[SHUTDOWN_STATE] = shutdownState;
 	
-
-	roverCurrentState = roverStates[POWER_ON_RESET_STATE];//assign the current state
 }
 
 
 void loop() {
 	Serial.println(F("Loop"));
-	roverCurrentState->process();
-	roverCurrentState = roverCurrentState->nextState(roverStates);
+	stateMachine->run();
 	delay(100);
 }

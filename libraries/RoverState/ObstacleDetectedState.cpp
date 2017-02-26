@@ -1,8 +1,10 @@
 #include <ObstacleDetectedState.h>
+#include <StateMachine.h>
 
-ObstacleDetectedState::ObstacleDetectedState(DoSomething * doSomething)
+ObstacleDetectedState::ObstacleDetectedState(StateMachine * stateMachine, DoSomething * doSomething)
 {
-	this->doSomething = doSomething;
+	this->_stateMachine = stateMachine;
+	this->_doSomething = doSomething;
 }
 ObstacleDetectedState::~ObstacleDetectedState()
 {
@@ -18,23 +20,19 @@ void ObstacleDetectedState::process()
 	
 	if(this->_count == 4)
 	{
-		Serial.println(F("AH HA!"));//DEBUG
-		doSomething->helloWorld();
-		this->_theNextState = SHUTDOWN_STATE;			
+		Serial.println(F("2: ObstacleDetectedState: Count Reached"));//DEBUG
+		this->_doSomething->goodbyeWorld();		
 		this->_count = 0;
+		this->_stateMachine->setNextState(this->_stateMachine->getShutdownState());//Set the next state
 	}		
 	else
 	{
-		Serial.println(F("DEBUG2"));//DEBUG
-		doSomething->goodbyeWorld();
-		_theNextState = OBSTACLE_DETECTED_STATE;	
+		Serial.println(F("2: ObstacleDetectedState"));//DEBUG
+		this->_doSomething->helloWorld();		
 		this->_count++;		
+		this->_stateMachine->setNextState(this->_stateMachine->getObstacleDetectedState());//Set the next state
 	}
 	
 	
 	
-}
-RoverState * ObstacleDetectedState::nextState(RoverState * statesArray[])
-{
-	return statesArray[this->_theNextState];
 }
