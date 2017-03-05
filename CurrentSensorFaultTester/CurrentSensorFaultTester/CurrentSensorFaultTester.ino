@@ -28,7 +28,7 @@ void setup() {
 	}
 	
 	Serial.begin(PC_USB_BAUD_RATE);
-	Serial.begin(MAIN_BAUD_RATE);
+	Serial2.begin(MAIN_BAUD_RATE);//Use to talk between MAIN and AUXI
 }
 
 

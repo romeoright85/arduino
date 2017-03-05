@@ -191,7 +191,7 @@ void wakeUpNAVI() {
 	if (!sleeperNAVI->isAwake())
 	{
 		//Wake Up
-		sleeperNAVI->wakeUp();//Creates a rising edge on the interrupt pin to wake up NAVI
+		sleeperNAVI->wakeUp();//Creates a low level on the interrupt pin to wake up NAVI
 
 		//Post Wake Up tasks
 #ifdef _DEBUG_COMM_BROADCAST
@@ -231,7 +231,7 @@ void wakeUpAUXI() {
 	if (!sleeperAUXI->isAwake())
 	{
 		//Wake Up
-		sleeperAUXI->wakeUp();//Creates a rising edge on the interrupt pin to wake up AUXI
+		sleeperAUXI->wakeUp();//Creates a low level on the interrupt pin to wake up AUXI
 
 		//Post Wake Up tasks
 #ifdef _DEBUG_COMM_BROADCAST

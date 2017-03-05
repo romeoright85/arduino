@@ -1,6 +1,6 @@
 //Used for AUXI - 2
 
-#include <RoverAnalogSignals.h>
+#include <RoverAnalogSignals.h> //calls MqGasSensor.h
 #include <UpTime.h>
 #include <GlobalDelayTimer.h>
 #include <DelayCounter.h>

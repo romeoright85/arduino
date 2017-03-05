@@ -41,10 +41,6 @@ private:
 
 	
 	enum class State {
-		POWER_ON_RESET,
-		INITIALIZE,
-		ROUTINE,
-		SHUTDOWN
 	};
 
 	State _state;

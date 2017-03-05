@@ -188,14 +188,14 @@ void wakeUpMegas() {
 
 
 	#ifdef _DEBUG_WAKE_ANYWAYS
-		sleeperMAIN->wakeUp();//Creates a rising edge on the interrupt pin to wake up MAIN, which then wakes up all others
+		sleeperMAIN->wakeUp();//Creates a low level on the interrupt pin to wake up MAIN, which then wakes up all others
 		Serial.println(F("Megas Awoken!"));
 	#else
 
 	if (!sleeperMAIN->isAwake())
 	{
 		//Wake Up
-		sleeperMAIN->wakeUp();//Creates a rising edge on the interrupt pin to wake up MAIN, which then wakes up all others
+		sleeperMAIN->wakeUp();//Creates a low level on the interrupt pin to wake up MAIN, which then wakes up all others
 
 							  //Post Wake Up tasks
 		Serial.println(F("Megas Awoken!"));

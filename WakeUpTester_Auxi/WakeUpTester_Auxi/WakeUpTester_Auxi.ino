@@ -61,7 +61,7 @@ void setup() {
 	}
 
 	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
-	Serial2.begin(AUXI_BAUD_RATE);//Use to talk between MAIN and AUXI
+	Serial2.begin(MAIN_BAUD_RATE);//Use to talk between MAIN and AUXI
 
 }
 
@@ -129,7 +129,7 @@ void goToSleepAUXI() {
 			   //Go to sleep
 			   //Note: Make sure to end any Software Serial here
 			   //No SW Serials used for AUXI
-	sleeperAUXI->goToSleep();//will sleep and wakeup the MAIN
+	sleeperAUXI->goToSleep();//will sleep and can be awoken by MAIN
 }
 void wakeUpAUXI() {
 	//Wake Up

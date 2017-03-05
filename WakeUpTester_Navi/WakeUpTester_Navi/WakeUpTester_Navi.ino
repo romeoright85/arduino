@@ -125,7 +125,7 @@ void goToSleepNAVI() {
 			   //Go to sleep
 			   //Note: Make sure to end any Software Serial here
 			   //No SW Serials used for NAVI
-	sleeperNAVI->goToSleep();//will sleep and wakeup the MAIN
+	sleeperNAVI->goToSleep();//will sleep and can be awoken by MAIN
 }
 void wakeUpNAVI() {
 	//Wake Up
