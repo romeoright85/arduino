@@ -23,7 +23,7 @@ void setup() {
 void loop() {
 	
 	roverHeathAndStatus->run();
-	delay(500);
+	delay(500);//DEBUG
 }
 
 void InterruptDispatch_sleeperAUXI() {
