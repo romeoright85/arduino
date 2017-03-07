@@ -2,9 +2,9 @@
 
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define SERIAL_DEBUG_CHANNEL Serial2
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
 #else
-	#define SERIAL_DEBUG_CHANNEL Serial
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
 #endif
 
 
@@ -113,7 +113,7 @@ void RoverCaptain::run()
 	{
 		case State::POWER_ON_RESET:
 		#ifdef _DEBUG_PRINT_STATE_			
-			SERIAL_DEBUG_CHANNEL.println(F("POWER_ON_RESET"));//DEBUG					
+			_SERIAL_DEBUG_CHANNEL_.println(F("POWER_ON_RESET"));//DEBUG					
 		#endif
 			//Create Objects On Power On
 			this->createObjects();
@@ -123,7 +123,7 @@ void RoverCaptain::run()
 			break;				
 		case State::INITIALIZE:
 		#ifdef _DEBUG_PRINT_STATE_			
-			SERIAL_DEBUG_CHANNEL.println(F("INITIALIZE"));//DEBUG			
+			_SERIAL_DEBUG_CHANNEL_.println(F("INITIALIZE"));//DEBUG			
 		#endif			
 			//Initialize Objects
 			this->initializeObjects();			
@@ -132,37 +132,37 @@ void RoverCaptain::run()
 			break;					
 		case State::RX_COMMUNICATIONS:
 		#ifdef _DEBUG_PRINT_STATE_			
-			SERIAL_DEBUG_CHANNEL.println(F("RX_COMMUNICATIONS"));//DEBUG			
+			_SERIAL_DEBUG_CHANNEL_.println(F("RX_COMMUNICATIONS"));//DEBUG			
 		#endif		
 			this->_state = State::PROCESS_COMMANDS;
 			break;			
 		case State::PROCESS_COMMANDS:
 		#ifdef _DEBUG_PRINT_STATE_			
-			SERIAL_DEBUG_CHANNEL.println(F("PROCESS_COMMANDS"));//DEBUG			
+			_SERIAL_DEBUG_CHANNEL_.println(F("PROCESS_COMMANDS"));//DEBUG			
 		#endif
 			this->_state = State::GET_INPUTS;
 			break;		
 		case State::GET_INPUTS:
 		#ifdef _DEBUG_PRINT_STATE_
-			SERIAL_DEBUG_CHANNEL.println(F("GET_INPUTS"));//DEBUG			
+			_SERIAL_DEBUG_CHANNEL_.println(F("GET_INPUTS"));//DEBUG			
 		#endif
 			this->_state = State::CONTROL_OUTPUTS;
 			break;		
 		case State::CONTROL_OUTPUTS:
 		#ifdef _DEBUG_PRINT_STATE_			
-			SERIAL_DEBUG_CHANNEL.println(F("CONTROL_OUTPUTS"));//DEBUG			
+			_SERIAL_DEBUG_CHANNEL_.println(F("CONTROL_OUTPUTS"));//DEBUG			
 		#endif			
 			this->_state = State::TX_COMMUNICATIONS;
 			break;		
 		case State::TX_COMMUNICATIONS:
 		#ifdef _DEBUG_PRINT_STATE_			
-			SERIAL_DEBUG_CHANNEL.println(F("TX_COMMUNICATIONS"));//DEBUG			
+			_SERIAL_DEBUG_CHANNEL_.println(F("TX_COMMUNICATIONS"));//DEBUG			
 		#endif
 			this->_state = State::RX_COMMUNICATIONS;
 			break;		
 		case State::GO_TO_SLEEP:
 		#ifdef _DEBUG_PRINT_STATE_			
-			SERIAL_DEBUG_CHANNEL.println(F("GO_TO_SLEEP"));//DEBUG
+			_SERIAL_DEBUG_CHANNEL_.println(F("GO_TO_SLEEP"));//DEBUG
 		#endif
 //FINISH ME			
 			this->_state = State::WAKEUP;
@@ -171,7 +171,7 @@ void RoverCaptain::run()
 			//Wake Up
 //FINISH ME			
 			#ifdef _DEBUG_PRINT_STATE_			
-				SERIAL_DEBUG_CHANNEL.println(F("WAKEUP"));//DEBUG
+				_SERIAL_DEBUG_CHANNEL_.println(F("WAKEUP"));//DEBUG
 			#endif
 			this->_state = State::RX_COMMUNICATIONS;
 			break;		
@@ -185,13 +185,13 @@ void RoverCaptain::run()
 			break;			
 		case State::SHUTDOWN:
 		#ifdef _DEBUG_PRINT_STATE_
-			SERIAL_DEBUG_CHANNEL.println(F("SHUTDOWN"));//DEBUG
+			_SERIAL_DEBUG_CHANNEL_.println(F("SHUTDOWN"));//DEBUG
 		#endif
 			this->_state = State::POWER_ON_RESET;
 			break;				
 		case State::ERROR:
 		#ifdef _DEBUG_PRINT_STATE_
-			SERIAL_DEBUG_CHANNEL.println(F("ERROR"));//DEBUG
+			_SERIAL_DEBUG_CHANNEL_.println(F("ERROR"));//DEBUG
 		#endif
 			//Shut off any movement to the rover
 			//Transmit error message

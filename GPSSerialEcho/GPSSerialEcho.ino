@@ -10,6 +10,11 @@
 //#define _DEBUG_OUTPUT_GPS_NEWLINES
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
 
 void setup()
 {
@@ -26,11 +31,7 @@ void loop()
 	if (Serial3.available() > 0)
 	{
 		temp = (char)Serial3.read();
-	#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.print(temp);
-	#else
-		Serial.print(temp);
-	#endif		
+		_SERIAL_DEBUG_CHANNEL_.print(temp);
 	}
 	#endif
 
@@ -41,37 +42,20 @@ void loop()
 		if (Serial3.available() > 0)
 		{
 			temp = (char)Serial3.read();
-		#ifdef _DEBUG_COMM_BROADCAST
 			if (temp == '\n')
 			{
-				Serial2.println();
-				Serial2.println(F("n"));
-			}
-			if (temp == '\r')
+				_SERIAL_DEBUG_CHANNEL_.println();
+				_SERIAL_DEBUG_CHANNEL_.println(F("n"));
+			}//end if
+			else if (temp == '\r')
 			{
-				Serial2.println();
-				Serial2.println(F("r"));
-			}
+				_SERIAL_DEBUG_CHANNEL_.println();
+				_SERIAL_DEBUG_CHANNEL_.println(F("r"));
+			}//end else if
 			else
 			{
-				Serial2.print(temp);
-			}
-		#else
-			if (temp == '\n')
-			{
-				Serial.println();
-				Serial.println(F("n"));
-			}
-			if (temp == '\r')
-			{
-				Serial.println();
-				Serial.println(F("r"));
-			}
-			else
-			{
-				Serial.print(temp);
-			}
-		#endif		
+				_SERIAL_DEBUG_CHANNEL_.print(temp);
+			}//end else
 		}
 	#endif
 	

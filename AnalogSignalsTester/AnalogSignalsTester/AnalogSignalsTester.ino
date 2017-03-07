@@ -16,6 +16,11 @@
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
 
 //Global Variables
 
@@ -59,12 +64,7 @@ void setup() {
 	Serial2.begin(MAIN_BAUD_RATE);
 	delay(100);//allow some time for the serial port to begin
 
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial2.println(F("Gas Sensor Warming Up And Calibrating - Wait ~3:26"));
-#else
-	Serial.println(F("Gas Sensor Warming Up And Calibrating - Wait ~3:26"));
-#endif
-	
+	_SERIAL_DEBUG_CHANNEL_.println(F("Gas Sensor Warming Up And Calibrating - Wait ~3:26"));
 
 }
 
@@ -93,449 +93,243 @@ void loop() {
 	
 	}
 
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial2.println(F("--START--"));
-	Serial2.println("");
-#else
-	Serial.println(F("--START--"));
-	Serial.println("");
-#endif
+
+	_SERIAL_DEBUG_CHANNEL_.println(F("--START--"));
+	_SERIAL_DEBUG_CHANNEL_.println("");
+
 
 
 #ifdef _OUTPUT_MUX1_
-		//AMUX 1
-	#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println(F("==AMUX1=="));
-	#else
-		Serial.println(F("==AMUX1=="));
-	#endif
-		
-
-		//Ch 0		
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(VOLTAGE_7D2_RAW);
-		Serial2.print(F("VOLTAGE_7D2_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_7D2_RAW);
-		Serial2.print(F("VOLTAGE_7D2_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(VOLTAGE_7D2_RAW);
-		Serial.print(F("VOLTAGE_7D2_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_7D2_RAW);
-		Serial.print(F("VOLTAGE_7D2_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
-
-
-		//Ch 1
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(CURRENT_7D2_PRESW25A);
-		Serial2.print(F("CURRENT_7D2_PRESW25A_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_7D2_PRESW25A, ACS711_25A);
-		Serial2.print(F("CURRENT_7D2_PRESW25A_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(CURRENT_7D2_PRESW25A);
-		Serial.print(F("CURRENT_7D2_PRESW25A_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_7D2_PRESW25A, ACS711_25A);
-		Serial.print(F("CURRENT_7D2_PRESW25A_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
-
-
-
-		//Ch 2
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(CURRENT_7D2_SW12D5A);
-		Serial2.print(F("CURRENT_7D2_SW12D5A_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_7D2_SW12D5A, ACS711_12D5A);
-		Serial2.print(F("CURRENT_7D2_SW12D5A_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(CURRENT_7D2_SW12D5A);
-		Serial.print(F("CURRENT_7D2_SW12D5A_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_7D2_SW12D5A, ACS711_12D5A);
-		Serial.print(F("CURRENT_7D2_SW12D5A_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
-
-
-		//Ch 3
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
-
-	
-		//Ch 4
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
-
-	
-		//Ch 5
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_BEACONCCA_CENTERSIDE);
-		Serial2.print(F("TEMPSENSOR_BEACONCCA_CENTERSIDE_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_BEACONCCA_CENTERSIDE, RESISTOR_TEMPSENSOR_BEACONCCA_CENTERSIDE);
-		Serial2.print(F("TEMPSENSOR_BEACONCCA_CENTERSIDE_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_BEACONCCA_CENTERSIDE);
-		Serial.print(F("TEMPSENSOR_BEACONCCA_CENTERSIDE_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_BEACONCCA_CENTERSIDE, RESISTOR_TEMPSENSOR_BEACONCCA_CENTERSIDE);
-		Serial.print(F("TEMPSENSOR_BEACONCCA_CENTERSIDE_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
-
-	
-		//Ch 6
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET);
-		Serial2.print(F("TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET, RESISTOR_TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET);
-		Serial2.print(F("TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET);
-		Serial.print(F("TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET, RESISTOR_TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET);
-		Serial.print(F("TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
-
-
-
-		//delay(1000);
-	#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println("");
-	#else
-		Serial.println("");
-	#endif
-	
-#endif
-
-#ifdef _OUTPUT_MUX2_
-	//AMUX 2
-	#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println(F("==AMUX2=="));
-	#else
-		Serial.println(F("==AMUX2=="));
-	#endif
+	//AMUX 1
+	_SERIAL_DEBUG_CHANNEL_.println(F("==AMUX1=="));
 	
 
-	//Ch 0
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(VOLTAGE_5_ANALOGCCA);
-		Serial2.print(F("VOLTAGE_5_ANALOGCCA_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_5_ANALOGCCA);
-		Serial2.print(F("VOLTAGE_5_ANALOGCCA_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(VOLTAGE_5_ANALOGCCA);
-		Serial.print(F("VOLTAGE_5_ANALOGCCA_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_5_ANALOGCCA);
-		Serial.print(F("VOLTAGE_5_ANALOGCCA_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	//Ch 0		
+	val = analogSignals->getRawADCValueOf(VOLTAGE_7D2_RAW);
+	_SERIAL_DEBUG_CHANNEL_.print(F("VOLTAGE_7D2_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_7D2_RAW);
+	_SERIAL_DEBUG_CHANNEL_.print(F("VOLTAGE_7D2_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
 
 
 	//Ch 1
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(CURRENT_3D3_SW12D5A);
-		Serial2.print(F("CURRENT_3D3_SW12D5A_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_3D3_SW12D5A, ACS711_12D5A);
-		Serial2.print(F("CURRENT_3D3_SW12D5A_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(CURRENT_3D3_SW12D5A);
-		Serial.print(F("CURRENT_3D3_SW12D5A_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_3D3_SW12D5A, ACS711_12D5A);
-		Serial.print(F("CURRENT_3D3_SW12D5A_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	val = analogSignals->getRawADCValueOf(CURRENT_7D2_PRESW25A);
+	_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_7D2_PRESW25A_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getCurrentValueOf(CURRENT_7D2_PRESW25A, ACS711_25A);
+	_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_7D2_PRESW25A_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
-	//Ch 2
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+
+
+	//Ch 2	
+	val = analogSignals->getRawADCValueOf(CURRENT_7D2_SW12D5A);
+	_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_7D2_SW12D5A_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getCurrentValueOf(CURRENT_7D2_SW12D5A, ACS711_12D5A);
+	_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_7D2_SW12D5A_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
 	//Ch 3
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
 
 	//Ch 4
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
 	//Ch 5
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR);
-		Serial2.print(F("TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR, RESISTOR_TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR);
-		Serial2.print(F("TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR);
-		Serial.print(F("TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR, RESISTOR_TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR);
-		Serial.print(F("TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_BEACONCCA_CENTERSIDE);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_BEACONCCA_CENTERSIDE_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_BEACONCCA_CENTERSIDE, RESISTOR_TEMPSENSOR_BEACONCCA_CENTERSIDE);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_BEACONCCA_CENTERSIDE_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
 
 
 	//Ch 6
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_DIGITALCCA_MIDDLESIDE);
-		Serial2.print(F("TEMPSENSOR_DIGITALCCA_MIDDLESIDE_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_DIGITALCCA_MIDDLESIDE, RESISTOR_TEMPSENSOR_DIGITALCCA_MIDDLESIDE);
-		Serial2.print(F("TEMPSENSOR_DIGITALCCA_MIDDLESIDE_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_DIGITALCCA_MIDDLESIDE);
-		Serial.print(F("TEMPSENSOR_DIGITALCCA_MIDDLESIDE_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_DIGITALCCA_MIDDLESIDE, RESISTOR_TEMPSENSOR_DIGITALCCA_MIDDLESIDE);
-		Serial.print(F("TEMPSENSOR_DIGITALCCA_MIDDLESIDE_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET, RESISTOR_TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
+
 
 
 	//delay(1000);
-	#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println("");
-	#else
-		Serial.println("");
-	#endif
+	_SERIAL_DEBUG_CHANNEL_.println("");
+
+
+#ifdef _OUTPUT_MUX2_
+	//AMUX 2
+	_SERIAL_DEBUG_CHANNEL_.println(F("==AMUX2=="));
+	
+
+	//Ch 0
+	val = analogSignals->getRawADCValueOf(VOLTAGE_5_ANALOGCCA);
+	_SERIAL_DEBUG_CHANNEL_.print(F("VOLTAGE_5_ANALOGCCA_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_5_ANALOGCCA);
+	_SERIAL_DEBUG_CHANNEL_.print(F("VOLTAGE_5_ANALOGCCA_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+f
+
+
+	//Ch 1
+	val = analogSignals->getRawADCValueOf(CURRENT_3D3_SW12D5A);
+	_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_3D3_SW12D5A_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getCurrentValueOf(CURRENT_3D3_SW12D5A, ACS711_12D5A);
+	_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_3D3_SW12D5A_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
+
+
+	//Ch 2
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
+
+	//Ch 3
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
+
+
+	//Ch 4
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
+
+	//Ch 5
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR, RESISTOR_TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
+
+	//Ch 6
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_DIGITALCCA_MIDDLESIDE);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_DIGITALCCA_MIDDLESIDE_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_DIGITALCCA_MIDDLESIDE, RESISTOR_TEMPSENSOR_DIGITALCCA_MIDDLESIDE);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_DIGITALCCA_MIDDLESIDE_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
+
+	//delay(1000);
+	_SERIAL_DEBUG_CHANNEL_.println("");
 	
 
 #endif
 
 #ifdef _OUTPUT_MUX3_
 	//AMUX 3
-	#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println(F("==AMUX3=="));
-	#else
-		Serial.println(F("==AMUX3=="));
-	#endif
+	_SERIAL_DEBUG_CHANNEL_.println(F("==AMUX3=="));
 	
 
 	//Ch 0
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(VOLTAGE_3D3_SW);
-		Serial2.print(F("VOLTAGE_3D3_SW_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_3D3_SW);
-		Serial2.print(F("VOLTAGE_3D3_SW_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(VOLTAGE_3D3_SW);
-		Serial.print(F("VOLTAGE_3D3_SW_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_3D3_SW);
-		Serial.print(F("VOLTAGE_3D3_SW_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	val = analogSignals->getRawADCValueOf(VOLTAGE_3D3_SW);
+	_SERIAL_DEBUG_CHANNEL_.print(F("VOLTAGE_3D3_SW_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_3D3_SW);
+	_SERIAL_DEBUG_CHANNEL_.print(F("VOLTAGE_3D3_SW_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
 	//Ch 1
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(CURRENT_MOTORCTRLR_CH1_12D5A);
-		Serial2.print(F("CURRENT_MOTORCTRLR_CH1_12D5A_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_MOTORCTRLR_CH1_12D5A, ACS711_12D5A);
-		Serial2.print(F("CURRENT_MOTORCTRLR_CH1_12D5A_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(CURRENT_MOTORCTRLR_CH1_12D5A);
-		Serial.print(F("CURRENT_MOTORCTRLR_CH1_12D5A_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_MOTORCTRLR_CH1_12D5A, ACS711_12D5A);
-		Serial.print(F("CURRENT_MOTORCTRLR_CH1_12D5A_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
-
+	val = analogSignals->getRawADCValueOf(CURRENT_MOTORCTRLR_CH1_12D5A);
+	_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_MOTORCTRLR_CH1_12D5A_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getCurrentValueOf(CURRENT_MOTORCTRLR_CH1_12D5A, ACS711_12D5A);
+	_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_MOTORCTRLR_CH1_12D5A_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+	
 
 	//Ch 2
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
 	//Ch 3
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK);
-		Serial2.print(F("PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK, RESISTOR_PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK);
-		Serial2.print(F("PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK);
-		Serial.print(F("PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK, RESISTOR_PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK);
-		Serial.print(F("PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK, RESISTOR_PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
 
 	//Ch 4
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING);
-		Serial2.print(F("PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING, RESISTOR_PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING);
-		Serial2.print(F("PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING);
-		Serial.print(F("PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING, RESISTOR_PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING);
-		Serial.print(F("PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+	val = analogSignals->getRawADCValueOf(PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING, RESISTOR_PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING);
+	_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
 	//Ch 5
-	#ifdef _DEBUG_COMM_BROADCAST
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK);
-		Serial2.print(F("TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_RAW: "));
-		Serial2.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK, RESISTOR_TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK);
-		Serial2.print(F("TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK);
-		Serial.print(F("TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK, RESISTOR_TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK);
-		Serial.print(F("TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
-
+	val = analogSignals->getRawADCValueOf(TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_RAW: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val);
+	val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK, RESISTOR_TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK);
+	_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_ACTUAL: "));
+	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 	
 	//delay(1000);
-	#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println("");
-	#else
-		Serial.println("");
-	#endif
+	_SERIAL_DEBUG_CHANNEL_.println("");
+	
 
 #endif
 
 #ifdef _OUTPUT_MUX4_
 	//AMUX 4
-	#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println(F("==AMUX4=="));
-	#else
-		Serial.println(F("==AMUX4=="));
-	#endif
-		
+	_SERIAL_DEBUG_CHANNEL_.println(F("==AMUX4=="));
 
 		//Ch 0
-	#ifdef _DEBUG_COMM_BROADCAST
+	
 		val = analogSignals->getRawADCValueOf(GAS_BEACONCCA_RIGHTPOINTING);
-		Serial2.print(F("GAS_BEACONCCA_RIGHTPOINTING_RAW: "));
-		Serial2.println(val);
+		_SERIAL_DEBUG_CHANNEL_.print(F("GAS_BEACONCCA_RIGHTPOINTING_RAW: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val);
 
 		//only output the MQ gas sensor actual values once the MQ sensor has warmed up for at least 3 minutes and is calibrated
 		if (analogSignals->gasSensorIsCalibrated())
@@ -549,181 +343,93 @@ void loop() {
 			if (analogSignals->gasSensorDoneReading())
 			{
 				val = analogSignals->getGasValueOf(mqGasSensor);
-				Serial2.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (new): "));
-				Serial2.print(val);
-				Serial2.print(F(" "));//add a space
-				Serial2.println(analogSignals->getMqGasSensorUnit(mqGasSensor));
+				_SERIAL_DEBUG_CHANNEL_.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (new): "));
+				_SERIAL_DEBUG_CHANNEL_.print(val);
+				_SERIAL_DEBUG_CHANNEL_.print(F(" "));//add a space
+				_SERIAL_DEBUG_CHANNEL_.println(analogSignals->getMqGasSensorUnit(mqGasSensor));
 			}
 			else
 			{
 				val = analogSignals->getGasValueOf(mqGasSensor);
-				Serial2.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (old): "));
-				Serial2.print(val);
-				Serial2.print(F(" "));//add a space
-				Serial2.println(analogSignals->getMqGasSensorUnit(mqGasSensor));
+				_SERIAL_DEBUG_CHANNEL_.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (old): "));
+				_SERIAL_DEBUG_CHANNEL_.print(val);
+				_SERIAL_DEBUG_CHANNEL_.print(F(" "));//add a space
+				_SERIAL_DEBUG_CHANNEL_.println(analogSignals->getMqGasSensorUnit(mqGasSensor));
 			}
 
 		}
 		else
 		{
-			Serial2.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL: "));
-			Serial2.println(F("Still Initializing..."));
+			_SERIAL_DEBUG_CHANNEL_.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL: "));
+			_SERIAL_DEBUG_CHANNEL_.println(F("Still Initializing..."));
 		}
-	#else
-		val = analogSignals->getRawADCValueOf(GAS_BEACONCCA_RIGHTPOINTING);
-		Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_RAW: "));
-		Serial.println(val);
-
-		//only output the MQ gas sensor actual values once the MQ sensor has warmed up for at least 3 minutes and is calibrated
-		if (analogSignals->gasSensorIsCalibrated())
-		{
-			//Note: Calibration takes about 6 secs (due to the parallel processing code)
-			analogSignals->readGasSensor(mqGasSensor, counterGasRead);
-
-
-
-			//only output the MQ gas sensor gas values once the MQ sensor read is complete
-			if (analogSignals->gasSensorDoneReading())
-			{
-				val = analogSignals->getGasValueOf(mqGasSensor);
-				Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (new): "));
-				Serial.print(val);
-				Serial.print(F(" "));//add a space
-				Serial.println(analogSignals->getMqGasSensorUnit(mqGasSensor));
-			}
-			else
-			{
-				val = analogSignals->getGasValueOf(mqGasSensor);
-				Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL (old): "));
-				Serial.print(val);
-				Serial.print(F(" "));//add a space
-				Serial.println(analogSignals->getMqGasSensorUnit(mqGasSensor));
-			}
-
-		}
-		else
-		{
-			Serial.print(F("GAS_BEACONCCA_RIGHTPOINTING_ACTUAL: "));
-			Serial.println(F("Still Initializing..."));
-		}
-	#endif
+	
 
 		
 
 		//Ch 1
-	#ifdef _DEBUG_COMM_BROADCAST
 		val = analogSignals->getRawADCValueOf(CURRENT_MOTORCTRLR_CH2_12D5A);
-		Serial2.print(F("CURRENT_MOTORCTRLR_CH2_12D5A_RAW: "));
-		Serial2.println(val);
+		_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_MOTORCTRLR_CH2_12D5A_RAW: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val);
 		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_MOTORCTRLR_CH2_12D5A, ACS711_12D5A);
-		Serial2.print(F("CURRENT_MOTORCTRLR_CH2_12D5A_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(CURRENT_MOTORCTRLR_CH2_12D5A);
-		Serial.print(F("CURRENT_MOTORCTRLR_CH2_12D5A_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getCurrentValueOf(CURRENT_MOTORCTRLR_CH2_12D5A, ACS711_12D5A);
-		Serial.print(F("CURRENT_MOTORCTRLR_CH2_12D5A_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+		_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_MOTORCTRLR_CH2_12D5A_ACTUAL: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
 
 		//Ch 2
-	#ifdef _DEBUG_COMM_BROADCAST
 		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_RAW: "));
-		Serial2.println(val);
+		_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_RAW: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val);
 		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING);
-		Serial2.print(F("PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING, RESISTOR_PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING);
-		Serial.print(F("PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+		_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_ACTUAL: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
 
 
 		//Ch 3
-	#ifdef _DEBUG_COMM_BROADCAST
 		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK);
-		Serial2.print(F("PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_RAW: "));
-		Serial2.println(val);
+		_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_RAW: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val);
 		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK, RESISTOR_PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK);
-		Serial2.print(F("PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK);
-		Serial.print(F("PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK, RESISTOR_PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK);
-		Serial.print(F("PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+		_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_ACTUAL: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
 
 	
 		//Ch 4
-	#ifdef _DEBUG_COMM_BROADCAST
 		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_RAW: "));
-		Serial2.println(val);
+		_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_RAW: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val);
 		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING);
-		Serial2.print(F("PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getLightValueOf(PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING, RESISTOR_PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING);
-		Serial.print(F("PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+		_SERIAL_DEBUG_CHANNEL_.print(F("PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
 
 		//Ch 5
-	#ifdef _DEBUG_COMM_BROADCAST
 		val = analogSignals->getRawADCValueOf(TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE);
-		Serial2.print(F("TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_RAW: "));
-		Serial2.println(val);
+		_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_RAW: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val);
 		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE, RESISTOR_TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE);
-		Serial2.print(F("TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_ACTUAL: "));
-		Serial2.println(val_Dbl);
-	#else
-		val = analogSignals->getRawADCValueOf(TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE);
-		Serial.print(F("TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_RAW: "));
-		Serial.println(val);
-		val_Dbl = analogSignals->getTempValueOf(TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE, RESISTOR_TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE);
-		Serial.print(F("TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_ACTUAL: "));
-		Serial.println(val_Dbl);
-	#endif
+		_SERIAL_DEBUG_CHANNEL_.print(F("TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_ACTUAL: "));
+		_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
+
 
 
 
 		
-	#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println("");		
-	#else
-		Serial.println("");		
-	#endif	
+
+		_SERIAL_DEBUG_CHANNEL_.println("");		
 		//delay(1000);
 #endif	
 
 
 		
-	#ifdef _DEBUG_COMM_BROADCAST		
-		Serial2.println(F("--END--"));
+		_SERIAL_DEBUG_CHANNEL_.println(F("--END--"));
 		//print blank lines for spacing
-		Serial2.println("");
-		Serial2.println("");
-	#else		
-		Serial.println(F("--END--"));
-		//print blank lines for spacing
-		Serial.println("");
-		Serial.println("");		
-	#endif
+		_SERIAL_DEBUG_CHANNEL_.println("");
+		_SERIAL_DEBUG_CHANNEL_.println("");
+
 
 		//delay(4000);
 

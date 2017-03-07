@@ -41,7 +41,9 @@
 	//turn on the analog names in RoverConfig.h
 	#define _ROVERANALOGNAMES
 	#define _ROVERCURRENTSENSORMODELS
-	
+	//Uncomment to debug
+	//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
 
 	
 	/*******************************************************************

@@ -22,6 +22,11 @@ Configure (define) flags before calling #include <RoverConfig.h>
 
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial1
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
 
 
 
@@ -48,23 +53,11 @@ void setup() {
 void loop() {
 
 	delay(1000);
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial1.println(F("Running..."));
-#else
-	Serial.println(F("Running..."));
-#endif
+	_SERIAL_DEBUG_CHANNEL_.println(F("Running..."));
 	delay(4000);
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial1.println(F("Resetting COMM..."));
-#else
-	Serial.println(F("Resetting COMM..."));
-#endif	
+	_SERIAL_DEBUG_CHANNEL_.println(F("Resetting COMM..."));
 	commHwResetter->performHwReset();	
 	delay(1000);
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial1.println(F("Reset Complete!"));
-#else
-	Serial.println(F("Reset Complete!"));
-#endif
+	_SERIAL_DEBUG_CHANNEL_.println(F("Reset Complete!"));
 
 }

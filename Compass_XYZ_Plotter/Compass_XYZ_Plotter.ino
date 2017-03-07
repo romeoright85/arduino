@@ -7,6 +7,12 @@ Outputs Compass Gauss Values for X, Y, and Z
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
+
 #include <RoverConfig.h>
 
 
@@ -28,13 +34,7 @@ void setup()
 
 void loop()
 {
-
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial2.println("X:\tY:\tZ:");
-#else
-	Serial.println("X:\tY:\tZ:");
-#endif
-	
+	_SERIAL_DEBUG_CHANNEL_.println("X:\tY:\tZ:");
 
 	while (1)
 	{
@@ -42,11 +42,7 @@ void loop()
 		compass.read();
 		snprintf(report, sizeof(report), "%6d\t%6d\t%6d",
 		compass.m.x, compass.m.y, compass.m.z);
-#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println(report);
-#else
-		Serial.println(report);
-#endif		
+		_SERIAL_DEBUG_CHANNEL_.println(report);
 		delay(100);
 	}
 }

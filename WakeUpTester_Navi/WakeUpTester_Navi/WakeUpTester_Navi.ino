@@ -8,6 +8,12 @@
 //#define _DEBUG_W_PC_INPUT
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 	//Note: The COMM Broadcast only works if _DEBUG_W_PC_INPUT is commented out
+	
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
 
 //Also see the debug flag _DEBUG_STAY_AWAKE in RoverSleeperServer.h
 
@@ -90,11 +96,7 @@ void loop()
 
 	if (sleeperNAVI->isAwake())
 	{
-#ifdef _DEBUG_COMM_BROADCAST
-		Serial2.println(F("NAVI is still awake..."));//output to PC for debug
-#else
-		Serial.println(F("NAVI is still awake..."));//output to PC for debug
-#endif
+		_SERIAL_DEBUG_CHANNEL_.println(F("NAVI is still awake..."));//output to PC for debug
 	}
 	delay(1000);
 
@@ -114,12 +116,7 @@ void InterruptDispatch1() {
 
 void goToSleepNAVI() {
 	//Pre sleep tasks
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial2.println(F("NAVI sleeping..."));//output to PC for debug
-#else
-	Serial.println(F("NAVI sleeping..."));//output to PC for debug
-#endif
-	
+	_SERIAL_DEBUG_CHANNEL_.println(F("NAVI sleeping..."));//output to PC for debug
 	delay(100);//add some delay to allow the serial print to finish before going to sleep
 
 			   //Go to sleep
@@ -135,10 +132,6 @@ void wakeUpNAVI() {
 
 	//Post Wake Up tasks
 	delay(100);// let everybody get up and running for a sec
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial2.println(F("NAVI Awoken!"));//output to PC for debug
-#else
-	Serial.println(F("NAVI Awoken!"));//output to PC for debug
-#endif
+	_SERIAL_DEBUG_CHANNEL_.println(F("NAVI Awoken!"));//output to PC for debug
 	
 }

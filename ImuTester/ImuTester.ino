@@ -17,6 +17,12 @@
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 //Note: You also have to uncomment _DEBUG_COMM_BROADCAST in ImuSensor.cpp
 
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
+
 
 DelayCounter * counter50Hz = new DelayCounter(DELAY_4_PERIODS);//initialize it to count to 4 periods
 DelayCounter * counter10Hz = new DelayCounter(DELAY_2_PERIODS);//initialize it to count to 2 periods
@@ -91,48 +97,27 @@ void loop() //Main Loop
 
 		// Calculations
 		Imu_Calculations();
-		
-#ifdef _DEBUG_COMM_BROADCAST
+
 	#ifdef _DEBUG_OUTPUT_HEADING_
-			Serial2.print(F("Heading: "));
-			Serial2.println(getHeading());
+			_SERIAL_DEBUG_CHANNEL_.print(F("Heading: "));
+			_SERIAL_DEBUG_CHANNEL_.println(getHeading());
 	#endif
 	#ifdef _DEBUG_OUTPUT_ROLL_
-			Serial2.print(F("Roll: "));
-			Serial2.println(getRoll());
+			_SERIAL_DEBUG_CHANNEL_.print(F("Roll: "));
+			_SERIAL_DEBUG_CHANNEL_.println(getRoll());
 	#endif
 	#ifdef _DEBUG_OUTPUT_PITCH_
-			Serial2.print(F("Pitch: "));
-			Serial2.println(getPitch());
+			_SERIAL_DEBUG_CHANNEL_.print(F("Pitch: "));
+			_SERIAL_DEBUG_CHANNEL_.println(getPitch());
 	#endif
 	#ifdef _DEBUG_OUTPUT_YAW_
-			Serial2.print(F("Yaw: "));
-			Serial2.println(getYaw());
+			_SERIAL_DEBUG_CHANNEL_.print(F("Yaw: "));
+			_SERIAL_DEBUG_CHANNEL_.println(getYaw());
 	#endif
 	#ifdef _DEBUG_OUTPUT_AHRS_
 			printInAHRSFormat();
 	#endif
-#else
-	#ifdef _DEBUG_OUTPUT_HEADING_
-			Serial.print(F("Heading: "));
-			Serial.println(getHeading());
-	#endif
-	#ifdef _DEBUG_OUTPUT_ROLL_
-			Serial.print(F("Roll: "));
-			Serial.println(getRoll());
-	#endif
-	#ifdef _DEBUG_OUTPUT_PITCH_
-			Serial.print(F("Pitch: "));
-			Serial.println(getPitch());
-	#endif
-	#ifdef _DEBUG_OUTPUT_YAW_
-			Serial.print(F("Yaw: "));
-			Serial.println(getYaw());
-	#endif
-	#ifdef _DEBUG_OUTPUT_AHRS_
-			printInAHRSFormat();
-	#endif	
-#endif		
+	
 
 
 	}

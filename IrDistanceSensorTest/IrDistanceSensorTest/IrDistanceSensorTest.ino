@@ -5,7 +5,11 @@
 
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
-
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
 
 //Global Variables
 IrDistanceSensor * irDistanceForwardCenter = new  IrDistanceSensor(FORWARD_CENTER_IR_DIST_SENSOR_PIN);
@@ -62,46 +66,25 @@ void loop() {
 
 			switch (i)
 			{
-
-			#ifdef _DEBUG_COMM_BROADCAST
 				case 0:
-					Serial2.print("irDistanceForwardCenter: ");
+					_SERIAL_DEBUG_CHANNEL_.print("irDistanceForwardCenter: ");
 					break;
 				case 1:
-					Serial2.print("irDistanceSideRight: ");
+					_SERIAL_DEBUG_CHANNEL_.print("irDistanceSideRight: ");
 					break;
 				case 2:
-					Serial2.print("irDistanceRearCenter: ");
+					_SERIAL_DEBUG_CHANNEL_.print("irDistanceRearCenter: ");
 					break;
 				case 3:
-					Serial2.print("irDistanceSideLeft: ");
+					_SERIAL_DEBUG_CHANNEL_.print("irDistanceSideLeft: ");
 					break;
 				}//end switch			
-				Serial2.print(distanceMeasured);
-				Serial2.println(" cm");
+				_SERIAL_DEBUG_CHANNEL_.print(distanceMeasured);
+				_SERIAL_DEBUG_CHANNEL_.println(" cm");
 				delay(750);
 			}
-			Serial2.println();
-			#else
-				case 0:
-					Serial.print("irDistanceForwardCenter: ");
-					break;
-				case 1:
-					Serial.print("irDistanceSideRight: ");
-					break;
-				case 2:
-					Serial.print("irDistanceRearCenter: ");
-					break;
-				case 3:
-					Serial.print("irDistanceSideLeft: ");
-					break;
-				}//end switch			
-				Serial.print(distanceMeasured);
-				Serial.println(" cm");
-				delay(750);
-			}
-			Serial.println();
-		#endif
+			_SERIAL_DEBUG_CHANNEL_.println();
+		
 
 
 		delay(1000);

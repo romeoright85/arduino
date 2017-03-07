@@ -4,6 +4,12 @@
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 //Note: Should be used with _DEBUG_W_PC_INPUT commented out
 
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial1
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
+
 //Note: Since all the Arduinos use this class, you have to define them in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
 
 //Uncomment below to use PC to simulate the COMM Arduino and be able to send sleep commands to MAIN
@@ -105,11 +111,7 @@ void loop()
 			wakeUpNAVI();
 
 			wakeUpAUXI();
-		#ifdef _DEBUG_COMM_BROADCAST
-			Serial1.println(F("All Megas Now Awake"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-		#else
-			Serial.println(F("All Megas Now Awake"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-		#endif
+			_SERIAL_DEBUG_CHANNEL_.println(F("All Megas Now Awake"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 
 		
 		}//end if
@@ -117,11 +119,7 @@ void loop()
 
 	if (sleeperMAIN->isAwake())
 	{
-#ifdef _DEBUG_COMM_BROADCAST
-		Serial1.println(F("MAIN is still awake..."));//output to PC for debug
-#else
-		Serial.println(F("MAIN is still awake..."));//output to PC for debug
-#endif		
+		_SERIAL_DEBUG_CHANNEL_.println(F("MAIN is still awake..."));//output to PC for debug
 	}
 	delay(1000);
 
@@ -141,11 +139,7 @@ void InterruptDispatch1() {
 
 void goToSleepMAIN() {
 	//Pre sleep tasks
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial1.println(F("MAIN Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#else
-	Serial.println(F("MAIN Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#endif	
+	_SERIAL_DEBUG_CHANNEL_.println(F("MAIN Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	delay(100);//add some delay to allow the serial print to finish before going to sleep
 
 	//Go to sleep
@@ -163,22 +157,13 @@ void wakeUpMAIN() {
 
 	//Post Wake Up tasks
 	delay(100);// let everybody get up and running for a sec
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial1.println(F("MAIN Awoken!"));//output to PC for debug
-#else
-	Serial.println(F("MAIN Awoken!"));//output to PC for debug
-#endif	
-	
+	_SERIAL_DEBUG_CHANNEL_.println(F("MAIN Awoken!"));//output to PC for debug
 }
 
 
 void goToSleepNAVI() {
 	//Pre sleep tasks	
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial1.println(F("NAVI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#else
-	Serial.println(F("NAVI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#endif
+	_SERIAL_DEBUG_CHANNEL_.println(F("NAVI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	//Go to sleep
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
 	sleeperNAVI->goToSleep();//update awake flag status
@@ -194,19 +179,11 @@ void wakeUpNAVI() {
 		sleeperNAVI->wakeUp();//Creates a low level on the interrupt pin to wake up NAVI
 
 		//Post Wake Up tasks
-#ifdef _DEBUG_COMM_BROADCAST
-		Serial1.println(F("NAVI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#else
-		Serial.println(F("NAVI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#endif		
+		_SERIAL_DEBUG_CHANNEL_.println(F("NAVI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 	else
 	{
-#ifdef _DEBUG_COMM_BROADCAST
-		Serial1.println(F("NAVI already awoken."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#else
-		Serial.println(F("NAVI already awoken."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#endif		
+		_SERIAL_DEBUG_CHANNEL_.println(F("NAVI already awoken."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 
 }
@@ -214,11 +191,7 @@ void wakeUpNAVI() {
 
 void goToSleepAUXI() {
 	//Pre sleep tasks
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial1.println(F("AUXI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#else
-	Serial.println(F("AUXI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#endif
+	_SERIAL_DEBUG_CHANNEL_.println(F("AUXI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	//Go to sleep
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
 	sleeperAUXI->goToSleep();//update awake flag status
@@ -234,19 +207,11 @@ void wakeUpAUXI() {
 		sleeperAUXI->wakeUp();//Creates a low level on the interrupt pin to wake up AUXI
 
 		//Post Wake Up tasks
-#ifdef _DEBUG_COMM_BROADCAST
-		Serial1.println(F("AUXI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#else
-		Serial.println(F("AUXI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#endif		
+		_SERIAL_DEBUG_CHANNEL_.println(F("AUXI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 	else
 	{
-#ifdef _DEBUG_COMM_BROADCAST
-		Serial1.println(F("AUXI already awoken."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#else
-		Serial.println(F("AUXI already awoken."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-#endif		
+		_SERIAL_DEBUG_CHANNEL_.println(F("AUXI already awoken."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 
 }

@@ -13,6 +13,11 @@
 //#define _DEBUG_
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
 
 
 //counter delays
@@ -90,20 +95,11 @@ void loop() {
 		{
 			if (!rightLaserOn)//if the right laser was off and now just turned on
 			{
-				#ifdef _DEBUG_
-					#ifdef _DEBUG_COMM_BROADCAST
-						Serial2.println(laserControlDelay);//DEBUG
-					#else
-						Serial.println(laserControlDelay);//DEBUG
-					#endif					
-				#endif
-					#ifdef _DEBUG_COMM_BROADCAST
-						Serial2.println(F("RIGHT LASER ON"));//print message on the first toggle
-						Serial2.println();
-					#else
-						Serial.println(F("RIGHT LASER ON"));//print message on the first toggle
-						Serial.println();
-					#endif				
+				#ifdef _DEBUG_					
+						_SERIAL_DEBUG_CHANNEL_.println(laserControlDelay);//DEBUG									
+				#endif					
+				_SERIAL_DEBUG_CHANNEL_.println(F("RIGHT LASER ON"));//print message on the first toggle
+				_SERIAL_DEBUG_CHANNEL_.println();					
 				rightLaserOn = true;//set status
 			}
 			else//the right laser had already been on
@@ -115,20 +111,11 @@ void loop() {
 		{
 			if (rightLaserOn)//if the right laser was on and now just turned off
 			{
-				#ifdef _DEBUG_
-					#ifdef _DEBUG_COMM_BROADCAST
-						Serial2.println(laserControlDelay);//DEBUG
-					#else
-						Serial.println(laserControlDelay);//DEBUG
-					#endif					
-				#endif
-				#ifdef _DEBUG_COMM_BROADCAST
-					Serial2.println(F("RIGHT LASER OFF"));
-					Serial2.println();
-				#else
-					Serial.println(F("RIGHT LASER OFF"));
-					Serial.println();
+				#ifdef _DEBUG_					
+					_SERIAL_DEBUG_CHANNEL_.println(laserControlDelay);//DEBUG	
 				#endif				
+				_SERIAL_DEBUG_CHANNEL_.println(F("RIGHT LASER OFF"));
+				_SERIAL_DEBUG_CHANNEL_.println();				
 				rightLaserOn = false;//set status
 			}
 			else//the right laser had already been off
@@ -143,19 +130,10 @@ void loop() {
 			if (!leftLaserOn)//if the left laser was off and now just turned on
 			{
 				#ifdef _DEBUG_
-					#ifdef _DEBUG_COMM_BROADCAST
-						Serial2.println(laserControlDelay);//DEBUG
-					#else
-						Serial.println(laserControlDelay);//DEBUG
-					#endif					
+					_SERIAL_DEBUG_CHANNEL_.println(laserControlDelay);//DEBUG
 				#endif
-					#ifdef _DEBUG_COMM_BROADCAST
-						Serial2.println(F("LEFT LASER ON"));//print message on the first toggle
-						Serial2.println();
-					#else
-						Serial.println(F("LEFT LASER ON"));//print message on the first toggle
-						Serial.println();
-					#endif				
+				_SERIAL_DEBUG_CHANNEL_.println(F("LEFT LASER ON"));//print message on the first toggle
+				_SERIAL_DEBUG_CHANNEL_.println();
 				leftLaserOn = true;//set status
 			}
 			else//the left laser had already been on
@@ -168,19 +146,10 @@ void loop() {
 			if (leftLaserOn)//if the left laser was on and now just turned off
 			{
 				#ifdef _DEBUG_
-					#ifdef _DEBUG_COMM_BROADCAST
-						Serial2.println(laserControlDelay);//DEBUG
-					#else
-						Serial.println(laserControlDelay);//DEBUG
-					#endif					
+					_SERIAL_DEBUG_CHANNEL_.println(laserControlDelay);//DEBUG
 				#endif
-					#ifdef _DEBUG_COMM_BROADCAST
-						Serial2.println(F("LEFT LASER OFF"));
-						Serial2.println();
-					#else
-						Serial.println(F("LEFT LASER OFF"));
-						Serial.println();
-					#endif				
+				_SERIAL_DEBUG_CHANNEL_.println(F("LEFT LASER OFF"));
+				_SERIAL_DEBUG_CHANNEL_.println();
 				leftLaserOn = false;//set status
 			}
 			else//the left laser had already been off

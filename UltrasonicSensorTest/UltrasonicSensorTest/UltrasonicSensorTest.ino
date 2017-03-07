@@ -3,7 +3,11 @@
 #include <UltrasonicSensor.h>
 
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
-
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
 
 //Global Variables
 UltrasonicSensor * uSon_FwdLeft = new UltrasonicSensor(FORWARD_LEFT_ULTSNC_TRIG_PIN, FORWARD_LEFT_ULTSNC_ECHO_PIN);
@@ -63,72 +67,38 @@ void loop()
 		for (byte j = 0; j < 4; j++)
 		{
 			distanceMeasured = uSonSensors[i]->getDistance(UNIT_CM);
-
-		#ifdef _DEBUG_COMM_BROADCAST
+			
 			switch (i)
 			{
 				case 0:
-					Serial2.print("uSon_FwdLeft: ");
+					_SERIAL_DEBUG_CHANNEL_.print("uSon_FwdLeft: ");
 					break;
 				case 1:
-					Serial2.print("uSon_SideRight: ");
+					_SERIAL_DEBUG_CHANNEL_.print("uSon_SideRight: ");
 					break;
 				case 2:
-					Serial2.print("uSon_FwdCenter: ");
+					_SERIAL_DEBUG_CHANNEL_.print("uSon_FwdCenter: ");
 					break;
 				case 3:
-					Serial2.print("uSon_RearCenter: ");
+					_SERIAL_DEBUG_CHANNEL_.print("uSon_RearCenter: ");
 					break;
 				case 4:
-					Serial2.print("uSon_FwdRight: ");
+					_SERIAL_DEBUG_CHANNEL_.print("uSon_FwdRight: ");
 					break;
 				case 5:
-					Serial2.print("uSon_SideLeft: ");
+					_SERIAL_DEBUG_CHANNEL_.print("uSon_SideLeft: ");
 					break;
 			}//end switch
 			 //if objects are detected...
 			if (distanceMeasured >= 0)
 			{
-				Serial2.print(distanceMeasured);
-				Serial2.println(" cm");
+				_SERIAL_DEBUG_CHANNEL_.print(distanceMeasured);
+				_SERIAL_DEBUG_CHANNEL_.println(" cm");
 			}//end if
 			else//no objects detected...
 			{
-				Serial2.println(F("No Object Detected"));
+				_SERIAL_DEBUG_CHANNEL_.println(F("No Object Detected"));
 			}//end else
-		#else
-			switch (i)
-			{
-				case 0:
-					Serial.print("uSon_FwdLeft: ");
-					break;
-				case 1:
-					Serial.print("uSon_SideRight: ");
-					break;
-				case 2:
-					Serial.print("uSon_FwdCenter: ");
-					break;
-				case 3:
-					Serial.print("uSon_RearCenter: ");
-					break;
-				case 4:
-					Serial.print("uSon_FwdRight: ");
-					break;
-				case 5:
-					Serial.print("uSon_SideLeft: ");
-					break;
-			}//end switch
-			 //if objects are detected...
-			if (distanceMeasured >= 0)
-			{
-				Serial.print(distanceMeasured);
-				Serial.println(" cm");
-			}//end if
-			else//no objects detected...
-			{
-				Serial.println(F("No Object Detected"));
-			}//end else
-		#endif
 			delay(1000);
 		}//end for
 	}//end for

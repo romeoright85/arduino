@@ -11,6 +11,12 @@
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
+
 
 //Global Variables
 
@@ -64,11 +70,7 @@ void setup() {
 	Serial.begin(PC_USB_BAUD_RATE);
 	Serial2.begin(MAIN_BAUD_RATE);
 	delay(15);//add a little delay so the serial port has time to start up
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial2.println("Test running");
-#else
-	Serial.println("Test running");
-#endif
+	_SERIAL_DEBUG_CHANNEL_.println("Test running");
 	
 }
 
@@ -88,12 +90,7 @@ void loop() {
 		if (modesTester==1)//if in on mode
 		{
 			//Turn all lights on
-		#ifdef _DEBUG_COMM_BROADCAST
-			Serial2.println("tick");
-		#else
-			Serial.println("tick");
-		#endif
-			
+			_SERIAL_DEBUG_CHANNEL_.println("tick");			
 			underglowLight->turnOn();
 			leftSideSignal->turnOn();
 			rightSideSignal->turnOn();
@@ -107,11 +104,7 @@ void loop() {
 		else//if in off mode
 		{
 			//Turn all lights off
-		#ifdef _DEBUG_COMM_BROADCAST
-			Serial2.println("tock");
-		#else
-			Serial.println("tock");
-		#endif		
+			_SERIAL_DEBUG_CHANNEL_.println("tock");
 			underglowLight->turnOff();
 			leftSideSignal->turnOff();
 			rightSideSignal->turnOff();
@@ -127,11 +120,5 @@ void loop() {
 
 
 	}//end if
-
-
-
-	
-	
-
 
 }
