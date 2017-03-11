@@ -1,6 +1,6 @@
-#include <RoverHeathAndStatus.h>
+#include <RoverHealthAndStatus.h>
 
-//Note: Include ImuSensor.h here as it won't work right when including it in RoverHeathAndStatus.h since it's not a class but a bunch of functions and variable declarations
+//Note: Include ImuSensor.h here as it won't work right when including it in RoverHealthAndStatus.h since it's not a class but a bunch of functions and variable declarations
 #include <ImuSensor.h>
 
 #ifdef _DEBUG_COMM_BROADCAST
@@ -10,17 +10,18 @@
 #endif
 
 
-RoverHeathAndStatus::RoverHeathAndStatus(voidFuncPtr interruptDispatch_sleeperAUXI)
+RoverHealthAndStatus::RoverHealthAndStatus(voidFuncPtr interruptDispatch_sleeperAUXI)
 {
 	this->_interruptDispatch_sleeperAUXI = interruptDispatch_sleeperAUXI;
 	
+	//Initialize the Finite State Machine
 	this->_state = State::POWER_ON_RESET;	
 }
-RoverHeathAndStatus::~RoverHeathAndStatus()
+RoverHealthAndStatus::~RoverHealthAndStatus()
 {
 	//do nothing
 }
-void RoverHeathAndStatus::reset()
+void RoverHealthAndStatus::reset()
 {
 	
 	//resetting all objects
@@ -29,12 +30,16 @@ void RoverHeathAndStatus::reset()
 		this->resetArray[i]->reset();		
 	}//end for
 }
-void RoverHeathAndStatus::isrUpdate_sleeperAUXI()
+void RoverHealthAndStatus::isrUpdate_sleeperAUXI()
 {
 	this->_sleeperAUXI->isrUpdate();
 }
-void RoverHeathAndStatus::createObjects()
+void RoverHealthAndStatus::createObjects()
 {
+		
+		//State (Design Pattern) Machine(s)
+		this->_holdStateMachine_Auxi = new HoldStateMachine_Auxi();
+		
 		
 		//Current Sensor Fault
 		this->_currentSensorFault = new CurrentSensorFault(CURRENT_FAULT_1_7D2V_25A_PRESW_PIN, CURRENT_FAULT_2_3D3V_12D4A_SW_PIN, CURRENT_FAULT_3_MCTRLRCH1_12D5A_PIN, CURRENT_FAULT_4_MCTRLRCH2_12D5A_PIN, CURRENT_FAULT_5_7D2_12D5A_SW_PIN, CURRENT_SENSOR_RESET_PIN);
@@ -83,23 +88,16 @@ void RoverHeathAndStatus::createObjects()
 	
 	
 }
-void RoverHeathAndStatus::initializeObjects()
-{		
-	//Turn off lasers
-	this->_leftSidelaser->laserEnable(LASER_OFF);
-	this->_rightSidelaser->laserEnable(LASER_OFF);
-	
-//FINISH ME	
-	
-}
-void RoverHeathAndStatus::runBackgroundTasks()
+void RoverHealthAndStatus::runBackgroundTasks()
 {
 	//Rover UpTime
-	this->_roverUptime->run();
+	this->_roverUptime->run();	
 	
 //FINISH ME	
 }
-void RoverHeathAndStatus::run()
+
+	
+void RoverHealthAndStatus::run()//Finite State Machine (FSM)
 {
 	
 	//Run Background Tasks Every Loop
@@ -113,8 +111,7 @@ void RoverHeathAndStatus::run()
 			SERIAL_DEBUG_CHANNEL.println(F("POWER_ON_RESET"));//DEBUG					
 		#endif
 			//Create Objects On Power On
-			this->createObjects();
-			this->reset();			
+			this->createObjects();				
 			//Set next state
 			this->_state = State::INITIALIZE;
 			break;				
@@ -122,8 +119,8 @@ void RoverHeathAndStatus::run()
 		#ifdef _DEBUG_PRINT_STATE_			
 			SERIAL_DEBUG_CHANNEL.println(F("INITIALIZE"));//DEBUG			
 		#endif			
-			//Initialize Objects
-			this->initializeObjects();			
+			//Reset/Initialize All Objects
+			this->reset();				
 			//Set next state
 			this->_state = State::RX_COMMUNICATIONS;			
 			break;					
@@ -131,30 +128,59 @@ void RoverHeathAndStatus::run()
 		#ifdef _DEBUG_PRINT_STATE_			
 			SERIAL_DEBUG_CHANNEL.println(F("RX_COMMUNICATIONS"));//DEBUG			
 		#endif		
+			//Set next state
 			this->_state = State::PROCESS_COMMANDS;
 			break;			
 		case State::PROCESS_COMMANDS:
 		#ifdef _DEBUG_PRINT_STATE_			
 			SERIAL_DEBUG_CHANNEL.println(F("PROCESS_COMMANDS"));//DEBUG			
 		#endif
-			this->_state = State::GET_INPUTS;
+			//Set next state
+			this->_state = State::READ_INPUTS;
 			break;		
-		case State::GET_INPUTS:
+		case State::READ_INPUTS:
 		#ifdef _DEBUG_PRINT_STATE_
-			SERIAL_DEBUG_CHANNEL.println(F("GET_INPUTS"));//DEBUG			
+			SERIAL_DEBUG_CHANNEL.println(F("READ_INPUTS"));//DEBUG			
 		#endif
+		
+			//Check Current Sensors
+			if(this->_currentSensorFault->anyFaulted())
+			{
+				//Set the hold state
+				
+//LEFT OFF HERE
+//NEED TO WRITE A 	CURRENT HOLD STATE
+//NEED TO PASS DATA BACK AND FORTH BETWEEN THE FSM and the SDPM
+				//this->_holdStateMachine_Auxi->setNextState(this->getCurrentFaultHoldStateAuxi());
+				//Set next state
+				this->_state = State::HOLD;
+				break;
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			//Set next state
 			this->_state = State::CONTROL_OUTPUTS;
 			break;		
 		case State::CONTROL_OUTPUTS:
 		#ifdef _DEBUG_PRINT_STATE_			
 			SERIAL_DEBUG_CHANNEL.println(F("CONTROL_OUTPUTS"));//DEBUG			
 		#endif			
+			//Set next state
 			this->_state = State::TX_COMMUNICATIONS;
 			break;		
 		case State::TX_COMMUNICATIONS:
 		#ifdef _DEBUG_PRINT_STATE_			
 			SERIAL_DEBUG_CHANNEL.println(F("TX_COMMUNICATIONS"));//DEBUG			
 		#endif
+			//Set next state
 			this->_state = State::RX_COMMUNICATIONS;
 			break;		
 		case State::GO_TO_SLEEP:
@@ -167,6 +193,7 @@ void RoverHeathAndStatus::run()
 			 //No SW Serials used for AUXI
 			this->_sleeperAUXI->goToSleep();//will sleep and can be awoken by MAIN
 			//The AUXI will go to sleep here.
+			//Set next state
 			this->_state = State::WAKEUP;
 			break;		
 		case State::WAKEUP:
@@ -179,18 +206,55 @@ void RoverHeathAndStatus::run()
 			#ifdef _DEBUG_PRINT_STATE_			
 				SERIAL_DEBUG_CHANNEL.println(F("WAKEUP"));//DEBUG
 			#endif
+			//Set next state
 			this->_state = State::RX_COMMUNICATIONS;
 			break;			
 		case State::SW_RESET:
 			//Same as INITIALIZE
+			//Set next state
 			this->_state = State::INITIALIZE;
-			break;						
+			break;				
+		case State::HOLD:
+		#ifdef _DEBUG_PRINT_STATE_
+			SERIAL_DEBUG_CHANNEL.println(F("HOLD"));//DEBUG
+		#endif
+			//Hold State (Design Pattern) Machine - Hold SDPM
+			//Note: Only Run the Hold State (Design Pattern) Machine when in the Hold State of the Finite State Machine
+			//Run the sub/child "Hold State (Design Pattern) Machine" until it requests and exit
+			this->_holdStateMachine_Auxi->run();
+
+
+			
+			
+			//Process RX/TX commands here until you get an exit status. Pass the data in and out of the Hold State Machine
+//WRITE LATER
+
+			if(this->_holdStateMachine_Auxi->exitHoldStatus())//exit the hold state
+			{
+			#ifdef _DEBUG_OUTPUT			
+				SERIAL_DEBUG_CHANNEL.println(F("EXIT HOLD"));//DEBUG			
+			#endif
+				//Set next state
+				this->_state = State::RX_COMMUNICATIONS;	
+			}
+			else//stay in the hold staye
+			{
+				//Set next state
+				this->_state = State::HOLD;
+			}
+
+		
+	//Set next state
+	this->_state = State::RX_COMMUNICATIONS;	
+			
+			break;				
 		case State::SHUTDOWN:
 		#ifdef _DEBUG_PRINT_STATE_
 			SERIAL_DEBUG_CHANNEL.println(F("SHUTDOWN"));//DEBUG
 		#endif
+			//Set next state
 			this->_state = State::POWER_ON_RESET;
-			break;				
+			break;							
 		case State::ERROR:
 		#ifdef _DEBUG_PRINT_STATE_
 			SERIAL_DEBUG_CHANNEL.println(F("ERROR"));//DEBUG
@@ -199,9 +263,11 @@ void RoverHeathAndStatus::run()
 			//Transmit error message
 			//Look for direction on what needs to be done
 			//Else stay in error state
+			//Set next state
 			this->_state = State::ERROR;
 			break;		
 		default:
+			//Set next state
 			this->_state = State::ERROR;
 			break;					
 	}//end switch

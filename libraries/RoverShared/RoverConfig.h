@@ -61,8 +61,17 @@
 	#endif
 
 	
-
-
+	//definition for 
+	#ifdef _ROVERHEALTHANDSTATUS_DEFINITONS
+		//Hold States
+		#define CURRENT_FAULT_HOLD	1
+		
+	#endif	
+		
+	//definition for CurrentSensorFault
+	#ifdef _CURRENTSENSORFAULT_DEFINITIONS
+		#define NUM_OF_CURRENT_SENSORS		5
+	#endif	
 		
 	//definition for UpTime
 	#ifdef _UPTIME_DEFINITIONS

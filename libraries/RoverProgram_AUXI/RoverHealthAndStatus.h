@@ -1,6 +1,8 @@
-//RoverHeathAndStatus.h
-#ifndef _ROVERHEATHANDSTATUS_H
-#define _ROVERHEATHANDSTATUS_H
+//RoverHealthAndStatus.h
+#ifndef _ROVERHEALTHANDSTATUS_H
+#define _ROVERHEALTHANDSTATUS_H
+
+#define _ROVERHEALTHANDSTATUS_DEFINITONS
 
 #include <Arduino.h>
 #include <RoverDebug.h>
@@ -10,7 +12,7 @@
 //Uncomment to debug
 #define _DEBUG_PRINT_STATE_
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
-
+#define _DEBUG_OUTPUT //prints debug outputs
 
 
 
@@ -26,6 +28,10 @@ Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
 
 #include <RoverConfig.h>
+
+
+//State Machine(s) for State Design Pattern(s)
+#include <HoldStateMachine_Auxi.h>
 
 
 //Includes for Object Headers
@@ -49,36 +55,43 @@ Configure (define) flags before calling #include <RoverConfig.h>
 
 typedef void (*voidFuncPtr)(void);//defining the type voidFuncPtr that is a function pointer that takes no arguments and returns void. It is used later on for the interrupt service routine.
 
-class RoverHeathAndStatus : public virtual RoverReset {
+class RoverHealthAndStatus : public virtual RoverReset {
+	
 public:
-	RoverHeathAndStatus(voidFuncPtr);//constructor (interrupt function pointer for the Rover Sleeper Server)
-	~RoverHeathAndStatus();//destructor
-	void run();
+	RoverHealthAndStatus(voidFuncPtr);//constructor (interrupt function pointer for the Rover Sleeper Server)
+	~RoverHealthAndStatus();//destructor	
 	void isrUpdate_sleeperAUXI();
+	void exitHoldState();
+	void run();		
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
+
+	
 private:
 
 //Non-SW Resettable
-	static const byte _numOfObjects = 26;
-	voidFuncPtr _interruptDispatch_sleeperAUXI;
-	void createObjects();
-	void initializeObjects();	
-	void runBackgroundTasks();
 	
 	enum class State {
 		POWER_ON_RESET,
 		INITIALIZE,
 		RX_COMMUNICATIONS,
 		PROCESS_COMMANDS,
-		GET_INPUTS,
+		READ_INPUTS,
 		CONTROL_OUTPUTS,
 		TX_COMMUNICATIONS,
 		GO_TO_SLEEP,
 		WAKEUP,
-		SW_RESET,
-		SHUTDOWN,
+		SW_RESET,//Same as INITIALIZE, just giving it an alias name for ease of reading
+		HOLD,
+		SHUTDOWN,		
 		ERROR
 	};
+	
+	
+	static const byte _numOfObjects = 27;
+	voidFuncPtr _interruptDispatch_sleeperAUXI;
+	void createObjects();	
+	void runBackgroundTasks();
+
 	//Enum State
 	State _state;
 		
@@ -86,6 +99,9 @@ private:
 
 //Object Pointers
 	
+	
+	//State (Design Pattern) Machine(s)
+	HoldStateMachine_Auxi * _holdStateMachine_Auxi;
 	
 	//Current Sensor
 	CurrentSensorFault * _currentSensorFault;	
@@ -138,6 +154,8 @@ private:
 
 	
 	RoverReset * resetArray[_numOfObjects] = {				
+		//State (Design Pattern) Machine(s)
+		_holdStateMachine_Auxi,
 		//Current Sensor
 		_currentSensorFault,
 		//Rover Analog Signals

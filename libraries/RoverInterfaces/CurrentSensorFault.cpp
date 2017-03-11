@@ -41,7 +41,7 @@ boolean CurrentSensorFault::anyFaulted()
 	//Initialize/clear the faulted current sensor flags
 	this->clearFaultedCurrentSensors();
 	
-	for (byte i = 0; i < 5; i++)
+	for (byte i = 0; i < NUM_OF_CURRENT_SENSORS; i++)
 	{		
 		//Read the current sensor fault pin (it is active low)
 		if(!digitalRead(this->_currentSensorFaultPins[i]))
@@ -78,7 +78,7 @@ void CurrentSensorFault::resetCurrentSensors()
 void CurrentSensorFault::clearFaultedCurrentSensors()
 {
 	//Clear the faulted current sensor flags
-	for (byte i = 0; i < 5; i++)
+	for (byte i = 0; i < NUM_OF_CURRENT_SENSORS; i++)
 	{
 		this->_faultedCurrentSensors[i] = false;
 	}

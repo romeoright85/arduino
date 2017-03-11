@@ -1,13 +1,13 @@
 //Used for AUXI - 3
 
 
-#include <RoverHeathAndStatus.h>
+#include <RoverHealthAndStatus.h>
 
 
 //Global Variables
 
 void InterruptDispatch_sleeperAUXI();
-RoverHeathAndStatus * roverHeathAndStatus = new RoverHeathAndStatus(&InterruptDispatch_sleeperAUXI);
+RoverHealthAndStatus * roverHealthAndStatus = new RoverHealthAndStatus(&InterruptDispatch_sleeperAUXI);
 
 
 void setup() {
@@ -22,11 +22,11 @@ void setup() {
 
 void loop() {
 	
-	roverHeathAndStatus->run();
+	roverHealthAndStatus->run();
 	delay(500);//DEBUG
 }
 
 void InterruptDispatch_sleeperAUXI() {
 	//Have to keep the ISR short else the program won't work
-	roverHeathAndStatus->isrUpdate_sleeperAUXI();//update the awake flag of the sleeperAUXI to reflect current status
+	roverHealthAndStatus->isrUpdate_sleeperAUXI();//update the awake flag of the sleeperAUXI to reflect current status
 }

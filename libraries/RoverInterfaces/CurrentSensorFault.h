@@ -1,7 +1,8 @@
 //CurrentSensorFault.h
 #ifndef _CURRENTSENSORFAULT_H
 #define _CURRENTSENSORFAULT_H
-
+	#define _CURRENTSENSORFAULT_DEFINITIONS
+	
 	#include <Arduino.h>
 	#include <RoverDebug.h>
 	#include <RoverReset.h>

@@ -140,11 +140,11 @@ void RoverCaptain::run()
 		#ifdef _DEBUG_PRINT_STATE_			
 			_SERIAL_DEBUG_CHANNEL_.println(F("PROCESS_COMMANDS"));//DEBUG			
 		#endif
-			this->_state = State::GET_INPUTS;
+			this->_state = State::READ_INPUTS;
 			break;		
-		case State::GET_INPUTS:
+		case State::READ_INPUTS:
 		#ifdef _DEBUG_PRINT_STATE_
-			_SERIAL_DEBUG_CHANNEL_.println(F("GET_INPUTS"));//DEBUG			
+			_SERIAL_DEBUG_CHANNEL_.println(F("READ_INPUTS"));//DEBUG			
 		#endif
 			this->_state = State::CONTROL_OUTPUTS;
 			break;		
@@ -183,6 +183,13 @@ void RoverCaptain::run()
 			//It will reset COMM then go back to it's normal operation
 			this->_state = State::RX_COMMUNICATIONS;
 			break;			
+		case State::HOLD:
+		#ifdef _DEBUG_PRINT_STATE_
+			SERIAL_DEBUG_CHANNEL.println(F("HOLD"));//DEBUG
+		#endif
+//STAY IN THE HOLD STATE AND KEEP GETTING RX COMMS UNTIL A COMMAND (INTERALLY FROM OTHER ARDUINOS OR EXTERNALLY) RELEASE THIS HOLD		
+			this->_state = State::HOLD;
+			break;					
 		case State::SHUTDOWN:
 		#ifdef _DEBUG_PRINT_STATE_
 			_SERIAL_DEBUG_CHANNEL_.println(F("SHUTDOWN"));//DEBUG
