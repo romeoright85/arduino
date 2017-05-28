@@ -1,0 +1,116 @@
+Where I left off
+------------------------
+write more class testers to test functionality of the rover
+
+
+
+go back and make all private variables start with an _
+
+
+make sure each of your classes only do one thing
+
+
+test the new arduino led classes with new timers and counters on the arduino
+
+	[done, need to test on rover]PirSensorTester
+	[done, need to test on rover]UltrasonicSensorTester
+	[done, need to test on rover]IrDistanceSensor
+	[done] RoverSleeperClient
+	[done] RoverSleeperServer
+	[done] WakeUpTester_COMM
+	[done, need to test] WakeUpTester_MAIN
+	[done, need to test] WakeUpTester_AUXI
+	[done, need to test] WakeUpTester_NAVI
+	[done, need to test]write a universal simulator/tester on a mega to test any megas or unos
+	
+	
+	
+	
+	
+	
+	
+	
+	LedTester (
+							[done, need to retest due to updates]write global delay counter (see Rover_Heart_LED_Testerv3.ino). pass this to the heaert led
+							[done, need to retest due to updates]AnalogLed->HeartLed
+							[done]UnderglowLeds->DigitalLed->Underglow
+							[done]FoglightAssembly->DigitalLed->(Foglight left, Foglight right)
+							[done]SignalLightAssembly(front, side)
+[FINISH writing these later. Should be straight forward. Use others as templates]
+							BeaconAssembly->DigitalLed->Beacon[ir, blue]
+							HeadlightAssembly->DigitalLed->(Headlight left, Headlight left)
+							TailLightAssembly->DigitalLed->Taillights
+					)
+					
+
+[started] RoverCommTester_MAIN
+	
+[FINISH writing these later. Should be straight forward. Use others as templates]
+	RoverCommTester_MAIN
+	RoverCommTester_AUXI
+	RoverCommTester_NAVI
+
+	
+
+	AnalogMuxReadbackTester (mux control, op amp output) : temp, voltage, light, current
+	
+	ImuReadbackTester
+	GpsReadbackTester
+
+	
+	WheelEncoderTester
+	HwResetTester
+	LaserControlTester
+	
+	CurrentSensorControlTester (Current Faults and Resets)
+	
+	RcControlTester (Motor Fet Control, Motor Enable Status, Motor Steering, Motor Acceleration, Servo Pan, Servo Tilt, Buffer Select)
+	
+	
+	
+	
+	
+	
+then test all unit tests on actual rover
+practice state machine. try it with design patterns if arduino lets me.
+
+come up with prioritization excel spreadsheet table to know what gets the most priority
+	voltage/current sensors (if over voltage or current, shut down)
+	-ultrasonic/ir (avoid obstacles while moving)
+	-gps for navigation
+	-laser
+	-led for indication
+	-etc (manual vs. auto control/override)
+-work on state machine for priority/arbitration
+-work on state machine for navigation	
+	
+
+Note: Go ahead and write arduino code in regular C++ OOP (since you have limited memory and functionality on the Arduino) and then the ground software in Java with Design Patterns and Object Oriented Analysis and Design.
+
+
+
+Working on:
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\RoverGen2
+	open the .sln with visual studio community with visual micro extension
+and
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries
+	edit the .cpp and .h with notepad++ or visual studio community with visual micro extension
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Aslo refer to:
+K:\Design Workspace\Arduino\Rover Mini Sketches\Studies\Done
+K:\Design Workspace\Arduino
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino

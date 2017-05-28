@@ -1,0 +1,1222 @@
+Note: Make sure for any serials, use a #define serial_type. So it can be replaced with PC USB's serial if needed.
+NOTE: MAIN will spend a lot of time redirecting data since AUXI and NAVI and COMM all need to go thru MAIN for data transfer
+
+
+#define AUTO_DATA_LOOP_MAX_NAVI ?? //max number of auto data before looping over
+#define AUTO_DATA_LOOP_MAX_AUXI ?? //max number of auto data before looping over
+#define AUTO_DATA_LOOP_MAX_COMM ?? //max number of auto data before looping over
+#define MAIN_SYSTEM_ERROR_TIMEOUT_VALUE ??//time for MAIN to wait in SYSTEM_ERROR before it should reset a hw reset from COMM
+#define MAIN_SYNC_TIMEOUT_VALUE ??
+#define SW_RESET_RESEND_TIMEOUT_VALUE		??//time to wait for AUXI's or NAVI's SW Reset Acknowledgement to MAIN before restarting the SW Reset, by sending a NAVI or AUXI SW Request again.
+#define SW_RESET_ERROR_TIMEOUT_VALUE ??//time to waiting and resend the AUXI's or NAVI's SW Reset (Re-)Requests from MAIN before MAIN should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
+#define SLEEPING_ERROR_TIMEOUT_VALUE ??//time to waiting and keep resending the AUXI's or NAVI's Sleep Requests from MAIN (since unlike SW requests, if it's already asleep and you send it another request, there is no hard) before MAIN should just error out itself.
+#define CONCURRENT_TRANSMISSION_DELAY		??//delay for about 1-5ms or so between potentially sending messages out again to the same arduino
+
+
+
+At POR (defaults):
+	Current State: RUN_HOUSEKEEPING_TASKS
+	Next State: RUN_HOUSEKEEPING_TASKS
+	Mode: POWER_ON_RESET *begin*
+	comm_msg_queue = NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+	navi_msg_queue = NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+	auxi_msg_queue = NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+	redirectToNAVI = false
+	redirectToAUXI = false
+	redirectToCOMM = false
+	navi_system_ready = false	
+	auxi_system_ready = false	
+	navi_acknowledgement = false //a shared status flag, used for sw resets, sleep requests, wake requests, etc. Make sure to clear it out before use and only use it for one purpose at a time.
+	auxi_acknowledgement = false	//a shared status flag, used for sw resets, sleep requests, wake requests, etc. Make sure to clear it out before use and only use it for one purpose at a time.	
+	comm_system_ready = false	
+	enable_mtr_pwr = false
+	run_task_on_main_now = false //a shared status flag, used to SW reset main after COMM SE Reset Request is sent at the TX_COMMUNICATIONS state, etc. Make sure to clear it out before use and only use it for one purpose at a time.		
+	//NAVI
+	auto_data_array_NAVI[] = {MTR_PWR_STATUS, ENC_STATUS_MID_LEFT, ENC_STATUS_MID_RIGHT}// add more as needed
+	auto_data_cnt_NAVI = 0 //data counter
+	//AUXI
+	auto_data_array_AUXI[] = {}// add more as needed
+	auto_data_cnt_AUXI = 0 //data counter
+	//COMM
+	auto_data_array_COMM[] = {}// add more as needed
+	auto_data_cnt_COMM = 0 //data counter
+	timeout_counter = 0 //shared counter, used to track how long MAIN has been waiting in the SYSTEM_ERROR state before requesting a hw reset from COMM, etc. Make sure to clear it out before use and only use it for one purpose at a time.
+		Note: It could go to sw reset after waiting in the SYSTEM_ERROR state for a long time, but go ahead and go with a hw reset as that's known to work more reliability than the sw reset
+	motor_power_prev_state = false //used to save the last state the motor power was on before turning it off to go to sleep
+	sw_reset_error = false
+	sync_error = false
+	sleeping_error = false
+	transmission_delay_cnt = 0;//concurrent transmission delay counter
+	first_transmission = true
+							
+MAIN:
+		Loop
+			RUN_HOUSEKEEPING_TASKS		
+				POWER_ON_RESET
+					run POR tasks
+					start background tasks
+					Set mode to INITIALIZATION *begin*
+					Go to whatever the next state is
+						(still is Next State: RUN_HOUSEKEEPING_TASKS)							
+				INITIALIZATION
+					run initialization tasks
+						initialize/reinitialize all variables
+					initialize background tasks
+					Set mode to SYNCHRONIZATION *begin*
+					//initialize/reset shared counter before use
+					timeout_counter = 0;
+					Set next state to RX_COMMUNICATIONS
+					Go to whatever the next state is
+						(now just set to RX_COMMUNICATIONS)				
+				SYNCHRONIZATION
+					run background tasks
+					Go to whatever the next state is				
+				NORMAL_OPERATIONS		
+					run background tasks
+					Go to whatever the next state is				
+				HW_RESETTING
+					run background tasks
+					Go to whatever the next state is					
+				SYSTEM_SLEEPING
+					run background tasks
+					Go to whatever the next state is		
+				SYSTEM_WAKING
+					run background tasks
+					Go to whatever the next state is						
+				SW_RESETTING
+					run background tasks
+					Go to whatever the next state is			
+				SYSTEM_ERROR
+					run background tasks
+					Go to whatever the next state is		
+			RX_COMMUNICATIONS
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION					
+					rxData() from COMM
+					rxData() from AUXI
+					rxData() from NAVI					
+					Mode: SYNCHRONIZATION
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS							
+				NORMAL_OPERATIONS			
+					rxData() from COMM
+					rxData() from AUXI
+					rxData() from NAVI					
+					Mode: NORMAL_OPERATIONS
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS					
+				HW_RESETTING
+					do nothing				
+				SYSTEM_SLEEPING
+					rxData() from COMM
+					rxData() from AUXI
+					rxData() from NAVI					
+					Mode: SYSTEM_SLEEPING
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS				
+				SYSTEM_WAKING
+					do nothing
+				SW_RESETTING
+					rxData() from COMM
+					rxData() from AUXI
+					rxData() from NAVI					
+					Mode: SW_RESETTING
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS								
+				SYSTEM_ERROR
+					rxData() from COMM
+					rxData() from AUXI
+					rxData() from NAVI		
+					Mode: SYSTEM_ERROR
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS						
+			DATA_VALIDATION		
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION		
+					validateData() from COMM
+					validateData() from AUXI
+					validateData() from NAVI
+					Mode: SYNCHRONIZATION
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS
+				NORMAL_OPERATIONS					
+					validateData() from COMM
+					validateData() from AUXI
+					validateData() from NAVI
+					Mode: SYNCHRONIZATION
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS
+				HW_RESETTING
+					do nothing					
+				SYSTEM_SLEEPING
+					validateData() from COMM
+					validateData() from AUXI
+					validateData() from NAVI
+					Mode: SYSTEM_SLEEPING
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS			
+				SYSTEM_WAKING
+					do nothing							
+				SW_RESETTING
+					validateData() from COMM
+					validateData() from AUXI
+					validateData() from NAVI
+					Mode: SW_RESETTING
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS								
+				SYSTEM_ERROR
+					validateData() from COMM
+					validateData() from AUXI
+					validateData() from NAVI
+					Mode: SYSTEM_ERROR
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS								
+			DATA_FILTER
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION
+					filter and throw away all NAVI data except:
+						system ready message(s) from NAVI
+???allow redirections from AUXI to NAVI and NAVI to AUXI (i.e. shut off LEDs and status)						
+???allow error messages from AUXI and NAVI to MAIN as well
+					filter and throw away all AUXI data except:
+						system ready message(s) from AUXI						
+???allow redirections from AUXI to NAVI and NAVI to AUXI (i.e. shut off LEDs and status)						
+???allow error messages from AUXI and NAVI to MAIN as well
+					filter and throw away all COMM data except:
+						system ready message(s) from COMM	
+						All SW Reset Request from COMM/CMNC (to restart the SW reset process again)				
+						hw reset request message(s) from COMM (used to hw reset the COMM after the COMM has hw reset MAIN, NAVI, and AUXI)
+???allow error messages from AUXI or NAVI to be redirected to COMM
+					Unless overriden
+						Mode: SYNCHRONIZATION
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS					
+				NORMAL_OPERATIONS		
+					filter and direct NAVI data
+						if redirection needed AUXI:						
+							redirectToAUXI = true
+						else if redirection needed COMM:
+							redirectToCOMM = true
+						end if
+					filter and direct AUXI data
+						if redirection needed NAVI:						
+							redirectToNAVI = true
+						else if redirection needed COMM:
+							redirectToCOMM = true
+						end if						
+					filter and direct COMM data
+						if redirection needed AUXI:						
+							redirectToAUXI = true
+						else if redirection needed NAVI:
+							redirectToNAVI = true
+						end if							
+					Mode: NORMAL_OPERATIONS
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS			
+				HW_RESETTING
+					do nothing				
+				SYSTEM_SLEEPING			
+					filter and throw away all NAVI data except:
+						System Is Sleeping Acknowledgement from NAVI
+					filter and throw away all AUXI data except:
+						System Is Sleeping Acknowledgement from AUXI
+					filter and throw away all COMM data except:						
+						All Sleep (Re-)Request from COMM/CMNC (to restart the sleep process again)
+							Note: Allow sleep (Re-)Request to override the sleep process if needed
+							Note: No need to worry about allowing HW requests to override when in SYSTEM_SLEEPING with MAIN.
+								Since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SYSTEM_SLEEPING mode anyways.
+								After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.					
+							TROUBLESHOOTING TIP: Make sure it doesn't keep getting stuck in the sleep request state.
+					Mode: SYSTEM_SLEEPING
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS						
+				SYSTEM_WAKING
+					do nothing		
+				SW_RESETTING		
+					filter and throw away all NAVI data except:
+						SW Reset Acknowledgement from NAVI
+					filter and throw away all AUXI data except:
+						SW Reset Acknowledgement from AUXI	
+					filter and throw away all COMM data except:
+						All SW Reset (Re-)Request from COMM/CMNC (to restart the SW reset process again)
+							Note: Allow All SW Reset (Re-)Request to override the sw reset process if needed
+							Note: No need to worry about allowing HW requests to override when in SW_RESETTING with MAIN.
+									Since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SW_RESETTING mode anyways.
+									After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.					
+							TROUBLESHOOTING TIP: Make sure it doesn't keep getting stuck in the re-resetting state.
+					Mode: SW_RESETTING
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS						
+				SYSTEM_ERROR
+					filter and throw away all NAVI data except:
+						any redirections
+						if redirection needed to AUXI:						
+							redirectToAUXI = true
+						else if redirection needed COMM or CMNC:
+							redirectToCOMM = true
+						end if
+						(to allow system data to be passed from NAVI to COMM or CMNC)						
+					filter and throw away all AUXI data except:
+						any redirections
+						if redirection needed to NAVI:						
+							redirectToNAVI = true
+						else if redirection needed COMM or CMNC:
+							redirectToCOMM = true
+						end if
+						(to allow system data to be passed from AUXI to NAVI or COMM or CMNC)									
+					filter and throw away all COMM data except:
+						sw reset request message(s) from COMM
+						mid left encoder requests (used for debugging)
+						mid right encoder requests (used for debugging)
+						motor power status requests (used for debugging)
+						any redirections
+							if redirection needed to AUXI:						
+							redirectToAUXI = true						
+							else if redirection needed to NAVI:						
+								redirectToNAVI = true							
+							end if
+						Allow all COMM/CMNC data to be redirected so AUXI/NAVI can send requested data back. Each Arduino will filter out what it will allow in error mode.						
+						Note: There is no need for HW requests here, since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SYSTEM_ERROR mode anyways.
+									After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.						
+					Mode: SYSTEM_ERROR
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS			
+			READ_INPUTS
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION
+					skip encoders
+					read motor power status
+					Mode: SYNCHRONIZATION
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS						
+				NORMAL_OPERATIONS
+					read encoders
+					read motor power status
+					Mode: NORMAL_OPERATIONS
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS					
+				HW_RESETTING
+					do nothing				
+				SYSTEM_SLEEPING
+					skip encoders
+					read motor power status
+					Mode: SYSTEM_SLEEPING
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS	
+				SYSTEM_WAKING
+					do nothing			
+				SW_RESETTING
+					skip encoders
+					read motor power status
+					Mode: SW_RESETTING
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS				
+				SYSTEM_ERROR
+					read encoders
+					read motor power status
+					Mode: SYSTEM_ERROR
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS	
+			PROCESS_DATA
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing	
+				SYNCHRONIZATION
+					
+					skip encoder data
+					process motor power status
+					
+					
+					Categorize all commands/data from all sources.
+					Allow for all non-conflicting commands to run.
+					Sort based on priority.
+					Then only run the highest priority for MAIN.												
+
+	
+					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: If system ready msg received from NAVI, see "Command Options" below for more info.
+						
+					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: If system ready msg received from AUXI, see "Command Options" below for more info.
+								
+					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: If system ready msg, hw reset request, or All SW Reset Request from COMM/CMNC, see "Command Options" below for more info.
+								
+					
+					
+					
+					//Run lower priority functions here. (i.e. system ready msgs)
+
+					//check each arduino to see which isn't ready yet and keep having it send out system ready status from MAIN
+					if comm_system_ready == false
+						comm_msg_queue = SYSTEM_READY_STATUS (tells COMM it's ready to synchronize)						
+					end if
+					if navi_msg_queue == false
+						navi_msg_queue = SYSTEM_READY_STATUS (tells NAVI it's ready to synchronize)						
+					end if
+					if auxi_msg_queue == false
+						auxi_msg_queue = SYSTEM_READY_STATUS (tells AUXI it's ready to synchronize)						
+					end if
+
+
+
+					
+					
+					//ignore any other commands. it should have been filter out anyways. (because only system ready msgs can pass the data filter)
+										
+					//Run highest priority functions here. //this will override any lower priority messages (see below)
+										
+					//Check to see if all systems are ready for systems go
+					if navi_system_ready = true && auxi_system_ready = true && comm_system_ready = true //the status for a particular arduino (i.e. navi_system_ready fpr NAVI) would be set true when the system ready msg was received for that arduino
+						comm_msg_queue = SYSTEM_GO_STATUS
+						navi_msg_queue = SYSTEM_GO_STATUS
+						auxi_msg_queue = SYSTEM_GO_STATUS						
+						Mode: NORMAL_OPERATIONS *begin*						
+					else		
+						//increment counter
+						timeout_counter++
+						//if MAIN has been stuck in SYNCHRONIZATION for a long time while waiting on NAVI, AUXI, or COMM, it will send a sync error status
+						if timeout_counter >= MAIN_SYNC_TIMEOUT_VALUE					
+						Set mode to SYSTEM_ERROR *begin*
+						comm_msg_queue == SYNC_ERROR_STATUS
+						set sync_error = true
+						//initialize/reset shared counter before use
+						timeout_counter = 0;
+					end if
+										
+					
+					process any hw reset request from MAIN to COMM for COMM to do a reset on COMM here //all the message queues will be the same. Just COMM will be HW reset while everything else is starting up or is ready already
+					
+						
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS
+					Unless overridden,						
+						Mode: SYNCHRONIZATION
+					go to RUN_HOUSEKEEPING_TASKS
+					
+				NORMAL_OPERATIONS
+
+					process encoder data
+					process motor power status
+					
+					
+					Categorize all commands/data from all sources.
+					Allow for all non-conflicting commands to run.
+					Sort based on priority.
+					Then only run the highest priority for MAIN.												
+
+					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+																
+					//Run lower priority functions here.
+															
+					//Run highest priority functions here. //this will override any lower priority messages
+						
+
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS					
+					Unless overridden,						
+						Mode: NORMAL_OPERATIONS
+					go to RUN_HOUSEKEEPING_TASKS	
+					
+				HW_RESETTING
+					do nothing				
+				SYSTEM_SLEEPING
+
+	
+					skip encoder data
+					process motor power status
+					
+					
+					Categorize all commands/data from all sources.
+					Allow for all non-conflicting commands to run.
+					Sort based on priority.
+					Then only run the highest priority for MAIN.												
+
+													
+					//Run lower priority functions here.
+	
+	
+	
+					//Regenerate the messages as needed
+					//check each arduino to see which hasn't sent a Sleeping Request Acknowledgement to MAIN yet.
+					if navi_acknowledgement == false
+						navi_msg_queue = NAVI_SLEEP_REQUEST (tells NAVI to go to sleep)
+					end if
+					if auxi_acknowledgement == false
+						auxi_msg_queue = AUXI_SLEEP_REQUEST (tells AUXI to go to sleep)
+					end if					
+					//increment counter. Note: The counter may be incremented even though sleep acknowledgement was just received, but once it's processed below, it will override any errors if all the acknowledgements were received. So no worries increment the timeout counter and checking for timeout here.
+					timeout_counter++
+					//if MAIN has been stuck in SYSTEM_SLEEPING for a long time while waiting on NAVI and/or AUXI for sleep request acknowledgements
+					if timeout_counter >= SLEEPING_ERROR_TIMEOUT_VALUE					
+						Set mode to SYSTEM_ERROR *begin*
+						comm_msg_queue == SLEEP_ERROR_STATUS
+						set sleeping_error = true
+						(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)					
+						//initialize/reset shared counter before use
+						timeout_counter = 0;
+					end if			
+					
+
+
+
+					//Run highest priority functions here. //this will override any lower priority messages (see below)
+										
+			
+					//If both acknowledgements are received, allow the Sleep Request Acknowledgement command to have the highest priority on the message queues, modes, and states (over error messages)
+			
+					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						Note: Either you should get no data or System Is Sleeping Acknowledgement from NAVI. as everything else was filtered out
+					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: Either you should get no data or System Is Sleeping Acknowledgement from AUXI. as everything else was filtered out					
+					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						Note: Either you should get no data, All SW Reset Requests, or All Sleep (Re-)Request from COMM/CMNC. as everything else was filtered out					
+				
+
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS								
+					Unless overridden,						
+						Mode: SW_RESETTING
+					go to RUN_HOUSEKEEPING_TASKS	
+
+				
+				
+				SYSTEM_WAKING
+					do nothing			
+				SW_RESETTING
+		
+
+					skip encoder data
+					process motor power status
+					
+					
+					Categorize all commands/data from all sources.
+					Allow for all non-conflicting commands to run.
+					Sort based on priority.
+					Then only run the highest priority for MAIN.												
+
+					
+					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						Note: Either you should get no data or SW Reset Acknowledgement from NAVI. as everything else was filtered out
+					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: Either you should get no data or SW Reset Acknowledgement from AUXI. as everything else was filtered out					
+					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						Note: Either you should get no data or All SW Reset (Re-)Request from COMM/CMNC. as everything else was filtered out					
+																
+					//Run lower priority functions here.
+
+
+					
+					//Run highest priority functions here. //this will override any lower priority messages
+						
+			
+
+					//For SW_RESETTING, it uses a dual timeout design
+					Note: SW_RESET_ERROR_TIMEOUT_VALUE should be greater than SW_RESET_RESEND_TIMEOUT_VALUE
+					//increment the loop count while waiting wait for AUXI or NAVI SW Reset Acknowledgement to MAIN
+					//If all acknowledgements were received, the timeout_counter would have been reset to 0, so even if it incremented, it won't be at the timeout value(s) anymore
+					timeout_counter++
+					//if MAIN has waited for a really long time, it should error out itself
+					if timeout_counter >= SW_RESET_ERROR_TIMEOUT_VALUE						
+						Mode: SYSTEM_ERROR *begin*								
+						//initialize/reset shared counter before use
+						timeout_counter = 0;					
+						set enable_mtr_pwr = false //shut down motor when in error for safety
+						//Create the error message for the message queues for the first time
+						navi_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+						auxi_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+						comm_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+						sw_reset_error = true
+							(Note: the sw_reset_error flag can only be cleared with a hw reset)
+						//initialize/reset shared counter before use
+						timeout_counter = 0;
+					//else if it just waited a little bit, it should try resending the SW reset request to AUXI or NAVI from MAIN
+					else if timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE
+						//Regenerate the messages as needed
+						//check each arduino to see which hasn't sent a SW Reset Acknowledgement to MAIN yet.
+						if navi_acknowledgement == false
+							navi_msg_queue = NAVI_SW_RESET_REQUEST (tells NAVI to do a SW reset)
+						end if
+						if auxi_acknowledgement == false
+							auxi_msg_queue = AUXI_SW_RESET_REQUEST (tells AUXI to do a SW reset)
+						end if					
+						//Don't reset timeout_counter, keep counting and see if it will reach the SW_RESET_ERROR_TIMEOUT_VALUE
+					end if
+
+
+					
+						
+						
+						
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS								
+					Unless overridden,						
+						Mode: SW_RESETTING
+					go to RUN_HOUSEKEEPING_TASKS	
+
+					
+				//send error to comm which will send a copy to cmnc as well
+					process encoder data				
+					process motor power status
+					Categorize all commands/data from all sources.
+					Allow for all non-conflicting commands to run.
+					Sort based on priority.
+					Then only run the highest priority for MAIN.
+
+
+					All NAVI data should be filter out except redirections.					
+					All AUXI data should be filter out except redirections.
+
+					//Run lower priority functions here. (i.e. error status)
+
+					
+					
+					//Recreate any error messages
+					Improvement Tip: Maybe can send NAVI and AUXI the error messages as well so they can react to it. But for now good enough.
+					if sync_error
+						(Note: the sync_error flag can only be cleared with a sw reset or hw reset)					
+						comm_msg_queue == SYNC_ERROR_STATUS //send error to comm which will send a copy to cmnc as well
+					else if sw_reset_error
+						comm_msg_queue == SW_RESET_ERROR_STATUS //send error to comm which will send a copy to cmnc as well
+						(Note: the sw_reset_error flag can only be cleared with a hw reset)
+						Troubleshooting tip, if it's a sw_reset_error, it will need a HW reset. But SYSTEM_ERROR will allow for both sw and hw resets because it's designed to handle any errors in general. So the user will have to know to send a HW reset in order to clear a SW reset error.
+					else if sleeping_error
+						comm_msg_queue == SLEEP_ERROR_STATUS //send error to comm which will send a copy to cmnc as well
+						(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)				
+					else
+						comm_msg_queue == GENERIC_SYSTEM_ERROR //send error to comm which will send a copy to cmnc as well
+					end if
+			
+					
+					
+					
+					Note: Any other messages created for COMM/CMNC has priority over error messages. Error messages are just for status, but any other messages may be used for debugging.											
+
+					
+					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						Note: Should only be SW requests, motor power status, or mid left or mid right encoder status requests. Anything else is filtered out or redirected.
+					
+					//Run highest priority functions here. //this will override any lower priority messages
+	
+
+					//increment the loop count while MAIN is still in SYSTEM_ERROR. This should take highest priority.
+					timeout_counter++;					
+					//if MAIN has been stuck in SYSTEM_ERROR for a long time, request for COMM to do a hw reset
+					if timeout_counter >= MAIN_SYSTEM_ERROR_TIMEOUT_VALUE						
+						comm_msg_queue = ALL_HW_RESET_REQUEST
+						//do not clear the counter. allow it to keep sending ALL_HW_RESET_REQUEST to COMM until a HW reset is done by COMM to MAIN
+					end if
+					
+	
+					Unless overridden,				
+						Mode: SYSTEM_ERROR	
+					Unless overridden,
+						Set next state to CONTROL_OUTPUTS
+					go to RUN_HOUSEKEEPING_TASKS					
+			CONTROL_OUTPUTS			
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing		
+				SYNCHRONIZATION
+					do nothing				
+					Mode: SYNCHRONIZATION
+					set next state to CREATE_DATA
+					go to RUN_HOUSEKEEPING_TASKS				
+				NORMAL_OPERATIONS	
+					Control MotorPowerControl
+						if enable_mtr_pwr
+							enable motor power mosfet
+						else
+							disable motor power mosfet
+						end if
+					Mode: NORMAL_OPERATIONS									
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS		
+				HW_RESETTING
+					HW reset COMM
+					Mode: SYNCHRONIZATION *begin* //go back to SYNCHRONIZATION once HW Reset it done
+					//initialize/reset shared counter before use
+					timeout_counter = 0;
+					set next state to CREATE_DATA
+					go to RUN_HOUSEKEEPING_TASKS					
+				SYSTEM_SLEEPING
+					Control MotorPowerControl				
+					if enable_mtr_pwr == false	
+						shut off motor power			
+					end if		
+					Note: Do not go to sleep yet, have to send out COMM_SLEEP_REQUEST to COMM.
+					set next state to CREATE_DATA
+					go to RUN_HOUSEKEEPING_TASKS						
+				SYSTEM_WAKING
+					Control MotorPowerControl
+					if enable_mtr_pwr
+						enable motor power mosfet
+					else
+						disable motor power mosfet
+					end if			
+					Wake NAVI
+					Wake AUXI							
+					Set mode to SYNCHRONIZATION *begin*		
+					//initialize/reset shared counter before use
+					timeout_counter = 0;							
+					set next state to RX_COMMUNICATIONS				
+					go to RUN_HOUSEKEEPING_TASKS				
+				SW_RESETTING
+					Control MotorPowerControl					
+					if enable_mtr_pwr == false	
+						shut off motor power			
+					end if
+					Mode: SW_RESETTING						
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS						
+				SYSTEM_ERROR
+					Control MotorPowerControl				
+					if enable_mtr_pwr == false	
+						shut off motor power			
+					end if
+					Mode: SYSTEM_ERROR					
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS						
+			CREATE_DATA
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing		
+				SYNCHRONIZATION			
+					if navi_msg_queue = SYSTEM_READY_STATUS
+						create system ready msg for NAVI
+					endif
+					if auxi_msg_queue = SYSTEM_READY_STATUS
+						create system ready msg for AUXI
+					endif	
+					if comm_msg_queue = SYSTEM_READY_STATUS
+						create system ready msg for COMM
+					endif						
+					Mode: SYNCHRONIZATION
+					set next state to TX_COMMUNICATIONS						
+					go to RUN_HOUSEKEEPING_TASKS				
+				NORMAL_OPERATIONS						
+					//NAVI
+					if navi_msg_queue != NO_MSG
+						create any msg(s) for NAVI as needed based on navi_msg_queue					
+					else //since there is no custom data, then send the next auto data										
+						create message corresponding to the next auto data for NAVI
+						navi_msg_queue = auto_data_array_NAVI[auto_data_cnt_NAVI]
+						//set the next auto data for NAVI for the next loop
+						if auto_data_cnt_NAVI >= AUTO_DATA_LOOP_MAX_NAVI
+							auto_data_cnt_NAVI = 0
+						else
+							auto_data_cnt_NAVI++
+						endif
+					end if
+					//AUXI
+					if auxi_msg_queue != NO_MSG
+						create any msg(s) for AUXI as needed based on auxi_msg_queue					
+					else //since there is no custom data, then send the next auto data										
+						create message corresponding to the next auto data for AUXI
+						navi_msg_queue = auto_data_array_NAVI[auto_data_cnt_AUXI]
+						//set the next auto data for AUXI for the next loop
+						if auto_data_cnt_AUXI >= AUTO_DATA_LOOP_MAX_AUXI
+							auto_data_cnt_AUXI = 0
+						else
+							auto_data_cnt_AUXI++
+						endif
+					end if
+					//COMM
+					if comm_msg_queue != NO_MSG
+						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
+					else //since there is no custom data, then send the next auto data										
+					create message corresponding to the next auto data for COMM
+						comm_msg_queue = auto_data_cnt_COMM
+						//set the next auto data for COMM for the next loop
+						if auto_data_cnt_COMM >= AUTO_DATA_LOOP_MAX_COMM
+							auto_data_cnt_COMM = 0
+						else
+							auto_data_cnt_COMM++
+						endif
+					end if
+					Mode: NORMAL_OPERATIONS
+					set next state to TX_COMMUNICATIONS						
+					go to RUN_HOUSEKEEPING_TASKS					
+				HW_RESETTING
+					do nothing
+				SYSTEM_SLEEPING
+					if navi_msg_queue = NAVI_SLEEP_REQUEST (it should be cleared out to NO_MSG after the request has been sent, so it doesn't get stuck in a loop)
+						Create NAVI sleep request msg
+					if auxi_msg_queue = AUXI_SLEEP_REQUEST (it should be cleared out to NO_MSG after the request has been sent, so it doesn't get stuck in a loop)
+						Create AUXI sleep request msg					
+					if comm_msg_queue = COMM_SLEEP_REQUEST
+						Create COMM sleep request after acknowledgements are received from both AUXI and NAVI							
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS			
+				SYSTEM_WAKING
+					do nothing					
+				SW_RESETTING
+					if navi_msg_queue = NAVI_SW_RESET_REQUEST (it should be cleared out to NO_MSG after the request has been sent, so it doesn't get stuck in a loop, i.e. keeps resetting itself))
+						Create NAVI sw reset request msg
+					if auxi_msg_queue = AUXI_SW_RESET_REQUEST (it should be cleared out to NO_MSG after the request has been sent, so it doesn't get stuck in a loop, i.e. keeps resetting itself))
+						Create AUXI sw reset request msg						
+					if comm_msg_queue = COMM_SW_RESET_REQUEST
+						Create COMM SW reset request after acknowledgements are received from both AUXI and NAVI							
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS
+				SYSTEM_ERROR				
+					//NAVI
+					if navi_msg_queue != NO_MSG
+						create any msg(s) for NAVI as needed based on navi_msg_queue
+						//should be general or specfic error messages if no other has priority, skip auto data
+					end if
+					//AUXI
+					if auxi_msg_queue != NO_MSG
+						create any msg(s) for AUXI as needed based on auxi_msg_queue					
+						//should be general or specfic error messages if no other has priority, skip auto data
+					end if
+					//COMM
+					if comm_msg_queue != NO_MSG
+						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
+						//should be general or specfic error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages. skip auto data
+					end if				
+					Mode: SYSTEM_ERROR
+					set next state to TX_COMMUNICATIONS					
+					go to RUN_HOUSEKEEPING_TASKS				
+			TX_COMMUNICATIONS		
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION		
+					Note: No redirections					
+					if navi_msg_queue != NO_MSG
+						Sends interally generated msg(s) to NAVI
+					end if	
+					if auxi_msg_queue != NO_MSG
+						Sends interally generated msg(s) to AUXI
+					end if						
+					if comm_msg_queue != NO_MSG
+						Sends interally generated msg(s) to COMM
+					end if										
+					clear message queues and redirect flags
+						navi_msg_queue = NO_MSG					
+						auxi_msg_queue = NO_MSG
+						comm_msg_queue = NO_MSG
+						redirectToNAVI = false
+						redirectToAUXI = false
+						redirectToCOMM = false						
+					Mode: SYNCHRONIZATION
+					set next state to RX_COMMUNICATIONS											
+					go to RUN_HOUSEKEEPING_TASKS				
+				NORMAL_OPERATIONS		
+					if first_transmission == true		
+						
+						//send the first set of messages
+						if navi_msg_queue != NO_MSG
+							Sends interally generated msg(s) to NAVI
+						end if	
+						if auxi_msg_queue != NO_MSG
+							Sends interally generated msg(s) to AUXI
+						end if						
+						if comm_msg_queue != NO_MSG
+							Sends interally generated msg(s) to COMM
+						end if
+						//check to see if there are any second messages to send
+						if redirectToCOMM == true || redirectToNAVI == true || redirectToAUXI == true
+							first_transmission = false //clear the flag
+							//reset the counter before use
+							transmission_delay_cnt = 0
+							Mode: NORMAL_OPERATIONS
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						else//if there is no second transmission, move on
+							Mode: NORMAL_OPERATIONS
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS							
+						end if						
+					else			
+						if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
+							//Send the second set of messages
+							if redirectToCOMM == true
+								Redirect external msg(s) to COMM
+							end if				
+							if redirectToNAVI == true
+								Redirect external msg(s) to NAVI
+							end if				
+							if redirectToAUXI == true
+								Redirect external msg(s) to AUXI
+							end if
+							clear message queues and redirect flags
+								navi_msg_queue = NO_MSG					
+								auxi_msg_queue = NO_MSG
+								comm_msg_queue = NO_MSG
+								redirectToNAVI = false
+								redirectToAUXI = false
+								redirectToCOMM = false		
+							first_transmission = true //reset the flag
+							Mode: NORMAL_OPERATIONS
+							set next state to RX_COMMUNICATIONS					
+							go to RUN_HOUSEKEEPING_TASKS	
+						else
+							transmission_delay_cnt++//increment the transmission delay counter
+							Mode: NORMAL_OPERATIONS
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						end if
+					end if			
+				HW_RESETTING
+					do nothing				
+				SYSTEM_SLEEPING
+					Note: No redirection during system sleeping
+					if navi_msg_queue != NO_MSG
+						Sends interally generated msg(s) to NAVI
+					end if	
+					if auxi_msg_queue != NO_MSG
+						Sends interally generated msg(s) to AUXI
+					end if						
+					if comm_msg_queue != NO_MSG
+						Sends interally generated msg(s) to COMM						
+					end if				
+					clear message queues and redirect flags
+						navi_msg_queue = NO_MSG					
+						auxi_msg_queue = NO_MSG
+						comm_msg_queue = NO_MSG
+						redirectToNAVI = false
+						redirectToAUXI = false
+						redirectToCOMM = false					
+					if run_task_on_main_now
+						//MAIN Sleeps itself once the request from MAIN to COMM for COMM to sleep itself has been sent
+						//TROUBLESHOOT TIP: If this COMM sleep request is missed by COMM, then COMM will need to start the sleep process again since MAIN already slept. If this happens COMM will go into error mode after timing out and wait for a HW reset (as MAIN and possibly NAVI and AUXI are asleep and won't respond to a SW reset request)
+							Improvement Tip: I could add a wakeup step for SW resets just in case, any of the Arduinos are asleep, before going the SW reset, but this will get complicated/messy. Good enough for now.
+							
+						Mode: SYSTEM_WAKING *begin* //setup this mode ahead of time before going to sleep
+						set next state to CONTROL_OUTPUTS //Go to CONTROL_OUTPUTS in order to wake NAVI and AUXI from sleep
+					
+						//Use motor_power_prev_state to restore the motor power state	
+						enable_mtr_pwr = motor_power_prev_state
+
+						//clear the flag for future reuse
+						motor_power_prev_state = false					
+
+						Run other pre-sleep tasks. (i.e. end software serial, as needed)
+
+						Put MAIN to sleep
+							Don't switch states yet. Go to sleep in the current TX_COMMUNICATIONS state.
+
+						COMM will wake up MAIN from the sleep.
+
+						Run wake up tasks. (i.e. begin SW serial as needed, etc.)
+						While in the SYSTEM_WAKING mode, after going to RUN_HOUSEKEEPING_TASKS, it will go to the next state, which is set to CONTROL_OUTPUTS
+					else
+						Mode: SYSTEM_SLEEPING
+						set next state to RX_COMMUNICATIONS					
+					end if
+					go to RUN_HOUSEKEEPING_TASKS					
+				SYSTEM_WAKING
+					do nothing
+				SW_RESETTING
+					Note: No redirection during sw resets					
+					if navi_msg_queue != NO_MSG
+						Sends interally generated msg(s) to NAVI
+					end if	
+					if auxi_msg_queue != NO_MSG
+						Sends interally generated msg(s) to AUXI
+					end if						
+					if comm_msg_queue != NO_MSG
+						Sends interally generated msg(s) to COMM						
+					end if				
+					clear message queues and redirect flags
+						navi_msg_queue = NO_MSG					
+						auxi_msg_queue = NO_MSG
+						comm_msg_queue = NO_MSG
+						redirectToNAVI = false
+						redirectToAUXI = false
+						redirectToCOMM = false					
+					if run_task_on_main_now
+						//MAIN SW resets itself once the request from MAIN to COMM for COMM to sw reset itself has been sent
+						//TROUBLESHOOT TIP: If this COMM sw reset request is missed by COMM, then COMM will need to start the All SW Reset Request process again since MAIN already SW resetted and should be waiting in the SYNCHRONIZATION mode
+						Mode: INITIALIZATION *begin*
+						Next State: RUN_HOUSEKEEPING_TASKS			
+					else
+						Mode: SW_RESETTING
+						set next state to RX_COMMUNICATIONS					
+					go to RUN_HOUSEKEEPING_TASKS					
+				SYSTEM_ERROR				
+					if first_transmission == true		
+												
+						//send the first set of messages
+						if navi_msg_queue != NO_MSG
+							Sends interally generated msg(s) to NAVI
+						end if	
+						if auxi_msg_queue != NO_MSG
+							Sends interally generated msg(s) to AUXI
+						end if						
+						if comm_msg_queue != NO_MSG
+							Sends interally generated msg(s) to COMM
+						end if						
+						//check to see if there are any second messages to send
+						if redirectToCOMM == true || redirectToNAVI == true || redirectToAUXI == true
+							first_transmission = false //clear the flag
+							//reset the counter before use
+							transmission_delay_cnt = 0
+							Mode: SYSTEM_ERROR
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						else//if there is no second transmission, move on
+							Mode: SYSTEM_ERROR
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS							
+						end if						
+					else			
+						if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
+							//Send the second set of messages
+							if redirectToCOMM == true
+								Redirect external msg(s) to COMM
+							end if				
+							if redirectToNAVI == true
+								Redirect external msg(s) to NAVI
+							end if				
+							if redirectToAUXI == true
+								Redirect external msg(s) to AUXI
+							end if
+							clear message queues and redirect flags
+								navi_msg_queue = NO_MSG					
+								auxi_msg_queue = NO_MSG
+								comm_msg_queue = NO_MSG
+								redirectToNAVI = false
+								redirectToAUXI = false
+								redirectToCOMM = false		
+							first_transmission = true //reset the flag
+							Mode: SYSTEM_ERROR
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS	
+						else
+							transmission_delay_cnt++//increment the transmission delay counter
+							Mode: SYSTEM_ERROR
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						end if
+					end if					
+				
+				
+									
+						
+						
+		
+			
+
+
+
+			
+			
+			
+State Matrix Design = States vs. Modes			
+==================
+States
+==================
+Note: These states don't always have to go in order.
+	RUN_HOUSEKEEPING_TASKS
+		runs in parallel with every loop
+	RX_COMMUNICATIONS
+	DATA_VALIDATION
+		data parsing and validation
+		validateData()
+	DATA_FILTER
+		dataDirector()
+	READ_INPUTS
+	PROCESS_DATA
+	CONTROL_OUTPUTS			
+	CREATE_DATA
+	TX_COMMUNICATIONS		
+	
+==================
+Modes
+==================
+Note: These states don't always have to go in order.
+Note: *begin* means this is one of the starting points for this mode
+
+POWER_ON_RESET
+INITIALIZATION
+SYNCHRONIZATION					
+NORMAL_OPERATIONS						
+HW_RESETTING
+SYSTEM_SLEEPING
+SYSTEM_WAKING
+SW_RESETTING
+SYSTEM_ERROR
+
+		
+==================
+Command Options (i.e. used in the PROCESS_DATA state. Typically from the NORMAL_OPERATIONS mode, but not always)
+==================	
+Note: Since the message queues (i.e. cmnc_msg_queue, etc.) are shared between external arduinos and this internal arduino, there could be data overwrites and lost. If this is an issue, you may have to redesign.
+	Also since it only reads data once, you might miss data as well.
+	You can't do a queue emptied status since the way the roverComm object is written, it takes in only one string and saves that for processing.
+	Also the way it's currently designed, it will read up the the ROVER_COMM_SENTENCE_LENGTH, so if you send commands back to back, you may get two messages merged together and only one processed.
+	You would have to have a delay and/or send end lines between the two messages.
+	Messages can come from multiple arduinos to the same queue for a particular arduino.
+	Best to just keep resending messages until you get an acknowledgement for anything that is important.
+	Will have to just take the risk and add delay between possible multiple message sends to the same arduinos
+	And if more than one wants to write to the same queue (and it's not a redirect) will need to prioritize and drop the other. At the end of the day, only one command can be run at a time on the other end (the receiving Arduino) anyways. If anything, you can have it wait for a status and keep resending the message if it's that important.
+	Categorize all commands/data from all sources.
+	Allow for all non-conflicting commands to run.
+	Sort based on priority.
+	Then only run the highest priority for this arduino.
+	Note: If these messages don't work, the other (but less desirable option) is have all commands/requests/data sent to MAIN and it will arbitrate everything.
+			
+	
+Note: No synchronization timeout will be used for MAIN. COMM will timeout and let the external CMNC know it needs action. Nothing to do internally with MAIN.
+Note: With external commands, you only want to do all hw or all sw request (and not individual hw/sw requests). Else the system won't be in sync anymore. So hw/sw requests must be synced and have controlled points of entry.
+	But interally, it may call individual commands as required.
+Note: With external commands, you only want to do all sleep requests (and not individual sleep requests). Else the system won't be in sync anymore. So sleep requests must be synced and have controlled points of entry.
+	But internally, it may call individual commands as required.
+
+	
+Non-Conflicting Functions
+
+	System Ready
+		//Check to see where the command was from
+		If command was from NAVI
+			set navi_system_ready = true					
+		else if command was from AUXI
+			set auxi_system_ready = true		
+		else if command was from COMM
+			set comm_system_ready = true							
+		end if
+
+Conflicting Functions Ordered By Priority	
+Most of the time (but not always), these commands will be ran from NORMAL_OPERATIONS mode under the PROCESS_DATA state. The next state is CONTROL_OUTPUTS, unless overwritten.
+
+	COMM HW Reset Request
+		Note: The current state is PROCESS_DATA and current mode is SYNCHRONIZATION since MAIN just got HW resetted and now COMM is waiting to be HW resetted.
+		Note: There MAIN doesn't really have it's own HW Reset Request. That's done by the COMM, which will HW reset the MAIN, NAVI, and AUXI.
+		Mode: HW_RESETTING *begin*
+	All SW Reset Request
+		//Create first message here and regenerate later on as needed
+		navi_msg_queue = NAVI_SW_RESET_REQUEST
+		auxi_msg_queue = AUXI_SW_RESET_REQUEST
+		
+		//initialize/reset shared flags before use
+		navi_acknowledgement = false
+		auxi_acknowledgement = false		
+		run_task_on_main_now = false
+		
+		set enable_mtr_pwr = false //shut down motor when sw resetting for safety						
+		Mode: SW_RESETTING *begin*	
+		
+		
+	SW Reset Acknowledgement (usually from NAVI or AUXI)
+		//Check to see where the command was from
+		If command was from NAVI
+			navi_acknowledgement = true
+		else if command was from AUXI
+			auxi_acknowledgement = true
+		end if		
+		//once MAIN gets an ack for sw reset from both NAVI and AUXI
+		if navi_acknowledgement == true && auxi_acknowledgement = true
+			run_task_on_main_now = true
+			comm_msg_queue = COMM_SW_RESET_REQUEST //MAIN sends COMM a COMM SW resquest, so COMM can do a SW reset
+			//initialize/reset shared counter for future use and to prevent being stuck in a loop
+			timeout_counter = 0;			
+		end if
+		Mode: SW_RESETTING
+		
+		
+
+	Disable Motor Power
+		//if disable motor power is called, set it to be disabled, "no questions asked" aka with highest priority
+		//because if any arduinos are requesting to disable the motor power, it will override any requests to enable it (safety feature). So give it higher priority than enable motor pwr
+		turn off the motor
+		enable_mtr_pwr = false
+		navi_msg_queue = DISABLING_MTR_PWR
+		auxi_msg_queue = DISABLING_MTR_PWR
+		comm_msg_queue = DISABLING_MTR_PWR
+							
+	Enable Motor Power
+		turn on the motor
+		enable_mtr_pwr = true
+		navi_msg_queue = ENABLING_MTR_PWR
+		auxi_msg_queue = ENABLING_MTR_PWR
+		comm_msg_queue = ENABLING_MTR_PWR
+
+	Get Motor Power Status
+		//Check to see where the command was from
+		If command was from NAVI
+			navi_msg_queue = MTR_PWR_STATUS
+		else if command was from AUXI
+			auxi_msg_queue = MTR_PWR_STATUS
+		else if command was from COMM
+			comm_msg_queue = MTR_PWR_STATUS
+		end if
+		
+	Get Mid Right Encoder Status
+		//Check to see where the command was from
+		If command was from NAVI
+			navi_msg_queue = ENC_STATUS_MID_RIGHT
+		else if command was from AUXI
+			auxi_msg_queue = ENC_STATUS_MID_RIGHT
+		else if command was from COMM
+			comm_msg_queue = ENC_STATUS_MID_RIGHT
+		end if	
+	Get Mid Left Encoder Status
+		//Check to see where the command was from
+		If command was from NAVI
+			navi_msg_queue = ENC_STATUS_MID_LEFT
+		else if command was from AUXI
+			auxi_msg_queue = ENC_STATUS_MID_LEFT
+		else if command was from COMM
+			comm_msg_queue = ENC_STATUS_MID_LEFT
+		end if
+	All Sleep Request
+	
+		//Create first message here and regenerate later on as needed
+		navi_msg_queue = NAVI_SLEEP_REQUEST
+		auxi_msg_queue = AUXI_SLEEP_REQUEST
+
+		//initialize/reset shared flags before use
+		navi_acknowledgement = false
+		auxi_acknowledgement = false		
+		run_task_on_main_now = false
+		
+		//save the state of the motor power before shutting it off to go to sleep
+		motor_power_prev_state = enable_mtr_pwr
+		//set to shut down motor when sleeping for safety						
+		set enable_mtr_pwr = false
+		
+		Mode: SYSTEM_SLEEPING *begin*
+
+	
+	Sleep Request Acknowledgement
+		//Check to see where the command was from
+		If command was from NAVI
+			navi_acknowledgement = true
+		else if command was from AUXI
+			auxi_acknowledgement = true
+		end if		
+		//once MAIN gets an ack for system sleeping from both NAVI and AUXI
+		if navi_acknowledgement == true && auxi_acknowledgement = true
+			run_task_on_main_now = true
+			comm_msg_queue = COMM_SLEEP_REQUEST //MAIN sends COMM a COMM Sleep resquest, so COMM can go to sleep
+			//initialize/reset shared counter for future use and to prevent being stuck in a loop
+			timeout_counter = 0;			
+		end if			
+		Mode: SYSTEM_SLEEPING
+	
+	
+	
+	
+IMPROVEMENT TIP: Maybe add system hold and system standby states later if have time.			
+	

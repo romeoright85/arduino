@@ -1,0 +1,377 @@
+Where I left off
+------------------------
+Note: See LaserControlTester.ino for how to use debug flags
+
+
+write more class testers to test functionality of the rover
+
+
+
+[done]go back and make all private variables start with an _
+[done]gpsDataParserPractice (used to test filtering, checksum, parsing, and validating algorithms. Though not kept up to date.)
+[done]	then migrate them over to the classes "RoverGpsSensor"
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverSensors
+
+
+
+
+
+test the new arduino led classes with new timers and counters on the arduino
+
+	[done, need to test on rover]PirSensorTester
+	[done, need to test on rover]UltrasonicSensorTester
+	[done, need to test on rover]IrDistanceSensor
+	[done] RoverSleeperClient
+	[done] RoverSleeperServer
+	[done] WakeUpTester_COMM
+	[done, need to test] WakeUpTester_MAIN
+	[done, need to test] WakeUpTester_AUXI
+	[done, need to test] WakeUpTester_NAVI
+	[done, need to test]write a universal simulator/tester on a mega to test any megas or unos
+	[done]MotorAndServoTester_MAIN
+		[done]Wheel Encoder
+		[done]MotorPowerControl (Motor Fet Control, Motor Enable Status)
+	[done, need to test on rover]LaserControlTester [AUXI]
+		Reference:
+				K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_Laser_Testerv4
+	[need to calibrate and put in the initial calibration values] MotorAndServoTester_NAVI	
+	[done]Wheel Encoder
+	[done]BufferSelect
+	[done, need to test]MotorController (for steering and acceleration)						
+	[done] MotorPowerControl	
+	[done] GimbalConroller (for pan and tilt)
+	References:
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_MtCtlr_And_Servo_Testerv5
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup
+
+
+
+[done, need to test on rover]CurrentSensorControlTester (Current Faults and Resets) [AUXI]
+		Reference:
+			K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_Curr_Snse_Resetv3
+	
+[done, need to test on rover]HwResetTester (see how I did server and client for the commTester)
+	
+[done, need to test on rover]			
+	LedTester (
+							[done, need to retest due to updates]write global delay counter (see Rover_Heart_LED_Testerv3.ino). pass this to the heart led
+							[done, need to retest due to updates]AnalogLed->HeartLed
+							UnderglowLeds->DigitalLed->Underglow
+							SideSignalLight(left, right)
+							BeaconAssembly->DigitalLed->Beacon[ir, blue]
+							TailLightAssembly->DigitalLed->Taillights
+							HeadlightAssembly->DigitalLed->(Headlight Left, Headlight Right, Signal Left, Signal Right, Fog Left, Fog Right)
+							
+					)
+					
+	
+	
+				
+		[done, need to test]Add a way to get more accurate ADC values
+			[done, need to test]if so, update analogsignals as well as irsensor, and anywhere else where ADC is called
+
+			
+		RoverAnalogSignalsTester (mux control, op amp output) : temp, voltage, light, current
+		Add objects to convert signals
+			[done, need to test]Current
+			[done, need to test]Voltage
+			[done, need to test]Photo
+				http://emant.com/316002.page
+				https://learn.adafruit.com/photocells/using-a-photocell
+				https://developer.mbed.org/users/4180_1/notebook/using-a-photocell-to-determine-light-levels/
+				https://www.arduino.cc/en/Tutorial/Genuino101CurieIMUOrientationVisualiser				
+				https://www.arduino.cc/en/Main/ArduinoBoard101
+			[done, need to test]Temp
+	
+	
+
+	
+	[done, need to test] GpsTester
+		see these text files for sample gps data
+			arduino filtered gps position fixed
+			arduino filtered gps on startup
+	
+	
+	
+	
+	
+	
+	
+
+	-ImuTester
+		
+		See: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_IMU_Testerv3
+			[DONE]have the rover use compass only for now
+			
+				
+
+			[NEED TO FIX CODE TO GET NaN to go away and for the code to output actual readings, then remove the temp code]
+				trace down where the source of the NaN is
+				and/or inject a number somewhere and rule out the rest of the code
+				Note: log these troubleshoot steps in my text notes.
+				start by printing values of arrays and compare with original code's output
+			[NEED TO FINISH WRITING code in readSensor() using the 10hz and 50hz block.]
+				get rid of this->_counter=0;	
+
+
+			
+			
+			
+			
+				get the roll pitch and yaw by using the miniimu code and make it object based
+					K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Pololu MiniIMUv2 Library Files\minimu-9-ahrs-arduino-master\MinIMU9AHRS
+				
+				
+				[if have time later, have it send back roll pitch and yaw serially for python visuals only]
+					[NAH, not needed right now]-Finish writing the conversion of the Gyro, Accelerometer, and Compass Data Later into roll, pitch, and yaw
+					[NAH, not needed right now]-modify the imu code to work with my code
+				[MAYBE DO LATER] need a way to calibrate as well
+				https://github.com/pololu/minimu-9-ahrs-arduino
+				https://www.raspberrypi.org/blog/real-time-orientation-display-with-the-minimu-9-v2/
+			[NAH, not needed right now]will use the imu for roll, pitch, and yaw only. no need to write code to use accelerometers.
+			[NAH, not needed right now]will send back roll, pitch, and yaw for visualization and/or detect compass heading.
+			
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+
+	
+
+	
+		
+=================1 WEEKEND===================			
+
+		
+
+	Write an uptime counter classes using example for the UNO COMM
+	https://hackaday.io/project/7008-fly-wars-a-hackers-solution-to-world-hunger/log/25043-updated-uptime-counter
+	https://hackaday.io/project/7008-fly-wars-a-hackers-solution-to-world-hunger/log/24201-just-a-few-useful-arduino-hacks-sram-uptime
+	https://www.arduino.cc/en/Reference/Millis
+
+			Go back and change all Serial.begin(9600); to 	Serial.begin(PC_USB_BAUD_RATE);
+	
+
+
+		LEFT OFF HERE	
+		
+							[done, need to test] RoverCommTester_COMM
+[FINISH writing these later. Should be straight forward. Use others as templates]
+	RoverCommTester_MAIN
+	RoverCommTester_AUXI
+	RoverCommTester_NAVI
+
+	
+
+Maybe go back and use #ifdef for Serial1, Serial2, and Serial3 instead of hardcoding them. Make sure to test one first to see if it works (and for all functions, not just Serial.begin)
+
+	
+	
+	
+	
+	
+	
+	
+	
+=================1 WEEKEND===================		
+	
+	[for now for demo purposes, just have a bi-state threshold trigger]-Gas
+		Use RoverOnTime in order to preheat the gas sensor to 3 minutes before taking a reading
+
+			========================
+			MQ Gas Conversion
+			========================
+			It needs about 3 minutes to warm up in order to get correct values.
+			Need to calibrate the sensor in clean air.
+			-Preheat the sensor for 24 hours, then run a one time calibration.
+			https://www.youtube.com/watch?v=fBo3Yq9LK1U
+			http://sandboxelectronics.com/?p=165
+			http://mkme.org/forum/viewtopic.php?f=2&t=656
+			http://playground.arduino.cc/Main/MQGasSensors
+			https://www.google.com/amp/www.instructables.com/id/How-to-use-MQ2-Gas-Sensor-Arduino-Tutorial/
+			https://www.youtube.com/watch?v=BIf_mpnsZvY
+			http://circuitdigest.com/microcontroller-projects/arduino-smoke-detector-on-pcb-using-mq2-gas-sensor
+			https://www.youtube.com/watch?v=QYSDSKn2Vf8
+
+				
+	
+=================2 WEEKENDS===================			
+
+
+
+RoverNavigator (considers and prioritizes input from the RoverObstacleAvoider and RoutePlanner, and RoverHeathAndStatus and decides which heading the rover should go and for how long)
+	RoverHeathAndStatus (takes in temp, voltage, photo, and current data and determines if the system needs to shut down or can continue)
+		RoverOnTime (tracks the time since the last software reset, the time since it was turned on/last hardware reset)
+	RoverObstacleAvoider (takes in sensor data and prevents a collision)
+	RoutePlanner (takes current position via gps data and compass heading and next waypoint via longitude and latitude and recommends heading and distance)
+		Waypoint
+	
+	
+	
+=================2 WEEKENDS===================			
+		
+measure the resistor value used in the gas sensor
+
+Test code and revise
+
+
+=================2 WEEKENDS===================			
+
+
+Write state machine classes
+	parse data
+	monitor status
+	drive rover
+	control auxillary
+	send data
+	
+
+
+	
+	
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+
+		
+	
+GO BACK AND FINISH THE OTHERS
+Test all code and classes on rover before integrating the code!
+
+
+	 
+Write state machine	
+come up with prioritization excel spreadsheet table to know what gets the most priority
+	voltage/current sensors (if over voltage or current, shut down)
+	-ultrasonic/ir (avoid obstacles while moving)
+	-gps for navigation
+	-laser
+	-led for indication
+	-etc (manual vs. auto control/override)
+-work on state machine for priority/arbitration
+-work on state machine for navigation	
+
+
+
+	
+Features:
+Return Home
+Breadcrumbs
+Mission Route Based On A Chain Of Waypoints
+Full Manual Drive	
+Manual Drive	with Avoidance Assistance
+Full Auto Drive
+RF Steath mode where the rover transmits nothing
+
+
+	
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+
+Maybe buy an Arduino 101 and swap our the COMM UNO and see if I can get the gyro to work.
+	https://www.youtube.com/watch?v=QOSEMUO1Qnk
+
+	
+
+	
+[IF NEEDED/HAVE TIME]	
+write calibration program in qt
+     calibrates compass, ims, servos and creates the RoverCalibration.h that can be copied over
+
+
+	
+	
+	
+
+Note: Go ahead and write arduino code in regular C++ OOP (since you have limited memory and functionality on the Arduino) and then the ground software in Java with Design Patterns and Object Oriented Analysis and Design.
+
+
+
+Working on:
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\RoverGen2
+	open the .sln with visual studio community with visual micro extension
+and
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries
+	edit the .cpp and .h with notepad++ or visual studio community with visual micro extension
+
+
+
+in grad school or beyond, learn machine learning
+
+
+
+
+
+
+
+
+
+
+Aslo refer to:
+K:\Design Workspace\Arduino\Rover Mini Sketches\Studies\Done
+K:\Design Workspace\Arduino
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino
+
+
+
+
+
+
+
+
+IF HAVE TIME
+===================
+SANDBOX ROVER CODE TEST
+try to figure out when when i do a getData() and it returns a string I can't concat to that string within the same class by using .concat. Only calling the original private string variable with .concat seemed to work
+see RoverComm for details
+make sure each of your classes only do one thing
+
+
+
+[arduino doesn't like delays to be called globally. so if you do a reset on a constructor created globally the code won't work. best not to use delays else if you must, abandon this whole reset thing in contructors.] maybe remove resets in the void setup function. instead do a self reset everytime the object is created (when the constructor is called)
+Reference: http://forum.arduino.cc/index.php?topic=46517.0
+	make sure resets are added in every constructor if you are going to do this.
+	
+	
+	
+	
+	
+	
+	
+	
+	
+Rover Improvements
+Real time clock
+MPU+FPGA+MCU
+Better/easier IMU
+Wifi

@@ -1,0 +1,796 @@
+
+
+
+
+			
+===========================================
+State Machine - AUXI
+===========================================
+
+
+
+RoverProgram_AUXI.ino 
+	RoverHeathAndStatus (takes in temp, voltage, photo, and current data and determines if the system needs to shut down or can continue) - Finite State Machine
+		Use a State Design Pattern for the hold state. When there is reading on one of the sensors that require attention.
+		
+[IFNISH CODING OBJECTS BELOW, unless noted]
+
+CurrentSensorFault
+
+RoverAnalogSignals
+>UpTime (needs to be used along with the Gas Sensor on AUXI's mux channels. tracks the time since the last software reset, the time since it was turned on/last hardware reset)
+>>DelayCounter
+>>>GlobalDelayTimer
+
+IrDistanceSensor
+
+ImuSensor (not really a class but functions)
+>StopWatch
+>>GlobalDelayTimer (also used above)
+>>DelayCounter (also used above)
+
+LaserControl
+
+
+RoverData
+>RoverComm
+>RoverCommand
+RoverCommandCreator
+
+
+[DONE, TESTED GOOD] RoverSleeperServer
+
+
+
+
+===========================================
+State Machine - MAIN
+===========================================
+
+
+RoverProgram_MAIN.ino
+	RoverCaptain - Finite State Machine (considers and prioritizes input from the RoverNavigator and RoutePlanner, and RoverHeathAndStatus and decides which heading the rover should go and for how long, then it sends commands to RoverNavigator_NAVI)
+
+[IFNISH CODING OBJECTS BELOW]	
+
+RoverHwReset	
+
+MotorPowerControl
+	
+WheelEncoderSensor
+>DelayCounter
+>>GlobalDelayTimer
+
+	
+RoverData
+>RoverComm
+>RoverCommand
+RoverCommandCreator
+		
+RoverSleeperServer
+
+RoverSleeperClient
+
+
+		
+
+
+===========================================
+State Machine - NAVI
+===========================================
+
+RoverProgram_NAVI.ino 		
+		RoverNavigator (takes in sensor data and plans a course to prevent a collision. Then navigates by sending actions to RoverDriver) - Finite State Machine
+			RoverDriver - State Design Pattern (controls the motor controller and gimbal) 
+		RoutePlanner (takes current position via gps data and compass heading and next waypoint via longitude and latitude and recommends heading and distance)
+			Waypoint
+			
+
+BufferSelect
+
+MotorController
+
+GimbalController
+			
+UltrasonicSensor
+
+WheelEncoderSensor
+>DelayCounter
+>>GlobalDelayTimer
+	
+	
+RoverData
+>RoverComm
+>RoverCommand
+RoverCommandCreator
+
+RoverGpsSensor		
+
+			
+UnderglowLeds
+SideSignalLight
+BeaconLightAssembly
+HeadLightAssembly
+TailLightAssembly
+			
+
+RoverSleeperServer
+
+		
+
+
+
+
+
+===========================================
+State Machine - COMM
+===========================================
+
+RoverProgram_COMM.ino
+RoverCommunicator - Finite State Machine (transmits, processes, and receives messages commands. Also controls Arduino COMM's functionality)
+>RoverSecuredCommLink - State Machine (allows transmission and reception of messages after it verifies the connection is secure)			
+	
+
+RoverHwReset
+	
+HeartLed
+>GlobalDelayTimer
+>DelayCounter
+
+
+RoverData
+>RoverComm
+>RoverCommand
+RoverCommandCreator
+
+PirSensor
+
+RoverSleeperServer
+RoverSleeperClient
+
+	
+		
+		
+========================
+Use Cases		
+========================
+
+Note: For command tags, see command creator excel in K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+Note: Once the system goes into the state, SYSTEM_ERROR, it can only be fixed with a HW or SW reset.
+
+#define SYNC_TIMEOUT_VALUE ??
+#define SECURE_LINK_TIMEOUT_VALUE ??
+
+
+
+At POR (defaults):
+	Current State: RUN_HOUSEKEEPING_TASKS
+	Next State: RUN_HOUSEKEEPING_TASKS
+	Mode: POWER_ON_RESET *begin*
+	timeout_counter = 0 //Used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses)
+	sync_error = false
+	secure_link_error = false
+	cmnc_msg_queue = NO_MSG (command tag)
+	main_msg_queue = NO_MSG (command tag)
+	main_system_ready = false
+	
+	
+	
+COMM:
+		Loop
+			RUN_HOUSEKEEPING_TASKS
+				POWER_ON_RESET
+					run POR tasks
+					start background tasks
+					Set mode to INITIALIZATION *begin*
+					Go to whatever the next state is
+						(still is Next State: RUN_HOUSEKEEPING_TASKS)
+				INITIALIZATION
+					run initialization tasks
+					initialize background tasks
+					Set mode to SYNCHRONIZATION *begin*
+					Set next state to RX_COMMUNICATIONS
+					Go to whatever the next state is
+						(now just set to RX_COMMUNICATIONS)
+				SYNCHRONIZATION
+					run background tasks
+						if timeout_counter > SYNC_TIMEOUT_VALUE
+							Set mode to SYSTEM_ERROR *begin*
+							Set next state to CREATE_DATA
+								(now just set to CREATE_DATA)
+								set sync_error = true
+									(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
+								timeout_counter = 0 (clear the flag so it doesn't get stuck in a vicious loop)
+						else
+							Mode: SYNCHRONIZATION
+						end if
+					Go to whatever the next state is
+				SECURING_LINK						
+					run background tasks
+						if timeout_counter > SECURE_LINK_TIMEOUT_VALUE
+							Set mode to SYSTEM_ERROR *begin*
+							Set next state to CREATE_DATA
+								(now just set to CREATE_DATA)
+							set secure_link_error = true
+								(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
+							timeout_counter = 0 (clear the flag so it doesn't get stuck in a vicious loop)
+						else
+							Mode: SECURING_LINK
+						end if
+					Go to whatever the next state is					
+				NORMAL_OPERATIONS						
+					run background tasks
+					Go to whatever the next state is							
+				HW_RESETTING
+??WRITE LATER
+				SYSTEM_SLEEPING
+??WRITE LATER
+				SYSTEM_WAKING
+??WRITE LATER
+				SW_RESETTING
+??WRITE LATER
+				SYSTEM_HOLDING
+??WRITE LATER				
+					run background tasks
+				SYSTEM_ERROR
+					Mode: SYSTEM_ERROR
+					run background tasks
+					Go to whatever the next state is
+				SYSTEM_STANDBY
+??WRITE LATER				
+					run background tasks
+			RX_COMMUNICATIONS
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION					
+					skip for CMNC
+					rxData() from MAIN
+					Mode: SYNCHRONIZATION
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS
+				SECURING_LINK						
+					rxData() from CMNC
+					rxData() from MAIN
+					Mode: SECURING_LINK
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS					
+				NORMAL_OPERATIONS						
+					rxData() from CMNC
+					rxData() from MAIN
+					Mode: NORMAL_OPERATIONS
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS							
+				HW_RESETTING
+??WRITE LATER				
+					skip for CMNC
+					rxData() from MAIN
+				SYSTEM_SLEEPING
+??WRITE LATER				
+					a)
+						skip for CMNC
+						rxData() from MAIN
+						go to DATA_VALIDATION
+				SYSTEM_WAKING
+??WRITE LATER				
+				SW_RESETTING
+??WRITE LATER				
+				SYSTEM_HOLDING
+??WRITE LATER
+??Design hold state with an override			
+				SYSTEM_ERROR
+					rxData() from CMNC
+					skip rxData() from MAIN
+					Mode: SYSTEM_ERROR
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS						
+				SYSTEM_STANDBY
+??WRITE LATER				
+					rxData() from CMNC
+					skip rxData() from MAIN		
+			DATA_VALIDATION		
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION		
+					skip for CMNC
+					validateData() from MAIN
+					Mode: SYNCHRONIZATION
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS
+				SECURING_LINK						
+					validateData() from CMNC
+					validateData() from MAIN				
+					Mode: SECURING_LINK
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS						
+				NORMAL_OPERATIONS					
+					validateData() from CMNC
+					validateData() from MAIN				
+					Mode: NORMAL_OPERATIONS
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS		
+				HW_RESETTING
+??WRITE LATER								
+					skip() from CMNC
+					validateData() from MAIN				
+				SYSTEM_SLEEPING
+??WRITE LATER								
+					a)
+						skip for CMNC
+						validateData() from MAIN
+						go to DATA_FILTER
+				SYSTEM_WAKING
+??WRITE LATER								
+				SW_RESETTING
+??WRITE LATER								
+				SYSTEM_HOLDING
+??WRITE LATER								
+				SYSTEM_ERROR
+					skip for MAIN
+					validateData() from CMNC
+					Mode: SYSTEM_ERROR
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS		
+				SYSTEM_STANDBY		
+??WRITE LATER								
+					validateData() from CMNC
+					skip validateData() from MAIN				
+			DATA_FILTER						
+				SYNCHRONIZATION					
+					skip for CMNC
+					filter and throw away all MAIN data except:
+						system ready message(s) from MAIN
+						system go message(s) from MAIN					
+					Mode: SYNCHRONIZATION
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS						
+				SECURING_LINK
+DO NEXT??WRITE LATER					
+					filter and throw away all CMNC data except:
+						establish secure link message(s) from CMNC
+							Note: no reset (hw or sw) allowed yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
+					filter and direct MAIN data
+					Mode: SECURING_LINK
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS						
+				NORMAL_OPERATIONS
+					filter and direct CMNC data
+					filter and direct MAIN data
+					Mode: NORMAL_OPERATIONS
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS						
+				HW_RESETTING
+??WRITE LATER								
+					skip for CMNC					
+					throw away all MAIN data except:
+						system go message(s) from MAIN
+						system ready message(s) from MAIN
+				SYSTEM_SLEEPING
+??WRITE LATER								
+					a)
+						skip for CMNC
+						throw away all MAIN data except:
+							system sleeping message(s) from MAIN	
+						go to PROCESS_DATA
+				SYSTEM_WAKING
+??WRITE LATER				
+				SW_RESETTING
+??WRITE LATER				
+				SYSTEM_HOLDING
+??WRITE LATER				
+				SYSTEM_ERROR
+					skip MAIN data
+					filter and direct CMNC
+						process CMNC data
+					Mode: SYSTEM_ERROR
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS		
+				SYSTEM_STANDBY
+??WRITE LATER								
+					throw away all CMNC data except:
+						system go message(s) from MAIN
+						system ready message(s) from MAIN
+					skip for MAIN						
+			READ_INPUTS
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing		
+				SYNCHRONIZATION
+					do nothing
+				SECURING_LINK
+					read PIR
+					Mode: SECURING_LINK
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS	
+				NORMAL_OPERATIONS
+					read PIR
+					Mode: NORMAL_OPERATIONS
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS	
+				HW_RESETTING
+??WRITE LATER								
+					skip for all
+				SYSTEM_SLEEPING
+??WRITE LATER								
+				SYSTEM_WAKING
+??WRITE LATER								
+				SW_RESETTING
+??WRITE LATER								
+				SYSTEM_HOLDING
+??WRITE LATER								
+				SYSTEM_ERROR
+??WRITE LATER								
+				SYSTEM_STANDBY				
+??WRITE LATER				
+			PROCESS_DATA
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing	
+				SYNCHRONIZATION
+					Skip for CMNC
+					Skips PIR status	
+					Process MAIN data
+						If no msg (only system go or system ready msgs pass the data filter) from MAIN received && main_system_ready == false
+							timeout_counter++
+						end if
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS								
+						Mode: SYNCHRONIZATION
+					go to RUN_HOUSEKEEPING_TASKS
+				SECURING_LINK
+					Process CMNC data (see "Command Options" below for more info)
+						Either you should get no data or secure link data. as everything else was filtered out
+					Process MAIN data
+						(the mode and next state may be overridden by MAIN data if required. i.e. error, etc. But under normal circumstances, it shouldn't.)
+					Process PIR status
+					Unless overridden,
+						Mode: SECURING_LINK
+					set next state to CONTROL_OUTPUTS					
+					go to RUN_HOUSEKEEPING_TASKS
+				NORMAL_OPERATIONS										
+					Process PIR status							
+					Process MAIN data (see "Command Options" below for more info)
+					Process CMNC Data (see "Command Options" below for more info)				
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS					
+						Mode: NORMAL_OPERATIONS
+					go to RUN_HOUSEKEEPING_TASKS					
+				HW_RESETTING
+??WRITE LATER								
+					Process MAIN data
+				SYSTEM_SLEEPING
+??WRITE LATER								
+					a)
+						Skips CMNC Data
+						Skips PIR status	
+						Process MAIN data
+							if system sleeping message(s) Rxd from MAIN
+								set system_sleeping = true
+								go to CREATE_DATA
+							else
+								go back to RX_COMMUNICATIONS						
+				SYSTEM_WAKING
+??WRITE LATER								
+					Set next state to CREATE_DATA (with RUN_HOUSEKEEPING_TASKS implied as the actual next state due to parallel processing)
+					Puts COMM to sleep
+					Once awoken by serial
+				SW_RESETTING
+??WRITE LATER								
+				SYSTEM_HOLDING
+??WRITE LATER								
+				SYSTEM_ERROR
+					if hw reset message(s) Rxd from MAIN or CMNC
+						Mode: HW_RESETTING	*begin*						
+??WRITE LATER HW_RESETTING and CREATE_DATA	
+					else if sw reset message(s) Rxd from MAIN or CMNC					
+						Mode: SW_RESETTING	*begin*	
+??WRITE LATER SW_RESETTING and CREATE_DATA	
+					else						
+						Mode: SYSTEM_ERROR	
+							(recreate the error msg. the error flags should still be set from before, i.e. sync_error, secure_link_error, etc.)						
+					end if
+					Set next state to CREATE_DATA
+					go to RUN_HOUSEKEEPING_TASKS					
+				SYSTEM_STANDBY
+??WRITE LATER							
+			CONTROL_OUTPUTS			
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing		
+				SYNCHRONIZATION
+					Control Heart LED, heartbeat
+					Mode: SYNCHRONIZATION
+					set next state to CREATE_DATA
+					go to RUN_HOUSEKEEPING_TASKS						
+				SECURING_LINK
+					Control Heart LED, heartbeat
+					Mode: SECURING_LINK
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS						
+				NORMAL_OPERATIONS										
+					Control Heart LED, heartbeat
+					Control HW Reset
+					Control Wakeup Ctrls
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS						
+				HW_RESETTING
+??WRITE LATER								
+					Skip Heart LED
+					If not HW reset others yet
+						HW Resets MAIN, NAVI, COMM
+						Flags that the HW reset is done
+					else
+						skip
+				SYSTEM_SLEEPING
+??WRITE LATER								
+				SYSTEM_WAKING
+??WRITE LATER								
+				SW_RESETTING
+??WRITE LATER								
+					skip all
+				SYSTEM_HOLDING
+??WRITE LATER								
+					Control Heart LED, solid
+				SYSTEM_ERROR		
+??WRITE LATER								
+					Control Heart LED, blink
+				SYSTEM_STANDBY					
+??WRITE LATER								
+			CREATE_DATA
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing		
+				SYNCHRONIZATION				
+					create system ready msg for MAIN
+					main_msg_queue = SYSTEM_READY_STATUS							
+					Mode: SYNCHRONIZATION
+					set next state to TX_COMMUNICATIONS						
+					go to RUN_HOUSEKEEPING_TASKS						
+				SECURING_LINK	
+					create system ready msg for CMNC
+					cmnc_msg_queue = SYSTEM_READY_STATUS
+					create any other msg(s) for MAIN, NAVI, AUXI
+						set appropriate flag for data to be transmitted (i.e. main_msg_queue = (something besides NO_MSG) since for MAIN/NAVI/AUXI they all get transmitted through MAIN)
+					Mode: SECURING_LINK
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS						
+				NORMAL_OPERATIONS		
+					create any msg(s) for MAIN, NAVI, AUXI, CMNC as needed
+						set appropriate flag for data to be transmitted (i.e. cmnc_msg_queue = (something besides NO_MSG), main_msg_queue = (something besides NO_MSG) since for MAIN/NAVI/AUXI they all get transmitted through MAIN)
+					Mode: NORMAL_OPERATIONS
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS						
+				HW_RESETTING
+??WRITE LATER									
+					Create MAIN hw reset request
+					Create CMNC hw resetting status
+					go to RUN_HOUSEKEEPING_TASKS						
+				SYSTEM_SLEEPING
+??WRITE LATER									
+					go to RUN_HOUSEKEEPING_TASKS	
+				SYSTEM_WAKING
+??WRITE LATER									
+					go to RUN_HOUSEKEEPING_TASKS	
+				SW_RESETTING
+??WRITE LATER								
+					go to RUN_HOUSEKEEPING_TASKS	
+				SYSTEM_HOLDING
+??WRITE LATER								
+					go to RUN_HOUSEKEEPING_TASKS	
+				SYSTEM_ERROR
+??WRITE LATER								
+					if sync_error == true						
+						create error msg for CMNC about SYNC issues						
+					else if secure_link_error == true						
+						create error msg for CMNC about secure link issues						
+					end if						
+					cmnc_msg_queue = SYSTEM_ERROR
+					Mode: SYSTEM_ERROR
+					set next state to TX_COMMUNICATIONS					
+					go to RUN_HOUSEKEEPING_TASKS					
+				SYSTEM_STANDBY
+??WRITE LATER												
+			TX_COMMUNICATIONS	
+??WRITE LATER											
+				POWER_ON_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION					
+					if main_msg_queue != NO_MSG
+						Sends msg to MAIN
+					end if
+					Mode: SYNCHRONIZATION
+					set next state to RX_COMMUNICATIONS					
+					clear message queues
+						cmnc_msg_queue = NO_MSG (command tag)
+						main_msg_queue = NO_MSG (command tag)					
+					go to RUN_HOUSEKEEPING_TASKS
+				SECURING_LINK		
+					if main_msg_queue != NO_MSG
+						Sends msg to MAIN
+					end if
+					if cmnc_msg_queue != NO_MSG			
+						Send msg to CMNC
+					end if
+					Mode: SECURING_LINK
+					set next state to RX_COMMUNICATIONS
+					clear message queues
+						cmnc_msg_queue = NO_MSG (command tag)
+						main_msg_queue = NO_MSG (command tag)					
+					go to RUN_HOUSEKEEPING_TASKS
+				NORMAL_OPERATIONS
+					if main_msg_queue != NO_MSG
+						Sends msg to MAIN
+					end if
+					if cmnc_msg_queue != NO_MSG			
+						Send msg to CMNC
+					end if
+					Mode: NORMAL_OPERATIONS
+					set next state to RX_COMMUNICATIONS					
+					clear message queues
+						cmnc_msg_queue = NO_MSG (command tag)
+						main_msg_queue = NO_MSG (command tag)					
+					go to RUN_HOUSEKEEPING_TASKS			
+				HW_RESETTING
+??WRITE LATER													
+				SYSTEM_SLEEPING
+??WRITE LATER								
+				SYSTEM_WAKING
+??WRITE LATER													
+				SW_RESETTING
+??WRITE LATER												
+				SYSTEM_HOLDING
+??WRITE LATER												
+				SYSTEM_ERROR
+					if cmnc_msg_queue != NO_MSG							
+						Sends error msg to CMNC (i.e. sync timeout, secure link timeout, etc.)														
+					end if
+					Mode: SYSTEM_ERROR
+					set next state to RX_COMMUNICATIONS
+					clear message queues
+						cmnc_msg_queue = NO_MSG (command tag)
+						main_msg_queue = NO_MSG (command tag)					
+					go to RUN_HOUSEKEEPING_TASKS
+				SYSTEM_STANDBY				
+??WRITE LATER
+
+
+
+
+
+
+
+		
+
+
+ALSO NEED TO DO:
+MAIN
+NAVI
+AUXI
+
+Note: Each type of arduino may need different states and modes.
+i.e.
+secure link is only for comm?
+navigation algoritms for navi
+redirection for main
+auxi controls mofr auxi
+etc.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+State Matrix Design = States vs. Modes			
+==================
+States
+==================
+Note: These states don't always have to go in order.
+	RUN_HOUSEKEEPING_TASKS
+		runs in parallel with every loop
+	RX_COMMUNICATIONS
+	DATA_VALIDATION
+		data parsing and validation
+		validateData()
+	DATA_FILTER
+		dataDirector()
+	READ_INPUTS
+	PROCESS_DATA
+	CONTROL_OUTPUTS			
+	CREATE_DATA
+	TX_COMMUNICATIONS		
+==================
+Modes
+==================
+Note: These states don't always have to go in order.
+Note: *begin* means this is one of the starting points for this mode
+
+POWER_ON_RESET
+INITIALIZATION
+SYNCHRONIZATION					
+SECURING_LINK						
+NORMAL_OPERATIONS						
+HW_RESETTING
+SYSTEM_SLEEPING
+SYSTEM_WAKING
+SW_RESETTING
+	Same as INITIALIZE, just giving it an alias name for ease of reading
+SYSTEM_HOLDING
+SYSTEM_ERROR
+SYSTEM_STANDBY (like go to sleep, except COMM stays away and uses PIR to wake up the other arduinos)
+		
+==================
+Command Options (i.e. used in the PROCESS_DATA state)
+==================	
+		System Go
+			timeout_counter = 0 (for future use)
+			Mode: SECURING_LINK *begin*
+		System Ready
+			main_system_ready = true (so it won't need to keep checking for this message since the system is ready)
+			timeout_counter = 0 (for future use)
+		Establish Secure Link
+			Mode: NORMAL_OPERATIONS *begin*
+			timeout_counter = 0
+		Break Secure Link
+			Mode: SECURING_LINK *begin*
+			timeout_counter = 0
+		HW Reset Request
+LEFT OFF HERE (remember to use the *begin* flag at first time you're switching to a new mode)																	
+??WRITE LATER						
+			Next State: 
+			Mode: 
+		SW Reset Request
+??WRITE LATER						
+			Next State: 
+			Mode: 
+		Sleep Request
+??WRITE LATER						
+			Next State: 
+			Mode: 
+		Wake Request?
+??WRITE LATER						
+			Next State: 
+			Mode: 
+		PIR Status
+			cmnc_msg_queue or main_msg_queue (based on the requester) = PIR_STATUS
+			Mode: NORMAL_OPERATIONS
+		System Hold Request
+??WRITE LATER	
+??Design error state with an override					
+			Next State: 
+			Mode: 
+		System Standby Request
+??WRITE LATER						
+			Next State: 
+			Mode: 
+??ADD MORE LATER
