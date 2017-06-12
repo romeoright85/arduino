@@ -333,7 +333,6 @@ K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
 
 Finish writing Phase 1, and all other phase changes, etc.
 	Add event triggers and wait until
-	Finish adding turn and throttle
 
 		
 

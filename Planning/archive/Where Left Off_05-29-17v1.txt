@@ -263,13 +263,46 @@ No Change Needed
 			
 			
 			
-[DONE]work on NAVI State Machine
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
+
+=================2 weekends===================				
+
+
+see ??LEFT OFF HERE	
+
+start on system waking
+
+
+
+work on NAVI State Machine
+	actually allow health errors in all filters except sw reset, hw reset
+	NAVI to turn off LEDs when it gets a generic health error from AUXI
+	//make sure to allow sw requests from MAIN for NAVI SYNCHRONIZATION modes
+start on NAVI obstacle avoidance algorithm
+make sure once the rover is awoken, it will re-sync then continue with what it was doing) i.e. keep motor power on, remember it's destination, keep a secure link, etc.
+		
 See file: NAVI State Machine_add_date_when_archive
 See: ??LEFT OFF HERE (remember to use the *begin* flag at first time you're switching to a new mode)																									
 See file: Command Creator.. .xls
 K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
-			
 
+
+		
+put code to measure loop time, then use it as the message delay between a message and a redirect
+
+
+	
+	
+	
 	
 Note: Each type of arduino may need different states and modes.
 
@@ -286,6 +319,12 @@ For command tags, see command creator excel in K:\Working Directory\DESIGN_PROJ\
 Take a video as you talk through your code to see if it makes sense, as well as documenting it.
 
 
+#videos
+Save videos here:
+	P:\Code Overview Videos
+
+	
+Paper design Navigation Algorithm
 			
 			
 			See 			//LEFT OFF HERE in RoverHealthAndStatus.cpp
@@ -293,79 +332,7 @@ Then go back and update RoverProgram_MAIN with changes from RoverProgram_AUXI (i
 			
 
 			
-			
-#videos
-Save videos here:
-	P:\Code Overview Videos
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-
-
-=================2 weekends===================				
-
-
-	
-Paper design Navigation Algorithm
-do NAVI obstacle avoidance algorithm
-K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
-See powerpoint: Rover Navigation
-
-
-Gather a list of what sensors detect first.
-Then on each manuever, what sensor is detected next, and determine the type of object is in front of the rover.
-
-
-
-
-Left off:
-
-
-Finish "Rover Navigation Pseudocode..."
-K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
-
-Finish writing Phase 1, and all other phase changes, etc.
-	Add event triggers and wait until
-	Finish adding turn and throttle
-
-		
-
-=================1 weekends===================			
-
-
-	
-	
-		
-
-	
-
-	
-	start lat/long math and create algorithm
-	https://sites.google.com/site/wayneholder/self-driving-rc-car/getting-from-point-a-to-point-b
-	
-	
-	
-		[NEEDS REWORK, see Test Results]AnalogSignalsTester	
-		
-		
-			[DONE, UNIT TESTED. NOW TEST ON ROVER] MqGasSensor
-	
-			plug in the gas sensor and see if the data works
-					if not, skip over it for now. there's other more important things above the rover you can work on. (just ignore the gas sensor for now and come back to it if you ever have time)
-			gather the details of the other mq gas graphs and derive/verify their formula
-				watch https://www.youtube.com/watch?v=sBhEi4L91Sg
-				
-	
-	
-			
-=================2 weekends===================				
+=================1 weekend===================				
 
 
 Test using COMM Broadcast:
@@ -403,6 +370,35 @@ Test using COMM Broadcast:
 		CommBroadcast_MAIN
 		
 		
+		
+		
+
+=================1 weekends===================			
+
+
+	
+	
+		
+
+	
+
+	
+	start lat/long math	
+	https://sites.google.com/site/wayneholder/self-driving-rc-car/getting-from-point-a-to-point-b
+	
+	
+	
+		[NEEDS REWORK, see Test Results]AnalogSignalsTester	
+		
+		
+			[DONE, UNIT TESTED. NOW TEST ON ROVER] MqGasSensor
+	
+			plug in the gas sensor and see if the data works
+					if not, skip over it for now. there's other more important things above the rover you can work on. (just ignore the gas sensor for now and come back to it if you ever have time)
+			gather the details of the other mq gas graphs and derive/verify their formula
+				watch https://www.youtube.com/watch?v=sBhEi4L91Sg
+				
+	
 	
 		
 		Calibrate the compass on the rover
@@ -427,12 +423,6 @@ Note: Try not to add any more functionality that will delay your project. Write 
 ~2 weekends per an Arduino
 
 Test code as you go!!!
-
-	
-put code to measure loop time, then use it as the message delay between a message and a redirect
-
-
-
 
 When debugging the state machines, make sure things that shouldn't be filtered out aren't, vice versa.
 Watch out for glitches with missed acknowledgements and one system going ahead or behind another.
