@@ -3,8 +3,14 @@
 #include <RoverGpsSensor.h>
 
 
+
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+#ifdef _DEBUG_COMM_BROADCAST
+#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
 
 
 //Note: To hook up the GPS for testing, look up GPS_DATA_TX_PIN, i.e. #define GPS_DATA_TX_PIN						15

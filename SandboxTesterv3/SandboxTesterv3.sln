@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SandBoxClassTester", "SandBoxClassTester.vcxproj", "{426972E4-4D2F-4DB1-8148-609CEC2C996E}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SandboxTesterv3", "..\SandboxTesterv3\SandboxTesterv3.vcxproj", "{03DA202F-7408-4C02-8701-BB309626E679}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SandboxTesterv3", "SandboxTesterv3.vcxproj", "{03DA202F-7408-4C02-8701-BB309626E679}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,14 +13,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{426972E4-4D2F-4DB1-8148-609CEC2C996E}.Debug|x64.ActiveCfg = Debug|x64
-		{426972E4-4D2F-4DB1-8148-609CEC2C996E}.Debug|x64.Build.0 = Debug|x64
-		{426972E4-4D2F-4DB1-8148-609CEC2C996E}.Debug|x86.ActiveCfg = Debug|Win32
-		{426972E4-4D2F-4DB1-8148-609CEC2C996E}.Debug|x86.Build.0 = Debug|Win32
-		{426972E4-4D2F-4DB1-8148-609CEC2C996E}.Release|x64.ActiveCfg = Release|x64
-		{426972E4-4D2F-4DB1-8148-609CEC2C996E}.Release|x64.Build.0 = Release|x64
-		{426972E4-4D2F-4DB1-8148-609CEC2C996E}.Release|x86.ActiveCfg = Release|Win32
-		{426972E4-4D2F-4DB1-8148-609CEC2C996E}.Release|x86.Build.0 = Release|Win32
 		{03DA202F-7408-4C02-8701-BB309626E679}.Debug|x64.ActiveCfg = Debug|x64
 		{03DA202F-7408-4C02-8701-BB309626E679}.Debug|x64.Build.0 = Debug|x64
 		{03DA202F-7408-4C02-8701-BB309626E679}.Debug|x86.ActiveCfg = Debug|Win32

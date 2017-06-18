@@ -1,354 +1,75 @@
 
 
-
-
 Where I left off
 ------------------------
-Note: See LaserControlTester.ino for how to use debug flags
-K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\LaserControlTester
-
-
-write more class testers to test functionality of the rover
-
-
-
-[done]go back and make all private variables start with an _
-[done]gpsDataParserPractice (used to test filtering, checksum, parsing, and validating algorithms. Though not kept up to date.)
-[done]	then migrate them over to the classes "RoverGpsSensor"
-	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverSensors
-
-
-
-
-
-test the new arduino led classes with new timers and counters on the arduino
-
-	[done, need to test on rover] PirSensorTester
-	[done, need to test on rover] UltrasonicSensorTester
-	[done, need to test on rover] IrDistanceSensor
-	[done, need to test on rover] WakeUpTester_COMM
-	[done, need to test on rover] WakeUpTester_MAIN
-	[done, need to test on rover] WakeUpTester_AUXI
-	done, need to test on rover] WakeUpTester_NAVI
-			[DONE] RoverSleeperClient
-			[DONE] RoverSleeperServer
-
-	[done, need to test]write a universal simulator/tester on a mega to test any megas or unos
-	
-	[done, need to test on rover]MotorAndServoTester_MAIN
-		with
-	[done, need to test on rover, need to calibrate and put in the initial calibration values]MotorAndServoTester_NAVI
-		[done]Wheel Encoder
-		[done]MotorPowerControl (Motor Fet Control, Motor Enable Status)				
-		[done] BufferSelect
-		[done] MotorController (for steering and acceleration)						
-		[done] MotorPowerControl	
-		[done] GimbalConroller (for pan and tilt)
-		References:
-		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_MtCtlr_And_Servo_Testerv5
-		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup
-
-
-		
-		
-	[done, need to test on rover]LaserControlTester [AUXI]
-		Reference:
-				K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_Laser_Testerv4
-	
-
-
-	[done, need to test on rover] CurrentSensorControlTester (Current Faults and Resets) [AUXI]
-			Reference:
-				K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_Curr_Snse_Resetv3
-		
-	[done, need to test on rover]HwResetTester (see how I did server and client for the commTester)
-		
-	[done, need to test on rover]			
-		LedTester (
-								[done, need to retest due to updates]write global delay counter (see Rover_Heart_LED_Testerv3.ino). pass this to the heart led
-								[done, need to retest due to updates]AnalogLed->HeartLed
-								UnderglowLeds->DigitalLed->Underglow
-								SideSignalLight(left, right)
-								BeaconAssembly->DigitalLed->Beacon[ir, blue]
-								TailLightAssembly->DigitalLed->Taillights
-								HeadlightAssembly->DigitalLed->(Headlight Left, Headlight Right, Signal Left, Signal Right, Fog Left, Fog Right)
-								
-						)
-					
-	
-	
-				
-		
-			
-		[done, need to test on rover] RoverAnalogSignalsTester (mux control, op amp output) : temp, voltage, light, current
-			Add objects to convert signals
-				[DONE]Current
-				[DONE]Voltage
-				[DONE]Photo
-					http://emant.com/316002.page
-					https://learn.adafruit.com/photocells/using-a-photocell
-					https://developer.mbed.org/users/4180_1/notebook/using-a-photocell-to-determine-light-levels/
-					https://www.arduino.cc/en/Tutorial/Genuino101CurieIMUOrientationVisualiser				
-					https://www.arduino.cc/en/Main/ArduinoBoard101
-				[DONE]Temp
-			
-			[DONE]Add a way to get more accurate ADC values
-			[DONE]if so, update analogsignals as well as irsensor, and anywhere else where ADC is called
 
 
 	
-	[done, need to test on rover] GpsTester
-		see these text files for sample gps data
-			arduino filtered gps position fixed
-			arduino filtered gps on startup
-	
-	
-	
-	
-
-	[done, need to test on rover] ImuTester
-		
-		See: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_IMU_Testerv3
-			[DONE]have the rover use compass only for now
-			
-			[DONE]user timer functions with the imu code
-			[DONE]also get it to print compass heading
-			[DONE]format the print output			
-			[DONE]have it send back roll pitch and yaw serially for python visuals
-			[DONE] any IMU data to be rerouted from the AUXI to MAIN to COMM and over XBee
-			Note:
-			Will make the the Xbee transmit the IMU data in AHRS format where it can be listened by a secondary Xbee which filters out everything but the AHRS format and display the IMU visual on a PC/laptop with the running python code.
-			This will be independent of the main ground code.
-
-
-				[MAYBE DO LATER] need a way to calibrate as well
-				https://github.com/pololu/minimu-9-ahrs-arduino
-				https://www.raspberrypi.org/blog/real-time-orientation-display-with-the-minimu-9-v2/
-			[NAH, not needed right now]will use the imu for roll, pitch, and yaw only. no need to write code to use accelerometers.
-			[NAH, not needed right now]will send back roll, pitch, and yaw for visualization and/or detect compass heading.
-			
-
-		
-		
-		
-		[done, need to test on rover] RoverCommTester_COMM
-		[done, need to test on rover] RoverCommTester_MAIN
-		[done, need to test on rover] RoverCommTester_AUXI
-		[done, need to test on rover] RoverCommTester_NAVI
-
-			
-			
-		[done, need to test on rover] Write an uptime counter classes using example for the UNO COMM
-
-		
-		[done, maybe buggy, need to test]MQGasSensor	
-			Note: The output is still zero. Debug it later once plug the sensor in and measure and update the fixed resistor value.		
-			[do later after hook sensor to see if it's really an issue with the code or the simulation]debug why gas sensor is output 0's
-				see "DEBUG AND DELETE" lines
-			
-			
-			[DONE, set it to 3 seconds for now. change it to 3 minutes once done debugging by turning off the debug flag: _DEBUG_3SEC_WARM_UP_]Use RoverOnTime in order to preheat the gas sensor to 3 minutes before calibrating and using the reading values
-			[DONE] replace the calibration delays with timer and delay objects
-
-
-		
-	[DONE]Create CommandCreator classes
-		[IN PROGRESS]Reference: Also see the spreadsheet "Command Creator..." at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
-			
-		
-	
-
-
-
-	[NAH, no rework. It's not a long term test but a sandbox-ish code]
-		gpsDataParserPractice to not use string class and also use the DataType class for conversion.
-		
-
 
 	
-		
-
-
-[DONE]
-	CommBroadcast_COMM
-	CommBroadcast_NAVI
-	CommBroadcast_AUXI
-	CommBroadcast_MAIN
-	Note: Designed to work when the Serial of the program will route internally. So if anything is going out to PC USB, it won't be routed.
-	Any .ino should have an option for internal routing for output as keyboard commands.
-	For classes debugging, to keep it simple, allow this to be used for PC USB only (for easier maintanence).
-	Note: Make sure to activate the internal Serial if that .ino didn't activate it before.
-	You can search for "Serial" to help highlight all Serial calls and make sure you created a broadcast internal routing for all PC USB Serials.
-	For COMM you don't need to do anything since PC USB is the same routing for internal routing.
-[DONE]
-	CommRollCall_COMM
-	CommRollCall_NAVI
-	CommRollCall_AUXI
-	CommRollCall_MAIN	
 	
--------------------------------
-[DONE]Convert test code to broadcast compatible as needed
-	
-//Uncomment to debug
-//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
-
-##NAVI and AUXI##
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial2.println(F("NAVI Awoken!"));//output to PC for debug
-#else
-	Serial.println(F("NAVI Awoken!"));//output to PC for debug
-#endif
-
-##MAIN##
-#ifdef _DEBUG_COMM_BROADCAST
-	Serial1.println(F("Reset Complete!"));
-#else
-	Serial.println(F("Reset Complete!"));
-#endif
-
-
-##COMM##
-No Change Needed
-
--------------------------------
-
-
-
-
-
-
-
-
-[DONE, WORKS WITH BROADCAST] alternate ultrasonic to prevent interference
-			UltrasonicSensorTest
-
-			
-			
--------------------------------
-[DONE] Re-convert test code to broadcast compatible as needed
-	
-In the .h or .ino
-//Uncomment to debug
-//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
-
-
-In the .cpp or .ino
-##NAVI and AUXI##
-#ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial2
-#else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
-#endif
-
-##MAIN##
-#ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial1
-#else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
-#endif
-
-
-##COMM##
-No Change Needed
-
-	
--------------------------------
-
-
-[DONE]Read how to do state machines
-			
-			
-			
-[DONE] work on COMM State Machine
-			
-			
-			
-[DONE]work on NAVI State Machine
-See file: NAVI State Machine_add_date_when_archive
-See: ??LEFT OFF HERE (remember to use the *begin* flag at first time you're switching to a new mode)																									
-See file: Command Creator.. .xls
-K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
-			
-
-	
-Note: Each type of arduino may need different states and modes.
-
-most likely, have each data share pushed automatically to the destination arduino (to minimize network traffic for requests)
-have a mode for each type of data share and rotate between the modes under normal circumstances
-Also the system won't pull fresh required data, since this will just slow the system down and it will not be fresh by the time it gathers everything anyways.
-	instead data will always be pushed to the destination and refreshed automatically. and when the destination needs to use data, it will use whatever data it has already stored/registered, even if it's slightly old.
-
-
-		
-			
-For command tags, see command creator excel in K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
-
-Take a video as you talk through your code to see if it makes sense, as well as documenting it.
-
-
-			
-			
-			See 			//LEFT OFF HERE in RoverHealthAndStatus.cpp
-Then go back and update RoverProgram_MAIN with changes from RoverProgram_AUXI (i.e. HOLD states, etc.)
-			
-
-			
-			
-#videos
-Save videos here:
-	P:\Code Overview Videos
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-
-
-=================2 weekends===================				
-
-
-	
-Paper design Navigation Algorithm
-do NAVI obstacle avoidance algorithm
-K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
-See powerpoint: Rover Navigation
-
-
-Gather a list of what sensors detect first.
-Then on each manuever, what sensor is detected next, and determine the type of object is in front of the rover.
-
-
-
-
-Left off:
-
-
-Finish "Rover Navigation Pseudocode..."
-K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
-
-Finish writing Phase 1, and all other phase changes, etc.
-	Add event triggers and wait until
-	Finish adding turn and throttle
-
-		
-
 =================1 weekends===================			
 
 
+LEFT OFF HERE
+
+		
+
+	start lat/long math and create algorithm
+	https://sites.google.com/site/wayneholder/self-driving-rc-car/getting-from-point-a-to-point-b
+	http://www.movable-type.co.uk/scripts/latlong.html
+	DX = PointB.x - PointA.x
+	DY = PointB.y - PointA.y
+	angle in radians = atan2(DY, DX)
+	angle in degrees = radians * (180 / Pi)
+	angle = angle < 0 ? angle + 360 : angle	
+
+	
+	research how to get bearing from lat/lon
+		see http://www.movable-type.co.uk/scripts/latlong.html
+		write a formula for it
+	
+	create rover navigation class
+	move the "convertLatitudeToDecimalDegrees" and "convertLongitudeToDecimalDegrees" functions/methods into this class
+	then see "HaversineDistanceFormulaTester" [ALREADY TESTED AND CHECK THE RESULTS OF THE FORMULA USING GOOGLE MAPS, IT WORKS!]
+		move this code into the navigation class as well
+	add formula for bearing
+		control turning/driving based on bearing
+	create a waypoint class
+		create add waypoint method in the navigation class
+	add a tolerance window for bearing
+	add a tolerance window for distance
+	write test code to see if it works
+	check the results
+
 	
 	
+
+=================1 weekends===================			
+	
+	
+	
+
+plan to write code in four blocks
+	Led block
+	State block
+	Nav block
+	Obj avoid block			
+			
+			
+	
+
+write test code
+simiulate compass and gps data
+
+get actual degrees from compass
+calculate goal based on gps
+calculate correction_angle
+correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
+servo.write(correction_angle)
 		
 
 	
-
-	
-	start lat/long math and create algorithm
-	https://sites.google.com/site/wayneholder/self-driving-rc-car/getting-from-point-a-to-point-b
 	
 	
 	
@@ -697,3 +418,441 @@ Wifi
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======================
+COMPLETED
+=======================
+
+
+Note: See LaserControlTester.ino for how to use debug flags
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\LaserControlTester
+
+
+write more class testers to test functionality of the rover
+
+
+
+[done]go back and make all private variables start with an _
+[done]gpsDataParserPractice (used to test filtering, checksum, parsing, and validating algorithms. Though not kept up to date.)
+[done]	then migrate them over to the classes "RoverGpsSensor"
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverSensors
+
+
+
+
+
+test the new arduino led classes with new timers and counters on the arduino
+
+	[done, need to test on rover] PirSensorTester
+	[done, need to test on rover] UltrasonicSensorTester
+	[done, need to test on rover] IrDistanceSensor
+	[done, need to test on rover] WakeUpTester_COMM
+	[done, need to test on rover] WakeUpTester_MAIN
+	[done, need to test on rover] WakeUpTester_AUXI
+	done, need to test on rover] WakeUpTester_NAVI
+			[DONE] RoverSleeperClient
+			[DONE] RoverSleeperServer
+
+	[done, need to test]write a universal simulator/tester on a mega to test any megas or unos
+	
+	[done, need to test on rover]MotorAndServoTester_MAIN
+		with
+	[done, need to test on rover, need to calibrate and put in the initial calibration values]MotorAndServoTester_NAVI
+		[done]Wheel Encoder
+		[done]MotorPowerControl (Motor Fet Control, Motor Enable Status)				
+		[done] BufferSelect
+		[done] MotorController (for steering and acceleration)						
+		[done] MotorPowerControl	
+		[done] GimbalConroller (for pan and tilt)
+		References:
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_MtCtlr_And_Servo_Testerv5
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup
+
+
+		
+		
+	[done, need to test on rover]LaserControlTester [AUXI]
+		Reference:
+				K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_Laser_Testerv4
+	
+
+
+	[done, need to test on rover] CurrentSensorControlTester (Current Faults and Resets) [AUXI]
+			Reference:
+				K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_Curr_Snse_Resetv3
+		
+	[done, need to test on rover]HwResetTester (see how I did server and client for the commTester)
+		
+	[done, need to test on rover]			
+		LedTester (
+								[done, need to retest due to updates]write global delay counter (see Rover_Heart_LED_Testerv3.ino). pass this to the heart led
+								[done, need to retest due to updates]AnalogLed->HeartLed
+								UnderglowLeds->DigitalLed->Underglow
+								SideSignalLight(left, right)
+								BeaconAssembly->DigitalLed->Beacon[ir, blue]
+								TailLightAssembly->DigitalLed->Taillights
+								HeadlightAssembly->DigitalLed->(Headlight Left, Headlight Right, Signal Left, Signal Right, Fog Left, Fog Right)
+								
+						)
+					
+	
+	
+				
+		
+			
+		[done, need to test on rover] RoverAnalogSignalsTester (mux control, op amp output) : temp, voltage, light, current
+			Add objects to convert signals
+				[DONE]Current
+				[DONE]Voltage
+				[DONE]Photo
+					http://emant.com/316002.page
+					https://learn.adafruit.com/photocells/using-a-photocell
+					https://developer.mbed.org/users/4180_1/notebook/using-a-photocell-to-determine-light-levels/
+					https://www.arduino.cc/en/Tutorial/Genuino101CurieIMUOrientationVisualiser				
+					https://www.arduino.cc/en/Main/ArduinoBoard101
+				[DONE]Temp
+			
+			[DONE]Add a way to get more accurate ADC values
+			[DONE]if so, update analogsignals as well as irsensor, and anywhere else where ADC is called
+
+
+	
+	[done, need to test on rover] GpsTester
+		see these text files for sample gps data
+			arduino filtered gps position fixed
+			arduino filtered gps on startup
+	
+	
+	
+	
+
+	[done, need to test on rover] ImuTester
+		
+		See: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_IMU_Testerv3
+			[DONE]have the rover use compass only for now
+			
+			[DONE]user timer functions with the imu code
+			[DONE]also get it to print compass heading
+			[DONE]format the print output			
+			[DONE]have it send back roll pitch and yaw serially for python visuals
+			[DONE] any IMU data to be rerouted from the AUXI to MAIN to COMM and over XBee
+			Note:
+			Will make the the Xbee transmit the IMU data in AHRS format where it can be listened by a secondary Xbee which filters out everything but the AHRS format and display the IMU visual on a PC/laptop with the running python code.
+			This will be independent of the main ground code.
+
+
+				[MAYBE DO LATER] need a way to calibrate as well
+				https://github.com/pololu/minimu-9-ahrs-arduino
+				https://www.raspberrypi.org/blog/real-time-orientation-display-with-the-minimu-9-v2/
+			[NAH, not needed right now]will use the imu for roll, pitch, and yaw only. no need to write code to use accelerometers.
+			[NAH, not needed right now]will send back roll, pitch, and yaw for visualization and/or detect compass heading.
+			
+
+		
+		
+		
+		[done, need to test on rover] RoverCommTester_COMM
+		[done, need to test on rover] RoverCommTester_MAIN
+		[done, need to test on rover] RoverCommTester_AUXI
+		[done, need to test on rover] RoverCommTester_NAVI
+
+			
+			
+		[done, need to test on rover] Write an uptime counter classes using example for the UNO COMM
+
+		
+		[done, maybe buggy, need to test]MQGasSensor	
+			Note: The output is still zero. Debug it later once plug the sensor in and measure and update the fixed resistor value.		
+			[do later after hook sensor to see if it's really an issue with the code or the simulation]debug why gas sensor is output 0's
+				see "DEBUG AND DELETE" lines
+			
+			
+			[DONE, set it to 3 seconds for now. change it to 3 minutes once done debugging by turning off the debug flag: _DEBUG_3SEC_WARM_UP_]Use RoverOnTime in order to preheat the gas sensor to 3 minutes before calibrating and using the reading values
+			[DONE] replace the calibration delays with timer and delay objects
+
+
+		
+	[DONE]Create CommandCreator classes
+		[IN PROGRESS]Reference: Also see the spreadsheet "Command Creator..." at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+			
+		
+	
+
+
+
+	[NAH, no rework. It's not a long term test but a sandbox-ish code]
+		gpsDataParserPractice to not use string class and also use the DataType class for conversion.
+		
+
+
+	
+		
+
+
+[DONE]
+	CommBroadcast_COMM
+	CommBroadcast_NAVI
+	CommBroadcast_AUXI
+	CommBroadcast_MAIN
+	Note: Designed to work when the Serial of the program will route internally. So if anything is going out to PC USB, it won't be routed.
+	Any .ino should have an option for internal routing for output as keyboard commands.
+	For classes debugging, to keep it simple, allow this to be used for PC USB only (for easier maintanence).
+	Note: Make sure to activate the internal Serial if that .ino didn't activate it before.
+	You can search for "Serial" to help highlight all Serial calls and make sure you created a broadcast internal routing for all PC USB Serials.
+	For COMM you don't need to do anything since PC USB is the same routing for internal routing.
+[DONE]
+	CommRollCall_COMM
+	CommRollCall_NAVI
+	CommRollCall_AUXI
+	CommRollCall_MAIN	
+	
+-------------------------------
+[DONE]Convert test code to broadcast compatible as needed
+	
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
+##NAVI and AUXI##
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("NAVI Awoken!"));//output to PC for debug
+#else
+	Serial.println(F("NAVI Awoken!"));//output to PC for debug
+#endif
+
+##MAIN##
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial1.println(F("Reset Complete!"));
+#else
+	Serial.println(F("Reset Complete!"));
+#endif
+
+
+##COMM##
+No Change Needed
+
+-------------------------------
+
+
+
+
+
+
+
+
+[DONE, WORKS WITH BROADCAST] alternate ultrasonic to prevent interference
+			UltrasonicSensorTest
+
+			
+			
+-------------------------------
+[DONE] Re-convert test code to broadcast compatible as needed
+	
+In the .h or .ino
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
+
+In the .cpp or .ino
+##NAVI and AUXI##
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
+
+##MAIN##
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ Serial1
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ Serial
+#endif
+
+
+##COMM##
+No Change Needed
+
+	
+-------------------------------
+
+
+[DONE]Read how to do state machines
+			
+			
+			
+[DONE] work on COMM State Machine
+			
+			
+			
+[DONE]work on NAVI State Machine
+See file: NAVI State Machine_add_date_when_archive
+See: ??LEFT OFF HERE (remember to use the *begin* flag at first time you're switching to a new mode)																									
+See file: Command Creator.. .xls
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+			
+
+	
+Note: Each type of arduino may need different states and modes.
+
+most likely, have each data share pushed automatically to the destination arduino (to minimize network traffic for requests)
+have a mode for each type of data share and rotate between the modes under normal circumstances
+Also the system won't pull fresh required data, since this will just slow the system down and it will not be fresh by the time it gathers everything anyways.
+	instead data will always be pushed to the destination and refreshed automatically. and when the destination needs to use data, it will use whatever data it has already stored/registered, even if it's slightly old.
+
+
+		
+			
+For command tags, see command creator excel in K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+
+Take a video as you talk through your code to see if it makes sense, as well as documenting it.
+
+
+			
+			
+Then go back and update RoverProgram_MAIN with changes from RoverProgram_AUXI (i.e. HOLD states, etc.)
+			
+
+			
+			
+#videos
+Save videos here:
+	P:\Code Overview Videos
+			
+			
+			
+			
+		
+	
+Paper design Object Avoidance Algorithm
+do NAVI obstacle avoidance algorithm
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+See powerpoint: Rover Navigation
+
+		
+Gather a list of what sensors detect first.
+Then on each manuever, what sensor is detected next, and determine the type of object is in front of the rover.
+
+			
+
+
+	
+Finish "Rover Navigation Pseudocode..."
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+
+
+	
+	
+	
+finish the math (on powerpoint)
+	figure out how to convert longitude and latitude to all seconds
+		3916.2242,N,07636.6542,W
+		gpgga was in decimal-decimal and you need to convert them to decimal degrees
+		careful to take the location and not the time value
+		https://community.oracle.com/thread/3619431
+		http://www.hiddenvision.co.uk/ez/?nmea_lat=3916.2242%2CN&nmea_lon=07636.6542%2CW
+		http://www.rapidtables.com/convert/number/degrees-minutes-seconds-to-degrees.htm
+		https://stackoverflow.com/questions/36254363/how-to-convert-latitude-and-longitude-of-nmea-format-data-to-decimal
+
+		double nmea_latitude;
+		double lattitude_whole;
+		double lattitude_fraction;
+		double lattitude_decimalDegrees;
+		lattitude_whole = floor(nmea_latitude/100)
+		lattitude_fraction = (nmea_latitude % 100) / 60
+		lattitude_decimalDegrees = lattitude_whole + lattitude_fraction
+		
+		
+		double nmea_longitude;
+		double longitude_whole;
+		double longitude_fraction;
+		double longitude_decimalDegrees;
+		longitude_whole = floor(nmea_longitude/100)
+		longitude_fraction = (nmea_longitude % 100) / 60
+		longitude_decimalDegrees = longitude_whole + longitude_fraction
+
+		
+		
+		
+	lat/long
+	"lat is flat"
+	lat gives you the angle from the equator where the equator is 0 degrees
+	the lat range is +90 to -90 deg or 90N to 0 to 90S
+	0 degrees longitude is the prime meridian
+	it goes 0 to 180 E and 0 to 180 W
+	https://www.youtube.com/watch?v=M2wL0lKF8ic
+	"signed decimal degrees without compass direction, where negative indicates west/south (e.g. 40.7486, -73.9864):"
+	http://www.movable-type.co.uk/scripts/latlong.html	
+	http://forum.arduino.cc/index.php?topic=45760.0
+	Example
+	http://www.igismap.com/haversine-formula-calculate-geographic-distance-earth/
+	
+	
+	
+	
+	
+	
+	include <math.h>
+	#define EARTHS_RADIUS_KM 6371//in KM, will need to use data type double, since it's a big number
+	#define EARTHS_RADIUS_M 6371000//will need to use data type double, since it's a big number
+	
+
+
+	double calculateDistance( double desired_latitudeDeg, double desired_longitudeDeg, double actual_latitudeDeg, double actual_longitudeDeg)
+	{
+	  
+	  
+	  //lat 1 - desired latitude  
+	  double desired_latitudeRad;
+	  
+	  //lat 2 - actual latitude
+	  double actual_latitudeRad;  
+	  
+	  //long 1 - desired longitude
+	  
+	  
+	  //long 2 - actual longitude 
+		
+	  double delta_latitudeRad;
+	  double delta_longitudeRad;
+	  
+	  double varA;
+	  double varC;
+	  double distance;
+	  
+	  
+	  desired_latitudeRad = (desired_latitudeDeg * M_PI) / 180;
+	  
+	  actual_latitudeRad = (actual_latitudeDeg * M_PI) / 180;
+	  
+	  delta_latitudeRad = actual_latitudeRad - desired_latitudeRad;
+	  
+	  delta_longitudeRad = ((actual_longitudeDeg - desired_longitudeDeg) * M_PI) / 180;
+	  
+	  varA = sin(delta_latitudeRad/2) * sin(delta_latitudeRad/2) + cos(desired_latitudeRad) * cos(actual_latitudeRad) * sin(delta_longitudeRad/2) * sin(delta_longitudeRad/2);
+	  
+	  varC = 2 * atan2( sqrt(varA), sqrt(1-varA) );
+	  
+	  distance = EARTHS_RADIUS_KM * varC;//in km
+	  
+	  return distance;
+
+	}		

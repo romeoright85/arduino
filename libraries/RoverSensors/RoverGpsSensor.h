@@ -28,7 +28,8 @@
 //http://www.gpsinformation.org/dale/nmea.htm
 //http://aprs.gids.nl/nmea/
 //http://googlecompass.com/MagneticVariationAdjustment.htm
-
+//https://stackoverflow.com/questions/36254363/how-to-convert-latitude-and-longitude-of-nmea-format-data-to-decimal
+//"NMEA format is ddmm.mmmm, n/s (d)ddmm.mmmm, e/w"
 /*
 To view in Google Maps
 
@@ -89,6 +90,9 @@ public:
 	char * getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format
 	byte getGoogleMapsCoordinatesLength();//returns the length of the corresponding string
 	void clearGoogleMapsCoordinates();//clears _googleMapsCoordinates
+	double convertLatitudeToDecimalDegrees(double, char *);//(latitude in ddmm.mmmm), returns latitude in decimal degrees.
+	double convertLongitudeToDecimalDegrees(double, char *);//(longitude in (d)ddmm.mmmm),  returns longitude in decimal degrees.
+	
 	
 private:
 	//Non-SW Resettable

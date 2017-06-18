@@ -315,6 +315,45 @@ void RoverGpsSensor::clearGoogleMapsCoordinates()
 {
 	memset(this->_googleMapsCoordinates,0,sizeof(this->_googleMapsCoordinates));	
 }
+double RoverGpsSensor::convertLatitudeToDecimalDegrees(double nmea_latitude, char * direction)
+{	
+		double lattitude_whole;
+		double lattitude_fraction;		
+		lattitude_whole = floor(nmea_latitude/100);
+		lattitude_fraction = fmod(nmea_latitude, 100) / 60;
+		if(strcmp(direction,"N") == 0)
+		{
+			return lattitude_whole + lattitude_fraction;
+		}
+		else if(strcmp(direction,"S") == 0)
+		{
+			return -1 * (lattitude_whole + lattitude_fraction);
+		}
+		else
+		{
+			return -999.99;//error value
+		}
+}
+double RoverGpsSensor::convertLongitudeToDecimalDegrees(double nmea_longitude, char * direction)
+{	
+	double longitude_whole;
+	double longitude_fraction;
+	longitude_whole = floor(nmea_longitude/100);
+	longitude_fraction = fmod(nmea_longitude, 100) / 60;	
+	if(strcmp(direction,"E") == 0)
+	{
+		return longitude_whole + longitude_fraction;//in decimal degrees
+	}
+	else if(strcmp(direction,"W") == 0)
+	{
+		return -1 * (longitude_whole + longitude_fraction);//in decimal degrees
+	}
+	else
+	{
+		return -999.99;//error value
+	}
+	
+}
 boolean RoverGpsSensor::dataPassedFiltering(char * gpsRxdData, byte arraySize)
 {
 
