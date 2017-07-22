@@ -68,6 +68,18 @@
 		
 	#endif	
 		
+		
+	//definition for RoverNavigation
+	#ifdef _ROVERNAVIGATIONDEFINITIONS
+		#define EARTHS_RADIUS_KM 6371//in KM, will need to use data type double, since it's a big number
+		#define EARTHS_RADIUS_M 6371000//will need to use data type double, since it's a big number
+		
+	#endif	
+		
+		
+
+		
+		
 	//definition for CurrentSensorFault
 	#ifdef _CURRENTSENSORFAULT_DEFINITIONS
 		#define NUM_OF_CURRENT_SENSORS		5
@@ -543,12 +555,19 @@
 	#endif
 
 
-	//Used for	Distance Sensors (like ultrasonic and infrared sensors)
+	
+	
+	
+	//Used for	Distance Sensors (like ultrasonic and infrared sensors) and the RoverNavigation Class
 	#ifdef _DISTANCE_UNITS_MODES
+		//Metric
 		#define UNIT_CM	 0
 		#define UNIT_M	 1
-		#define UNIT_IN  2
-		#define UNIT_FT	 3
+		#define UNIT_KM	 2
+		
+		//Imperial
+		#define UNIT_IN  10
+		#define UNIT_FT	 11		
 	#endif	
 
 	//definitions for Ultrasonic Sensor

@@ -90,8 +90,8 @@ public:
 	char * getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format
 	byte getGoogleMapsCoordinatesLength();//returns the length of the corresponding string
 	void clearGoogleMapsCoordinates();//clears _googleMapsCoordinates
-	double convertLatitudeToDecimalDegrees(double, char *);//(latitude in ddmm.mmmm), returns latitude in decimal degrees.
-	double convertLongitudeToDecimalDegrees(double, char *);//(longitude in (d)ddmm.mmmm),  returns longitude in decimal degrees.
+	double convertNMEALatitudeToDecimalDegrees(double, char *);//(latitude in NMEA format ddmm.mmmm), returns latitude in decimal degrees.
+	double convertNMEALongitudeToDecimalDegrees(double, char *);//(longitude in NMEA format (d)ddmm.mmmm),  returns longitude in decimal degrees.
 	
 	
 private:

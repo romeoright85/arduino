@@ -8,11 +8,8 @@ Where I left off
 
 	
 	
-=================2 weekends (one short/one long) finish by end of july===================			
-		
-	create rover navigation class
-	then see "HaversineDistanceFormulaTester" [ALREADY TESTED AND CHECK THE RESULTS OF THE FORMULA USING GOOGLE MAPS, IT WORKS!]
-		move this code into the navigation class as well
+=================1 weekends===================			
+
 
 LEFT OFF HERE
 
@@ -21,70 +18,49 @@ LEFT OFF HERE
 	start lat/long math and create algorithm
 	https://sites.google.com/site/wayneholder/self-driving-rc-car/getting-from-point-a-to-point-b
 	http://www.movable-type.co.uk/scripts/latlong.html
-	to calculate relative bearing
 	DX = PointB.x - PointA.x
 	DY = PointB.y - PointA.y
 	angle in radians = atan2(DY, DX)
 	angle in degrees = radians * (180 / Pi)
 	angle = angle < 0 ? angle + 360 : angle	
+
 	
 	research how to get bearing from lat/lon
 		see http://www.movable-type.co.uk/scripts/latlong.html
 		write a formula for it
-
+	
+	create rover navigation class
+	move the "convertLatitudeToDecimalDegrees" and "convertLongitudeToDecimalDegrees" functions/methods into this class
+	then see "HaversineDistanceFormulaTester" [ALREADY TESTED AND CHECK THE RESULTS OF THE FORMULA USING GOOGLE MAPS, IT WORKS!]
+		move this code into the navigation class as well
 	add formula for the goal's bearing
 		control turning/driving based on the goal's bearing
 			in the future, compare the goal's with the compass bearing and control turning based on that
-	
-	add a tolerance for bearing and distance. when reached the tolerance window, center and stop and output a true boolean for done
-
 	create a waypoint class
-		create add/delete waypoints method in the waypoint class
-		have the waypoint class call the rovernavigation class and feed it the next lat/long
-		when the true boolean has received, set the next waypoint
-		when all waypoints are done, output a done
-		
-		add a tolerance window for bearing
-		add a tolerance window for distance
+		create add waypoint method in the navigation class
+	add a tolerance window for bearing
+	add a tolerance window for distance
 	write test code to see if it works
 	check the results
 
 	
-	
-	
-	
-=================1 long weekend===================			
+=================1 weekends===================			
 	
 	then create a test class with rovergps, navigation class, and waypoint class
 	hook up gps to an arduino
 	walk outside and see if it tells me the right bearing, rover turn action, and distance
 	
-
-
-write test code
-simulate compass and gps data
-
-get actual degrees from compass
-calculate goal based on navigation bearing (from gps lat/lon)
-	i.e. compare the goal's with the compass bearing and control turning based on that
-calculate correction_angle
-correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
-servo.write(correction_angle)
 	
 
+=================1 weekends===================			
+	
+	
+	
 		Calibrate the compass on the rover
 	https://sites.google.com/site/wayneholder/self-driving-rc-car/calibrating-the-compass	
 	
 			
 
-				
-
-			
-=================1 long weekend===================				
-
-
-	
-	
 	
 		[NEEDS REWORK, see Test Results]AnalogSignalsTester	
 		
@@ -96,8 +72,34 @@ servo.write(correction_angle)
 			gather the details of the other mq gas graphs and derive/verify their formula
 				watch https://www.youtube.com/watch?v=sBhEi4L91Sg
 				
+	
 				
+
+
+=================1 weekends===================			
+	
 				
+
+write test code
+simulate compass and gps data
+
+get actual degrees from compass
+calculate goal based on naviagion bearing (from gps lat/lon)
+	i.e. compare the goal's with the compass bearing and control turning based on that
+calculate correction_angle
+correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
+servo.write(correction_angle)
+	
+
+	
+	
+	
+
+	
+			
+=================2 weekends===================				
+
+
 Test using COMM Broadcast:
 
 	[RETEST, it was in debugging mode last time with main code commented out] LaserControlTester
