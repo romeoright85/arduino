@@ -10,42 +10,81 @@ Where I left off
 	
 =================2 weekends (one short/one long) finish by end of july===================			
 		
-	create rover navigation class
-	then see "HaversineDistanceFormulaTester" [ALREADY TESTED AND CHECK THE RESULTS OF THE FORMULA USING GOOGLE MAPS, IT WORKS!]
-		move this code into the navigation class as well
 
-LEFT OFF HERE
-
-		
-
-	start lat/long math and create algorithm
+	
+	
+		start lat/long math and create algorithm
 	https://sites.google.com/site/wayneholder/self-driving-rc-car/getting-from-point-a-to-point-b
 	http://www.movable-type.co.uk/scripts/latlong.html
+	http://diydrones.com/profiles/blogs/the-difference-between-heading
+	https://aviation.stackexchange.com/questions/8000/what-are-the-differences-between-bearing-vs-course-vs-direction-vs-heading-vs-tr
+	https://www.sunearthtools.com/tools/distance.php
+	https://www.youtube.com/watch?v=9nDkR-X9dqo
 	to calculate relative bearing
-	DX = PointB.x - PointA.x
-	DY = PointB.y - PointA.y
-	angle in radians = atan2(DY, DX)
-	angle in degrees = radians * (180 / Pi)
-	angle = angle < 0 ? angle + 360 : angle	
 	
-	research how to get bearing from lat/lon
-		see http://www.movable-type.co.uk/scripts/latlong.html
-		write a formula for it
-
-	add formula for the goal's bearing
-		control turning/driving based on the goal's bearing
-			in the future, compare the goal's with the compass bearing and control turning based on that
 	
-	add a tolerance for bearing and distance. when reached the tolerance window, center and stop and output a true boolean for done
-
-	create a waypoint class
-		create add/delete waypoints method in the waypoint class
-		have the waypoint class call the rovernavigation class and feed it the next lat/long
-		when the true boolean has received, set the next waypoint
-		when all waypoints are done, output a done
+	[NOT USED, used a different formula instead]
+			DX = PointB.x - PointA.x
+			DY = PointB.y - PointA.y
+			angle in radians = atan2(DY, DX)
+			angle in degrees = radians * (180 / Pi)
+			angle = angle < 0 ? angle + 360 : angle	
 		
-		add a tolerance window for bearing
-		add a tolerance window for distance
+		research how to get bearing from lat/lon
+			see http://www.movable-type.co.uk/scripts/latlong.html
+			write a formula for it
+
+		add formula for the goal's bearing
+	
+	
+	
+	
+	
+	
+	
+LEFT OFF HERE
+
+
+
+
+
+
+getRelativeBearing()
+
+	
+	
+getCalculatedMotorSteering	
+
+
+if bearing > heading go one way, else go the other
+but if delta(bearing and heading) is greater than 180 switch directions
+		
+		
+		
+		control turning/driving based on the goal's bearing
+		in the future, compare the goal's with the compass bearing and control turning based on that
+		add a tolerance for bearing and distance. when reached the tolerance window, center and stop and output a true boolean for done
+			add a tolerance window for bearing, use to control turn or straight, when straight, keep driving till distance tolerance
+				
+			Heading in Degrees
+			D = destination
+			O = Origin
+
+
+			D < O and abs(D-O) > 180: turn right
+			D < O and abs(D-O) < 180: turn left
+			D > O and abs(D-O) > 180: turn left
+			D > O and abs(D-O) < 180: turn right
+			D = O: stop
+			D < O and abs(D-O) = 180: turn left or right
+			D > O and abs(D-O) = 180: turn left or right
+
+	
+	
+getCalculatedMotorThrottle	
+		add a tolerance window for distance, turn to control go or stop. when stop, it's done.
+		
+		
 	write test code to see if it works
 	check the results
 
@@ -53,7 +92,7 @@ LEFT OFF HERE
 	
 	
 	
-=================1 long weekend===================			
+=================1.5 weekends===================			
 	
 	then create a test class with rovergps, navigation class, and waypoint class
 	hook up gps to an arduino
@@ -80,7 +119,7 @@ servo.write(correction_angle)
 				
 
 			
-=================1 long weekend===================				
+=================1.5 weekends===================				
 
 
 	
@@ -869,3 +908,17 @@ finish the math (on powerpoint)
 	  return distance;
 
 	}		
+	
+----------------------
+
+
+	create rover navigation class
+	then see "HaversineDistanceFormulaTester" [ALREADY TESTED AND CHECK THE RESULTS OF THE FORMULA USING GOOGLE MAPS, IT WORKS!]
+		move this code into the navigation class as well
+	[nah, this should be ground code stuff]create a waypoint class
+		create add/delete waypoints method in the waypoint class
+		have the waypoint class call the rovernavigation class and feed it the next lat/long
+		when the true boolean has received, set the next waypoint
+		when all waypoints are done, output a done
+	
+		

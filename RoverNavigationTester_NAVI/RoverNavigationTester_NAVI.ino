@@ -48,14 +48,14 @@ void loop() {
 	*/
 
 
-	double distanceCalculated = 0.0;
+	double value = 0.0;
 
 	roverNavigation->setDesiredLatitudeDeg(39.268603);
 	roverNavigation->setDesiredLongitudeDeg(-76.611702);
 	roverNavigation->setActualLatitudeDeg(39.268761);
 	roverNavigation->setActualLongitudeDeg(-76.606402);
 	
-	distanceCalculated = roverNavigation->calculateDistance(roverNavigation->getDesiredLatitudeDeg(), roverNavigation->getDesiredLongitudeDeg(), roverNavigation->getActualLatitudeDeg(), roverNavigation->getActualLongitudeDeg(), UNIT_M);
+	
 
 
 	Serial.println("========");
@@ -65,7 +65,11 @@ void loop() {
 	Serial.println(roverNavigation->getActualLatitudeDeg(),4);//print with 4 decimals
 	Serial.println(roverNavigation->getActualLongitudeDeg(),4);//print with 4 decimals
 	Serial.println();
-	Serial.println(distanceCalculated,4);//print with 4 decimals
-	Serial.println();	
+	value = roverNavigation->calculateDistance(UNIT_M);
+	Serial.println(value,4);//print with 4 decimals
+	Serial.println();		
+	value = roverNavigation->getTrueBearing();
+	Serial.println(value, 4);//print with 4 decimals
+	Serial.println();
 	delay(1000);
 }
