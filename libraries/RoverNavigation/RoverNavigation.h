@@ -6,6 +6,9 @@
 #include <RoverDebug.h>
 #include <RoverReset.h>
 #include <math.h>
+#include <Coordinates.h>
+#include <Angles.h>
+
 
 /*
 
@@ -85,25 +88,17 @@ public:
 	RoverNavigation();//constructor
 	~RoverNavigation();//destructor
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-	
-	void setDesiredLatitudeDeg(double);
-	void setDesiredLongitudeDeg(double);
-	void setActualLatitudeDeg(double);
-	void setActualLongitudeDeg(double);
-	void setHeadingDeg(float);
-	
-	double getDesiredLatitudeDeg();
-	double getDesiredLongitudeDeg();
-	double getActualLatitudeDeg();
-	double getActualLongitudeDeg();
-
-	double getDesiredLatitudeRad();
-	double getDesiredLongitudeRad();
-	double getActualLatitudeRad();
-	double getActualLongitudeRad();	
 		
-	double calculateDistance(float, float, float, float, byte);///(actual latitude in radians, actual Longitude in radians, desired Latitude in radians, desired Longitude in radians, unit type) returns distance in km or m based on unit type (i.e. UNIT_M or UNIT_KM). See RoverConfig for more details.
-	float calculateTrueBearing(float, float, float, float);//(actual latitude in radians, actual Longitude in radians, desired Latitude in radians, desired Longitude in radians) returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired latitude/longitude coordinates
+	void setLatitudeDeg(double, byte);//(latitude in degrees, type: TYPE_ACTUAL, TYPE_DESIRED)
+	void setLongitudeDeg(double, byte);//(longitude in degrees, type: TYPE_ACTUAL, TYPE_DESIRED)
+	void setPositionDeg(double, double, byte);//(latitude in degrees, longitude in degrees, type: TYPE_ACTUAL, TYPE_DESIRED)
+	void setHeadingDeg(float);//heading in degrees
+	
+	double getLatitude(byte, byte);//(type: TYPE_ACTUAL, TYPE_DESIRED, unit: UNIT_DEGREES, UNIT_RADIANS) returns latitude in desired type and requested unit
+	double getLongitude(byte, byte);//(type: TYPE_ACTUAL, TYPE_DESIRED, unit: UNIT_DEGREES, UNIT_RADIANS) returns longitude in desired type and requested unit
+		
+	double calculateDistance(Coordinates *, Coordinates *, byte);//(actual coordinates, desired coordinates, unit type: UNIT_M or UNIT_KM) returns distance in km or m based on unit type. See RoverConfig for more details.
+	float calculateTrueBearing(Coordinates *, Coordinates *);//(actual coordinates, desired coordinates) returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired coordinates
 	float calculateRelativeBearing(float, float);//(heading of Rover in degrees: current angle i.e. from IMU, true bearing: destination angle) returns relative bearing in degrees
 		
 	double getDistance(byte);//(unit type) takes the object's currently set coordinates and returns distance in km or m based on unit type (i.e. UNIT_M or UNIT_KM). See RoverConfig for more details.
@@ -135,24 +130,13 @@ public:
 	
 private:
 	//Non-SW Resettable
-	float normalizeAngleDeg(float);//keeps the degrees angle from 0-359 degrees
-	double degToRad(double);//(degrees) returns results in radians
-	double radToDeg(double);//(radians) returns results in degrees
-	
+
+	Coordinates * _desiredCoordinates;
+	Coordinates * _actualCoordinates;
 	
 	
 	//SW Resettable
-	double _desiredLatitudeDeg = 0.0;
-	double _desiredLongitudeDeg = 0.0;
-	double _actualLatitudeDeg = 0.0;
-	double _actualLongitudeDeg = 0.0;	
-	
-	
-	double _desiredLatitudeRad = 0.0;
-	double _desiredLongitudeRad = 0.0;
-	double _actualLatitudeRad = 0.0;
-	double _actualLongitudeRad = 0.0;	
-	
+		
 	
 	float _measuredIMUHeading = 0.0;	
 };

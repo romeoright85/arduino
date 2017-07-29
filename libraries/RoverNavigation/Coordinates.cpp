@@ -3,59 +3,66 @@
 
 Coordinates::Coordinates()
 {
-	this->_latitude = 0.0;
-	this->_longitude = 0.0;
+	this->_latitudeDeg = 0.0;
+	this->_longitudeDeg = 0.0;
 }
-Coordinates::Coordinates(double latitude, double longitude)
+Coordinates::Coordinates(double latitudeDeg, double longitudeDeg)
 {
-	this->setLatitude(latitude);
-	this->setLongitude(longitude);
+	this->setLatitudeDeg(latitudeDeg);
+	this->setLongitudeDeg(longitudeDeg);
 }
 Coordinates::~Coordinates()
 {
 	//do nothing
 }
-void Coordinates::setLatitude(double latitude)
+void Coordinates::setLatitudeDeg(double latitudeDeg)
 {
-	if( latitude  >= -90 && latitude <= 90 )
+	if( latitudeDeg  >= -90 && latitudeDeg <= 90 )
 	{
-		this->_latitude = latitude;
+		this->_latitudeDeg = latitudeDeg;
 	}
 	else
 	{
-		this->_latitude = 0.0;
+		this->_latitudeDeg = 0.0;
 	}
 	
 }
-void Coordinates::setLongitude(double longitude)
+void Coordinates::setLongitudeDeg(double longitudeDeg)
 {
-	if( longitude  >= -180 && longitude <= 180 )
+	if( longitudeDeg  >= -180 && longitudeDeg <= 180 )
 	{
-		this->_longitude = longitude;
+		this->_longitudeDeg = longitudeDeg;
 	}
 	else
 	{
-		this->_longitude = 0.0;
+		this->_longitudeDeg = 0.0;
 	}	
 }
-void Coordinates::setPosition(double latitude, double longitude)
+void Coordinates::setPositionDeg(double latitudeDeg, double longitudeDeg)
 {
-	this->setLatitude(latitude);
-	this->setLongitude(longitude);
+	this->setLatitudeDeg(latitudeDeg);
+	this->setLongitudeDeg(longitudeDeg);
 }
-double Coordinates::getLatitude()
+double Coordinates::getLatitudeDeg()
 {
-	return this->_latitude;
+	return this->_latitudeDeg;
 }
-double Coordinates::getLongitude()
+double Coordinates::getLongitudeDeg()
 {
-	return this->_longitude;
+	return this->_longitudeDeg;
 }
-
+double Coordinates::getLatitudeRad()
+{
+	return Angles::degToRad(this->_latitudeDeg);	
+}
+double Coordinates::getLongitudeRad()
+{
+	return Angles::degToRad(this->_longitudeDeg);
+}	
 void Coordinates::reset()
 {
-	this->_latitude = 0.0;
-	this->_longitude = 0.0;
+	this->_latitudeDeg = 0.0;
+	this->_longitudeDeg = 0.0;
 }
 
 		

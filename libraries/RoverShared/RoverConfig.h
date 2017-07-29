@@ -73,10 +73,15 @@
 	#ifdef _ROVERNAVIGATIONDEFINITIONS
 		#define EARTHS_RADIUS_KM 6371//in KM, will need to use data type double, since it's a big number
 		#define EARTHS_RADIUS_M 6371000//will need to use data type double, since it's a big number
-		
+		#define TYPE_ACTUAL 1 //to select actual coordinates
+		#define TYPE_DESIRED 2 //to select desired coordinates
 	#endif	
 		
-		
+	//definition for RoverNavigation
+	#ifdef _ANGLEDEFINITIONS		
+		#define UNIT_DEGREES 1//to select degrees angles
+		#define UNIT_RADIANS 2//to select radian angles
+	#endif	
 
 		
 		

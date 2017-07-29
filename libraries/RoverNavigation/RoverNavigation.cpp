@@ -3,6 +3,8 @@
 
 RoverNavigation::RoverNavigation()
 {
+	this->_desiredCoordinates = new Coordinates();
+	this->_actualCoordinates = new Coordinates();
 }
 RoverNavigation::~RoverNavigation()
 {
@@ -10,83 +12,137 @@ RoverNavigation::~RoverNavigation()
 }
 void RoverNavigation::reset()
 {
-	//in degrees
-	this->_desiredLatitudeDeg = 0.0;
-	this->_desiredLongitudeDeg = 0.0;
-	this->_actualLatitudeDeg = 0.0;
-	this->_actualLongitudeDeg = 0.0;
-	//in radians
-	this->_desiredLatitudeRad = 0.0;
-	this->_desiredLongitudeRad = 0.0;
-	this->_actualLatitudeRad = 0.0;
-	this->_actualLongitudeRad = 0.0;
+	
+	this->_desiredCoordinates->reset();
+	this->_actualCoordinates->reset();
 	
 }
-void RoverNavigation::setDesiredLatitudeDeg(double degreesLatitude)
+void RoverNavigation::setLatitudeDeg(double degreesLatitude, byte type)
 {
-	//stores the desired latitude in degrees
-	this->_desiredLatitudeDeg = degreesLatitude;
-	//stores the desired latitude in radians
-	this->_desiredLatitudeRad = this->degToRad(this->_desiredLatitudeDeg);	
+	if( type == TYPE_ACTUAL)
+	{
+		//stores the actual latitude in degrees
+		this->_actualCoordinates->setLatitudeDeg(degreesLatitude);
+	}
+	else if (type == TYPE_DESIRED)
+	{
+		//stores the desired latitude in degrees
+		this->_desiredCoordinates->setLatitudeDeg(degreesLatitude);	
+	}
+	else
+	{
+		//do nothing since error, invalid type
+	}
+	
 }
-void RoverNavigation::setDesiredLongitudeDeg(double degreesLongitude)
+void RoverNavigation::setLongitudeDeg(double degreesLongitude, byte type)
 {	
-	//stores the desired longitude in degrees
-	this->_desiredLongitudeDeg = degreesLongitude;
-	//stores the desired longitude in radians
-	this->_desiredLongitudeRad = this->degToRad(this->_desiredLongitudeDeg);
+	if( type == TYPE_ACTUAL)
+	{		
+		//stores the desired longitude in degrees
+		this->_actualCoordinates->setLongitudeDeg(degreesLongitude);
+	}
+	else if (type == TYPE_DESIRED)
+	{
+		//stores the desired longitude in degrees
+		this->_desiredCoordinates->setLongitudeDeg(degreesLongitude);		
+	}
+	else
+	{
+		//do nothing since error, invalid type
+	}
 }
-void RoverNavigation::setActualLatitudeDeg(double degreesLatitude)
+void RoverNavigation::setPositionDeg(double degreesLatitude, double degreesLongitude, byte type)
 {
-	//stores the actual latitude in degrees
-	this->_actualLatitudeDeg = degreesLatitude;
-	//stores the actual latitude in radians
-	this->_actualLatitudeRad = this->degToRad(this->_actualLatitudeDeg);
-}
-void RoverNavigation::setActualLongitudeDeg(double degreesLongitude)
-{
-	//stores the actual longitude in degrees
-	this->_actualLongitudeDeg = degreesLongitude;
-	//stores the actual longitude in radians
-	this->_actualLongitudeRad = this->degToRad(this->_actualLongitudeDeg);
+	if( type == TYPE_ACTUAL || type == TYPE_DESIRED)
+	{		
+		this->setLatitudeDeg(degreesLatitude, type);
+		this->setLongitudeDeg(degreesLongitude, type);
+	}
+	else
+	{
+		//do nothing since error, invalid type
+	}
 }
 void RoverNavigation::setHeadingDeg(float heading)
 {
 	this->_measuredIMUHeading = heading;
 }
-double RoverNavigation::getDesiredLatitudeDeg()
+double RoverNavigation::getLatitude(byte type, byte unit)
 {
-	return this->_desiredLatitudeDeg;
+	if( unit == UNIT_DEGREES)
+	{
+		if( type == TYPE_ACTUAL)
+		{		
+			return this->_actualCoordinates->getLatitudeDeg();
+		}
+		else if (type == TYPE_DESIRED)
+		{
+			return this->_desiredCoordinates->getLatitudeDeg();		
+		}
+		else
+		{
+			//do nothing since error, invalid type
+		}
+	}
+	else if( unit == UNIT_RADIANS)
+	{
+		if( type == TYPE_ACTUAL)
+		{		
+			return this->_actualCoordinates->getLatitudeRad();
+		}
+		else if (type == TYPE_DESIRED)
+		{
+			return this->_desiredCoordinates->getLatitudeRad();		
+		}
+		else
+		{
+			//do nothing since error, invalid type
+		}
+	}
+	else
+	{
+		//do nothing since error, invalid type
+	}
 }
-double RoverNavigation::getDesiredLongitudeDeg()
+double RoverNavigation::getLongitude(byte type, byte unit)
 {
-	return this->_desiredLongitudeDeg;
+	if( unit == UNIT_DEGREES)
+	{
+		if( type == TYPE_ACTUAL)
+		{		
+			return this->_actualCoordinates->getLongitudeDeg();
+		}
+		else if (type == TYPE_DESIRED)
+		{
+			return this->_desiredCoordinates->getLongitudeDeg();		
+		}
+		else
+		{
+			//do nothing since error, invalid type
+		}
+	}
+	else if( unit == UNIT_RADIANS)
+	{
+		if( type == TYPE_ACTUAL)
+		{		
+			return this->_actualCoordinates->getLongitudeRad();
+		}
+		else if (type == TYPE_DESIRED)
+		{
+			return this->_desiredCoordinates->getLongitudeRad();		
+		}
+		else
+		{
+			//do nothing since error, invalid type
+		}
+	}
+	else
+	{
+		//do nothing since error, invalid type
+	}
 }
-double RoverNavigation::getActualLatitudeDeg()
-{
-	return this->_actualLatitudeDeg;
-}
-double RoverNavigation::getActualLongitudeDeg()
-{
-	return this->_actualLongitudeDeg;
-}
-double RoverNavigation::getDesiredLatitudeRad()
-{
-	return this->_desiredLatitudeRad;
-}
-double RoverNavigation::getDesiredLongitudeRad()
-{
-	return this->_desiredLongitudeRad;
-}
-double RoverNavigation::getActualLatitudeRad()
-{
-	return this->_actualLatitudeRad;
-}
-double RoverNavigation::getActualLongitudeRad()
-{
-	return this->_actualLongitudeRad;
-}
-double RoverNavigation::calculateDistance( float actualLatitudeRad, float actualLongitudeRad, float desiredLatitudeRad, float desiredLongitudeRad, byte unitType)
+double RoverNavigation::calculateDistance(Coordinates * actualCoordinates, Coordinates * desiredCoordinates, byte unitType)
 {
   
 	//Reference:
@@ -109,9 +165,12 @@ double RoverNavigation::calculateDistance( float actualLatitudeRad, float actual
   double varC;
   double distance;
      
-  deltaLatitudeRad =desiredLatitudeRad - actualLatitudeRad;  
-  deltaLongitudeRad = desiredLongitudeRad - actualLongitudeRad;  
-  varA = sin(deltaLatitudeRad/2) * sin(deltaLatitudeRad/2) + cos(actualLatitudeRad) * cos(desiredLatitudeRad) * sin(deltaLongitudeRad/2) * sin(deltaLongitudeRad/2);
+  //deltaLatitudeRad = desiredLatitudeRad - actualLatitudeRad;  
+  deltaLatitudeRad = desiredCoordinates->getLatitudeRad() - actualCoordinates->getLatitudeRad();  
+  //deltaLongitudeRad = desiredLongitudeRad - actualLongitudeRad;  
+  deltaLongitudeRad = desiredCoordinates->getLongitudeRad() - actualCoordinates->getLongitudeRad();  
+  //varA = sin(deltaLatitudeRad/2) * sin(deltaLatitudeRad/2) + cos(actualLatitudeRad) * cos(desiredLatitudeRad) * sin(deltaLongitudeRad/2) * sin(deltaLongitudeRad/2);
+  varA = sin(deltaLatitudeRad/2) * sin(deltaLatitudeRad/2) + cos(actualCoordinates->getLatitudeRad()) * cos(desiredCoordinates->getLatitudeRad()) * sin(deltaLongitudeRad/2) * sin(deltaLongitudeRad/2);
   varC = 2 * atan2( sqrt(varA), sqrt(1-varA) );
   
   
@@ -132,7 +191,7 @@ double RoverNavigation::calculateDistance( float actualLatitudeRad, float actual
   return distance;
 
 }
-float RoverNavigation::calculateTrueBearing(float actualLatitudeRad, float actualLongitudeRad, float desiredLatitudeRad, float desiredLongitudeRad)
+float RoverNavigation::calculateTrueBearing(Coordinates * actualCoordinates, Coordinates * desiredCoordinates)
 {
 		
 	//Reference:
@@ -153,10 +212,13 @@ float RoverNavigation::calculateTrueBearing(float actualLatitudeRad, float actua
 	double bearingRad = 0;
 	double bearingDegrees = 0;
 
-	y = sin(desiredLongitudeRad - actualLongitudeRad) * cos(desiredLatitudeRad);
-	x = cos(actualLatitudeRad)*sin(desiredLatitudeRad) - sin(actualLatitudeRad)*cos(desiredLatitudeRad)*cos(desiredLongitudeRad - actualLongitudeRad);
+	//y = sin(desiredLongitudeRad - actualLongitudeRad) * cos(desiredLatitudeRad);
+	y = sin(desiredCoordinates->getLongitudeRad() - actualCoordinates->getLongitudeRad()) * cos(desiredCoordinates->getLatitudeRad());
+	//x = cos(actualLatitudeRad)*sin(desiredLatitudeRad) - sin(actualLatitudeRad)*cos(desiredLatitudeRad)*cos(desiredLongitudeRad - actualLongitudeRad);
+	x = cos(actualCoordinates->getLatitudeRad())*sin(desiredCoordinates->getLatitudeRad()) - sin(actualCoordinates->getLatitudeRad())*cos(desiredCoordinates->getLatitudeRad())*cos(desiredCoordinates->getLongitudeRad() - actualCoordinates->getLongitudeRad());
+	
 	bearingRad = atan2(y,x);
-	bearingDegrees = fmod((this->radToDeg(bearingRad) + 360), 360);
+	bearingDegrees = fmod((Angles::radToDeg(bearingRad) + 360), 360);
 	
 	return bearingDegrees;
 	
@@ -213,8 +275,8 @@ float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing
 	
 	
 	//Normalize the angle in degrees to meet the range of 0 to 360 degrees
-	trueBearing = normalizeAngleDeg(trueBearing);
-	heading = normalizeAngleDeg(heading);
+	trueBearing = Angles::normalizeAngleDeg(trueBearing);
+	heading = Angles::normalizeAngleDeg(heading);
 	
 	
 	//Calculate the delta between the trueBearing (destination) and heading (origin)
@@ -240,12 +302,12 @@ float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing
 }
 double RoverNavigation::getDistance( byte unitType)
 {
-	return this->calculateDistance(  this->_actualLatitudeRad, this->_actualLongitudeRad, this->_desiredLatitudeRad, this->_desiredLongitudeRad, unitType);
+	return this->calculateDistance(this->_actualCoordinates, this->_desiredCoordinates, unitType);
 }
 float RoverNavigation::getTrueBearing()
 {
 	
-	return this->calculateTrueBearing(this->_actualLatitudeRad, this->_actualLongitudeRad, this->_desiredLatitudeRad, this->_desiredLongitudeRad);
+	return this->calculateTrueBearing(this->_actualCoordinates, this->_desiredCoordinates);
 	
 }
 float RoverNavigation::getRelativeBearing()
@@ -278,35 +340,6 @@ int RoverNavigation::getCalculatedMotorSteering()
 }
 
 
-float RoverNavigation::normalizeAngleDeg(float angleDeg)
-{
-	if( angleDeg >= 0 && angleDeg < 360 )
-	{
-		return angleDeg;
-	}
-	else if(angleDeg < 0)
-	{
-		angleDeg = angleDeg + 360;
-	}
-	else //angleDeg >= 360
-	{		
-		return fmod(angleDeg,360);
-	}
-}
-double RoverNavigation::degToRad(double degrees)
-{
-	return (degrees * M_PI) / 180;//returns radians
-}
-double RoverNavigation::radToDeg(double radians)
-{
-	return (radians * 180) / M_PI;//returns degrees
-}
-
-  
-
-
-
-  
   
   
   
