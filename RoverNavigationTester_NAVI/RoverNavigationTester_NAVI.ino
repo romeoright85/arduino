@@ -1,7 +1,5 @@
-//Used for AUXI - 2
 //Used for NAVI - 1
-//Used for COMM - 4
-//Used for MAIN - 3
+
 
 
 #include <RoverNavigation.h>

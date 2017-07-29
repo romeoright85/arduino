@@ -84,6 +84,7 @@ class RoverNavigation : public virtual RoverReset {
 public:
 	RoverNavigation();//constructor
 	~RoverNavigation();//destructor
+	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	
 	void setDesiredLatitudeDeg(double);
 	void setDesiredLongitudeDeg(double);
@@ -91,43 +92,41 @@ public:
 	void setActualLongitudeDeg(double);
 	void setHeadingDeg(float);
 	
-	
-	
-	
-	
-	
 	double getDesiredLatitudeDeg();
 	double getDesiredLongitudeDeg();
 	double getActualLatitudeDeg();
 	double getActualLongitudeDeg();
-	
+
 	double getDesiredLatitudeRad();
 	double getDesiredLongitudeRad();
 	double getActualLatitudeRad();
 	double getActualLongitudeRad();	
-	
-	
-	
-	double getDistance(byte);//(unit type) takes the object's currently set coordinates and returns distance in km or m based on unit type (i.e. UNIT_M or UNIT_KM). See RoverConfig for more details.
+		
 	double calculateDistance(float, float, float, float, byte);///(actual latitude in radians, actual Longitude in radians, desired Latitude in radians, desired Longitude in radians, unit type) returns distance in km or m based on unit type (i.e. UNIT_M or UNIT_KM). See RoverConfig for more details.
 	float calculateTrueBearing(float, float, float, float);//(actual latitude in radians, actual Longitude in radians, desired Latitude in radians, desired Longitude in radians) returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired latitude/longitude coordinates
-	float getTrueBearing();//takes the object's currently set coordinates and returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired latitude/longitude coordinates
 	float calculateRelativeBearing(float, float);//(heading of Rover in degrees: current angle i.e. from IMU, true bearing: destination angle) returns relative bearing in degrees
-	
-	
-	
-	
-	
-	
+		
+	double getDistance(byte);//(unit type) takes the object's currently set coordinates and returns distance in km or m based on unit type (i.e. UNIT_M or UNIT_KM). See RoverConfig for more details.
+	float getTrueBearing();//takes the object's currently set coordinates and returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired latitude/longitude coordinates
+		
 	
 	//WRITE ME
+	//create coordinates class and refactor code 12-1
+	//1-2
 	float getRelativeBearing();//takes the object's currently set heading and true bearing and returns relative bearing in degrees
+	//WRITE ME
+	//6-7
+	//add window of tolerance to stop
 	int getCalculatedMotorThrottle();//returns the ideal rover throttle (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
 		//Throttle: 180 max reverse, 90 stop, 0 max forward
+	//7-8
+	//WRITE ME
 	int getCalculatedMotorSteering();//takes the object's current relative bearing and returns the ideal rover steering (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
 		//Steering: 180 max right, 90 center,  0 max left
-	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	
+	
+	
+
 	
 	
 	

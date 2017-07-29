@@ -50,6 +50,10 @@ void RoverNavigation::setActualLongitudeDeg(double degreesLongitude)
 	//stores the actual longitude in radians
 	this->_actualLongitudeRad = this->degToRad(this->_actualLongitudeDeg);
 }
+void RoverNavigation::setHeadingDeg(float heading)
+{
+	this->_measuredIMUHeading = heading;
+}
 double RoverNavigation::getDesiredLatitudeDeg()
 {
 	return this->_desiredLatitudeDeg;
@@ -82,17 +86,6 @@ double RoverNavigation::getActualLongitudeRad()
 {
 	return this->_actualLongitudeRad;
 }
-
-
-
-
-
-double RoverNavigation::getDistance( byte unitType)
-{
-	return this->calculateDistance(  this->_actualLatitudeRad, this->_actualLongitudeRad, this->_desiredLatitudeRad, this->_desiredLongitudeRad, unitType);
-}
-
-
 double RoverNavigation::calculateDistance( float actualLatitudeRad, float actualLongitudeRad, float desiredLatitudeRad, float desiredLongitudeRad, byte unitType)
 {
   
@@ -139,47 +132,6 @@ double RoverNavigation::calculateDistance( float actualLatitudeRad, float actual
   return distance;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-double RoverNavigation::degToRad(double degrees)
-{
-	return (degrees * M_PI) / 180;//returns radians
-}
-
-
- double RoverNavigation::radToDeg(double radians)
-{
-	return (radians * 180) / M_PI;//returns degrees
-}
-
-  
-
-  
-  
-  
-  
-  
-
-float RoverNavigation::getTrueBearing()
-{
-	
-	return this->calculateTrueBearing(this->_actualLatitudeRad, this->_actualLongitudeRad, this->_desiredLatitudeRad, this->_desiredLongitudeRad);
-	
-}
-  
-
 float RoverNavigation::calculateTrueBearing(float actualLatitudeRad, float actualLongitudeRad, float desiredLatitudeRad, float desiredLongitudeRad)
 {
 		
@@ -209,23 +161,6 @@ float RoverNavigation::calculateTrueBearing(float actualLatitudeRad, float actua
 	return bearingDegrees;
 	
 }
-float RoverNavigation::normalizeAngleDeg(float angleDeg)
-{
-	if( angleDeg >= 0 && angleDeg < 360 )
-	{
-		return angleDeg;
-	}
-	else if(angleDeg < 0)
-	{
-		angleDeg = angleDeg + 360;
-	}
-	else //angleDeg >= 360
-	{		
-		return fmod(angleDeg,360);
-	}
-}
-
-
 float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing)
 {
 
@@ -303,21 +238,24 @@ float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing
 		
 	return relativeBearing;//returns the relative bearing of the rover to the destination
 }
-
-void RoverNavigation::setHeadingDeg(float heading)
+double RoverNavigation::getDistance( byte unitType)
 {
-	this->_measuredIMUHeading = heading;
+	return this->calculateDistance(  this->_actualLatitudeRad, this->_actualLongitudeRad, this->_desiredLatitudeRad, this->_desiredLongitudeRad, unitType);
+}
+float RoverNavigation::getTrueBearing()
+{
+	
+	return this->calculateTrueBearing(this->_actualLatitudeRad, this->_actualLongitudeRad, this->_desiredLatitudeRad, this->_desiredLongitudeRad);
+	
 }
 float RoverNavigation::getRelativeBearing()
 {
+	//FINISH WRITING ME!!	
 	//this->_measuredIMUHeading;
 	//float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing)
 	return 0.0;//debug
 	
 }
-
-
-
 int RoverNavigation::getCalculatedMotorThrottle()
 {
 //FINISH WRITING ME!!	
@@ -326,7 +264,6 @@ int RoverNavigation::getCalculatedMotorThrottle()
 	//ideal stop is 90
 	return throttle;//TEMP DEBUG VALUE
 }
-
 int RoverNavigation::getCalculatedMotorSteering()
 {
 //FINISH WRITING ME!!	
@@ -339,3 +276,53 @@ int RoverNavigation::getCalculatedMotorSteering()
 	//ideal center is 90
 	return steering;//TEMP DEBUG VALUE
 }
+
+
+float RoverNavigation::normalizeAngleDeg(float angleDeg)
+{
+	if( angleDeg >= 0 && angleDeg < 360 )
+	{
+		return angleDeg;
+	}
+	else if(angleDeg < 0)
+	{
+		angleDeg = angleDeg + 360;
+	}
+	else //angleDeg >= 360
+	{		
+		return fmod(angleDeg,360);
+	}
+}
+double RoverNavigation::degToRad(double degrees)
+{
+	return (degrees * M_PI) / 180;//returns radians
+}
+double RoverNavigation::radToDeg(double radians)
+{
+	return (radians * 180) / M_PI;//returns degrees
+}
+
+  
+
+
+
+  
+  
+  
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
