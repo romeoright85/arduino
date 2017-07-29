@@ -58,18 +58,29 @@ void loop() {
 	
 
 
-	Serial.println("========");
+	Serial.println(F("========"));
+	Serial.println(F("Desired Lat/Lon"));
 	Serial.println(roverNavigation->getDesiredLatitudeDeg(),4);//print with 4 decimals
 	Serial.println(roverNavigation->getDesiredLongitudeDeg(),4);//print with 4 decimals
-	Serial.println();
+	Serial.println(F("Actual Lat/Lon"));
 	Serial.println(roverNavigation->getActualLatitudeDeg(),4);//print with 4 decimals
 	Serial.println(roverNavigation->getActualLongitudeDeg(),4);//print with 4 decimals
-	Serial.println();
-	value = roverNavigation->calculateDistance(UNIT_M);
+	Serial.println(F("Distance"));
+	value = roverNavigation->getDistance(UNIT_M);
 	Serial.println(value,4);//print with 4 decimals
-	Serial.println();		
+	Serial.println(F("True Bearing"));
 	value = roverNavigation->getTrueBearing();
-	Serial.println(value, 4);//print with 4 decimals
+	Serial.println(value, 4);//print with 4 decimals	
+	
+	float heading = 0.0;//test value
+	Serial.println(F("Let Heading be:"));
+	Serial.println(heading);
+	Serial.println(F("Relative Bearing:"));
+	value = roverNavigation->calculateRelativeBearing(heading, roverNavigation->getTrueBearing());
+	Serial.println(value, 4);//print with 4 decimals	
+	
 	Serial.println();
+
+
 	delay(1000);
 }

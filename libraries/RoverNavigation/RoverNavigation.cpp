@@ -82,7 +82,18 @@ double RoverNavigation::getActualLongitudeRad()
 {
 	return this->_actualLongitudeRad;
 }
-double RoverNavigation::calculateDistance( byte unitType)
+
+
+
+
+
+double RoverNavigation::getDistance( byte unitType)
+{
+	return this->calculateDistance(  this->_actualLatitudeRad, this->_actualLongitudeRad, this->_desiredLatitudeRad, this->_desiredLongitudeRad, unitType);
+}
+
+
+double RoverNavigation::calculateDistance( float actualLatitudeRad, float actualLongitudeRad, float desiredLatitudeRad, float desiredLongitudeRad, byte unitType)
 {
   
 	//Reference:
@@ -104,11 +115,10 @@ double RoverNavigation::calculateDistance( byte unitType)
   double varA;
   double varC;
   double distance;
-  
-    
-  deltaLatitudeRad = this->_desiredLatitudeRad -  this->_actualLatitudeRad;
-  deltaLongitudeRad = this->_desiredLongitudeRad - this->_actualLongitudeRad;
-  varA = sin(deltaLatitudeRad/2) * sin(deltaLatitudeRad/2) + cos(this->_actualLatitudeRad) * cos(this->_desiredLatitudeRad) * sin(deltaLongitudeRad/2) * sin(deltaLongitudeRad/2);
+     
+  deltaLatitudeRad =desiredLatitudeRad - actualLatitudeRad;  
+  deltaLongitudeRad = desiredLongitudeRad - actualLongitudeRad;  
+  varA = sin(deltaLatitudeRad/2) * sin(deltaLatitudeRad/2) + cos(actualLatitudeRad) * cos(desiredLatitudeRad) * sin(deltaLongitudeRad/2) * sin(deltaLongitudeRad/2);
   varC = 2 * atan2( sqrt(varA), sqrt(1-varA) );
   
   
@@ -130,6 +140,19 @@ double RoverNavigation::calculateDistance( byte unitType)
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 double RoverNavigation::degToRad(double degrees)
 {
 	return (degrees * M_PI) / 180;//returns radians
@@ -148,10 +171,16 @@ double RoverNavigation::degToRad(double degrees)
   
   
   
-  
-  
 
 float RoverNavigation::getTrueBearing()
+{
+	
+	return this->calculateTrueBearing(this->_actualLatitudeRad, this->_actualLongitudeRad, this->_desiredLatitudeRad, this->_desiredLongitudeRad);
+	
+}
+  
+
+float RoverNavigation::calculateTrueBearing(float actualLatitudeRad, float actualLongitudeRad, float desiredLatitudeRad, float desiredLongitudeRad)
 {
 		
 	//Reference:
@@ -171,29 +200,124 @@ float RoverNavigation::getTrueBearing()
 	double y = 0;
 	double bearingRad = 0;
 	double bearingDegrees = 0;
-		
-	y = sin(this->_desiredLongitudeRad - this->_actualLongitudeRad) * cos(this->_desiredLatitudeRad);
-	x = cos(this->_actualLatitudeRad)*sin(this->_desiredLatitudeRad) - sin(this->_actualLatitudeRad)*cos(this->_desiredLatitudeRad)*cos(this->_desiredLongitudeRad-this->_actualLongitudeRad);
+
+	y = sin(desiredLongitudeRad - actualLongitudeRad) * cos(desiredLatitudeRad);
+	x = cos(actualLatitudeRad)*sin(desiredLatitudeRad) - sin(actualLatitudeRad)*cos(desiredLatitudeRad)*cos(desiredLongitudeRad - actualLongitudeRad);
 	bearingRad = atan2(y,x);
 	bearingDegrees = fmod((this->radToDeg(bearingRad) + 360), 360);
 	
 	return bearingDegrees;
 	
 }
+float RoverNavigation::normalizeAngleDeg(float angleDeg)
+{
+	if( angleDeg >= 0 && angleDeg < 360 )
+	{
+		return angleDeg;
+	}
+	else if(angleDeg < 0)
+	{
+		angleDeg = angleDeg + 360;
+	}
+	else //angleDeg >= 360
+	{		
+		return fmod(angleDeg,360);
+	}
+}
 
 
-
-float RoverNavigation::getRelativeBearing(float, float)
+float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing)
 {
 
-//FINISH WRITING ME!!
-
-
+/*
+	Sample test for calculateRelativeBearing()
+	
+	value = roverNavigation->calculateRelativeBearing(10, 20);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(20, 10);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(0, 180);
+	Serial.println(value, 4);//print with 4 decimals	
+	value = roverNavigation->calculateRelativeBearing(180, 0);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(45, 270);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(270, 45);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(10, 350);
+	Serial.println(value, 4);//print with 4 decimals	
+	value = roverNavigation->calculateRelativeBearing(350, 10);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(0, 355);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(355, 0);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(90, 270);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(270, 90);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(135, 225);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(225, 135);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(0, 135);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(135, 0);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(135, 270);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(270, 135);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(1, 190);
+	Serial.println(value, 4);//print with 4 decimals
+	value = roverNavigation->calculateRelativeBearing(190, 1);
+	Serial.println(value, 4);//print with 4 decimals
+*/
 
 	float relativeBearing = 0.0;
-
+	
+	
+	//Normalize the angle in degrees to meet the range of 0 to 360 degrees
+	trueBearing = normalizeAngleDeg(trueBearing);
+	heading = normalizeAngleDeg(heading);
+	
+	
+	//Calculate the delta between the trueBearing (destination) and heading (origin)
+	relativeBearing = trueBearing - heading;
+	
+	if(abs(relativeBearing) > 180)
+	{
+		if(trueBearing>heading)
+		{
+			relativeBearing = -1*(heading + 360 - trueBearing);
+		}
+		else //trueBearing < heading, since if trueBearing == heading then this cannot be true: abs(relativeBearing) > 180 
+		{
+			relativeBearing = trueBearing + 360 - heading;
+		}
+	}
+	else if(abs(relativeBearing) == 180)
+	{
+		relativeBearing = 180.0;//for -180 and +180, just make it 180
+	}
+		
 	return relativeBearing;//returns the relative bearing of the rover to the destination
 }
+
+void RoverNavigation::setHeadingDeg(float heading)
+{
+	this->_measuredIMUHeading = heading;
+}
+float RoverNavigation::getRelativeBearing()
+{
+	//this->_measuredIMUHeading;
+	//float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing)
+	return 0.0;//debug
+	
+}
+
+
+
 int RoverNavigation::getCalculatedMotorThrottle()
 {
 //FINISH WRITING ME!!	
@@ -202,9 +326,14 @@ int RoverNavigation::getCalculatedMotorThrottle()
 	//ideal stop is 90
 	return throttle;//TEMP DEBUG VALUE
 }
+
 int RoverNavigation::getCalculatedMotorSteering()
 {
 //FINISH WRITING ME!!	
+
+//when negative angle turn left, when positive angle turn right
+//range is between 0 to 180
+
 	int steering = MC_CENTER_POSITION_IDEAL;
 	
 	//ideal center is 90

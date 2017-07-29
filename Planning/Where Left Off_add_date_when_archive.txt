@@ -38,7 +38,29 @@ Where I left off
 	
 	
 	
+
+
+getRelativeBearing()
+
 	
+[NAH, use a different method]
+			if bearing > heading go one way, else go the other
+			but if delta(bearing and heading) is greater than 180 switch directions
+					
+							Heading in Degrees
+						D = destination
+						O = Origin
+
+
+						D < O and abs(D-O) > 180: turn right
+						D < O and abs(D-O) < 180: turn left
+						D > O and abs(D-O) > 180: turn left
+						D > O and abs(D-O) < 180: turn right
+						D = O: stop
+						D < O and abs(D-O) = 180: turn left or right
+						D > O and abs(D-O) = 180: turn left or right
+
+
 	
 	
 	
@@ -46,38 +68,25 @@ LEFT OFF HERE
 
 
 
-
-
-
-getRelativeBearing()
-
+create a coordinates class object to hold generic lat/long
 	
 	
 getCalculatedMotorSteering	
 
 
-if bearing > heading go one way, else go the other
-but if delta(bearing and heading) is greater than 180 switch directions
-		
-		
+		get actual degrees from compass
+calculate goal based on navigation bearing (from gps lat/lon)
+	i.e. compare the goal's with the compass bearing and control turning based on that
+calculate correction_angle
+correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
+
+	
 		
 		control turning/driving based on the goal's bearing
 		in the future, compare the goal's with the compass bearing and control turning based on that
 		add a tolerance for bearing and distance. when reached the tolerance window, center and stop and output a true boolean for done
 			add a tolerance window for bearing, use to control turn or straight, when straight, keep driving till distance tolerance
 				
-			Heading in Degrees
-			D = destination
-			O = Origin
-
-
-			D < O and abs(D-O) > 180: turn right
-			D < O and abs(D-O) < 180: turn left
-			D > O and abs(D-O) > 180: turn left
-			D > O and abs(D-O) < 180: turn right
-			D = O: stop
-			D < O and abs(D-O) = 180: turn left or right
-			D > O and abs(D-O) = 180: turn left or right
 
 	
 	
@@ -89,32 +98,28 @@ getCalculatedMotorThrottle
 	check the results
 
 	
+	SUN:
 	
 	
-	
-=================1.5 weekends===================			
-	
-	then create a test class with rovergps, navigation class, and waypoint class
-	hook up gps to an arduino
-	walk outside and see if it tells me the right bearing, rover turn action, and distance
-	
-
-
-write test code
-simulate compass and gps data
-
-get actual degrees from compass
-calculate goal based on navigation bearing (from gps lat/lon)
-	i.e. compare the goal's with the compass bearing and control turning based on that
-calculate correction_angle
-correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
-servo.write(correction_angle)
-	
-
-		Calibrate the compass on the rover
+	Calibrate the compass on the rover
 	https://sites.google.com/site/wayneholder/self-driving-rc-car/calibrating-the-compass	
 	
 			
+			
+	
+	
+=================1 weekend===================			
+	
+	then create a test class with rovergps, navigation class
+	hook up gps to an arduino
+	walk outside and see if it tells me the right bearing, rover turn action, and distance
+	
+	[NAH, no time] simulate compass and gps data
+
+
+servo.write(correction_angle)
+	
+
 
 				
 
