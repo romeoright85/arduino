@@ -48,21 +48,21 @@ void loop() {
 
 	double value = 0.0;
 
-	roverNavigation->setDesiredLatitudeDeg(39.268603);
-	roverNavigation->setDesiredLongitudeDeg(-76.611702);
-	roverNavigation->setActualLatitudeDeg(39.268761);
-	roverNavigation->setActualLongitudeDeg(-76.606402);
+	roverNavigation->setLatitudeDeg(39.268603, TYPE_DESIRED);
+	roverNavigation->setLongitudeDeg(-76.611702, TYPE_DESIRED);
+	roverNavigation->setLatitudeDeg(39.268761, TYPE_ACTUAL);
+	roverNavigation->setLongitudeDeg(-76.606402, TYPE_ACTUAL);
 	
 	
 
 
 	Serial.println(F("========"));
 	Serial.println(F("Desired Lat/Lon"));
-	Serial.println(roverNavigation->getDesiredLatitudeDeg(),4);//print with 4 decimals
-	Serial.println(roverNavigation->getDesiredLongitudeDeg(),4);//print with 4 decimals
+	Serial.println(roverNavigation->getLatitude(TYPE_DESIRED, UNIT_DEGREES),4);//print with 4 decimals
+	Serial.println(roverNavigation->getLongitude(TYPE_DESIRED, UNIT_DEGREES),4);//print with 4 decimals
 	Serial.println(F("Actual Lat/Lon"));
-	Serial.println(roverNavigation->getActualLatitudeDeg(),4);//print with 4 decimals
-	Serial.println(roverNavigation->getActualLongitudeDeg(),4);//print with 4 decimals
+	Serial.println(roverNavigation->getLatitude(TYPE_ACTUAL, UNIT_DEGREES),4);//print with 4 decimals
+	Serial.println(roverNavigation->getLongitude(TYPE_ACTUAL, UNIT_DEGREES),4);//print with 4 decimals
 	Serial.println(F("Distance"));
 	value = roverNavigation->getDistance(UNIT_M);
 	Serial.println(value,4);//print with 4 decimals

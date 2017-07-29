@@ -61,44 +61,50 @@ getRelativeBearing()
 						D > O and abs(D-O) = 180: turn left or right
 
 
+						
+						
+create a coordinates class object to hold generic lat/long
+	
 	
 	
 	
 LEFT OFF HERE
 
+SAT:
+refactor code with coordinates class
 
 
-create a coordinates class object to hold generic lat/long
+
+
+SUN:
 	
-	
-getCalculatedMotorSteering	
+	getCalculatedMotorSteering	
 
 
-		get actual degrees from compass
-calculate goal based on navigation bearing (from gps lat/lon)
-	i.e. compare the goal's with the compass bearing and control turning based on that
-calculate correction_angle
-correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
+			get actual degrees from compass
+	calculate goal based on navigation bearing (from gps lat/lon)
+		i.e. compare the goal's with the compass bearing and control turning based on that
+	calculate correction_angle
+	correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
 
-	
 		
-		control turning/driving based on the goal's bearing
-		in the future, compare the goal's with the compass bearing and control turning based on that
-		add a tolerance for bearing and distance. when reached the tolerance window, center and stop and output a true boolean for done
-			add a tolerance window for bearing, use to control turn or straight, when straight, keep driving till distance tolerance
-				
+			
+			control turning/driving based on the goal's bearing
+			in the future, compare the goal's with the compass bearing and control turning based on that
+			add a tolerance for bearing and distance. when reached the tolerance window, center and stop and output a true boolean for done
+				add a tolerance window for bearing, use to control turn or straight, when straight, keep driving till distance tolerance
 
-	
-	
-getCalculatedMotorThrottle	
-		add a tolerance window for distance, turn to control go or stop. when stop, it's done.
 		
-		
+	getCalculatedMotorThrottle	
+			add a tolerance window for distance, turn to control go or stop. when stop, it's done.
+			
+
+
+
+			
 	write test code to see if it works
 	check the results
 
-	
-	SUN:
 	
 	
 	Calibrate the compass on the rover
