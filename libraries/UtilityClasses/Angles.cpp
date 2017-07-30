@@ -9,7 +9,7 @@ Angles::~Angles()
 {
 	//do nothing
 }
-float Angles::normalizeAngleDeg(float angleDeg)
+double Angles::normalizeAngleDeg(double angleDeg)
 {
 	if( angleDeg >= 0 && angleDeg < 360 )
 	{

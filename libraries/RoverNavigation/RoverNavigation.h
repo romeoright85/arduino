@@ -11,6 +11,36 @@
 
 
 /*
+Use Instructions:
+Step 1)
+For both actual and desired coordinates:
+	setLatitudeDeg
+	setLongitudeDeg
+	or
+	setPositionDeg
+Step 2)
+setHeadingDeg
+Step 3)
+getDistance
+or
+getTrueBearing
+or
+getRelativeBearing
+or
+getCalculatedMotorSteering
+or
+getCalculatedMotorThrottle
+*Step 4)
+hasReachedDestination
+
+Note:
+
+Step 1 and 2 are required before running anything from step 3.
+*Step 4 can only be ran after getCalculatedMotorThrottle() is ran since that's where the distance is calculated and compared to the acceptable tolerance window
+
+
+--------------------------
+
 
 This class takes in a desired waypoint and an actual waypoint from the GPS sensor in the decimal degrees format,
 then it calculates the relative bearing and distance
@@ -92,32 +122,31 @@ public:
 	void setLatitudeDeg(double, byte);//(latitude in degrees, type: TYPE_ACTUAL, TYPE_DESIRED)
 	void setLongitudeDeg(double, byte);//(longitude in degrees, type: TYPE_ACTUAL, TYPE_DESIRED)
 	void setPositionDeg(double, double, byte);//(latitude in degrees, longitude in degrees, type: TYPE_ACTUAL, TYPE_DESIRED)
-	void setHeadingDeg(float);//heading in degrees
+	void setHeadingDeg(double);//heading in degrees
 	
 	double getLatitude(byte, byte);//(type: TYPE_ACTUAL, TYPE_DESIRED, unit: UNIT_DEGREES, UNIT_RADIANS) returns latitude in desired type and requested unit
 	double getLongitude(byte, byte);//(type: TYPE_ACTUAL, TYPE_DESIRED, unit: UNIT_DEGREES, UNIT_RADIANS) returns longitude in desired type and requested unit
-		
+	double getHeading(byte);//(unit: UNIT_DEGREES, UNIT_RADIANS) returns heading in requested unit
+	
+	
 	double calculateDistance(Coordinates *, Coordinates *, byte);//(actual coordinates, desired coordinates, unit type: UNIT_M or UNIT_KM) returns distance in km or m based on unit type. See RoverConfig for more details.
-	float calculateTrueBearing(Coordinates *, Coordinates *);//(actual coordinates, desired coordinates) returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired coordinates
-	float calculateRelativeBearing(float, float);//(heading of Rover in degrees: current angle i.e. from IMU, true bearing: destination angle) returns relative bearing in degrees
+	double calculateTrueBearing(Coordinates *, Coordinates *);//(actual coordinates, desired coordinates) returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired coordinates
+	double calculateRelativeBearing(double, double);//(heading of Rover in degrees: current angle i.e. from IMU, true bearing: destination angle) returns relative bearing in degrees
 		
 	double getDistance(byte);//(unit type) takes the object's currently set coordinates and returns distance in km or m based on unit type (i.e. UNIT_M or UNIT_KM). See RoverConfig for more details.
-	float getTrueBearing();//takes the object's currently set coordinates and returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired latitude/longitude coordinates
-		
-	
-	//WRITE ME
-	//create coordinates class and refactor code 12-1
-	//1-2
-	float getRelativeBearing();//takes the object's currently set heading and true bearing and returns relative bearing in degrees
-	//WRITE ME
-	//6-7
-	//add window of tolerance to stop
-	int getCalculatedMotorThrottle();//returns the ideal rover throttle (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
-		//Throttle: 180 max reverse, 90 stop, 0 max forward
-	//7-8
-	//WRITE ME
+	double getTrueBearing();//takes the object's currently set coordinates and returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired latitude/longitude coordinates
+	double getRelativeBearing();//takes the object's currently set heading and true bearing and returns relative bearing in degrees
 	int getCalculatedMotorSteering();//takes the object's current relative bearing and returns the ideal rover steering (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
-		//Steering: 180 max right, 90 center,  0 max left
+	//Steering Number Range: 180 max right, 90 center,  0 max left
+	
+
+
+
+
+	//WRITE ME
+	int getCalculatedMotorThrottle();//returns the ideal rover throttle (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
+		//Throttle Number Range: 180 max reverse, 90 stop, 0 max forward
+	boolean hasReachedDestination();//returns true if the destination is reached (i.e. the distance is within a set limit, see RoverConfig.h). Else it returns false.
 	
 	
 	
@@ -138,7 +167,9 @@ private:
 	//SW Resettable
 		
 	
-	float _measuredIMUHeading = 0.0;	
+	double _measuredIMUHeadingDeg = 0.0;	
+	boolean _destinationReached = false;
+	
 };
 
 #endif 

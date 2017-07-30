@@ -75,6 +75,15 @@
 		#define EARTHS_RADIUS_M 6371000//will need to use data type double, since it's a big number
 		#define TYPE_ACTUAL 1 //to select actual coordinates
 		#define TYPE_DESIRED 2 //to select desired coordinates
+		#define RB_LOWLIMIT -8//relative bearing straight (center servo) criteria low limit
+		#define RB_HIGHLIMIT 8//relative bearing straight (center servo) criteria high limit
+		#define POSANGLE_THRESHOLD 90//the angle (in degrees) when a sharp turn should be made (vs. a regular wide turn)
+		#define NEGANGLE_THRESHOLD -90//the angle (in degrees) when a sharp turn should be made (vs. a regular wide turn)
+		#define MAXANGLE_THRESHOLD 180//the angle (in degrees) when a sharp u-turn should be made (vs. a regular wide turn)
+
+		
+		
+		
 	#endif	
 		
 	//definition for RoverNavigation
@@ -319,8 +328,12 @@
 		#define MC_CENTER_POSITION_IDEAL		90		
 		
 		//Steering
-		#define MC_MAX_RIGHT_POSITION_IDEAL		180		
-		#define MC_CENTER_POSITION_IDEAL		90
+		#define MC_MAX_RIGHT_POSITION_IDEAL		180				
+		#define MC_SHARP_RIGHT_POSITION_IDEAL		150		
+		#define MC_WIDE_RIGHT_POSITION_IDEAL		120	
+		#define MC_CENTER_POSITION_IDEAL		90			
+		#define MC_WIDE_LEFT_POSITION_IDEAL		60
+		#define MC_SHARP_LEFT_POSITION_IDEAL		30
 		#define MC_MAX_LEFT_POSITION_IDEAL		0
 		//Throttle		
 		#define MC_MAX_FWD_THROTTLE_IDEAL 0

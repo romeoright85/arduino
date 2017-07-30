@@ -15,6 +15,8 @@ void RoverNavigation::reset()
 	
 	this->_desiredCoordinates->reset();
 	this->_actualCoordinates->reset();
+	this->_measuredIMUHeadingDeg = 0.0;	
+	this->boolean _destinationReached = false;
 	
 }
 void RoverNavigation::setLatitudeDeg(double degreesLatitude, byte type)
@@ -64,9 +66,9 @@ void RoverNavigation::setPositionDeg(double degreesLatitude, double degreesLongi
 		//do nothing since error, invalid type
 	}
 }
-void RoverNavigation::setHeadingDeg(float heading)
+void RoverNavigation::setHeadingDeg(double heading)
 {
-	this->_measuredIMUHeading = heading;
+	this->_measuredIMUHeadingDeg = heading;
 }
 double RoverNavigation::getLatitude(byte type, byte unit)
 {
@@ -142,6 +144,22 @@ double RoverNavigation::getLongitude(byte type, byte unit)
 		//do nothing since error, invalid type
 	}
 }
+double RoverNavigation::getHeading(byte unit)
+{
+	if( unit == UNIT_DEGREES)
+	{
+		return this->_measuredIMUHeadingDeg;
+	}
+	else if( unit == UNIT_RADIANS)
+	{
+		return Angles::degToRad(this->_measuredIMUHeadingDeg);
+	}
+	else
+	{
+		//do nothing since error, invalid type
+	}
+}
+
 double RoverNavigation::calculateDistance(Coordinates * actualCoordinates, Coordinates * desiredCoordinates, byte unitType)
 {
   
@@ -191,7 +209,7 @@ double RoverNavigation::calculateDistance(Coordinates * actualCoordinates, Coord
   return distance;
 
 }
-float RoverNavigation::calculateTrueBearing(Coordinates * actualCoordinates, Coordinates * desiredCoordinates)
+double RoverNavigation::calculateTrueBearing(Coordinates * actualCoordinates, Coordinates * desiredCoordinates)
 {
 		
 	//Reference:
@@ -223,7 +241,7 @@ float RoverNavigation::calculateTrueBearing(Coordinates * actualCoordinates, Coo
 	return bearingDegrees;
 	
 }
-float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing)
+double RoverNavigation::calculateRelativeBearing(double heading, double trueBearing)
 {
 
 /*
@@ -271,7 +289,7 @@ float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing
 	Serial.println(value, 4);//print with 4 decimals
 */
 
-	float relativeBearing = 0.0;
+	double relativeBearing = 0.0;
 	
 	
 	//Normalize the angle in degrees to meet the range of 0 to 360 degrees
@@ -282,6 +300,7 @@ float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing
 	//Calculate the delta between the trueBearing (destination) and heading (origin)
 	relativeBearing = trueBearing - heading;
 	
+	//When the bearing is greater than 180, adjustments have to be made to keep it in the range of -180 <= relative baring <= 180
 	if(abs(relativeBearing) > 180)
 	{
 		if(trueBearing>heading)
@@ -293,10 +312,7 @@ float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing
 			relativeBearing = trueBearing + 360 - heading;
 		}
 	}
-	else if(abs(relativeBearing) == 180)
-	{
-		relativeBearing = 180.0;//for -180 and +180, just make it 180
-	}
+
 		
 	return relativeBearing;//returns the relative bearing of the rover to the destination
 }
@@ -304,58 +320,81 @@ double RoverNavigation::getDistance( byte unitType)
 {
 	return this->calculateDistance(this->_actualCoordinates, this->_desiredCoordinates, unitType);
 }
-float RoverNavigation::getTrueBearing()
+double RoverNavigation::getTrueBearing()
 {
-	
 	return this->calculateTrueBearing(this->_actualCoordinates, this->_desiredCoordinates);
-	
 }
-float RoverNavigation::getRelativeBearing()
+double RoverNavigation::getRelativeBearing()
+{		
+	return calculateRelativeBearing(this->_measuredIMUHeadingDeg, this->getTrueBearing());
+}
+int RoverNavigation::getCalculatedMotorSteering()
 {
-	//FINISH WRITING ME!!	
-	//this->_measuredIMUHeading;
-	//float RoverNavigation::calculateRelativeBearing(float heading, float trueBearing)
-	return 0.0;//debug
+	int relativeBearingDeg = 0;
+	int steering = MC_CENTER_POSITION_IDEAL;//Note: ideal center is 90
 	
+	//fit the relative bearing into the range of -180 < relative bearing <= 180
+	//round the relative bearing (up or down depending on the value), then convert to int to drop the decimal places
+	relativeBearingDeg = (int) round(this->getRelativeBearing());
+
+	
+	
+	//if RB_LOWLIMIT < relative bearing < RB_HIGHLIMIT: go straight (where RB means relative bearing and the high and low limits create a window of tolerance)
+	if( RB_LOWLIMIT < relativeBearingDeg && relativeBearingDeg < RB_HIGHLIMIT )
+	{
+		//go straight
+		steering = MC_CENTER_POSITION_IDEAL;
+	}
+	//else if NEGANGLE_THRESHOLD <= relative bearing <= RB_LOWLIMIT
+	//where NEGANGLE_THRESHOLD can be -90
+	else if(NEGANGLE_THRESHOLD <= relativeBearingDeg && relativeBearingDeg <= RB_LOWLIMIT)
+	{
+		//wide turn left
+		steering = MC_WIDE_LEFT_POSITION_IDEAL;
+	}
+	//else if relative bearing < NEGANGLE_THRESHOLD (implied: -180 < relative bearing)
+	else if(relativeBearingDeg < NEGANGLE_THRESHOLD)
+	{
+		//sharp turn left
+		steering = MC_SHARP_LEFT_POSITION_IDEAL;
+	}
+	//else if RB_HIGHLIMIT <= relative bearing <= POSANGLE_THRESHOLD
+	//	where POSANGLE_THRESHOLD can be 90
+	else if(RB_HIGHLIMIT <= relativeBearingDeg && relativeBearingDeg <= POSANGLE_THRESHOLD)
+	{
+		//wide turn right
+		steering = MC_WIDE_RIGHT_POSITION_IDEAL;
+	}
+	//else if relative bearing > POSANGLE_THRESHOLD (implied: relative bearing < 180)
+	else if(relativeBearingDeg > POSANGLE_THRESHOLD)
+	{
+		//sharp turn right
+		steering = MC_SHARP_RIGHT_POSITION_IDEAL;
+	}	
+	//if abs(relative bearing) = MAXANGLE_THRESHOLD turn full right (could be left or right, but chose right arbitrarily to be default)
+	//	where MAXANGLE_THRESHOLD should be 180, so it coveres 180 and -180 when abs() is used
+	else if( abs(relativeBearingDeg) == MAXANGLE_THRESHOLD )
+	{
+		//sharp turn right
+		steering = MC_SHARP_RIGHT_POSITION_IDEAL;
+	}
+	else
+	{
+		//do nothing, error since undefined state
+	}
+	return steering;	
 }
+
+
 int RoverNavigation::getCalculatedMotorThrottle()
 {
 //FINISH WRITING ME!!	
 	int throttle = MC_NO_THROTTLE_IDEAL;
-	
+	this->_destinationReached = false;//debug
 	//ideal stop is 90
 	return throttle;//TEMP DEBUG VALUE
 }
-int RoverNavigation::getCalculatedMotorSteering()
+boolean RoverNavigation::hasReachedDestination()
 {
-//FINISH WRITING ME!!	
-
-//when negative angle turn left, when positive angle turn right
-//range is between 0 to 180
-
-	int steering = MC_CENTER_POSITION_IDEAL;
-	
-	//ideal center is 90
-	return steering;//TEMP DEBUG VALUE
+	return this->_destinationReached;
 }
-
-
-  
-  
-  
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-

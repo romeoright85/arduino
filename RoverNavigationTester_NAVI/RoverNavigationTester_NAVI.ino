@@ -52,9 +52,9 @@ void loop() {
 	roverNavigation->setLongitudeDeg(-76.611702, TYPE_DESIRED);
 	roverNavigation->setLatitudeDeg(39.268761, TYPE_ACTUAL);
 	roverNavigation->setLongitudeDeg(-76.606402, TYPE_ACTUAL);
-	
-	
+	roverNavigation->setHeadingDeg(4.28);
 
+	///*
 
 	Serial.println(F("========"));
 	Serial.println(F("Desired Lat/Lon"));
@@ -63,6 +63,10 @@ void loop() {
 	Serial.println(F("Actual Lat/Lon"));
 	Serial.println(roverNavigation->getLatitude(TYPE_ACTUAL, UNIT_DEGREES),4);//print with 4 decimals
 	Serial.println(roverNavigation->getLongitude(TYPE_ACTUAL, UNIT_DEGREES),4);//print with 4 decimals
+	Serial.println(F("Rover Heading"));
+	Serial.println(roverNavigation->getHeading(UNIT_DEGREES),4);//print with 4 decimals
+
+															
 	Serial.println(F("Distance"));
 	value = roverNavigation->getDistance(UNIT_M);
 	Serial.println(value,4);//print with 4 decimals
@@ -70,15 +74,20 @@ void loop() {
 	value = roverNavigation->getTrueBearing();
 	Serial.println(value, 4);//print with 4 decimals	
 	
-	float heading = 0.0;//test value
+	double heading = 0.0;//test value
 	Serial.println(F("Let Heading be:"));
-	Serial.println(heading);
+	roverNavigation->setHeadingDeg(heading);
+	Serial.println(heading);	
 	Serial.println(F("Relative Bearing:"));
-	value = roverNavigation->calculateRelativeBearing(heading, roverNavigation->getTrueBearing());
+	value = roverNavigation->getRelativeBearing();
+	Serial.println(value, 4);//print with 4 decimals	
+	//*/	
+	Serial.println(F("Get Motor Steering:"));
+	value = roverNavigation->getCalculatedMotorSteering();
 	Serial.println(value, 4);//print with 4 decimals	
 	
+
 	Serial.println();
-
-
+	
 	delay(1000);
 }

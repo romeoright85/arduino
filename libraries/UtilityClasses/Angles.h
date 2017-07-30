@@ -11,7 +11,7 @@ class Angles : public virtual RoverReset {
 public:
 	Angles();//constructor
 	~Angles();//destructor
-	static float normalizeAngleDeg(float);//keeps the degrees angle from 0-359 degrees
+	static double normalizeAngleDeg(double);//keeps the degrees angle from 0-359 degrees
 	static double degToRad(double);//(degrees) returns results in radians
 	static double radToDeg(double);//(radians) returns results in degrees
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
