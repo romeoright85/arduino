@@ -16,7 +16,7 @@ void RoverNavigation::reset()
 	this->_desiredCoordinates->reset();
 	this->_actualCoordinates->reset();
 	this->_measuredIMUHeadingDeg = 0.0;	
-	this->boolean _destinationReached = false;
+	this->_destinationReached = false;
 	
 }
 void RoverNavigation::setLatitudeDeg(double degreesLatitude, byte type)
@@ -25,16 +25,16 @@ void RoverNavigation::setLatitudeDeg(double degreesLatitude, byte type)
 	{
 		//stores the actual latitude in degrees
 		this->_actualCoordinates->setLatitudeDeg(degreesLatitude);
-	}
+	}//end if
 	else if (type == TYPE_DESIRED)
 	{
 		//stores the desired latitude in degrees
 		this->_desiredCoordinates->setLatitudeDeg(degreesLatitude);	
-	}
+	}//end else if
 	else
 	{
 		//do nothing since error, invalid type
-	}
+	}//end else
 	
 }
 void RoverNavigation::setLongitudeDeg(double degreesLongitude, byte type)
@@ -43,16 +43,16 @@ void RoverNavigation::setLongitudeDeg(double degreesLongitude, byte type)
 	{		
 		//stores the desired longitude in degrees
 		this->_actualCoordinates->setLongitudeDeg(degreesLongitude);
-	}
+	}//end if
 	else if (type == TYPE_DESIRED)
 	{
 		//stores the desired longitude in degrees
 		this->_desiredCoordinates->setLongitudeDeg(degreesLongitude);		
-	}
+	}//end else if
 	else
 	{
 		//do nothing since error, invalid type
-	}
+	}//end else
 }
 void RoverNavigation::setPositionDeg(double degreesLatitude, double degreesLongitude, byte type)
 {
@@ -60,11 +60,11 @@ void RoverNavigation::setPositionDeg(double degreesLatitude, double degreesLongi
 	{		
 		this->setLatitudeDeg(degreesLatitude, type);
 		this->setLongitudeDeg(degreesLongitude, type);
-	}
+	}//end if
 	else
 	{
 		//do nothing since error, invalid type
-	}
+	}//end else
 }
 void RoverNavigation::setHeadingDeg(double heading)
 {
@@ -77,35 +77,35 @@ double RoverNavigation::getLatitude(byte type, byte unit)
 		if( type == TYPE_ACTUAL)
 		{		
 			return this->_actualCoordinates->getLatitudeDeg();
-		}
+		}//end if
 		else if (type == TYPE_DESIRED)
 		{
 			return this->_desiredCoordinates->getLatitudeDeg();		
-		}
+		}//end else if
 		else
 		{
 			//do nothing since error, invalid type
-		}
-	}
+		}//end else
+	}//end if
 	else if( unit == UNIT_RADIANS)
 	{
 		if( type == TYPE_ACTUAL)
 		{		
 			return this->_actualCoordinates->getLatitudeRad();
-		}
+		}//end if
 		else if (type == TYPE_DESIRED)
 		{
 			return this->_desiredCoordinates->getLatitudeRad();		
-		}
+		}//end else if
 		else
 		{
 			//do nothing since error, invalid type
-		}
+		}//end else
 	}
 	else
 	{
 		//do nothing since error, invalid type
-	}
+	}//end else
 }
 double RoverNavigation::getLongitude(byte type, byte unit)
 {
@@ -118,46 +118,46 @@ double RoverNavigation::getLongitude(byte type, byte unit)
 		else if (type == TYPE_DESIRED)
 		{
 			return this->_desiredCoordinates->getLongitudeDeg();		
-		}
+		}//end else if
 		else
 		{
 			//do nothing since error, invalid type
-		}
-	}
+		}//end else
+	}//end if
 	else if( unit == UNIT_RADIANS)
 	{
 		if( type == TYPE_ACTUAL)
 		{		
 			return this->_actualCoordinates->getLongitudeRad();
-		}
+		}//end if
 		else if (type == TYPE_DESIRED)
 		{
 			return this->_desiredCoordinates->getLongitudeRad();		
-		}
+		}//end else if
 		else
 		{
 			//do nothing since error, invalid type
-		}
+		}//end else
 	}
 	else
 	{
 		//do nothing since error, invalid type
-	}
+	}//end else
 }
 double RoverNavigation::getHeading(byte unit)
 {
 	if( unit == UNIT_DEGREES)
 	{
 		return this->_measuredIMUHeadingDeg;
-	}
+	}//end if
 	else if( unit == UNIT_RADIANS)
 	{
 		return Angles::degToRad(this->_measuredIMUHeadingDeg);
-	}
+	}//end else if
 	else
 	{
 		//do nothing since error, invalid type
-	}
+	}//end else
 }
 
 double RoverNavigation::calculateDistance(Coordinates * actualCoordinates, Coordinates * desiredCoordinates, byte unitType)
@@ -181,7 +181,7 @@ double RoverNavigation::calculateDistance(Coordinates * actualCoordinates, Coord
   
   double varA;
   double varC;
-  double distance;
+  double distance;//max value is 3.4028235E+38, the max positive value of double
      
   //deltaLatitudeRad = desiredLatitudeRad - actualLatitudeRad;  
   deltaLatitudeRad = desiredCoordinates->getLatitudeRad() - actualCoordinates->getLatitudeRad();  
@@ -195,16 +195,16 @@ double RoverNavigation::calculateDistance(Coordinates * actualCoordinates, Coord
   if(unitType == UNIT_M)
   {
 	  distance = EARTHS_RADIUS_M * varC;//in m
-  }
+  }//end if
   else if(unitType == UNIT_KM)
   {
 	  distance = EARTHS_RADIUS_KM * varC;//in km
-  }
+  }//end else if
   else//error unknown state
   {
 	  
 	  distance = 0.0;
-  }
+  }//end else
   
   return distance;
 
@@ -306,14 +306,12 @@ double RoverNavigation::calculateRelativeBearing(double heading, double trueBear
 		if(trueBearing>heading)
 		{
 			relativeBearing = -1*(heading + 360 - trueBearing);
-		}
+		}//end if
 		else //trueBearing < heading, since if trueBearing == heading then this cannot be true: abs(relativeBearing) > 180 
 		{
 			relativeBearing = trueBearing + 360 - heading;
-		}
-	}
-
-		
+		}//end else
+	}//end if	
 	return relativeBearing;//returns the relative bearing of the rover to the destination
 }
 double RoverNavigation::getDistance( byte unitType)
@@ -329,70 +327,101 @@ double RoverNavigation::getRelativeBearing()
 	return calculateRelativeBearing(this->_measuredIMUHeadingDeg, this->getTrueBearing());
 }
 int RoverNavigation::getCalculatedMotorSteering()
-{
-	int relativeBearingDeg = 0;
+{	
+	int relativeBearingDeg = 0;//range is -180 to 180
 	int steering = MC_CENTER_POSITION_IDEAL;//Note: ideal center is 90
 	
 	//fit the relative bearing into the range of -180 < relative bearing <= 180
 	//round the relative bearing (up or down depending on the value), then convert to int to drop the decimal places
 	relativeBearingDeg = (int) round(this->getRelativeBearing());
-
-	
-	
+		
+	//if abs(relative bearing) = MAXANGLE_THRESHOLD turn full right (could be left or right, but chose right arbitrarily to be default)
+	//	where MAXANGLE_THRESHOLD should be 180, so it covers 180 and -180 when abs() is used
+	//Note: Put this condition at the top so it supercedes all others. i.e. relativeBearingDeg < NEGANGLE_THRESHOLD or relativeBearingDeg > POSANGLE_THRESHOLD
+	if( abs(relativeBearingDeg) == MAXANGLE_THRESHOLD )
+	{
+		//sharp turn right
+		steering = MC_SHARP_RIGHT_POSITION_IDEAL;
+	}//end if
 	//if RB_LOWLIMIT < relative bearing < RB_HIGHLIMIT: go straight (where RB means relative bearing and the high and low limits create a window of tolerance)
-	if( RB_LOWLIMIT < relativeBearingDeg && relativeBearingDeg < RB_HIGHLIMIT )
+	else if( RB_LOWLIMIT < relativeBearingDeg && relativeBearingDeg < RB_HIGHLIMIT )
 	{
 		//go straight
 		steering = MC_CENTER_POSITION_IDEAL;
-	}
+	}//end else if
 	//else if NEGANGLE_THRESHOLD <= relative bearing <= RB_LOWLIMIT
 	//where NEGANGLE_THRESHOLD can be -90
 	else if(NEGANGLE_THRESHOLD <= relativeBearingDeg && relativeBearingDeg <= RB_LOWLIMIT)
 	{
 		//wide turn left
 		steering = MC_WIDE_LEFT_POSITION_IDEAL;
-	}
-	//else if relative bearing < NEGANGLE_THRESHOLD (implied: -180 < relative bearing)
+	}//end else if
+	//else if relative bearing < NEGANGLE_THRESHOLD (implied: -180 < relative bearing, since the condition abs(relativeBearingDeg) == MAXANGLE_THRESHOLD was checked already)
 	else if(relativeBearingDeg < NEGANGLE_THRESHOLD)
 	{
 		//sharp turn left
 		steering = MC_SHARP_LEFT_POSITION_IDEAL;
-	}
+	}//end else if
 	//else if RB_HIGHLIMIT <= relative bearing <= POSANGLE_THRESHOLD
 	//	where POSANGLE_THRESHOLD can be 90
 	else if(RB_HIGHLIMIT <= relativeBearingDeg && relativeBearingDeg <= POSANGLE_THRESHOLD)
 	{
 		//wide turn right
 		steering = MC_WIDE_RIGHT_POSITION_IDEAL;
-	}
-	//else if relative bearing > POSANGLE_THRESHOLD (implied: relative bearing < 180)
+	}//end else if
+	//else if relative bearing > POSANGLE_THRESHOLD (implied: relative bearing < 180, since the condition abs(relativeBearingDeg) == MAXANGLE_THRESHOLD was checked already)
 	else if(relativeBearingDeg > POSANGLE_THRESHOLD)
 	{
 		//sharp turn right
 		steering = MC_SHARP_RIGHT_POSITION_IDEAL;
-	}	
-	//if abs(relative bearing) = MAXANGLE_THRESHOLD turn full right (could be left or right, but chose right arbitrarily to be default)
-	//	where MAXANGLE_THRESHOLD should be 180, so it coveres 180 and -180 when abs() is used
-	else if( abs(relativeBearingDeg) == MAXANGLE_THRESHOLD )
-	{
-		//sharp turn right
-		steering = MC_SHARP_RIGHT_POSITION_IDEAL;
-	}
+	}//end else if
 	else
 	{
 		//do nothing, error since undefined state
-	}
+	}//end else
 	return steering;	
 }
 
 
 int RoverNavigation::getCalculatedMotorThrottle()
 {
-//FINISH WRITING ME!!	
-	int throttle = MC_NO_THROTTLE_IDEAL;
-	this->_destinationReached = false;//debug
-	//ideal stop is 90
-	return throttle;//TEMP DEBUG VALUE
+	//Notes:
+	//The rover will have a limit of 4,294,967,295m to it's destination. The is the max value of an unsigned long.
+	//The rover is designed to go forward most of the time. It only backs up to avoid objects, not to navigate. It will do a u-turn if it needs to turn around). It has more sensors in the front for this reason.
+	
+	
+	//declare and initialize
+	int throttle = MC_NO_THROTTLE_IDEAL;//Note: ideal stop is 90
+	this->_destinationReached = false;
+	
+	unsigned long distance = 0;//range is 0 to 4,294,967,295 (max value of unsigned long)
+	
+	//round the distance (up or down depending on the value), then convert to unsigned long to drop the decimal places
+	distance = (unsigned long) round(this->getDistance(UNIT_M));
+		
+	if( distance <= DST_TOLERANCE)
+	{
+		//stop rover
+		throttle = MC_NO_THROTTLE_IDEAL;
+		this->_destinationReached = true;
+	}//end if
+	else if( distance > DST_SLOWTHRESHOLD )
+	{
+		//go forward at normal speed
+		throttle = MC_NORMAL_FWD_THROTTLE_IDEAL;		
+	}//end else if
+	else if( distance <= DST_SLOWTHRESHOLD )
+	{
+		//go forward at slow speed
+		throttle = MC_SLOW_FWD_THROTTLE_IDEAL;
+	}//end else if
+	else
+	{
+		//do nothing, error since undefined state
+	}//end else
+		
+	return throttle;
+	
 }
 boolean RoverNavigation::hasReachedDestination()
 {

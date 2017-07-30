@@ -3,158 +3,23 @@
 Where I left off
 ------------------------
 
-
-	
-
-	
-	
-=================2 weekends (one short/one long) finish by end of july===================			
 		
-
 	
 	
-		start lat/long math and create algorithm
-	https://sites.google.com/site/wayneholder/self-driving-rc-car/getting-from-point-a-to-point-b
-	http://www.movable-type.co.uk/scripts/latlong.html
-	http://diydrones.com/profiles/blogs/the-difference-between-heading
-	https://aviation.stackexchange.com/questions/8000/what-are-the-differences-between-bearing-vs-course-vs-direction-vs-heading-vs-tr
-	https://www.sunearthtools.com/tools/distance.php
-	https://www.youtube.com/watch?v=9nDkR-X9dqo
-	to calculate relative bearing
+=================1 weekend===================			
 	
-	
-	[NOT USED, used a different formula instead]
-			DX = PointB.x - PointA.x
-			DY = PointB.y - PointA.y
-			angle in radians = atan2(DY, DX)
-			angle in degrees = radians * (180 / Pi)
-			angle = angle < 0 ? angle + 360 : angle	
-		
-		research how to get bearing from lat/lon
-			see http://www.movable-type.co.uk/scripts/latlong.html
-			write a formula for it
-
-		add formula for the goal's bearing
-	
-	
-	
-
-
-	
-[NAH, use a different method]
-			if bearing > heading go one way, else go the other
-			but if delta(bearing and heading) is greater than 180 switch directions
-					
-							Heading in Degrees
-						D = destination
-						O = Origin
-
-
-						D < O and abs(D-O) > 180: turn right
-						D < O and abs(D-O) < 180: turn left
-						D > O and abs(D-O) > 180: turn left
-						D > O and abs(D-O) < 180: turn right
-						D = O: stop
-						D < O and abs(D-O) = 180: turn left or right
-						D > O and abs(D-O) = 180: turn left or right
-
-
-						
-						
-create a coordinates class object to hold generic lat/long
-	
-refactor code with coordinates class
-	
-	
-
-	
-	getRelativeBearing()
-	
-	
-	getCalculatedMotorSteering()
-
-
-
-	round the relative bearing (up or down depending on the value), then convert to int to drop the decimal places
-	if RB_LOWLIMIT < relative bearing < RB_HIGHLIMIT: go straight (where RB means relative bearing and the high and low limits create a window of tolerance)
-		where RB_LOWLIMIT can be -8
-		where RB_HIGHLIMIT can be 8	
-	else if NEGANGLE_THRESHOLD <= relative bearing <= RB_LOWLIMIT
-		where NEGANGLE_THRESHOLD can be -90
-	else if relative bearing < NEGANGLE_THRESHOLD (implied: -180 < relative bearing)
-	else if RB_HIGHLIMIT <= relative bearing <= POSANGLE_THRESHOLD
-		where POSANGLE_THRESHOLD can be 90
-	else if relative bearing > POSANGLE_THRESHOLD (implied: relative bearing < 180)
-	if relative bearing = MAXANGLE_THRESHOLD turn full right (could be left or right, but chose right arbitrarily to be default)
-		where MAXANGLE_THRESHOLD should be 180, so it coveres 180 and -180 when abs() is used
-	
-	
-
-			get actual degrees from compass
-	calculate goal based on navigation bearing (from gps lat/lon)
-		i.e. compare the goal's with the compass bearing and control turning based on that
-	calculate correction_angle
-	
-	[NAH, DOING IT DIFFERENT. AND IT'S DIGITAL STEPS instead of scaling an analog range to make it simpler for now. can always improve it later)
-		correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
-
-		
-		
-		
 	
 LEFT OFF HERE
 
 
-FINISH TESTING 
-getCalculatedMotorSteering() with all the limits in the if/else statements
-
-	
-			
-			control turning/driving based on the goal's bearing
-			in the future, compare the goal's with the compass bearing and control turning based on that
-			add a tolerance for bearing and distance. when reached the tolerance window, center and stop and output a true boolean for done
-				add a tolerance window for bearing, use to control turn or straight, when straight, keep driving till distance tolerance
-
-		
-	getCalculatedMotorThrottle	
-			add a tolerance window for distance, turn to control go or stop. when stop, it's done.
-					
-
-					
-			get the distance in meters (to match with the DST_TOLERANCE unit)
-			round the distance (up or down depending on the value), then convert to int to drop the decimal places
-			if distance <= DST_TOLERANCE, stop
-				Note: Remember distance is always posituve
-				and this->_destinationReached = true		
-				where DST_TOLERANCE can be 3 meters
-			else if DST_LOWLIMIT < distance <= DST_HIGHLIMIT, go forward normal
-				where DST_LOWLIMIT can be ??
-				where DST_HIGHLIMIT can be ??
-			else if distance > DST_HIGHLIMIT, go forward faster
-					
-						
-			double check the motor controller/servo code scales the ideal values after calibration
-			
-	
-	
-	
-	
-	write test code to see if it works
-	check the results
-
-	
-	
-	
+Run the IMUTester code	
 	
 	Calibrate the compass on the rover
 	https://sites.google.com/site/wayneholder/self-driving-rc-car/calibrating-the-compass	
 	
 			
 			
-	
-	
-=================1 weekend===================			
-	
+			
 	then create a test class with rovergps, navigation class
 	hook up gps to an arduino
 	walk outside and see if it tells me the right bearing, rover turn action, and distance
@@ -972,3 +837,117 @@ finish the math (on powerpoint)
 		when all waypoints are done, output a done
 	
 		
+
+	
+		start lat/long math and create algorithm
+	https://sites.google.com/site/wayneholder/self-driving-rc-car/getting-from-point-a-to-point-b
+	http://www.movable-type.co.uk/scripts/latlong.html
+	http://diydrones.com/profiles/blogs/the-difference-between-heading
+	https://aviation.stackexchange.com/questions/8000/what-are-the-differences-between-bearing-vs-course-vs-direction-vs-heading-vs-tr
+	https://www.sunearthtools.com/tools/distance.php
+	https://www.youtube.com/watch?v=9nDkR-X9dqo
+	to calculate relative bearing
+	
+	
+	[NOT USED, used a different formula instead]
+			DX = PointB.x - PointA.x
+			DY = PointB.y - PointA.y
+			angle in radians = atan2(DY, DX)
+			angle in degrees = radians * (180 / Pi)
+			angle = angle < 0 ? angle + 360 : angle	
+		
+		research how to get bearing from lat/lon
+			see http://www.movable-type.co.uk/scripts/latlong.html
+			write a formula for it
+
+		add formula for the goal's bearing
+	
+	
+	
+
+
+	
+[NAH, use a different method]
+			if bearing > heading go one way, else go the other
+			but if delta(bearing and heading) is greater than 180 switch directions
+					
+							Heading in Degrees
+						D = destination
+						O = Origin
+
+
+						D < O and abs(D-O) > 180: turn right
+						D < O and abs(D-O) < 180: turn left
+						D > O and abs(D-O) > 180: turn left
+						D > O and abs(D-O) < 180: turn right
+						D = O: stop
+						D < O and abs(D-O) = 180: turn left or right
+						D > O and abs(D-O) = 180: turn left or right
+
+
+						
+						
+create a coordinates class object to hold generic lat/long
+	
+refactor code with coordinates class
+	
+	
+
+	
+	getRelativeBearing()
+	
+	
+	getCalculatedMotorSteering()
+
+
+
+	round the relative bearing (up or down depending on the value), then convert to int to drop the decimal places
+	if RB_LOWLIMIT < relative bearing < RB_HIGHLIMIT: go straight (where RB means relative bearing and the high and low limits create a window of tolerance)
+		where RB_LOWLIMIT can be -8
+		where RB_HIGHLIMIT can be 8	
+	else if NEGANGLE_THRESHOLD <= relative bearing <= RB_LOWLIMIT
+		where NEGANGLE_THRESHOLD can be -90
+	else if relative bearing < NEGANGLE_THRESHOLD (implied: -180 < relative bearing)
+	else if RB_HIGHLIMIT <= relative bearing <= POSANGLE_THRESHOLD
+		where POSANGLE_THRESHOLD can be 90
+	else if relative bearing > POSANGLE_THRESHOLD (implied: relative bearing < 180)
+	if relative bearing = MAXANGLE_THRESHOLD turn full right (could be left or right, but chose right arbitrarily to be default)
+		where MAXANGLE_THRESHOLD should be 180, so it coveres 180 and -180 when abs() is used
+	
+	
+
+			get actual degrees from compass
+	calculate goal based on navigation bearing (from gps lat/lon)
+		i.e. compare the goal's with the compass bearing and control turning based on that
+	calculate correction_angle
+	
+	[NAH, DOING IT DIFFERENT. AND IT'S DIGITAL STEPS instead of scaling an analog range to make it simpler for now. can always improve it later)
+		correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
+
+		
+	getCalculatedMotorSteering() with all the limits in the if/else statements
+
+				
+			control turning/driving based on the goal's bearing
+			in the future, compare the goal's with the compass bearing and control turning based on that
+			add a tolerance for bearing and distance. when reached the tolerance window, center and stop and output a true boolean for done
+				add a tolerance window for bearing, use to control turn or straight, when straight, keep driving till distance tolerance
+	
+	getCalculatedMotorThrottle	
+			add a tolerance window for distance, turn to control go or stop. when stop, it's done.
+					
+
+					
+			get the distance in meters (to match with the DST_TOLERANCE unit)
+			round the distance (up or down depending on the value), then convert to int to drop the decimal places
+			if distance <= DST_TOLERANCE, stop
+				Note: Remember distance is always positive
+				and this->_destinationReached = true		
+				where DST_TOLERANCE can be 3 meters
+			else if distance > DST_SLOWTHRESHOLD, go forward normal
+			else (distance < DST_SLOWTHRESHOLD), go forward slowly as the rover is near the destination
+
+	write test code to see if it works
+	check the results
+							
+	[it looks like the calibration offest is added to all set throttles and set steerings. can verify and test if needed in the future] double check the motor controller/servo code scales the ideal values after calibration							

@@ -10,6 +10,12 @@
 #include <Angles.h>
 
 
+//Notes:
+	//The rover will have a limit of 4,294,967,295m to it's destination. The is the max value of an unsigned long.
+	//The rover is designed to go forward most of the time. It only backs up to avoid objects, not to navigate. It will do a u-turn if it needs to turn around). It has more sensors in the front for this reason.
+	
+	
+	
 /*
 Use Instructions:
 Step 1)
@@ -138,35 +144,17 @@ public:
 	double getRelativeBearing();//takes the object's currently set heading and true bearing and returns relative bearing in degrees
 	int getCalculatedMotorSteering();//takes the object's current relative bearing and returns the ideal rover steering (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
 	//Steering Number Range: 180 max right, 90 center,  0 max left
-	
-
-
-
-
-	//WRITE ME
 	int getCalculatedMotorThrottle();//returns the ideal rover throttle (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
 		//Throttle Number Range: 180 max reverse, 90 stop, 0 max forward
 	boolean hasReachedDestination();//returns true if the destination is reached (i.e. the distance is within a set limit, see RoverConfig.h). Else it returns false.
 	
-	
-	
-
-	
-	
-	
-	
-	
-	
 private:
 	//Non-SW Resettable
-
 	Coordinates * _desiredCoordinates;
 	Coordinates * _actualCoordinates;
 	
 	
-	//SW Resettable
-		
-	
+	//SW Resettable	
 	double _measuredIMUHeadingDeg = 0.0;	
 	boolean _destinationReached = false;
 	

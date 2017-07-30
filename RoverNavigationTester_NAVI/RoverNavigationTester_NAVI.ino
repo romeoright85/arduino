@@ -81,13 +81,28 @@ void loop() {
 	Serial.println(F("Relative Bearing:"));
 	value = roverNavigation->getRelativeBearing();
 	Serial.println(value, 4);//print with 4 decimals	
-	//*/	
+		
 	Serial.println(F("Get Motor Steering:"));
 	value = roverNavigation->getCalculatedMotorSteering();
 	Serial.println(value, 4);//print with 4 decimals	
+
+	Serial.println(F("Get Motor Throttle:"));
+	value = roverNavigation->getCalculatedMotorThrottle();
+	Serial.println(value, 4);//print with 4 decimals
+	if (roverNavigation->hasReachedDestination())
+	{
+		Serial.println(F("Destination Reached"));
+	}
+	else
+	{
+		Serial.println(F("Still Navigating"));
+	}
+
 	
 
+	//*/
+
+
 	Serial.println();
-	
 	delay(1000);
 }

@@ -75,13 +75,13 @@
 		#define EARTHS_RADIUS_M 6371000//will need to use data type double, since it's a big number
 		#define TYPE_ACTUAL 1 //to select actual coordinates
 		#define TYPE_DESIRED 2 //to select desired coordinates
-		#define RB_LOWLIMIT -8//relative bearing straight (center servo) criteria low limit
-		#define RB_HIGHLIMIT 8//relative bearing straight (center servo) criteria high limit
+		#define RB_LOWLIMIT -8//relative bearing straight (center servo) criteria low limit/tolerance window
+		#define RB_HIGHLIMIT 8//relative bearing straight (center servo) criteria high limit/tolerance window
 		#define POSANGLE_THRESHOLD 90//the angle (in degrees) when a sharp turn should be made (vs. a regular wide turn)
 		#define NEGANGLE_THRESHOLD -90//the angle (in degrees) when a sharp turn should be made (vs. a regular wide turn)
 		#define MAXANGLE_THRESHOLD 180//the angle (in degrees) when a sharp u-turn should be made (vs. a regular wide turn)
-
-		
+		#define DST_TOLERANCE 3 //meters the rover must get within it's destination before it stops and declared destination reached
+		#define DST_SLOWTHRESHOLD 8 //meters to go slow to get to the destination
 		
 		
 	#endif	
@@ -337,6 +337,8 @@
 		#define MC_MAX_LEFT_POSITION_IDEAL		0
 		//Throttle		
 		#define MC_MAX_FWD_THROTTLE_IDEAL 0
+		#define MC_NORMAL_FWD_THROTTLE_IDEAL 30 //used to travel long distance to get to destination
+		#define MC_SLOW_FWD_THROTTLE_IDEAL 60 //used when the rover is close to its destination, aka the final search speed
 		#define MC_NO_THROTTLE_IDEAL	90
 		#define MC_MAX_REV_THROTTLE_IDEAL 180 //use a bigger number is going reverse
 	#endif	
