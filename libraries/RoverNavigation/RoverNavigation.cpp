@@ -326,10 +326,10 @@ double RoverNavigation::getRelativeBearing()
 {		
 	return calculateRelativeBearing(this->_measuredIMUHeadingDeg, this->getTrueBearing());
 }
-int RoverNavigation::getCalculatedMotorSteering()
+byte RoverNavigation::getCalculatedMotorSteering()
 {	
 	int relativeBearingDeg = 0;//range is -180 to 180
-	int steering = MC_CENTER_POSITION_IDEAL;//Note: ideal center is 90
+	byte steering = MC_CENTER_POSITION_IDEAL;//Note: ideal center is 90
 	
 	//fit the relative bearing into the range of -180 < relative bearing <= 180
 	//round the relative bearing (up or down depending on the value), then convert to int to drop the decimal places
@@ -383,7 +383,7 @@ int RoverNavigation::getCalculatedMotorSteering()
 }
 
 
-int RoverNavigation::getCalculatedMotorThrottle()
+byte RoverNavigation::getCalculatedMotorThrottle()
 {
 	//Notes:
 	//The rover will have a limit of 4,294,967,295m to it's destination. The is the max value of an unsigned long.
@@ -391,7 +391,7 @@ int RoverNavigation::getCalculatedMotorThrottle()
 	
 	
 	//declare and initialize
-	int throttle = MC_NO_THROTTLE_IDEAL;//Note: ideal stop is 90
+	byte throttle = MC_NO_THROTTLE_IDEAL;//Note: ideal stop is 90
 	this->_destinationReached = false;
 	
 	unsigned long distance = 0;//range is 0 to 4,294,967,295 (max value of unsigned long)

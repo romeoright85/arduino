@@ -12,28 +12,9 @@ Where I left off
 LEFT OFF HERE
 
 		
-Note: The COMMBroadcast works but it's really slow.
-Probably will not do ground code. Will just get the rover to navigate with preset points. Then move on to grad school, next gen design, etc.
-If anything write Java for Android Tablet to bluetooth, then go from Bluetooth to Arduino Mega ADK to Xbee. (it'll be more portable than a laptop)
 
-8/5/17
-Hardware hacked the IMU on the rover to fix signal integrity issues. Data hacked the compass heading to force the data close enough to the real heading.
-
-Run the IMUTester code	
-	Calibrate the compass on the rover
-	https://sites.google.com/site/wayneholder/self-driving-rc-car/calibrating-the-compass	
-
-
-edit the heading code with the formula fix for the heading
 		
-
-		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\UtilityClasses
-		rewrite this later using template classes to work on any type
-		static sortArray( float );
-		
-		
-		
-	RoverNavTester
+	Edit RoverNavigationTester_NAVI to take acutal GPS data from the GPS unit
 	
 	have a fixed destination
 	print actual and desired lat/long
@@ -51,22 +32,7 @@ edit the heading code with the formula fix for the heading
 				
 
 			
-=================1.5 weekends===================				
-
-
-	
-		
-	
-	Go back and change all Serial.begin(9600); to 	Serial.begin(PC_USB_BAUD_RATE);
-	
-Maybe go back and use #ifdef for Serial1, Serial2, and Serial3 instead of hardcoding them. Make sure to test one first to see if it works (and for all functions, not just Serial.begin)
-	
-Note: Try not to add any more functionality that will delay your project. Write a good enough project, take what you learned, and move on to school.
-
-
-
-servo.write(correction_angle)
-	
+=================1 long weekend===================				
 
 	
 	
@@ -116,8 +82,34 @@ Test using COMM Broadcast:
 		CommBroadcast_AUXI
 		CommBroadcast_MAIN
 		
-		
+
 	
+	Go back and change all Serial.begin(9600); to 	Serial.begin(PC_USB_BAUD_RATE);
+	
+Maybe go back and use #ifdef for Serial1, Serial2, and Serial3 instead of hardcoding them. Make sure to test one first to see if it works (and for all functions, not just Serial.begin)
+	
+Note: Try not to add any more functionality that will delay your project. Write a good enough project, take what you learned, and move on to school.
+
+
+
+servo.write(correction_angle)
+			
+	
+	
+			
+=================1 short weekend===================				
+
+write NavigationTester_MAIN (name had to shorten due to length limits)
+	to take heading data from AUXI and just send it over to NAVI
+		Make a copy of CommBroadcast_MAIN and edit it so it only redirects AUXI to NAVI
+write NavigationTester_AUXI:
+	to send heading data (the number only) to MAIN
+		Make a copy of IMUTester and edit it so it only outputs the number
+finish writing
+	see "//FINISH WRITING ME"
+	NavigationTester_NAVI: have it serial read data from MAIN, convert the char array to a number, then use it as heading
+
+test the RoverNavigationTester suite of code
 			
 =================12 weekends===================			
 
@@ -976,3 +968,21 @@ refactor code with coordinates class
 	check the results
 							
 	[it looks like the calibration offest is added to all set throttles and set steerings. can verify and test if needed in the future] double check the motor controller/servo code scales the ideal values after calibration							
+	
+	
+	Note: The COMMBroadcast works but it's really slow.
+Probably will not do ground code. Will just get the rover to navigate with preset points. Then move on to grad school, next gen design, etc.
+If anything write Java for Android Tablet to bluetooth, then go from Bluetooth to Arduino Mega ADK to Xbee. (it'll be more portable than a laptop)
+
+8/5/17
+Hardware hacked the IMU on the rover to fix signal integrity issues. Data hacked the compass heading to force the data close enough to the real heading.
+
+[DONE]Run the IMUTester code	
+[DONE]	Calibrate the compass on the rover
+	https://sites.google.com/site/wayneholder/self-driving-rc-car/calibrating-the-compass	
+
+
+[DONE]edit the heading code with the formula fix for the heading
+		
+		
+		

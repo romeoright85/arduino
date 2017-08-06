@@ -339,9 +339,9 @@
 		#define MC_MAX_LEFT_POSITION_IDEAL		0
 		//Throttle		
 		#define MC_MAX_FWD_THROTTLE_IDEAL 0
-		#define MC_NORMAL_FWD_THROTTLE_IDEAL 30 //used to travel long distance to get to destination
+		#define MC_NO_THROTTLE_IDEAL	90		
 		#define MC_SLOW_FWD_THROTTLE_IDEAL 60 //used when the rover is close to its destination, aka the final search speed
-		#define MC_NO_THROTTLE_IDEAL	90
+		#define MC_NORMAL_FWD_THROTTLE_IDEAL 30 //used to travel long distance to get to destination
 		#define MC_MAX_REV_THROTTLE_IDEAL 180 //use a bigger number is going reverse
 	#endif	
 	

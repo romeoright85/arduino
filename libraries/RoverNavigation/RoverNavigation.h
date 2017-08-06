@@ -142,9 +142,9 @@ public:
 	double getDistance(byte);//(unit type) takes the object's currently set coordinates and returns distance in km or m based on unit type (i.e. UNIT_M or UNIT_KM). See RoverConfig for more details.
 	double getTrueBearing();//takes the object's currently set coordinates and returns the true (magnetic) bearing (destination angle) in degrees based on actual and desired latitude/longitude coordinates
 	double getRelativeBearing();//takes the object's currently set heading and true bearing and returns relative bearing in degrees
-	int getCalculatedMotorSteering();//takes the object's current relative bearing and returns the ideal rover steering (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
+	byte getCalculatedMotorSteering();//takes the object's current relative bearing and returns the ideal rover steering (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
 	//Steering Number Range: 180 max right, 90 center,  0 max left
-	int getCalculatedMotorThrottle();//returns the ideal rover throttle (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
+	byte getCalculatedMotorThrottle();//returns the ideal rover throttle (since the MotorController will handle the calibrated offset behind the scenes) based on the calculated distance and bearing
 		//Throttle Number Range: 180 max reverse, 90 stop, 0 max forward
 	boolean hasReachedDestination();//returns true if the destination is reached (i.e. the distance is within a set limit, see RoverConfig.h). Else it returns false.
 	

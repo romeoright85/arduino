@@ -140,7 +140,7 @@ void loop() {
 
 	delay(10);//need some delay between reads else the data gets noisy
 
-}
+}//end loop
 
 boolean rxGPSData(RoverGpsSensor * roverGps) {
 
@@ -251,4 +251,4 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 #endif	
 
 	
-}
+}//end rxGPSData
