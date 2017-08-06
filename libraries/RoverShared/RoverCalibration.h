@@ -86,7 +86,8 @@
 		//==Start Of Intergrated Code From Others
 		// LSM303/LIS3MDL magnetometer calibration constants; use the Calibrate example from
 		// the Pololu LSM303 or LIS3MDL library to find the right values for your board
-
+		//Make sure to spin/pan the rover 360, but also tilt and roll it a bit as well to get max it might see. No need to turn it upside down though as that's not the norm.
+		
 		/*
 		//Default Initial Values (before calibration)
 		#define M_X_MIN -1000
@@ -98,7 +99,7 @@
 		*/
 		
 		/*
-		//Test IMU (calibration)
+		//Test IMU (calibration) (before tilting and rolling just pan)
 		#define M_X_MIN -335
 		#define M_Y_MIN -291
 		#define M_Z_MIN -385
@@ -107,15 +108,16 @@
 		#define M_Z_MAX +511
 		*/
 		
-		/*
+		///*
 		//Rover IMU (calibration)
-		#define M_X_MIN -1000
-		#define M_Y_MIN -1000
-		#define M_Z_MIN -1000
-		#define M_X_MAX +1000
-		#define M_Y_MAX +1000
-		#define M_Z_MAX +1000
-		*/
+		#define M_X_MIN -260
+		#define M_Y_MIN -258
+		#define M_Z_MIN -499
+		#define M_X_MAX +148
+		#define M_Y_MAX +186
+		#define M_Z_MAX -468
+		//*/
+		
 		
 		
 		#define Kp_ROLLPITCH 0.02
