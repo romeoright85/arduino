@@ -1,5 +1,10 @@
 //Used for AUXI - 2
 
+
+//Note: Make sure you run the calibration code:
+//K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverShared\IMU_Calibration
+
+
 #include <ImuSensor.h>
 #include <GlobalDelayTimer.h>
 #include <DelayCounter.h>
