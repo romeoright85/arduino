@@ -4,7 +4,12 @@
 //ImuSensor.h and ImuSensor.cpp are not class files but function prototypes and functions.
 //This is because it requires other libraries that already uses classes. (i.e. LSM6, LIS3MDL, L3G, LSM303)
 
+//The heading from the getCorrectedHeading() function is corrected by 180 degrees due to the mounting of the IMU sensor
+//also a correction calibration (transfer) function has been applied to make the numbers more accurate. It was based on approximated empircal measurements)
+//See: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes\My Studies\IMU Calibration
 
+//Note: The IMU measurements were not yet calibrated or corrected. Only the heading will be used for the Rover for now. 8/6/17.
+	
 
 /*
 
@@ -160,6 +165,7 @@ void Euler_angles(void);
 void Imu_Init();
 void Imu_Calculations();
 float getHeading();
+float getCorrectedHeading();//I added this function to correct for the sensor's orientation on the rover as well as to help calibrate the data more
 float getRoll();
 float getPitch();
 float getYaw();

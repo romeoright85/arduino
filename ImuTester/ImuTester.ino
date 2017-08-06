@@ -105,7 +105,7 @@ void loop() //Main Loop
 
 	#ifdef _DEBUG_OUTPUT_HEADING_
 			_SERIAL_DEBUG_CHANNEL_.print(F("Heading: "));
-			_SERIAL_DEBUG_CHANNEL_.println(getHeading());
+			_SERIAL_DEBUG_CHANNEL_.println(getCorrectedHeading());
 	#endif
 	#ifdef _DEBUG_OUTPUT_ROLL_
 			_SERIAL_DEBUG_CHANNEL_.print(F("Roll: "));

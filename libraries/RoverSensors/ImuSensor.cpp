@@ -442,6 +442,30 @@ void Imu_Calculations()
 }
 
 
+float getCorrectedHeading()
+{
+	//heading is corrected by 180 degrees due to the mounting of the IMU sensor
+	//also a correction calibration (transfer) function has been applied to make the numbers more accurate. It was based on approximated empircal measurements)
+	//See: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes\My Studies\IMU Calibration
+		
+	float cumulativeSum = 0.0;
+	
+	for(byte i = 0; i < HEADING_SAMPLE_SIZE ; i++)
+	{
+			cumulativeSum += compass.heading();
+	}
+	
+	
+	float value = cumulativeSum / HEADING_SAMPLE_SIZE;//take the average value of the raw compass headings
+	
+	
+	value = fmod(value + 180.0, 360.0);//adjust for inverted direction, and for ce to fit in the range of 0 to 360
+	
+    value = fmod((-0.0021*value*value + 1.7305 * value - 52.033) + 360.0, 360.0);//adjust due to calibration and force to fit in the range of 0 to 360
+	return value;
+	
+}
+
 
 float getHeading()
 {

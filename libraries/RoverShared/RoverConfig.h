@@ -75,8 +75,8 @@
 		#define EARTHS_RADIUS_M 6371000//will need to use data type double, since it's a big number
 		#define TYPE_ACTUAL 1 //to select actual coordinates
 		#define TYPE_DESIRED 2 //to select desired coordinates
-		#define RB_LOWLIMIT -8//relative bearing straight (center servo) criteria low limit/tolerance window
-		#define RB_HIGHLIMIT 8//relative bearing straight (center servo) criteria high limit/tolerance window
+		#define RB_LOWLIMIT -10//relative bearing straight (center servo) criteria low limit/tolerance window
+		#define RB_HIGHLIMIT 10//relative bearing straight (center servo) criteria high limit/tolerance window
 		#define POSANGLE_THRESHOLD 90//the angle (in degrees) when a sharp turn should be made (vs. a regular wide turn)
 		#define NEGANGLE_THRESHOLD -90//the angle (in degrees) when a sharp turn should be made (vs. a regular wide turn)
 		#define MAXANGLE_THRESHOLD 180//the angle (in degrees) when a sharp u-turn should be made (vs. a regular wide turn)
@@ -299,6 +299,8 @@
 		#define PRINT_DCM 0     //Will print the whole direction cosine matrix
 		#define PRINT_ANALOGS 0 //Will print the analog raw data
 		#define PRINT_EULER 1   //Will print the Euler angles Roll, Pitch and Yaw
+				
+		#define HEADING_SAMPLE_SIZE 5 //Used to set the sample size when taking the average of the compass heading values
 				
 		//==End Of Intergrated Code From Others
 		
@@ -604,7 +606,11 @@
 		#define INFRARED_SENSOR_SAMPLE_TIMES	5 //the number times to sample and average the IR sensor data		
 	#endif
 	
-		
+	//definitions for ArrayFunctions
+	#ifdef _ARRAY_FUNCTIONS_DEFINITIONS	
+		#define SORT_ASCENDING 0
+		#define SORT_DESCENDING 1
+	#endif	
 	
 	
 
