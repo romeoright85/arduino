@@ -6,35 +6,44 @@ Where I left off
 		
 	
 	
-=================1 weekend===================			
-	
-	
-LEFT OFF HERE
-
-		
-
-		
-	Edit RoverNavigationTester_NAVI to take acutal GPS data from the GPS unit
-	
-	have a fixed destination
-	print actual and desired lat/long
-	print actual heading
-	print direction of turn
-	
-	create a test class with rovergps, navigation class
-	hook up gps to an arduino
-	walk outside and see if it tells me the right bearing, rover turn action, and distance
-	
-	[NAH, no time] simulate compass and gps data
-
-
 
 				
 
 			
-=================1 long weekend===================				
+=================0.5 weekends===================				
 
+	[DONE, need to test] write NavigationTester_MAIN (name had to shorten due to length limits)
+	to take heading data from AUXI and just send it over to NAVI
+		Make a copy of CommBroadcast_MAIN and edit it so it only redirects AUXI to NAVI
+	[DONE, need to test] write NavigationTester_AUXI:
+		to send heading data (the number only) to MAIN
+		Make a copy of IMUTester and edit it so it only outputs the number
+	[DONE, need to test] Edit RoverNavigationTester_NAVI to take acutal GPS data from the GPS unit
+					
+					have a fixed destination
+					print actual and desired lat/long
+					print actual heading
+					print direction of turn
+					create a test class with rovergps, navigation class
+		
+	[NAH, no time] simulate compass and gps data
+
+			
+					
+					
+					
+	hook up gps to an arduino
+	walk outside and see if it tells me the right bearing, rover turn action, and distance
 	
+			
+=================1.5 weekends===================				
+		
+test the RoverNavigationTester suite of code
+			
+
+
+			
+			
 	
 		[NEEDS REWORK, see Test Results]AnalogSignalsTester	
 		
@@ -96,21 +105,8 @@ servo.write(correction_angle)
 			
 	
 	
-			
-=================1 short weekend===================				
+		
 
-write NavigationTester_MAIN (name had to shorten due to length limits)
-	to take heading data from AUXI and just send it over to NAVI
-		Make a copy of CommBroadcast_MAIN and edit it so it only redirects AUXI to NAVI
-write NavigationTester_AUXI:
-	to send heading data (the number only) to MAIN
-		Make a copy of IMUTester and edit it so it only outputs the number
-finish writing
-	see "//FINISH WRITING ME"
-	NavigationTester_NAVI: have it serial read data from MAIN, convert the char array to a number, then use it as heading
-
-test the RoverNavigationTester suite of code
-			
 =================12 weekends===================			
 
 ~3 weekends per an Arduino

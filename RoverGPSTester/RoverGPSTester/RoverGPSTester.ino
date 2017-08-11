@@ -151,7 +151,7 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 	byte gpsCharactersToReceiveBeforeTimeout;//counts the number of characters received while waiting for the start of the gps data (i.e. $) before timing out
 	boolean foundStart = false;
 	boolean validGpsData = false;
-	byte counter;
+	byte gpsLengthCounter;
 
 
 #ifndef _DEBUG_PARSING_WITH_FIXED_DATA
@@ -182,10 +182,10 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 			if (foundStart)
 			{
 				//initialize the counter
-				counter = 0;
+				gpsLengthCounter = 0;
 
 				//Gather the rest of the GPS String (AFTER the $, so $ is not included)
-				while ( Serial3.available() && Serial3.peek() != '$' && counter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
+				while ( Serial3.available() && Serial3.peek() != '$' && gpsLengthCounter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
 				{
 	
 			
@@ -194,7 +194,7 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 						
 						roverGps->appendToRxGPSData((char)Serial3.read());//construct the string one char at a time
 															 //DEBUG: Add as needed
-						counter++;
+						gpsLengthCounter++;
 						delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 	
 

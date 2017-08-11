@@ -12,6 +12,7 @@ RoverNavigationTester_NAVI
 
 #include <RoverNavigation.h>
 #include <RoverGpsSensor.h>
+#include <CharArray.h>
 
 
 //How to get the longitude and latitude of a place
@@ -26,7 +27,7 @@ Desired Lat/Long in Degrees (Hersh's Pizza in South Baltimore)
 
 #define DESIRED_LATITUDE_COORDINATE 39.268603
 #define DESIRED_LONGITUDE_COORDINATE -76.611702
-
+#define COMPASS_DATA_CHAR_BUFFER_SIZE 10
 //Uncomment to use fixed test data, else if left uncommented, it will use actual the GPS Module's and IMU Compass's data
 //#define _DEBUG_USE_FIXED_TEST_DATA
 
@@ -112,6 +113,7 @@ void loop() {
 	gpsDataReady = rxGPSData(roverGps);
 
 	double value = 0.0;
+	double rxdHeading = 0.0;//debug
 
 	//Preset desired point
 	roverNavigation->setLatitudeDeg(DESIRED_LATITUDE_COORDINATE, TYPE_DESIRED);
@@ -125,13 +127,9 @@ void loop() {
 	roverNavigation->setLongitudeDeg(-76.606402, TYPE_ACTUAL);
 #else
 	//get actual heading from the IMU's Compass
-
-	//FINISH WRITING ME. NEED TO READ IN COMPASS HEADING FROM AUXI (passed from MAIN) in order to get the heading
-	//Serial read char array
-	//Convert to number
-	//Set that number as the actual/current heading
-
-
+	rxdHeading = rxCompassData();
+	roverNavigation->setHeadingDeg(rxdHeading);
+	
 	//get actual GPS coordinates
 
 	if (gpsDataReady)
@@ -243,11 +241,38 @@ void translateMotorThrottle(byte value)
 }
 
 
+double rxCompassData() {
 
+	byte rxdCharacterIndex = 0;//initialize the cursor to the beginning of the array
+	char rxData[COMPASS_DATA_CHAR_BUFFER_SIZE];
+	char defaultData[] = "0.0000";
 
+	//Check availabiltiy of serial data
+	if (Serial2.available())
+	{
+		while (Serial2.available())
+		{
+			if (rxdCharacterIndex <= COMPASS_DATA_CHAR_BUFFER_SIZE)//make sure there is no buffer overflow
+			{				
+				rxData[rxdCharacterIndex] = (char)Serial2.read();
+				rxdCharacterIndex++;//move the cursor to the next position in the array		
+			}//end if
+			else
+			{
+				Serial.println(F("BuffOvrFlw"));
+			}//end else
+		}//end while
+	}//end if
+	else
+	{
+		strncpy(rxData, defaultData, sizeof(defaultData)/sizeof(defaultData[0]));
+	}
 
+	CharArray::Trim(rxData);//truim any white spaces in the character array
+		
+	return atof(rxData);
 
-
+}
 
 
 boolean rxGPSData(RoverGpsSensor * roverGps) {
