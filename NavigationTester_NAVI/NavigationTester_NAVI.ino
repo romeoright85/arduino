@@ -125,6 +125,10 @@ Get Motor Steering: Sharp Right
 Get Motor Throttle: Normal Speed
 Rover Nav Status: Still Navigating
 
+
+See link below for screen shots of the tool:
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results\Recorded Data\NavigationTester Results 08-12-17v1
+
 */
 
 
@@ -308,12 +312,12 @@ void loop() {
 		{
 			_SERIAL_DEBUG_CHANNEL_.println(F("Still Navigating"));
 		}
-		_SERIAL_DEBUG_CHANNEL_.println();
 
 #ifdef _HIDE_DATA_WHEN_GPS_NOT_READY
 	}//end if
 #endif
 
+	_SERIAL_DEBUG_CHANNEL_.println();
 	delay(500);
 }
 

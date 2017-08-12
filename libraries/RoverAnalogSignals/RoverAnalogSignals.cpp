@@ -189,22 +189,55 @@ unsigned int RoverAnalogSignals::getRawADCValueOf(byte analogSignalName)
 double RoverAnalogSignals::getVoltageValueOf(byte analogSignalName)
 {
 	double voltage;
-	
+	double scalingFactor;
 	AnalogMuxSensor * analogMux;
 	
 	analogMux = findMuxBySignalName(analogSignalName);
 
 	voltage = analogMux->getVoltageValueOf(analogSignalName);
 	 
-//voltage = 5.0*random(10,100)/1000.0;//DEBUG AND DELETE
+	 
+	 
+//WORK ON ME	 
+	 //If this is a 7V signal with a resistor divider, scaling is required
+	 if(analogSignalName == VOLTAGE_7D2_RAW)
+	 {
+		 
 
+		 
+			 
+		/*
+			 Note: Reference the CURRENT_SENSOR_UNIT_CCAv2
+			 K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\EagleCAD\MyProjects\CURRENT_SENSOR_UNIT_CCAv2
+			 The resistors are 10K by 10K (so a 1/2 divider): 7V / 2 = 3.5V
+			 Therefore the voltage range is 0V to 3.5V
+		 */
+		 
+		 /*
+		 To get Vin, you have to reverse engineer the voltage divider.
+		 Since Vo = Vin*Rout/(Rin+Rout)
+		 Then
+		 Vin = Vo*(Rin + Rout)/Rout
+		 */
+		 
+		 scalingFactor = (RESISTOR_CURRENTCCA_7D2V_FROM_R_IN + RESISTOR_CURRENTCCA_7D2V_TO_R_OUT)/RESISTOR_CURRENTCCA_7D2V_TO_R_OUT;
+		
+		#ifdef _DEBUG_7D2V_SCALING_FACTOR_
+			Serial.print(F("7.2V Resistor Scaling Factor"));//DEBUG	
+			Serial.println(scalingFactor);//DEBUG	 
+		#endif		
+	
+	
+		 voltage = voltage * scalingFactor;//scaled from the resistor divider
+	 }
+	//Else do nothing since this is a 5V signal with no resistor divider, no scaling is required
+
+	
 	#ifdef _DEBUG_MEASURED_VOLTAGE_
 		//Prints the measured voltage
 		Serial.print(F("ADC Voltage: "));//DEBUG		
 		Serial.println(voltage);//DEBUG
 	#endif
-		 
-	 
 
 	//using delegation and calling AnalogMuxSensor's method
 	return voltage;

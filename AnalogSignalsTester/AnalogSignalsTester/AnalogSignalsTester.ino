@@ -177,6 +177,7 @@ void loop() {
 	//delay(1000);
 	_SERIAL_DEBUG_CHANNEL_.println("");
 
+#endif
 
 #ifdef _OUTPUT_MUX2_
 	//AMUX 2

@@ -44,7 +44,7 @@
 			byte _opAmpOutputPin;
 			byte _analogNames[8];//holds the analog names corresponding to the 8 channels
 			unsigned int readRawADCValueOfAmuxChannel(byte);//(AMUX Channel 0 through 8)
-			double readVoltageValueOfAmuxChannel(byte);//(AMUX Channel 0 through 8)
+			double readVoltageValueOfAmuxChannel(byte);//(AMUX Channel 0 through 8), returns a value of 0V to 5V. Note: If a resistor divider is used, it will have to be further processed in another function. This is just the reading of the ADC pin.
 			void selectMuxChannel(byte);//sends the select signals to the AMUX to route the designed channel
 			//RoverAdc  Object
 			RoverAdc * _roverAdc;//used to get various types of analog readings

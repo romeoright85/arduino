@@ -23,52 +23,41 @@
 Example Output:
 
 Sentence ID: GPGGA
-Time Of Data Fix: 122918.000
-Latitude (Dec-Dec NMEA): 3916.1191 N
-Longitude (Dec-Dec NMEA): 7636.6694 W
-Latitude (Dec-Deg): 39.2687 N
-Longitude (Dec-Deg): -76.6112 W
+Time Of Data Fix: 171446.410
+Latitude (Dec-Dec NMEA): 3916.1023 N
+Longitude (Dec-Dec NMEA): 7636.6616 W
+Latitude (Dec-Deg): 39.2684
+Longitude (Dec-Deg): -76.6110
 Fix Quality: 1
-Satellites Tracked: 5
-For Google Maps: 39 16.1193 N, 076 36.6696 W
+Satellites Tracked: 6
+For Google Maps: 39 16.1023 N, 076 36.6616 W
+
+Sentence ID: GPGGA
+Time Of Data Fix: 171446.800
+Latitude (Dec-Dec NMEA): 3916.1023 N
+Longitude (Dec-Dec NMEA): 7636.6621 W
+Latitude (Dec-Deg): 39.2684
+Longitude (Dec-Deg): -76.6110
+Fix Quality: 1
+Satellites Tracked: 6
+For Google Maps: 39 16.1023 N, 076 36.6620 W
+GPS Data Not Ready
 GPS Data Not Ready
 GPS Data Not Ready
 
 Sentence ID: GPGGA
-Time Of Data Fix: 122918.400
-Latitude (Dec-Dec NMEA): 3916.1191 N
-Longitude (Dec-Dec NMEA): 7636.6694 W
-Latitude (Dec-Deg): 39.2687 N
-Longitude (Dec-Deg): -76.6112 W
+Time Of Data Fix: 171447.200
+Latitude (Dec-Dec NMEA): 3916.1023 N
+Longitude (Dec-Dec NMEA): 7636.6621 W
+Latitude (Dec-Deg): 39.2684
+Longitude (Dec-Deg): -76.6110
 Fix Quality: 1
-Satellites Tracked: 5
-For Google Maps: 39 16.1193 N, 076 36.6696 W
+Satellites Tracked: 6
+For Google Maps: 39 16.1022 N, 076 36.6623 W
+GPS Data Not Ready
 GPS Data Not Ready
 GPS Data Not Ready
 
-Sentence ID: GPGGA
-Time Of Data Fix: 122918.800
-Latitude (Dec-Dec NMEA): 3916.1191 N
-Longitude (Dec-Dec NMEA): 7636.6694 W
-Latitude (Dec-Deg): 39.2687 N
-Longitude (Dec-Deg): -76.6112 W
-Fix Quality: 1
-Satellites Tracked: 5
-For Google Maps: 39 16.1192 N, 076 36.6696 W
-GPS Data Not Ready
-GPS Data Not Ready
-
-Sentence ID: GPGGA
-Time Of Data Fix: 122919.200
-Latitude (Dec-Dec NMEA): 3916.1191 N
-Longitude (Dec-Dec NMEA): 7636.6694 W
-Latitude (Dec-Deg): 39.2687 N
-Longitude (Dec-Deg): -76.6112 W
-Fix Quality: 1
-Satellites Tracked: 5
-For Google Maps: 39 16.1192 N, 076 36.6695 W
-GPS Data Not Ready
-GPS Data Not Ready
 
 */
 
@@ -171,18 +160,12 @@ void loop() {
 
 		#ifdef _OUTPUT_LATITUDE_DEC_DEG
 		_SERIAL_DEBUG_CHANNEL_.print(F("Latitude (Dec-Deg): "));
-		dtostrf(roverGps->getGpsLatitude(DEC_DEG), 5, 4, numCharArray);//convert double to char array
-		//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %s", numCharArray, *roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
-		sprintf(charBuffer, "%s %s", numCharArray, roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
-		_SERIAL_DEBUG_CHANNEL_.println(charBuffer);
+		_SERIAL_DEBUG_CHANNEL_.println(roverGps->getGpsLatitude(DEC_DEG),4);//print with 4 decimal places
 		#endif
 
 		#ifdef _OUTPUT_LONGITUDE_DEC_DEG
 		_SERIAL_DEBUG_CHANNEL_.print(F("Longitude (Dec-Deg): "));
-		dtostrf(roverGps->getGpsLongitude(DEC_DEG), 5, 4, numCharArray);//convert double to char array
-		//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %s", numCharArray, *roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
-		sprintf(charBuffer, "%s %s", numCharArray, roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
-		_SERIAL_DEBUG_CHANNEL_.println(charBuffer);
+		_SERIAL_DEBUG_CHANNEL_.println(roverGps->getGpsLongitude(DEC_DEG),4);//print with 4 decimal places
 		#endif
 		
 

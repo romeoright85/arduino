@@ -67,8 +67,45 @@ PrintSerialAlive
 		Retest Comments:
 
 		
+	
+		
+GpsTester
+	Retest Comments:
+		Try to run it with real GPS data to see if you stil lget a GPS over error.
+		If you do, you may want to save the Serial.read() earlier and use that to compare instead of using Serial.peek().
 
 			
+
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+**LEFT OFF RETESTING HERE (SEE ABOVE)**	
+		
+		
+		
+		
+		
+		
+		
+		
+GpsTester
+	Updated code 08-11-17:
+		Misc changes, forgot to capture.
+	Re-Comments:
+				Had a GPS Buffer Overflow. It seemed to go away later. It might have been a bad upload or bad data coming from the GPS Module.
+	
+
 GpsTester
 	Updated code 01-08-17:
 		Removed checksum and all the other fields. Kept only the basic fields in front since the data seems to get corrupted and filtered out too often otherwise.
@@ -77,11 +114,10 @@ GpsTester
 			It seemed to drop data once the code ran for a while. I think since I had it read while the data was ready it was running out of memory, as the word has a max length, but the data was always ready.
 			Seems to parse now, but need to get reception and do more tests.
 			Once I got reception, the code seems to stop parsing after a while.
-NEEDS REWORK
+	NEEDS REWORK
 			Try rewriting it with manual character comparison instead of using the substring method.
-**LEFT OFF RETESTING HERE (SEE ABOVE)**	
-		
-		
+			
+				
 GpsTester
 	Updated code 01-07-17:
 		GPS data seems to cut off during receive, so the whole string isn't getting through.
@@ -169,44 +205,6 @@ HwResetTester_COMM
 01-02-17
 -------------
 	
-GpsTester
-	Updated code 01-02-17:
-		In RoverGPSTester.ino, had to change some Serial to Serial3 as that is the GPS Serial channel.
-	Re-Comments:
-	
-	GPS Data Not Ready seems to be printing like it should.
-	
-REWORK NEEDED
-
-Maybe turn off Checksum Failed and Filtered out with debug define flags.
-The debug flags aren't working for some reason. Need to see the original output before it's filtered out.
-
-
-	
-**LEFT OFF REWORK HERE (SEE ABOVE)**		
-	
-	
-	
-
-
-
-
-
-
--------------
-01-01-17
--------------
-	
-
-Notes:
-When uploading to Arduino Mega make sure you choose Mega 2560 not Mega 1280 (by accident).
-Try not to upload the wrong coe to the wrong Mega.
-
-
-
-
-
-
 	
 
 	
@@ -228,27 +226,59 @@ TROUBLESHOOT AND REWORK
 AnalogSignalsTester	
 		Comments:
 		3.3V and 5V measurement looks fine.
-		Note really able to test most of the temp or photosensors. But maybe for the one on the Beacon I can test those to test the formula.
+		Due to access, I am not really able to test most of the temp or photosensors. But maybe for the one on the Beacon I can test those to test the formula.
 NEED REWORK AND TROUBLESHOOTING			
 Uncomment all _OUTPUT_MUX1_, etc. to see the outputs.			
 Check code and formulas to see if current should be negative.
 Check and maybe print the unit of measurements for photo, current, temp, etc.
-7V formula looks off. I think for 7V I need another formula because of the extra resistor divider for it.
+7V formula looks off. I think for 7V, I need another formula because of the extra resistor divider for it.
 
 Gas still comes up as zero. Maybe print the raw voltage and see what happens.
 
 
 
 
-
+	
 **LEFT OFF REWORK HERE (SEE ABOVE)**		
 	
 	
 	
+
+
+
+
+
+
+-------------
+01-01-17
+-------------
 	
 	
 	
+GpsTester
+	Updated code 01-02-17:
+		In RoverGPSTester.ino, had to change some Serial to Serial3 as that is the GPS Serial channel.
+	Re-Comments:
 	
+	GPS Data Not Ready seems to be printing like it should.
+	
+REWORK NEEDED
+
+Maybe turn off Checksum Failed and Filtered out with debug define flags.
+The debug flags aren't working for some reason. Need to see the original output before it's filtered out.
+
+
+
+
+Notes:
+When uploading to Arduino Mega make sure you choose Mega 2560 not Mega 1280 (by accident).
+Try not to upload the wrong coe to the wrong Mega.
+
+
+
+
+
+
 	
 
 
