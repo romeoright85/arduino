@@ -19,6 +19,59 @@
 //RECOMMENT ME LATER
 //#define _DEBUG_PARSING_WITH_FIXED_DATA
 
+/*
+Example Output:
+
+Sentence ID: GPGGA
+Time Of Data Fix: 122918.000
+Latitude (Dec-Dec NMEA): 3916.1191 N
+Longitude (Dec-Dec NMEA): 7636.6694 W
+Latitude (Dec-Deg): 39.2687 N
+Longitude (Dec-Deg): -76.6112 W
+Fix Quality: 1
+Satellites Tracked: 5
+For Google Maps: 39 16.1193 N, 076 36.6696 W
+GPS Data Not Ready
+GPS Data Not Ready
+
+Sentence ID: GPGGA
+Time Of Data Fix: 122918.400
+Latitude (Dec-Dec NMEA): 3916.1191 N
+Longitude (Dec-Dec NMEA): 7636.6694 W
+Latitude (Dec-Deg): 39.2687 N
+Longitude (Dec-Deg): -76.6112 W
+Fix Quality: 1
+Satellites Tracked: 5
+For Google Maps: 39 16.1193 N, 076 36.6696 W
+GPS Data Not Ready
+GPS Data Not Ready
+
+Sentence ID: GPGGA
+Time Of Data Fix: 122918.800
+Latitude (Dec-Dec NMEA): 3916.1191 N
+Longitude (Dec-Dec NMEA): 7636.6694 W
+Latitude (Dec-Deg): 39.2687 N
+Longitude (Dec-Deg): -76.6112 W
+Fix Quality: 1
+Satellites Tracked: 5
+For Google Maps: 39 16.1192 N, 076 36.6696 W
+GPS Data Not Ready
+GPS Data Not Ready
+
+Sentence ID: GPGGA
+Time Of Data Fix: 122919.200
+Latitude (Dec-Dec NMEA): 3916.1191 N
+Longitude (Dec-Dec NMEA): 7636.6694 W
+Latitude (Dec-Deg): 39.2687 N
+Longitude (Dec-Deg): -76.6112 W
+Fix Quality: 1
+Satellites Tracked: 5
+For Google Maps: 39 16.1192 N, 076 36.6695 W
+GPS Data Not Ready
+GPS Data Not Ready
+
+*/
+
 
 //Uncomment to customize output data
 #define _OUTPUT_STARTING_BLANK_LINE

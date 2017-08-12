@@ -28,11 +28,13 @@ Desired Lat/Long in Degrees (Hersh's Pizza in South Baltimore)
 #define DESIRED_LATITUDE_COORDINATE 39.268603
 #define DESIRED_LONGITUDE_COORDINATE -76.611702
 #define COMPASS_DATA_CHAR_BUFFER_SIZE 10
-#define COMPASS_SENTENCE_LENGTH 100
+#define COMPASS_SENTENCE_LENGTH 10
+
 //Uncomment to use fixed test data, else if left uncommented, it will use actual the GPS Module's and IMU Compass's data
 //#define _DEBUG_USE_FIXED_TEST_DATA
 
-
+//Uncomment to hide the output when GPS data isn't ready
+#define _HIDE_DATA_WHEN_GPS_NOT_READY
 
 
 /*
@@ -61,9 +63,118 @@ Get Motor Steering:
 Get Motor Throttle:
 30.0000
 
+
+
+Note:
+Use this tool to check your distance and true bearing.
+https://www.sunearthtools.com/tools/distance.php
+
+Just subtract actual rover bearing from true bearing to get relative bearing.
+
+Actual Coordinate = The first coordinate in the tool
+Desired Coordinate = the second coordinate (coordinate B) in the tool.
+
+
+From the Rover:
+Desired Lat: 39.2686
+Desired Lon: -76.6117
+Actual Lat: 39.2683
+Actual Lon: -76.6111
+and
+Rover Heading: 158.8700
+
+
+
+The results of Distance and True Bearing from the tool is:
+
+Distance 61.5m
+(True) Bearing = 302.86 degrees
+
+
+When compared to the rover calculatations is:
+
+Distance: 63.2529
+True Bearing: 299.3965
+
+Which is very close.
+
+
+
+And using the values from the tool with the meaured rover heading, the relative bearing is:
+
+Formula:
+	if abs(trueBearing-heading) > 180
+		relativeBearing = -1*(trueBearing-heading)
+	else
+		relativeBearing = trueBearing-heading
+	end if
+Calculation:
+	302.86-158.8700 = 143.99 (which is less than 180) so
+	Relative Bearing: 143.99 degrees (from the tool)
+
+
+Where as from the rover
+	Relative Bearing: 140.5265
+	
+Which again is very close.
+
+And just checking the steering, the distance is greater than 8 meters and the relative bearing is greater than 90 degrees, so we expect a sharp turn to the right (see map from the tool)
+
+And that's what we get from the Rover:
+Get Motor Steering: Sharp Right
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
 */
 
 
+
+/*
+Example Output:
+
+GPS Data Ready
+========
+Desired Lat: 39.2686
+Desired Lon: -76.6117
+Actual Lat: 39.2683
+Actual Lon: -76.6111
+Rover Heading: 158.8700
+Distance: 63.2529
+True Bearing: 299.3965
+Relative Bearing: 140.5265
+Get Motor Steering: Sharp Right
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Ready
+========
+Desired Lat: 39.2686
+Desired Lon: -76.6117
+Actual Lat: 39.2683
+Actual Lon: -76.6111
+Rover Heading: 157.6800
+Distance: 63.2529
+True Bearing: 299.3965
+Relative Bearing: 141.7165
+Get Motor Steering: Sharp Right
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Ready
+========
+Desired Lat: 39.2686
+Desired Lon: -76.6117
+Actual Lat: 39.2683
+Actual Lon: -76.6111
+Rover Heading: 160.5600
+Distance: 63.2529
+True Bearing: 299.3965
+Relative Bearing: 138.8365
+Get Motor Steering: Sharp Right
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+*/
 
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
@@ -146,58 +257,64 @@ void loop() {
 	}
 	else
 	{
-		_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Not Ready"));
-		roverNavigation->setLatitudeDeg(0.0000, TYPE_ACTUAL);
-		roverNavigation->setLongitudeDeg(0.0000, TYPE_ACTUAL);
+		_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Not Ready"));		
 	}
 
 #endif
 
 
-	_SERIAL_DEBUG_CHANNEL_.println(F("========"));
-	_SERIAL_DEBUG_CHANNEL_.print(F("Desired Lat: "));
-	_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_DESIRED, UNIT_DEGREES), 4);//print with 4 decimals
-	_SERIAL_DEBUG_CHANNEL_.print(F("Desired Lon: "));
-	_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_DESIRED, UNIT_DEGREES), 4);//print with 4 decimals
-	_SERIAL_DEBUG_CHANNEL_.print(F("Actual Lat: "));
-	_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_ACTUAL, UNIT_DEGREES), 4);//print with 4 decimals
-	_SERIAL_DEBUG_CHANNEL_.print(F("Actual Lon: "));
-	_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_ACTUAL, UNIT_DEGREES), 4);//print with 4 decimals
-	_SERIAL_DEBUG_CHANNEL_.print(F("Rover Heading: "));
-	_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getHeading(UNIT_DEGREES), 4);//print with 4 decimals
-
-
-	_SERIAL_DEBUG_CHANNEL_.print(F("Distance: "));
-	value = roverNavigation->getDistance(UNIT_M);
-	_SERIAL_DEBUG_CHANNEL_.println(value, 4);//print with 4 decimals
-	_SERIAL_DEBUG_CHANNEL_.print(F("True Bearing: "));
-	value = roverNavigation->getTrueBearing();
-	_SERIAL_DEBUG_CHANNEL_.println(value, 4);//print with 4 decimals	
-
-	_SERIAL_DEBUG_CHANNEL_.print(F("Relative Bearing: "));
-	value = roverNavigation->getRelativeBearing();
-	_SERIAL_DEBUG_CHANNEL_.println(value, 4);//print with 4 decimals	
-
-	_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Steering: "));
-	value = roverNavigation->getCalculatedMotorSteering();
-	translateMotorSteering(roverNavigation->getCalculatedMotorSteering());
-
-	_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Throttle: "));
-	translateMotorThrottle(roverNavigation->getCalculatedMotorThrottle());
-
-
-	_SERIAL_DEBUG_CHANNEL_.print(F("Rover Nav Status: "));
-	if (roverNavigation->hasReachedDestination())
+#ifdef _HIDE_DATA_WHEN_GPS_NOT_READY
+	if (gpsDataReady)
 	{
-		_SERIAL_DEBUG_CHANNEL_.println(F("Destination Reached"));
-	}
-	else
-	{
-		_SERIAL_DEBUG_CHANNEL_.println(F("Still Navigating"));
-	}
-	_SERIAL_DEBUG_CHANNEL_.println();
+#endif
+		_SERIAL_DEBUG_CHANNEL_.println(F("========"));
+		_SERIAL_DEBUG_CHANNEL_.print(F("Desired Lat: "));
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_DESIRED, UNIT_DEGREES), 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.print(F("Desired Lon: "));
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_DESIRED, UNIT_DEGREES), 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.print(F("Actual Lat: "));
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_ACTUAL, UNIT_DEGREES), 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.print(F("Actual Lon: "));
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_ACTUAL, UNIT_DEGREES), 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.print(F("Rover Heading: "));
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getHeading(UNIT_DEGREES), 4);//print with 4 decimals
 
-	delay(2000);
+
+		_SERIAL_DEBUG_CHANNEL_.print(F("Distance: "));
+		value = roverNavigation->getDistance(UNIT_M);
+		_SERIAL_DEBUG_CHANNEL_.println(value, 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.print(F("True Bearing: "));
+		value = roverNavigation->getTrueBearing();
+		_SERIAL_DEBUG_CHANNEL_.println(value, 4);//print with 4 decimals	
+
+		_SERIAL_DEBUG_CHANNEL_.print(F("Relative Bearing: "));
+		value = roverNavigation->getRelativeBearing();
+		_SERIAL_DEBUG_CHANNEL_.println(value, 4);//print with 4 decimals	
+
+		_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Steering: "));
+		value = roverNavigation->getCalculatedMotorSteering();
+		translateMotorSteering(roverNavigation->getCalculatedMotorSteering());
+
+		_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Throttle: "));
+		translateMotorThrottle(roverNavigation->getCalculatedMotorThrottle());
+
+
+		_SERIAL_DEBUG_CHANNEL_.print(F("Rover Nav Status: "));
+		if (roverNavigation->hasReachedDestination())
+		{
+			_SERIAL_DEBUG_CHANNEL_.println(F("Destination Reached"));
+		}
+		else
+		{
+			_SERIAL_DEBUG_CHANNEL_.println(F("Still Navigating"));
+		}
+		_SERIAL_DEBUG_CHANNEL_.println();
+
+#ifdef _HIDE_DATA_WHEN_GPS_NOT_READY
+	}//end if
+#endif
+
+	delay(500);
 }
 
 

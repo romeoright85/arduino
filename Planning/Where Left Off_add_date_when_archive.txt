@@ -12,18 +12,14 @@ Where I left off
 			
 =================1 weekend===================				
 
-			
 	
-	test the RoverNavigationTester code with the DEC-DEG lat/long values from the gps module
-		
-	hook up gps to an arduino
-	walk outside and see if it tells me the right bearing, rover turn action, and distance
-	
-	
-	
-	Retest RoverGPSTester with actual GPS (due to recent changes)
+		[RESTEST ON ROVER DUE TO SOME MINOR CHANGES] RoverGpsSensor
+		Also do a "couple hours" sram test with the gps code
+		added some extra delay, but in general the gps program did not crash when used with PC, only sometimes with laptop. So it's not the rover hardware or software, it's the laptop, which is fine.
 
-	
+		
+
+		
 		[NEEDS REWORK, see Test Results]AnalogSignalsTester	
 		
 		
@@ -48,11 +44,6 @@ Test using COMM Broadcast:
 		[NEED TO DO] test mosfet off
 	
 
-		[RESTEST ON ROVER DUE TO SOME MINOR CHANGES] RoverGpsSensor
-		Also do a "couple hours" sram test with the gps code
-		added some extra delay, but in general the gps program did not crash when used with PC, only sometimes with laptop. So it's not the rover hardware or software, it's the laptop, which is fine.
-
-		
 			
 	
 	
@@ -984,3 +975,8 @@ Hardware hacked the IMU on the rover to fix signal integrity issues. Data hacked
 		
 	[NAH, no time] simulate compass and gps data
 		
+		
+	[DONE]test the RoverNavigationTester code with the DEC-DEG lat/long values from the gps module
+	[DONE]hook up gps to an arduino
+	[NAH, good enough indoors]walk outside and see if it tells me the right bearing, rover turn action, and distance	
+	[DONE] Retest RoverGPSTester with actual GPS (due to recent changes)		
