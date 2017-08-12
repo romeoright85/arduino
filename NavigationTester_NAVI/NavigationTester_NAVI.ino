@@ -28,6 +28,7 @@ Desired Lat/Long in Degrees (Hersh's Pizza in South Baltimore)
 #define DESIRED_LATITUDE_COORDINATE 39.268603
 #define DESIRED_LONGITUDE_COORDINATE -76.611702
 #define COMPASS_DATA_CHAR_BUFFER_SIZE 10
+#define COMPASS_SENTENCE_LENGTH 100
 //Uncomment to use fixed test data, else if left uncommented, it will use actual the GPS Module's and IMU Compass's data
 //#define _DEBUG_USE_FIXED_TEST_DATA
 
@@ -78,6 +79,8 @@ Get Motor Throttle:
 //Global Variables
 RoverNavigation * roverNavigation = new RoverNavigation();
 RoverGpsSensor * roverGps = new RoverGpsSensor();
+double value = 0.0;
+double rxdHeading = 0.0;
 
 //flags for data ready
 boolean gpsDataReady;
@@ -109,11 +112,7 @@ void loop() {
 	//reset flags
 	gpsDataReady = false;
 
-	//Receive (via serial) and process gps data
-	gpsDataReady = rxGPSData(roverGps);
 
-	double value = 0.0;
-	double rxdHeading = 0.0;//debug
 
 	//Preset desired point
 	roverNavigation->setLatitudeDeg(DESIRED_LATITUDE_COORDINATE, TYPE_DESIRED);
@@ -128,15 +127,22 @@ void loop() {
 #else
 	//get actual heading from the IMU's Compass
 	rxdHeading = rxCompassData();
-	roverNavigation->setHeadingDeg(rxdHeading);
+	if(rxdHeading != 999.9)
+	{
+		roverNavigation->setHeadingDeg(rxdHeading);
+	}
+	//else do nothing and keep the last value
+
+	//Get Actual GPS coordinates
+
 	
-	//get actual GPS coordinates
+	gpsDataReady = rxGPSData(roverGps);//Receive (via serial) and process gps data
 
 	if (gpsDataReady)
 	{
 		_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Ready"));
-		roverNavigation->setLatitudeDeg(roverGps->getGpsLatitude(), TYPE_ACTUAL);
-		roverNavigation->setLongitudeDeg(roverGps->getGpsLongitude(), TYPE_ACTUAL);
+		roverNavigation->setLatitudeDeg(roverGps->getGpsLatitude(DEC_DEG), TYPE_ACTUAL);
+		roverNavigation->setLongitudeDeg(roverGps->getGpsLongitude(DEC_DEG), TYPE_ACTUAL);
 	}
 	else
 	{
@@ -244,26 +250,54 @@ void translateMotorThrottle(byte value)
 double rxCompassData() {
 
 	byte rxdCharacterIndex = 0;//initialize the cursor to the beginning of the array
+	byte charsToRxdBeforeTimeout;//counts the number of characters received while waiting for the start of the compass data (i.e. $) before timing out
 	char rxData[COMPASS_DATA_CHAR_BUFFER_SIZE];
-	char defaultData[] = "0.0000";
+	char defaultData[] = "999.9";//a default error/invalid data since the range is 0 to 360
+	char tempChar;
+	boolean foundStart = false;
+
 
 	//Check availabiltiy of serial data
 	if (Serial2.available())
 	{
-		while (Serial2.available())
+		do
 		{
-			if (rxdCharacterIndex <= COMPASS_DATA_CHAR_BUFFER_SIZE)//make sure there is no buffer overflow
-			{				
-				rxData[rxdCharacterIndex] = (char)Serial2.read();
-				rxdCharacterIndex++;//move the cursor to the next position in the array		
-			}//end if
-			else
+			if ((char)Serial2.read() == '$')//look for the start of the compass data (do NOT include it in the data string if found)
 			{
-				Serial.println(F("BuffOvrFlw"));
-			}//end else
-		}//end while
+				foundStart = true;
+				delay(1);
+				break;//break out of the loop since the header was found
+			}
+			delay(1);
+		} while (charsToRxdBeforeTimeout <= COMPASS_SENTENCE_LENGTH);
+		if(foundStart)
+		{
+			while (Serial2.available())
+			{
+				tempChar = (char)Serial2.read();
+
+				if (tempChar == '\r' || tempChar == '\n')//if either newline or return carriage is detected, end the while loop
+				{
+					break;//end of the data sent
+				}
+				else if (rxdCharacterIndex <= COMPASS_DATA_CHAR_BUFFER_SIZE)//make sure there is no buffer overflow
+				{
+					rxData[rxdCharacterIndex] = tempChar;//save the character received into the char array (string)
+					rxdCharacterIndex++;//move the cursor to the next position in the array		
+				}//end if
+				else
+				{
+					Serial.println(F("CmpBuffOvrFlw"));
+					break;//exit out of while loop
+				}//end else
+			}//end while
+		}
+		//else if no start character was foind and time out has occurred, do nothing
+
+		
+
 	}//end if
-	else
+	else//if no data found, copy in the default error data
 	{
 		strncpy(rxData, defaultData, sizeof(defaultData)/sizeof(defaultData[0]));
 	}

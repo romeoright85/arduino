@@ -29,6 +29,8 @@
 //http://aprs.gids.nl/nmea/
 //http://googlecompass.com/MagneticVariationAdjustment.htm
 //https://stackoverflow.com/questions/36254363/how-to-convert-latitude-and-longitude-of-nmea-format-data-to-decimal
+//http://www.latlong.net/degrees-minutes-seconds-to-decimal-degrees
+//https://en.wikipedia.org/wiki/Decimal_degrees
 //"NMEA format is ddmm.mmmm, n/s (d)ddmm.mmmm, e/w"
 /*
 To view in Google Maps
@@ -48,6 +50,26 @@ Remember: Latitude is 0 to 90 and Longitude is 0 to 180. So Grab the first two c
 
 https://support.google.com/maps/answer/18539?co=GENIE.Platform%3DDesktop&hl=en
 
+
+
+NMEA is in Decimal-Decimal format.
+https://community.oracle.com/thread/3619431
+
+The latitude data NMEA format is ddmm.mmmm, n/s "
+decimal degrees = dd + mm.mmmm/60
+	Then use the direction to determine if the number is positive or negative.
+The longitude data NMEA format is (d)ddmm.mmmm, e/w"
+decimal degrees = (d)dd + mm.mmmm/60
+	Then use the direction to determine if the number is positive or negative.	
+https://community.oracle.com/thread/3619431
+
+
+Also can convert degrees, minutes, seconds to decimal degrees with this formula:
+Decimal Degrees = degrees + (minutes/60) + (seconds/3600)
+aka
+DD = d + (min/60) + (sec/3600)
+http://www.latlong.net/degrees-minutes-seconds-to-decimal-degrees
+The direction will be needed to determine if the number is positive or negative.
 */
 
 /*******************************************************************
@@ -79,21 +101,22 @@ public:
 	char * getGpsSentenceId();//returns the GPS sentence ID
 	byte getGpsSentenceIdLength();//returns the length of the corresponding string
 	double getGpsTimeWhenDataWasFixed();//returns the time the data was fixed	
-	double getGpsLatitude();//returns the gps latitude
-	char *  getGpsLatitudeDirection();//returns the gps latitude direction	
-	byte getGpsLatitudeDirectionLength();//returns the length of the corresponding string
-	double getGpsLongitude();//returns the gps longitude
-	char * getGpsLongitudeDirection();//returns the gps longitude direction	
-	byte getGpsLongitudeDirectionLength();//returns the length of the corresponding string
+	double getGpsLatitude(byte);//(format: DEC_DEG or DEC_DEC_NMEA) returns the gps latitude either in decimal degrees when DEC_DEG is passed, else in degrees minutes seconds in NMEA format, when DEC_DEC_NMEA is passed: ddmm.mmmm
+	char *  getGpsLatitudeDirection();//returns the gps latitude direction (and the terminal character of the character array	)
+	byte getGpsLatitudeDirectionLength();//returns the length of the corresponding string, which should be 2, the character of the direction and the terminating character for the character array
+	double getGpsLongitude(byte);//(format: DEC_DEG or DMS_NMEA) returns the gps longitude either in decimal degrees when DEC_DEG is passed, else in degrees minutes seconds in NMEA format, when DEC_DEC_NMEA is passed: ddmm.mmmm
+	char * getGpsLongitudeDirection();//returns the gps longitude direction (and the terminal character of the character array)
+	byte getGpsLongitudeDirectionLength();//returns the length of the corresponding string, which should be 2, the character of the direction and the terminating character for the character array
 	byte getGpsFixQuality(); //returns the gps fix quality (gps fix quality types defined in RoverConfig)
 	byte getGpsSatellitesTracked();//returns the number of gps satellites being tracked	
 	char * getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format
 	byte getGoogleMapsCoordinatesLength();//returns the length of the corresponding string
 	void clearGoogleMapsCoordinates();//clears _googleMapsCoordinates
+	
+	//Note: I just realized the functions were already written as convertNMEALatitudeToDecimalDegrees and convertNMEALongitudeToDecimalDegrees. But keep them all since they all are working (just redundant).
 	double convertNMEALatitudeToDecimalDegrees(double, char *);//(latitude in NMEA format ddmm.mmmm), returns latitude in decimal degrees.
 	double convertNMEALongitudeToDecimalDegrees(double, char *);//(longitude in NMEA format (d)ddmm.mmmm),  returns longitude in decimal degrees.
-	
-	
+		
 private:
 	//Non-SW Resettable
 	void clearGpsDataArray();//clears the GPS Helper Variables

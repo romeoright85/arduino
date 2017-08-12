@@ -40,7 +40,7 @@ void RoverGpsSensor::appendToRxGPSData(char dataIn)
 	}
 	else
 	{
-		Serial.println(F("BuffOvrFlw"));
+		Serial.println(F("GpsBuffOvrFlw"));
 	}
 	
 	
@@ -223,10 +223,47 @@ double RoverGpsSensor::getGpsTimeWhenDataWasFixed()
 	return atof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_DATA_FIX_TIME]);
 }
 
-double RoverGpsSensor::getGpsLatitude()
+double RoverGpsSensor::getGpsLatitude(byte format)
 {	
-
-	return atof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE]);	
+	if(format == DEC_DEC_NMEA)
+	{
+		return atof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE]);	
+	}//end if
+	else if(format == DEC_DEG)
+	{
+		double value = atof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE]);					
+			
+		byte degrees;
+		double degreesDecimal;
+	
+		/*
+			The latitude data NMEA format is ddmm.mmmm, n/s "
+			decimal degrees = dd + mm.mmmm/60
+			Then use the direction to determine if the number is positive or negative.
+			https://community.oracle.com/thread/3619431
+		*/
+				
+		degrees = value / 100;//the fractional part is truncated off since it's a byte
+		degreesDecimal = (value - (degrees * 100))/60;
+		
+		degrees = value / 100;//the fractional part is truncated off since it's a byte
+		degreesDecimal = (value - (degrees * 100))/60;
+		
+		if(strcmp(this->getGpsLatitudeDirection(),"N") == 0)			
+		{
+			return degrees + degreesDecimal;
+		}//end if
+		else // the direction is South
+		{
+			return -1 * (degrees + degreesDecimal);
+		}//end else	
+				
+	}//end else if
+	else
+	{
+		return -1.2345;//invalid error value
+	}//end else
+	
 }
 char * RoverGpsSensor::getGpsLatitudeDirection()
 {	
@@ -236,9 +273,43 @@ byte RoverGpsSensor::getGpsLatitudeDirectionLength()
 {	
 	return CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION],sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE_DIRECTION]));
 }
-double RoverGpsSensor::getGpsLongitude()
+double RoverGpsSensor::getGpsLongitude(byte format)
 {	
-	return atof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE]);		
+	if(format == DEC_DEC_NMEA)
+	{
+		return atof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE]);		
+	}//end if
+	else if(format == DEC_DEG)
+	{
+		double value = atof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE]);					
+		byte degrees;
+		double degreesDecimal;
+
+		/*
+			The longitude data NMEA format is (d)ddmm.mmmm, e/w"
+			decimal degrees = (d)dd + mm.mmmm/60
+			Then use the direction to determine if the number is positive or negative.			
+			https://community.oracle.com/thread/3619431
+		*/
+		
+		degrees = value / 100;//the fractional part is truncated off since it's a byte
+		degreesDecimal = (value - (degrees * 100))/60;
+		if(strcmp(this->getGpsLongitudeDirection(),"E") == 0)			
+		{
+			return degrees + degreesDecimal;
+		}//end if
+		else // the direction is West
+		{
+			return -1 * (degrees + degreesDecimal);
+		}//end else	
+				
+	}//end else if
+	else
+	{
+		return -1.2345;//invalid error value
+	}//end else
+
+	
 }
 char * RoverGpsSensor::getGpsLongitudeDirection()
 {	

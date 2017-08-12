@@ -15,13 +15,19 @@
 
 //Note: To hook up the GPS for testing, look up GPS_DATA_TX_PIN, i.e. #define GPS_DATA_TX_PIN						15
 //Uncomment to used fixed GPS example data to test parsing algorithm
+
+//RECOMMENT ME LATER
 //#define _DEBUG_PARSING_WITH_FIXED_DATA
+
+
 //Uncomment to customize output data
 #define _OUTPUT_STARTING_BLANK_LINE
 #define _OUTPUT_SENTENCE_ID
 #define _OUTPUT_DATA_FIX_TIME
-#define _OUTPUT_LATITUDE
-#define _OUTPUT_LONGITUDE
+#define _OUTPUT_LATITUDE_DEC_DEC_NMEA
+#define _OUTPUT_LONGITUDE_DEC_DEC_NMEA
+#define _OUTPUT_LATITUDE_DEC_DEG
+#define _OUTPUT_LONGITUDE_DEC_DEG
 #define _OUTPUT_FIX_QUALITY
 #define _OUTPUT_SATELLITES_TRACKED
 #define _OUTPUT_GOOGLE_MAPS
@@ -72,6 +78,8 @@ void loop() {
 
 	if (gpsDataReady)
 	{
+
+
 		#ifdef _OUTPUT_STARTING_BLANK_LINE
 			//Add some white space/ new lines for clarity
 			_SERIAL_DEBUG_CHANNEL_.println();			
@@ -92,21 +100,38 @@ void loop() {
 		#endif
 
 
-		#ifdef _OUTPUT_LATITUDE
-			_SERIAL_DEBUG_CHANNEL_.print(F("Latitude: "));
-			dtostrf(roverGps->getGpsLatitude(), 5, 4, numCharArray);//convert double to char array
-			//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
-			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
+		#ifdef _OUTPUT_LATITUDE_DEC_DEC_NMEA
+			_SERIAL_DEBUG_CHANNEL_.print(F("Latitude (Dec-Dec NMEA): "));			
+			dtostrf(roverGps->getGpsLatitude(DEC_DEC_NMEA), 5, 4, numCharArray);//convert double to char array
+			//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %s", numCharArray, *roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
+			sprintf(charBuffer, "%s %s", numCharArray, roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
 			_SERIAL_DEBUG_CHANNEL_.println(charBuffer);
 		#endif
 
-		#ifdef _OUTPUT_LONGITUDE
-			_SERIAL_DEBUG_CHANNEL_.print(F("Longitude: "));
-			dtostrf(roverGps->getGpsLongitude(), 5, 4, numCharArray);//convert double to char array
-			//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %c", numCharArray, *roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
-			sprintf(charBuffer, "%s %c", numCharArray, roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
+		#ifdef _OUTPUT_LONGITUDE_DEC_DEC_NMEA
+			_SERIAL_DEBUG_CHANNEL_.print(F("Longitude (Dec-Dec NMEA): "));			
+			dtostrf(roverGps->getGpsLongitude(DEC_DEC_NMEA), 5, 4, numCharArray);//convert double to char array
+			//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %s", numCharArray, *roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
+			sprintf(charBuffer, "%s %s", numCharArray, roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
 			_SERIAL_DEBUG_CHANNEL_.println(charBuffer);
 		#endif
+
+		#ifdef _OUTPUT_LATITUDE_DEC_DEG
+		_SERIAL_DEBUG_CHANNEL_.print(F("Latitude (Dec-Deg): "));
+		dtostrf(roverGps->getGpsLatitude(DEC_DEG), 5, 4, numCharArray);//convert double to char array
+		//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %s", numCharArray, *roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
+		sprintf(charBuffer, "%s %s", numCharArray, roverGps->getGpsLatitudeDirection());//for getGpsLatitudeDirection(), remember to dereference the pointer to get it's value
+		_SERIAL_DEBUG_CHANNEL_.println(charBuffer);
+		#endif
+
+		#ifdef _OUTPUT_LONGITUDE_DEC_DEG
+		_SERIAL_DEBUG_CHANNEL_.print(F("Longitude (Dec-Deg): "));
+		dtostrf(roverGps->getGpsLongitude(DEC_DEG), 5, 4, numCharArray);//convert double to char array
+		//IT SHOULD WORK WITHOUT THE * before roverGps, TEST IT. sprintf(charBuffer, "%s %s", numCharArray, *roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
+		sprintf(charBuffer, "%s %s", numCharArray, roverGps->getGpsLongitudeDirection());//for getGpsLongitudeDirection(), remember to dereference the pointer to get it's value
+		_SERIAL_DEBUG_CHANNEL_.println(charBuffer);
+		#endif
+		
 
 		#ifdef _OUTPUT_FIX_QUALITY
 			_SERIAL_DEBUG_CHANNEL_.print(F("Fix Quality: "));
@@ -144,7 +169,7 @@ void loop() {
 
 boolean rxGPSData(RoverGpsSensor * roverGps) {
 
-	//Note: Make sure processRxGPSData() is called between (before, after, or in) successive rxGPSData() function calls, as it will clear the string and reset the index (required for the code to work properly)
+	//Important Note: Make sure processRxGPSData() is called between (before, after, or in) successive rxGPSData() function calls, as it will clear the string and reset the index (required for the code to work properly)
 
 
 	byte numberOfAttempts = 0;//counts the number of times attempting to wait for a valid gps data string
@@ -215,7 +240,7 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 
 
 			}//end if
-			//else if time out has occurred, go to the next trial		
+			//else if no start character was foind and time out has occurred, go to the next trial		
 
 		}//end if
 		//else if there is no serial data available do nothing, go to the next trial

@@ -36,7 +36,7 @@ void loop() {
 			Serial.print(rxdChar);
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while	
-		Serial.println();//Add a new line at the end
+		//Note: Don't send a newline. The AUXI should already do this with Serial.println().
 	}//end if	
 
 }//end loop

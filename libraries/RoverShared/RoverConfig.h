@@ -164,6 +164,9 @@
 		#define GPS_GPGGA_FQ_INVALID								0
 		#define GPS_GPGGA_FQ_GPS_FIX								1
 		#define GPS_GPGGA_DGPS											2
+		//Format		
+		#define DEC_DEG					0
+		#define DEC_DEC_NMEA				1
 	#endif	
 	
 	

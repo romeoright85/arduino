@@ -79,8 +79,13 @@ void loop() //Main Loop
 		// Calculations
 		Imu_Calculations();
 
-		Serial2.println(getCorrectedHeading());//Sendheading data from AUXI to MAIN (to be routed to NAVI)
+
+		Serial2.print(F("$"));//Send starting character
+		Serial.print(F("$"));//Send starting character
+		
+		Serial2.println(getCorrectedHeading());//Send heading data from AUXI to MAIN (to be routed to NAVI)
 		Serial.println(getCorrectedHeading());//output to PC for debugging
+			
 
 	}
 
