@@ -20,53 +20,18 @@ Where I left off
 
 #TEST ON SUN				
 	
-	
-	
-	Fix temperature formula?
-	https://playground.arduino.cc/ComponentLib/Thermistor2
-	https://learn.adafruit.com/thermistor/using-a-thermistor
-	
-
-	
-	
-	analyze the analog signals data
-		[DONE, the units are in amps] what are the units of the current measurements?
-			The 5V, 3.3V and 8.4V look good.
-			Measured 4.45V for the 5V line, 8.61 on the 8.4V line, and 3.11V on the 3.3V line.
-		[DONE, in Kelvins] what are the units of the temperature measurements?
-		[DONE, in Lux] what are the units of the light measurements?
-		is the current negative because the motors are off and it's just a calibration issue?
-		analyze the gas sensor data to see if it makes any sense
-		fix any analog signals data issues
-			
-	
-
-
-	
-
-----------------	
-	
-
 
 		
-	
-	Write a photo/temp calibration code to get the ranges and results from the formula and test for accuracy.
-
-		for light sensors, use the beacom photocell and just have a range of bright, medium, and dark
-			use https://learn.adafruit.com/photocells/using-a-photocell for a lux table reference
 		
-	
-		Test the photo/temp calibration code on the GPS Sensor Unit CCA unit I have off the rover
-
-
-
-
-	
 	
 =================1 weekend===================				
 
 
-	
+
+	get ranges for light sensors and define parameters for meaning use for if conditionals
+	for light sensors, use a range of bright, medium, and dark
+			use https://learn.adafruit.com/photocells/using-a-photocell for a lux table reference
+		
 	
 	You may want to go back and fix Rover Navigation to average/filter out bad heading and GPS data as something you might get a jump in data.
 	Also you probably only want to check GPS/heading every once in a while because it can jump a lot and cause the rover to go all over the place.
@@ -87,12 +52,6 @@ Where I left off
 	
 	
 						
-	test the results of the photo/temp calbration ranges with
-		CommBroadcast_COMM
-		CommBroadcast_NAVI
-		CommBroadcast_AUXI
-		CommBroadcast_MAIN
-								
 		
 	[RETEST, it was in debugging mode last time with main code commented out] LaserControlTester. Test this using COMM Broadcast
 										
@@ -1057,3 +1016,55 @@ Hardware hacked the IMU on the rover to fix signal integrity issues. Data hacked
 			CommTester_MAIN
 			CommTester_COMM		
 						
+						
+	
+	
+	[DONE, temp sensor/equation doesn't work as expected. oh well]Write a photo/temp calibration code to get the ranges and results from the formula and test for accuracy.
+
+		
+	[NAH]Test the photo/temp calibration code on the GPS Sensor Unit CCA unit I have off the rover	
+		
+						
+						
+						
+	
+	
+	analyze the analog signals data
+		[DONE, the units are in amps] what are the units of the current measurements?
+			The 5V, 3.3V and 8.4V look good.
+			Measured 4.45V for the 5V line, 8.61 on the 8.4V line, and 3.11V on the 3.3V line.
+		[DONE, in Kelvins] what are the units of the temperature measurements?
+		[DONE, in Lux] what are the units of the light measurements?
+		
+			
+			
+	
+	
+	[NAH, it didn't work]Fix temperature formula
+	https://playground.arduino.cc/ComponentLib/Thermistor2
+	https://learn.adafruit.com/thermistor/using-a-thermistor
+	
+	
+	[DONE, not sure if it works, but oh well move on. it detects 0ppm and does read old and new values. save time and focus on the other aspects of the rover] analyze the gas sensor data to see if it makes any sense
+	
+	[DONE, it's possible that Vcc or the analog read is a little off, causing a negative current, oh well]is the current negative because the motors are off and it's just a calibration issue?
+	
+	[NAH, NO TIME]test the results of the photo/temp calbration ranges with
+		CommBroadcast_COMM
+		CommBroadcast_NAVI
+		CommBroadcast_AUXI
+		CommBroadcast_MAIN
+								
+	
+	
+	AnalogSignalsTester
+	Note:
+	MeasuredVcc function isn't very accurate.
+	Fudged the thermistor equation. Didn't really get accurate results, so ignore it.
+		Changed TEMP_CONSTANT_R0 from 10000 to 5000 to get more realistic numbers. Could be due to paralell resistance.
+		The absolute temperature is off, but the vector/direction of the temperature is correct. Can be used to measure direction of temperature change.
+
+			Next time buy better sensors (not on ebay) and with datasheets that have usage and formulas.
+	
+
+	

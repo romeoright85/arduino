@@ -32,21 +32,23 @@ RoverReset * resetArray[] = {
 
 //Thermistor Constants
 #define	TEMP_CONSTANT_T0	298.15
-#define	TEMP_CONSTANT_B	4050
-#define	TEMP_CONSTANT_R0	10000
+#define	TEMP_CONSTANT_B		4050
+#define	TEMP_CONSTANT_R0	5000 //Was 10000 but changed to 5000 to get slightly more accurate results.
 
 
-//Unit
-#define CELSIUS		0
-#define KELVIN		1
+//Temperature Unit Selected
+#define KELVIN			0
+#define CELSIUS			1
+#define FAHRENHEIT		2
+
 
 
 
 //Uncomment to configure debug outputs
-//#define _DEBUG_CALC_RES_
-//#define _HIDE_LIGHT_1
-//#define _HIDE_LIGHT_2
-//#define _HIDE_TEMP
+#define _DEBUG_CALC_RES_
+//#define _SHOW_LIGHT_1
+//#define _SHOW_LIGHT_2
+#define _SHOW_TEMP
 
 void setup() {
 	//resetting all objects
@@ -64,20 +66,24 @@ void loop() {
 
 	byte setUnit = CELSIUS;
 
-#ifndef _HIDE_LIGHT_1
+#ifdef _SHOW_LIGHT_1
 	Serial.print(F("Photo 1 (Lux): "));
 	Serial.println(getLightValueOf(PHOTOCELL_1, PHOTOCELL_2_FIXED_RESISTOR));
 #endif
-#ifndef _HIDE_LIGHT_2
+#ifdef _SHOW_LIGHT_2
 	Serial.print(F("Photo 2 (Lux): "));
 	Serial.println(getLightValueOf(PHOTOCELL_2, PHOTOCELL_2_FIXED_RESISTOR));
 #endif
-#ifndef _HIDE_TEMP
+#ifdef _SHOW_TEMP
 	Serial.print(F("Temp: "));
 	Serial.print(getTempValueOf(THERMISTOR, THERMISTOR_FIXED_RESISTOR, setUnit));
 	if (setUnit == CELSIUS)
 	{
 		Serial.println(F(" oC"));
+	}
+	else if (setUnit == FAHRENHEIT)
+	{
+		Serial.println(F(" oF"));
 	}
 	else
 	{
@@ -100,6 +106,7 @@ double getLightValueOf(byte analogSignalName, double fixedResistorValue)
 {
 
 	double measuredVcc = roverAdc->readVcc() / 1000.0;//this function is inherited, convert millivolts into volts
+	
 
 	double outputVoltage;
 	double resistanceInOhms;
@@ -145,6 +152,7 @@ double getTempValueOf(byte analogSignalName, double fixedResistorValue, byte uni
 	*/
 
 	double measuredVcc = roverAdc->readVcc() / 1000.0;//this function is inherited, convert millivolts into volts
+	
 
 	double outputVoltage;
 	double resistanceInOhms;
@@ -164,11 +172,17 @@ double getTempValueOf(byte analogSignalName, double fixedResistorValue, byte uni
 	//Convert resistance to temperature (in Kelvins)
 	if( unit == CELSIUS )
 	{
-		return 1.0 / (1.0 / TEMP_CONSTANT_T0 + 1.0 / TEMP_CONSTANT_B * log(resistanceInOhms / TEMP_CONSTANT_R0)) -273;	//In Celsius
+		return 1.0 / (1.0 / TEMP_CONSTANT_T0 + (1.0 / TEMP_CONSTANT_B * log(resistanceInOhms / TEMP_CONSTANT_R0))) -273;	//In Celsius
+		
+
+	}
+	else if ( unit == FAHRENHEIT )
+	{
+		return (1.0 / (1.0 / TEMP_CONSTANT_T0 + (1.0 / TEMP_CONSTANT_B * log(resistanceInOhms / TEMP_CONSTANT_R0))) * (9 / 5))  - 459.67; //Fahrenheit
 	}
 	else//unit == KELVIN or default
 	{
-		return 1.0 / (1.0 / TEMP_CONSTANT_T0 + 1.0 / TEMP_CONSTANT_B * log(resistanceInOhms / TEMP_CONSTANT_R0));	//In Kelvins
+		return 1.0 / (1.0 / TEMP_CONSTANT_T0 + (1.0 / TEMP_CONSTANT_B * log( resistanceInOhms / TEMP_CONSTANT_R0)));	//In Kelvins
 	}
 
 	

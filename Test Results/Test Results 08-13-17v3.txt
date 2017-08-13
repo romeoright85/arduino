@@ -40,16 +40,7 @@ PrintSerialAlive
 
 		
 	
-			
-		
-	AnalogSignalsTester	
-		Analyze the gas, temp, voltage, and 5V lines.
-			See: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results\Recorded Data\AnalogSignalsTester Results 08-12-17v1
-		Check data validity and/or fix the equations.
-			
-			
-			
-			
+	
 			
 			
 			
@@ -70,6 +61,7 @@ PrintSerialAlive
 
 
 	
+			
 	
 	
 -------------
@@ -77,6 +69,17 @@ PrintSerialAlive
 -------------
 	
 		
+	AnalogSignalsTester	
+		Analyze the gas, temp, voltage, and 5V lines.
+			See: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results\Recorded Data\AnalogSignalsTester Results 08-12-17v1
+		Check data validity and/or fix the equations.
+			
+		The voltage was pretty accurate, though not perfect, nor was the measured Vcc.
+		Light numbers didn't make sense but was consistent and usable (just don't trust the unit is lux).
+		Temp values are way off. The only thing usable is the direction of change. The magnitudes are almsot useless.
+			Had to change the R0 from 10K to 5K to make it more realistic. And for some reason, when measuring with a DMM I got about 5K across the fixed resistor as well as the thermistor on the GPS CCA. Oh well.
+			
+				
 			
 	CommTester_AUXI
 	CommTester_NAVI

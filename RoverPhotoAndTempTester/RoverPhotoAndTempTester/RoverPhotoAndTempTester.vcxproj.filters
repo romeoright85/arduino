@@ -17,5 +17,9 @@
   <ItemGroup>
     <None Include="RoverPhotoAndTempTester.ino" />
   </ItemGroup>
- 
+  <ItemGroup>
+    <ClInclude Include="__vm\.RoverPhotoAndTempTester.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>

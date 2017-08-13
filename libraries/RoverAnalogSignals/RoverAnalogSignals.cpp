@@ -301,6 +301,8 @@ double RoverAnalogSignals::getTempValueOf(byte analogSignalName, double fixedRes
 		http://www.eidusa.com/Electronics_Kits_TEMP_THERMISTOR_1.htm
 		https://playground.arduino.cc/ComponentLib/Thermistor2
 		http://www.rapidtables.com/convert/temperature/how-kelvin-to-celsius.htm
+		http://www.rapidtables.com/convert/temperature/how-kelvin-to-fahrenheit.htm
+		https://electronics.stackexchange.com/questions/8754/how-to-measure-temperature-using-a-ntc-thermistor
 	*/
 	
 	double measuredVcc = this->readVcc()/1000.0;//this function is inherited, convert millivolts into volts
@@ -475,7 +477,7 @@ void RoverAnalogSignals::readGasSensor(MqGasSensor * mqGasSensor, DelayCounter *
 		//Initialize variables						
 		mqGasSensor->setReadRuns(0);
 		mqGasSensor->setReadSum(0.0);
-		counter->counterReset();//reset the counter
+		counter->counterReset();//reset the counter in the first run of the read only
 
 		//clear the flags
 		this->_firstRunOfRead = false;
@@ -519,14 +521,6 @@ void RoverAnalogSignals::readGasSensor(MqGasSensor * mqGasSensor, DelayCounter *
 		counter->counterReset();//reset the counter
 	}//end if			
 
-
-
-
-
-
-
-	
-	
 	
 	
 }
@@ -551,7 +545,7 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minu
 			//Initialize variables						
 			mqGasSensor->setCalibrationRuns(0);
 			mqGasSensor->setCalibrationSum(0.0);
-			counter->counterReset();//reset the counter
+			counter->counterReset();//reset the counter on the first run of the calibration only
 			
 
 			//clear the flag since it has been ran once already
@@ -596,7 +590,7 @@ void RoverAnalogSignals::calibrateGasSensor(MqGasSensor * mqGasSensor, byte minu
 				//Assign the calculated value of R0 to the variable R0
 				mqGasSensor->setR0( mqGasSensor->getCalibrationSum()) ;
 
-				//Set the falg to note that the MQ Gas sensor is now calibrated
+				//Set the flag to note that the MQ Gas sensor is now calibrated
 				this->_isGasSensorIsCalibrated = true;
 				#ifdef _DEBUG_GAS_SENSOR_CALIBRATION_STATUS_					
 					Serial.println(F("Gas Sensor Calibrated"));//DEBUG
