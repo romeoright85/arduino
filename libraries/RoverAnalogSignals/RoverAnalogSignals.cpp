@@ -194,17 +194,14 @@ double RoverAnalogSignals::getVoltageValueOf(byte analogSignalName)
 	
 	analogMux = findMuxBySignalName(analogSignalName);
 
-	voltage = analogMux->getVoltageValueOf(analogSignalName);
+	voltage = analogMux->getVoltageValueOf(analogSignalName);//gets the voltage in Volts
 	 
 	 
 	 
-//WORK ON ME	 
 	 //If this is a 7V signal with a resistor divider, scaling is required
 	 if(analogSignalName == VOLTAGE_7D2_RAW)
 	 {
-		 
-
-		 
+		 		 
 			 
 		/*
 			 Note: Reference the CURRENT_SENSOR_UNIT_CCAv2
@@ -223,7 +220,7 @@ double RoverAnalogSignals::getVoltageValueOf(byte analogSignalName)
 		 scalingFactor = (RESISTOR_CURRENTCCA_7D2V_FROM_R_IN + RESISTOR_CURRENTCCA_7D2V_TO_R_OUT)/RESISTOR_CURRENTCCA_7D2V_TO_R_OUT;
 		
 		#ifdef _DEBUG_7D2V_SCALING_FACTOR_
-			Serial.print(F("7.2V Resistor Scaling Factor"));//DEBUG	
+			Serial.print(F("7.2V Resistor Scaling Factor: "));//DEBUG	
 			Serial.println(scalingFactor);//DEBUG	 
 		#endif		
 	
@@ -236,17 +233,17 @@ double RoverAnalogSignals::getVoltageValueOf(byte analogSignalName)
 	#ifdef _DEBUG_MEASURED_VOLTAGE_
 		//Prints the measured voltage
 		Serial.print(F("ADC Voltage: "));//DEBUG		
-		Serial.println(voltage);//DEBUG
+		Serial.println(voltage);//DEBUG, voltage in Volts
 	#endif
 
 	//using delegation and calling AnalogMuxSensor's method
-	return voltage;
+	return voltage;//returns voltage in volts
 }
 double RoverAnalogSignals::getCurrentValueOf(byte analogSignalName, byte currentSensorModel)
 {
 	
 	//Vcc for the ACS current sensors are switched Vcc (standard ~5V)
-	double measuredVcc = this->readVcc()/1000.0;//this function is inherited
+	double measuredVcc = this->readVcc()/1000.0;//this function is inherited, convert millivolts into volts
 	
 	double outputVoltage;
 	//Get the voltage value of the analog mux channel
@@ -258,12 +255,12 @@ double RoverAnalogSignals::getCurrentValueOf(byte analogSignalName, byte current
 		case ACS711_12D5A:
 			//Original Equation: VOUT = (0.11 V/A * i + 1.65 V) * Vcc / 3.3 V
 			//Derived Equation: i = ((VOUT*3.3/Vcc)-1.65)/0.11
-			return ( ( outputVoltage * 3.3 / measuredVcc ) - 1.65 ) / 0.11;
+			return ( ( outputVoltage * 3.3 / measuredVcc ) - 1.65 ) / 0.11; //in amps
 		break;
 		case ACS711_25A:
 			//Original Equation: VOUT = (0.055 V/A * i + 1.65 V) * Vcc / 3.3 V
 			//Derived Equation: i = ((VOUT*3.3/Vcc)-1.65)/0.055
-			return ( ( outputVoltage * 3.3 / measuredVcc ) - 1.65 ) / 0.055;
+			return ( ( outputVoltage * 3.3 / measuredVcc ) - 1.65 ) / 0.055; //in amps
 		break;
 		default: //when the model isn't recognized
 			return 9999;
@@ -273,21 +270,40 @@ double RoverAnalogSignals::getCurrentValueOf(byte analogSignalName, byte current
 double RoverAnalogSignals::getLightValueOf(byte analogSignalName, double fixedResistorValue)
 {
 
-	double measuredVcc = this->readVcc()/1000.0;//this function is inherited
+	double measuredVcc = this->readVcc()/1000.0;//this function is inherited, convert millivolts into volts
 	
 	double outputVoltage;
 	double resistanceInOhms;
 	//Get the voltage value of the analog mux channel
 	outputVoltage = this->getVoltageValueOf(analogSignalName);
 	//Convert voltage output of resistor divider to measured resistance
-	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, fixedResistorValue);
+	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, fixedResistorValue);//resistance in Ohms
 	//Convert resistance to lux
-	return 500.0 / ( resistanceInOhms / 1000.0 );
+	/*	
+	Lux = (500 / RLDR)
+	the formula uses the RLDR expressed in k Ohm
+	http://forum.arduino.cc/index.php?topic=141815.0
+	https://learn.adafruit.com/photocells/using-a-photocell
+	Note: You can also use the "Axel Benz" formula by first measuring the minimum and maximum resistance value with the multimeter and then finding the resistor value with: Pull-Down-Resistor = squareroot(Rmin * Rmax), this will give you slightly better range calculations
+	https://arduinodiy.wordpress.com/2014/07/07/chosing-a-pull-down-resistor-for-an-ldr-axel-benz-formula/	
+	*/
+	
+	return 500.0 / ( resistanceInOhms / 1000.0 );//convert resistance from Ohms to KOhms, then convert that to Lux and return Lux
+	
 }
 double RoverAnalogSignals::getTempValueOf(byte analogSignalName, double fixedResistorValue)
 {
+
+	/*
+		Steinhart–Hart equation
+		https://arduinodiy.wordpress.com/2015/11/10/measuring-temperature-with-ntc-the-steinhart-hart-formula/
+		https://en.wikipedia.org/wiki/Steinhart%E2%80%93Hart_equation	
+		http://www.eidusa.com/Electronics_Kits_TEMP_THERMISTOR_1.htm
+		https://playground.arduino.cc/ComponentLib/Thermistor2
+		http://www.rapidtables.com/convert/temperature/how-kelvin-to-celsius.htm
+	*/
 	
-	double measuredVcc = this->readVcc()/1000.0;//this function is inherited
+	double measuredVcc = this->readVcc()/1000.0;//this function is inherited, convert millivolts into volts
 	
 	double outputVoltage;
 	double resistanceInOhms;
@@ -295,8 +311,9 @@ double RoverAnalogSignals::getTempValueOf(byte analogSignalName, double fixedRes
 	outputVoltage = this->getVoltageValueOf(analogSignalName);
 	//Convert voltage output of resistor divider to measured resistance
 	resistanceInOhms = this->calculateResistance(measuredVcc, outputVoltage, fixedResistorValue);
-	//Convert resistance to temperature
-	return 1.0 / ( 1.0 / TEMP_CONSTANT_T0 + 1.0 / TEMP_CONSTANT_B * log( resistanceInOhms / TEMP_CONSTANT_R0 ) );	
+	
+	//Convert resistance to temperature (in Kelvins)
+	return 1.0 / ( 1.0 / TEMP_CONSTANT_T0 + 1.0 / TEMP_CONSTANT_B * log( resistanceInOhms / TEMP_CONSTANT_R0 ) );	//In Kelvins
 }
 int RoverAnalogSignals::getGasValueOf(MqGasSensor * mqGasSensor)
 {
@@ -373,8 +390,8 @@ double RoverAnalogSignals::calculateResistance(double measuredVcc, double output
 	//Derived Equation: Rl = Vo * Rf / ( Vin + Vo )
 	//Note: Vcc is Vin in this case.
 	//returns resistance in ohms
-	double value;
-	value = outputVoltage * fixedResistorValue / ( measuredVcc + outputVoltage );
+	double resistance;
+	resistance = outputVoltage * fixedResistorValue / ( measuredVcc + outputVoltage );
 	
 	#ifdef _DEBUG_CALC_RES_
 		Serial.print(F("Vo: "));//DEBUG
@@ -384,10 +401,10 @@ double RoverAnalogSignals::calculateResistance(double measuredVcc, double output
 		Serial.print(F("Measured Vcc: "));//DEBUG
 		Serial.println(measuredVcc);//DEBUG	
 		Serial.print(F("Calculated Resistance: "));//DEBUG
-		Serial.println(value);//DEBUG	
+		Serial.println(resistance);//DEBUG	
 	#endif
 	
-	return value;
+	return resistance;
 }
 
 
@@ -402,7 +419,7 @@ double RoverAnalogSignals::calculateGasSensorResistance(MqGasSensor * mqGasSenso
 	the resistance of the sensor could be derived.
 	*/
 	
-	double measuredVcc = this->readVcc()/1000.0;//this function is inherited	
+	double measuredVcc = this->readVcc()/1000.0;//this function is inherited, convert millivolts into volts
 //Serial.print("Vcc: ");//DEBUG AND DELETE
 //Serial.println(this->readVcc());//DEBUG AND DELETE	
 //Serial.println(measuredVcc);//DEBUG AND DELETE	

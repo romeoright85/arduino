@@ -7,9 +7,9 @@
 
 
 //Debug: uncomment the follow defines below in order to see the output (can choose as many or as little as you want
-//#define _OUTPUT_MUX1_
-//#define _OUTPUT_MUX2_
-//#define _OUTPUT_MUX3_
+#define _OUTPUT_MUX1_
+#define _OUTPUT_MUX2_
+#define _OUTPUT_MUX3_
 #define _OUTPUT_MUX4_
 #define _DEBUG_3SEC_WARM_UP_ //do a 3 second warmup instead of a 3 minute warmup for software debugging only
 
@@ -191,7 +191,7 @@ void loop() {
 	val_Dbl = analogSignals->getVoltageValueOf(VOLTAGE_5_ANALOGCCA);
 	_SERIAL_DEBUG_CHANNEL_.print(F("VOLTAGE_5_ANALOGCCA_ACTUAL: "));
 	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
-f
+
 
 
 	//Ch 1

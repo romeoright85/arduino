@@ -64,7 +64,7 @@ double AnalogMuxSensor::readVoltageValueOfAmuxChannel(byte aMuxChannel)
 	//Sends the select signals to the AMUX to route the designed channel
 	this->selectMuxChannel(aMuxChannel);
 	delay(1);//allow enough time to switch to the desired AMUX channel
-	return this->_roverAdc->voltageRead(this->_opAmpOutputPin);
+	return this->_roverAdc->voltageRead(this->_opAmpOutputPin);//gets the voltage in Volts from the voltageRead() function
 }
 unsigned int AnalogMuxSensor::getRawADCValueOf(byte analogSignalName)
 {
@@ -83,7 +83,7 @@ double AnalogMuxSensor::getVoltageValueOf(byte analogSignalName)
 	{
 		if(this->_analogNames[i] == analogSignalName)
 		{
-			return this->readVoltageValueOfAmuxChannel(i+1);//use i+1 since the index is from 0 to 7, but the channels are label 1 to 8
+			return this->readVoltageValueOfAmuxChannel(i+1);//use i+1 since the index is from 0 to 7, but the channels are label 1 to 8, gets the voltage in volts
 		}
 	}
 	return 32767;//else invalid Analog Signal Name, so return the max int value of 32,767 to error out

@@ -22,6 +22,14 @@ Where I left off
 	
 	
 	
+	go back and fix lux calculation
+	Vo = Vcc ( R / (R + Photocell) )
+	also paramaterize the resistors	
+	https://learn.adafruit.com/photocells/using-a-photocell
+	
+	See getLightValueOf() in RoverAnalogSignals
+	
+	
 	Fix temperature formula?
 	https://playground.arduino.cc/ComponentLib/Thermistor2
 	https://learn.adafruit.com/thermistor/using-a-thermistor
@@ -30,11 +38,9 @@ Where I left off
 	
 	
 	analyze the analog signals data
-		[DONE, the units are in amps] what are the units of the current measurements?
-			The 5V, 3.3V and 8.4V look good.
-			Measured 4.45V for the 5V line, 8.61 on the 8.4V line, and 3.11V on the 3.3V line.
-		[DONE, in Kelvins] what are the units of the temperature measurements?
-		[DONE, in Lux] what are the units of the light measurements?
+		[the units are in amps] what are the units of the current measurements?
+		what are the units of the temperature measurements?
+		what are the units of the light measurements?
 		is the current negative because the motors are off and it's just a calibration issue?
 		analyze the gas sensor data to see if it makes any sense
 		fix any analog signals data issues
@@ -48,15 +54,25 @@ Where I left off
 	
 
 
-		
 	
-	Write a photo/temp calibration code to get the ranges and results from the formula and test for accuracy.
+		Test using COMM Broadcast:
 
-		for light sensors, use the beacom photocell and just have a range of bright, medium, and dark
-			use https://learn.adafruit.com/photocells/using-a-photocell for a lux table reference
+			[RETEST, it was in debugging mode last time with main code commented out] LaserControlTester
+										
+	
+	Test
+		PrintSerialAlive
+			
+	[IN PROGRESS]MotorAndServoTester_MAIN
+	[IN PROGRESS]MotorAndServoTester_NAVI
+		[NEED TO DO]review rover encoder output when testing these
+		[NEED TO DO] test mosfet off
 		
 	
-		Test the photo/temp calibration code on the GPS Sensor Unit CCA unit I have off the rover
+	also run analog signals tester at the same time to capture the current readings
+	
+
+
 
 
 
@@ -85,34 +101,18 @@ Where I left off
 	
 ----------------	
 	
-	
-						
-	test the results of the photo/temp calbration ranges with
+		
+		
+	calibrate the photosensors and temp sensors using 
 		CommBroadcast_COMM
 		CommBroadcast_NAVI
 		CommBroadcast_AUXI
 		CommBroadcast_MAIN
-								
 		
-	[RETEST, it was in debugging mode last time with main code commented out] LaserControlTester. Test this using COMM Broadcast
-										
-	
-	Test
-		PrintSerialAlive
-			
-	[IN PROGRESS]MotorAndServoTester_MAIN
-	[IN PROGRESS]MotorAndServoTester_NAVI
-		[NEED TO DO]review rover encoder output when testing these
-		[NEED TO DO] test mosfet off
-		
-	
-	also run analog signals tester at the same time to capture the current readings
-	
 
+	
 ----------------	
 	
-	
-
 	
 			
 		Go back and change all Serial.begin(9600); to 	Serial.begin(PC_USB_BAUD_RATE);

@@ -32,7 +32,7 @@
 			~AnalogMuxSensor();//destructor
 			virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 			unsigned int getRawADCValueOf(byte);//returns the raw analog value by Analog Signal Name (Analog Signal Name)
-			double getVoltageValueOf(byte);//returns the voltage value by Analog Signal Name (Analog Signal Name)
+			double getVoltageValueOf(byte);//returns the voltage value (in Volts, with a range of 0-5V) by Analog Signal Name (Analog Signal Name)
 			boolean hasAnalogName(byte);//returns true if it has the desired Analog Signal Name(Analog Signal Name)
 
 		private:

@@ -132,7 +132,7 @@ void loop() {
 
 	//1b. receive data and process data from MAIN
 	roverDataCh2_NAVI->clearData();//clear data before getting new data
-	ch2Valid = rxData(roverNavi_Ch2, MAIN_BAUD_RATE);
+	ch2Valid = rxData(roverNavi_Ch2, ROVERCOMM_MAIN);
 
 
 

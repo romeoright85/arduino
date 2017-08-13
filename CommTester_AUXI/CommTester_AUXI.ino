@@ -128,7 +128,7 @@ void loop() {
 
 	//1b. receive and process data from MAIN
 	roverDataCh2_AUXI->clearData();//clear data before getting new data
-	ch2Valid = rxData(roverAuxi_Ch2, MAIN_BAUD_RATE);
+	ch2Valid = rxData(roverAuxi_Ch2, ROVERCOMM_AUXI);
 
 
 

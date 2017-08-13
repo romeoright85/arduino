@@ -20,7 +20,7 @@ public:
 	RoverVcc();//constructor
 	~RoverVcc();//destructor
 	virtual void reset();//do nothing	
-	long readVcc();//reads the value of Vcc for Megas
+	long readVcc();//reads the value of Vcc for Megas in millivolts
 private:
 	//Non-SW Resettable
 	//SW Resettable

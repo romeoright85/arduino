@@ -14,6 +14,7 @@
 	//References:
 	
 	//Lux Calculations
+	//https://learn.adafruit.com/photocells/using-a-photocell
 	//http://emant.com/316002.page
 	
 	//Currrent Calulcations
@@ -25,6 +26,8 @@
 	//MQ Gas Calculations
 	//http://sandboxelectronics.com/?p=165
 
+	//Thermal Calculations
+	//https://learn.adafruit.com/thermistor/using-a-thermistor
 	
 
 	//uncomment defines below for debugging
@@ -71,10 +74,10 @@
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 		void calibrateGasSensor(MqGasSensor *, byte, DelayCounter *);//(MqGasSensor object, minutes of Rover Uptime, delay counter object) calibrates the MQ Gas Sensor after waiting for GAS_SENSOR_WARM_UP_TIME to pass. The DelayCounter object is used for delays in between sampling.
 		unsigned int getRawADCValueOf(byte);//returns the raw analog value by Analog Signal Name (Analog Signal Name)
-		double getVoltageValueOf(byte);//returns the voltage value by Analog Signal Name (Analog Signal Name)
-		double getCurrentValueOf(byte, byte);//returns the current value by Analog Signal Name based on the current sensor model (Analog Signal Name, current sensor model)
+		double getVoltageValueOf(byte);//returns the voltage value (in Volts, with a range of 0-5V) by Analog Signal Name (Analog Signal Name)
+		double getCurrentValueOf(byte, byte);//returns the current value in Amps by Analog Signal Name based on the current sensor model (Analog Signal Name, current sensor model)
 		double getLightValueOf(byte, double);//returns the current value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
-		double getTempValueOf(byte, double);//returns the temperature value by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
+		double getTempValueOf(byte, double);//returns the temperature value (in Kelvins) by Analog Signal Name. The fixed resistor used with the voltage divider is passed as well. (Analog Signal Name, fixed resistor value)
 		int getGasValueOf(MqGasSensor *);//(MqGasSensor object) Returns the ppm of the target gas of the MqGasSensor object (Note: the ppm can be greater than 255, so return int instead of byte).
 			//Note: Make sure to check for analogSignals->gasSensorIsCalibrated() to be true before using values from the getGasValueOf()
 		char * getMqGasSensorName(MqGasSensor *);//prints the MQ Gas Sensor's Name
