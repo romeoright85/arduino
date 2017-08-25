@@ -13,7 +13,7 @@ RoverNavigationTester_NAVI
 #include <RoverNavigation.h>
 #include <RoverGpsSensor.h>
 #include <CharArray.h>
-
+#include <BubbleSort.h>
 
 //How to get the longitude and latitude of a place
 //https://support.google.com/maps/answer/18539?co=GENIE.Platform%3DDesktop&hl=en
@@ -34,7 +34,7 @@ Desired Lat/Long in Degrees (Hersh's Pizza in South Baltimore)
 //#define _DEBUG_USE_FIXED_TEST_DATA
 
 //Uncomment to hide the output when GPS data isn't ready
-#define _HIDE_DATA_WHEN_GPS_NOT_READY
+//#define _HIDE_DATA_WHEN_GPS_NOT_READY
 
 
 /*
@@ -197,9 +197,16 @@ RoverGpsSensor * roverGps = new RoverGpsSensor();
 double value = 0.0;
 double rxdHeading = 0.0;
 
-//flags for data ready
-boolean gpsDataReady;
 
+
+//flags and counters for GPS data
+boolean gpsDataReady = false;//tracks when one gps data is received
+boolean allGPSDataGathered = false;//tracks when all 7 gps data is gathered and median is performed. Note 7 is hardcoded in the getMedian function due to the need for a fixed array size
+byte gpsDataCounter = 0;//counts the number of GPS data collected
+//array to hold the GPS samples
+double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
+double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
+double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
 
 RoverReset * resetArray[] = {
 	roverNavigation,
@@ -224,51 +231,106 @@ void setup() {
 
 void loop() {
 
-	//reset flags
-	gpsDataReady = false;
-
-
+	
+	
+	
 
 	//Preset desired point
 	roverNavigation->setLatitudeDeg(DESIRED_LATITUDE_COORDINATE, TYPE_DESIRED);
 	roverNavigation->setLongitudeDeg(DESIRED_LONGITUDE_COORDINATE, TYPE_DESIRED);
 
-
-
 #ifdef _DEBUG_USE_FIXED_TEST_DATA
 	roverNavigation->setHeadingDeg(4.28);
 	roverNavigation->setLatitudeDeg(39.268761, TYPE_ACTUAL);
 	roverNavigation->setLongitudeDeg(-76.606402, TYPE_ACTUAL);
+	allGPSDataGathered = true;
 #else
-	//get actual heading from the IMU's Compass
-	rxdHeading = rxCompassData();
+
+	//=====Get Heading========
+	//Get samples of actual heading from the IMU's Compass for sort and median
+	for (byte headingDataCounter = 0; headingDataCounter < 7; headingDataCounter++)
+	{
+		headingArray[headingDataCounter] = rxCompassData();
+		
+	}
+			
+	rxdHeading = BubbleSort::getMedian(headingArray[0], headingArray[1], headingArray[2], headingArray[3], headingArray[4], headingArray[5], headingArray[6]);
+	
 	if(rxdHeading != 999.9)
 	{
 		roverNavigation->setHeadingDeg(rxdHeading);
 	}
-	//else do nothing and keep the last value
+	//else do nothing and keep the last set value as is
 
-	//Get Actual GPS coordinates
 
-	
+
+	//=====Get Actual (GPS) Coordinates========
+	//Get Sample of Actual GPS coordinates
+	//reset the counter and flag if the last data was completed from the last iteration of the loop
+	if (allGPSDataGathered)
+	{
+		gpsDataCounter = 0;
+		allGPSDataGathered = false;
+	}
+
+
+	//Collect a sample of GPS data
+	gpsDataReady = false;//reset the flag with every iteration of the loop
 	gpsDataReady = rxGPSData(roverGps);//Receive (via serial) and process gps data
-
+	//If the data is ready, process it
 	if (gpsDataReady)
 	{
 		_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Ready"));
-		roverNavigation->setLatitudeDeg(roverGps->getGpsLatitude(DEC_DEG), TYPE_ACTUAL);
-		roverNavigation->setLongitudeDeg(roverGps->getGpsLongitude(DEC_DEG), TYPE_ACTUAL);
-	}
+		//save the lat and long data into the array, which will later be sorted and the median will be extracted
+		latitudeArray[gpsDataCounter] = roverGps->getGpsLatitude(DEC_DEG);
+		longitudeArray[gpsDataCounter] = roverGps->getGpsLongitude(DEC_DEG);
+		gpsDataCounter++;//increment the counter
+
+		if (gpsDataCounter >= 7)//once 7 samples have been collected for the median
+		{
+			roverNavigation->setLatitudeDeg(BubbleSort::getMedian(latitudeArray[0], latitudeArray[1], latitudeArray[2], latitudeArray[3], latitudeArray[4], latitudeArray[5], latitudeArray[6]), TYPE_ACTUAL);//take the median value and set it to the actual latitude value
+			roverNavigation->setLongitudeDeg(BubbleSort::getMedian(longitudeArray[0], longitudeArray[1], longitudeArray[2], longitudeArray[3], longitudeArray[4], longitudeArray[5], longitudeArray[6]), TYPE_ACTUAL);//take the median value and set it to the actual longitude value
+			allGPSDataGathered = true;//set the flag to done since 7 samples have been collected and the median was taken
+			_SERIAL_DEBUG_CHANNEL_.println(F("GPS Median Completed"));
+		}//end if
+	}//end if
+	//Else notify that the data isn't ready
 	else
 	{
-		_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Not Ready"));		
+		_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Not Ready"));
 	}
+
+
+
+
+
+
 
 #endif
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #ifdef _HIDE_DATA_WHEN_GPS_NOT_READY
-	if (gpsDataReady)
+	if (allGPSDataGathered)
 	{
 #endif
 		_SERIAL_DEBUG_CHANNEL_.println(F("========"));
@@ -313,13 +375,19 @@ void loop() {
 			_SERIAL_DEBUG_CHANNEL_.println(F("Still Navigating"));
 		}
 
+
+
 #ifdef _HIDE_DATA_WHEN_GPS_NOT_READY
-	}//end if
+	}//end if	
 #endif
 
-	_SERIAL_DEBUG_CHANNEL_.println();
+	
+	_SERIAL_DEBUG_CHANNEL_.println();//print a newline
+	
 	delay(500);
-}
+	
+
+}//end loop
 
 
 

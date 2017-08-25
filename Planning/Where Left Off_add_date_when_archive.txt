@@ -10,23 +10,31 @@ Where I left off
 				
 
 			
+	
+
+	
 =================1 weekend===================				
 
 
+	
+
+	[DONE]take 7 samples, bubble sort them from 0 to 6. keep and average samples 2, 3, and 4
 			
-
-	
-
-
-#TEST ON SUN				
-	
+			Practice a bubble sort
+		https://en.wikipedia.org/wiki/Bubble_sort
+		http://www.cplusplus.com/forum/general/127295/
+		
+		
+		
+		
+	Use this for heading, lat, and long coordinates.
+		
+		
 
 		
 		
-	
-=================1 weekend===================				
-
-
+		
+		
 
 	get ranges for light sensors and define parameters for meaning use for if conditionals
 	for light sensors, use a range of bright, medium, and dark
@@ -40,12 +48,6 @@ Where I left off
 	Make take a few samples, sort the data, then get the median (the number in the middle of the sorted array)
 			https://mathbits.com/MathBits/CompSci/Arrays/Sorting.htm
 
-	take 7 samples, bubble sort them from 0 to 6. keep and average samples 2, 3, and 4
-			
-			Practice a bubble sort
-		https://en.wikipedia.org/wiki/Bubble_sort
-		http://www.cplusplus.com/forum/general/127295/
-	Use this for heading, lat, and long coordinates.
 		
 	
 ----------------	
