@@ -45,6 +45,17 @@ Test code as you go!!!
 
 
 
+Starting on Rover_StateMachine_COMM.ino at:
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Rover_StateMachine_COMM\Rover_StateMachine_COMM
+
+while referencing:
+	COMM State Machine_add_date_when_archive
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Pseudocode
+	RoverCommandDefs.h
+	RoverStatesAndModes.h
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverShared
+
+
 get the rover to control motors
 then get the rover to follow navigation
 add the health sensors later on
@@ -585,21 +596,28 @@ In the .h or .ino
 In the .cpp or .ino
 ##NAVI and AUXI##
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 ##MAIN##
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial1
+	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 
 ##COMM##
-No Change Needed
+//for COMM, either way it goes to the PC USB Serial
+
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ 
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#endif
+
 
 	
 -------------------------------

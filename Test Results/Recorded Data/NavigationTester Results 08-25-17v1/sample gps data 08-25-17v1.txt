@@ -1,0 +1,141 @@
+
+GPS Data Not Ready
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 0.00000
+Actual Lon: 0.00000
+Rover Heading: 99.76000
+Distance: 8859255.00000
+True Bearing: 310.04421
+Relative Bearing: -149.71578
+Get Motor Steering: Sharp Left
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Ready
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 0.00000
+Actual Lon: 0.00000
+Rover Heading: 100.09000
+Distance: 8859255.00000
+True Bearing: 310.04421
+Relative Bearing: -150.04577
+Get Motor Steering: Sharp Left
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Ready
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 0.00000
+Actual Lon: 0.00000
+Rover Heading: 100.13000
+Distance: 8859255.00000
+True Bearing: 310.04421
+Relative Bearing: -150.08578
+Get Motor Steering: Sharp Left
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Not Ready
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 0.00000
+Actual Lon: 0.00000
+Rover Heading: 900.48999
+Distance: 8859255.00000
+True Bearing: 310.04421
+Relative Bearing: 129.55422
+Get Motor Steering: Sharp Right
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Ready
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 0.00000
+Actual Lon: 0.00000
+Rover Heading: 98.94000
+Distance: 8859255.00000
+True Bearing: 310.04421
+Relative Bearing: -148.89578
+Get Motor Steering: Sharp Left
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Ready
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 0.00000
+Actual Lon: 0.00000
+Rover Heading: 102.18000
+Distance: 8859255.00000
+True Bearing: 310.04421
+Relative Bearing: -152.13577
+Get Motor Steering: Sharp Left
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Ready
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 0.00000
+Actual Lon: 0.00000
+Rover Heading: 99.29000
+Distance: 8859255.00000
+True Bearing: 310.04421
+Relative Bearing: -149.24578
+Get Motor Steering: Sharp Left
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Ready
+GPS Median Completed
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 39.26864
+Actual Lon: -76.61099
+Rover Heading: 99.02000
+Distance: 61.87918
+True Bearing: 266.30474
+Relative Bearing: 167.28475
+Get Motor Steering: Sharp Right
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Ready
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 39.26864
+Actual Lon: -76.61099
+Rover Heading: 98.96000
+Distance: 61.87918
+True Bearing: 266.30474
+Relative Bearing: 167.34475
+Get Motor Steering: Sharp Right
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating
+
+GPS Data Not Ready
+========
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 39.26864
+Actual Lon: -76.61099
+Rover Heading: 100.06000
+Distance: 61.87918
+True Bearing: 266.30474
+Relative Bearing: 166.24475
+Get Motor Steering: Sharp Right
+Get Motor Throttle: Normal Speed
+Rover Nav Status: Still Navigating

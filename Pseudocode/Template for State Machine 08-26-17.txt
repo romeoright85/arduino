@@ -1,0 +1,68 @@
+//Template based off of: Rover_StateMachine_COMM
+
+#include <RoverStatesAndModes.h>
+#include <RoverCommandDefs.h>
+
+//============Global Declarations
+//States
+byte currentState = RUN_HOUSEKEEPING_TASKS;
+
+//Modes
+byte currentMode = POWER_ON_AND_HW_RESET;
+
+//Message Queues
+byte cmnc_msg_queue = NO_MSG;// (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+byte main_msg_queue = NO_MSG;// (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+
+//Flags - Error
+boolean sync_error = false;
+boolean secure_link_error = false;
+boolean sw_reset_error = false;
+boolean generic_health_error = false;
+boolean sleeping_error = false;
+//Flags - Message Controls
+boolean redirectToCMNC = false;
+boolean redirectToMAIN = false;
+//Flags - Status
+boolean main_system_ready = false;
+boolean communications_secure = false;//(used to keep track is the communications link is already secure or not, and is useful for things like when going to sleep and waking back up and needing to synchronize again without needing to resecure the link)
+boolean first_transmission = true;
+
+//Counters
+unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
+unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
+
+//============End of Global Declarations
+
+
+
+
+void setup() {
+
+}//end of setup()
+
+
+void loop() {
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+}//end of loop()
+
+
+
+
+//============Function Definitions
+
+
+//============End of Function Definitions
+
+
+
