@@ -24,7 +24,7 @@ void setup() {
 		}
 
 	}
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 	
 
 }
@@ -38,11 +38,11 @@ void loop() {
 	if (pirSensor->monitorMotion())
 	{
 		//motion detected, take action
-		Serial.println("motion detected");
+		_PC_USB_SERIAL_.println("motion detected");
 	}
 	else
 	{
-		Serial.println("no motion");
+		_PC_USB_SERIAL_.println("no motion");
 	}
 	pirSensor->reset();//reset the pir sensor once samples are processed
 	delay(250);

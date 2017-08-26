@@ -7,9 +7,9 @@
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 #ifdef _DEBUG_COMM_BROADCAST
-#define _SERIAL_DEBUG_CHANNEL_ Serial2
+#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
 #else
-#define _SERIAL_DEBUG_CHANNEL_ Serial
+#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 
@@ -96,9 +96,9 @@ void setup() {
 		resetArray[i]->reset();
 	}
 
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);
-	Serial3.begin(GPS_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);
+	_GPS_SERIAL_.begin(GPS_BAUD_RATE);
 
 
 	delay(1000);
@@ -220,14 +220,14 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 	{
 	
 		//Check availabiltiy of serial data
-		if (Serial3.available() )
+		if (_GPS_SERIAL_.available() )
 		{	
 			//initialize the counter
 			gpsCharactersToReceiveBeforeTimeout = 0;
 			//Wait for the GPS start of data (i.e. $) else for a time out
 			do			
 			{				
-				if ((char)Serial3.read() == '$')//look for the start of the GPS data (do NOT include it in the gps data string if found)
+				if ((char)_GPS_SERIAL_.read() == '$')//look for the start of the GPS data (do NOT include it in the gps data string if found)
 				{
 					foundStart = true;
 					delay(1);
@@ -246,14 +246,14 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 				gpsLengthCounter = 0;
 
 				//Gather the rest of the GPS String (AFTER the $, so $ is not included)
-				while ( Serial3.available() && Serial3.peek() != '$' && gpsLengthCounter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
+				while ( _GPS_SERIAL_.available() && _GPS_SERIAL_.peek() != '$' && gpsLengthCounter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
 				{
 	
 			
 						//Read one character of serial data at a time
-						//Note: Must type cast the Serial.Read to a char since not saving it to a char type first					
+						//Note: Must type cast the _PC_USB_SERIAL_.Read to a char since not saving it to a char type first					
 						
-						roverGps->appendToRxGPSData((char)Serial3.read());//construct the string one char at a time
+						roverGps->appendToRxGPSData((char)_GPS_SERIAL_.read());//construct the string one char at a time
 															 //DEBUG: Add as needed
 						gpsLengthCounter++;
 						delay(1);//add a small delay between each transmission to reduce noisy and garbage characters

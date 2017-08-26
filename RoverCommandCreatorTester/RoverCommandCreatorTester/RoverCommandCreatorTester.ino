@@ -17,7 +17,7 @@ void setup() {
 		resetArray[i]->reset();
 	}
 
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 
 }
 
@@ -25,10 +25,10 @@ void setup() {
 void loop() {
 	
 	//Test with the command tag
-	Serial.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_LATITUDE, "12.3456N"));
+	_PC_USB_SERIAL_.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_LATITUDE, "12.3456N"));
 
 	//Test without the command tag
-	Serial.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_1, "987601.2545E"));
+	_PC_USB_SERIAL_.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_1, "987601.2545E"));
 		
 	while (1);
 }

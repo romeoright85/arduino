@@ -1,4 +1,4 @@
-
+#include <RoverConfig.h>
 
 /*
 References:
@@ -11,7 +11,7 @@ http://www.cplusplus.com/doc/tutorial/ntcs/
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 	
 }
 
@@ -28,37 +28,37 @@ void loop() {
 	byte index = 0;
 
 
-	Serial.println(test1);
+	_PC_USB_SERIAL_.println(test1);
 
 
 	index = indexOf(test1, 4, 'l', sizeof(test1)/ sizeof(test1[0]));//array, start index, array size
-	Serial.println(index);
+	_PC_USB_SERIAL_.println(index);
 	output = subCharArray(test1, index, sizeof(test1) / sizeof(test1[0]) - index);
-	Serial.println(output);
+	_PC_USB_SERIAL_.println(output);
 	output = subCharArray(test1, index, 10, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
-	Serial.println(output);
+	_PC_USB_SERIAL_.println(output);
 
 
 
 	index = indexOf(test1, 'l', sizeof(test1) / sizeof(test1[0]));//array, start index, array size
-	Serial.println(index);
+	_PC_USB_SERIAL_.println(index);
 
 	output = subCharArray(test1, index, sizeof(test1) / sizeof(test1[0]) - index);
-	Serial.println(output);
+	_PC_USB_SERIAL_.println(output);
 
-	Serial.println("ok");
+	_PC_USB_SERIAL_.println("ok");
 
 	output = subCharArray(test1, index, 5, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
-	Serial.println(output);
+	_PC_USB_SERIAL_.println(output);
 	output = subCharArray(test1, index, 6, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
-	Serial.println(output);
+	_PC_USB_SERIAL_.println(output);
 	output = subCharArray(test1, index, 7, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
-	Serial.println(output);
+	_PC_USB_SERIAL_.println(output);
 	output = subCharArray(test1, index, 8, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
-	Serial.println(output);
+	_PC_USB_SERIAL_.println(output);
 
 
-	Serial.println("bye");
+	_PC_USB_SERIAL_.println("bye");
 	while (1);//end the program
 }
 

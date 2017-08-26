@@ -1,6 +1,9 @@
 //NOTES:
+//No GPS unit is used in this practice test code. It uses fixed data only.
+
+
 //Used to test filtering, checksum, parsing, and validating algorithms. Though not kept up to date.
-//After the migration of this practice code to the actual rover code, improvements have been made to the actual rover code (i..e got ride of unnecessary variables, renamed things to make it more clear, etc.)
+//After the migration of this practice code to the actual rover code, improvements have been made to the actual rover code (i.e. got ride of unnecessary variables, renamed things to make it more clear, etc.)
 //Not for long term use since it uses the string classes
 
 
@@ -33,8 +36,7 @@ void setup()
 {
 
 	
-	Serial.begin(9600);
-	Serial1.begin(57600);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);	
 }
 
 void loop()
@@ -67,7 +69,7 @@ void loop()
 	//Note: Only keep and process GPGGA or GPRMC data. Ignore everything else.
 	if (!dataPassedFiltering(original, gpsPreProcessedData[gpsPreProcessedDataIndex]))//Save the GPS Header (gpsHeader) into gpsPreProcessedData[gpsPreProcessedDataIndex] where gpsPreProcessedDataIndex = 0;
 	{
-		Serial.println(F("Filtered Out"));
+		_PC_USB_SERIAL_.println(F("Filtered Out"));
 		return;//do nothing if the data isn't desired
 	}
 	//else continue
@@ -75,14 +77,14 @@ void loop()
 	//Checksum
 	if (!checkSumCalculation(original, dataString ))//if checksum failed
 	{
-		Serial.println(F("Checksum Failed"));
+		_PC_USB_SERIAL_.println(F("Checksum Failed"));
 		return;
 	}	
 	//else continue
 	
 	#ifdef _DEBUG_
-		Serial.println("====");//DEBUG
-		Serial.println(dataString);//DEBUG
+		_PC_USB_SERIAL_.println("====");//DEBUG
+		_PC_USB_SERIAL_.println(dataString);//DEBUG
 	#endif
 	
 
@@ -98,14 +100,14 @@ void loop()
 		{
 			endIndex = dataString.indexOf(',', startIndex);//search for the first/next comma			
 
-			//Serial.println(dataString);//DEBUG
-			//Serial.println(startIndex);//DEBUG
-			//Serial.println(endIndex);//DEBUG
+			//_PC_USB_SERIAL_.println(dataString);//DEBUG
+			//_PC_USB_SERIAL_.println(startIndex);//DEBUG
+			//_PC_USB_SERIAL_.println(endIndex);//DEBUG
 
 			gpsPreProcessedData[i] = dataString.substring(startIndex, endIndex);//grab the substring the start and the first commas (for the first field) or the substring between two commas
 
 			#ifdef _DEBUG_
-				Serial.println(gpsPreProcessedData[i]);//DEBUG
+				_PC_USB_SERIAL_.println(gpsPreProcessedData[i]);//DEBUG
 			#endif
 			
 			dataString = dataString.substring(endIndex + 1);//skip over the current comma to process the data the next loop					
@@ -131,13 +133,13 @@ void loop()
 		for (byte i = 0; i < GPS_GPRMC_FIELDS; i++)
 		{
 			endIndex = dataString.indexOf(',', startIndex);//search for the first/next comma			
-			//Serial.println(dataString);//DEBUG
-			//Serial.println(startIndex);//DEBUG
-			//Serial.println(endIndex);//DEBUG
+			//_PC_USB_SERIAL_.println(dataString);//DEBUG
+			//_PC_USB_SERIAL_.println(startIndex);//DEBUG
+			//_PC_USB_SERIAL_.println(endIndex);//DEBUG
 			gpsPreProcessedData[i] = dataString.substring(startIndex, endIndex);//grab the substring the start and the first commas (for the first field) or the substring between two commas
 			
 			#ifdef _DEBUG_
-						Serial.println(gpsPreProcessedData[i]);//DEBUG
+						_PC_USB_SERIAL_.println(gpsPreProcessedData[i]);//DEBUG
 			#endif
 
 			dataString = dataString.substring(endIndex + 1);//skip over the current comma to process the data the next loop					
@@ -164,13 +166,13 @@ void loop()
 
 		#ifdef _DEBUG2_
 
-				Serial.println("==BEGIN==");
+				_PC_USB_SERIAL_.println("==BEGIN==");
 				for (byte i = 0; i < GPS_POST_PROCESSED_FIELDS; i++)
 				{		
-					Serial.println(gpsPostProcessedData[i]);
+					_PC_USB_SERIAL_.println(gpsPostProcessedData[i]);
 				}
-				Serial.println("==END==");
-				Serial.println();
+				_PC_USB_SERIAL_.println("==END==");
+				_PC_USB_SERIAL_.println();
 
 		#endif
 
@@ -217,7 +219,7 @@ boolean checkSumCalculation(String inputString, String & outputString)
 	//Convert the Checksum into Hex
 	calculatedChecksumInHex = twoDigitDecimalToHexConverter(calculatedChecksumInDecimal);
 
-	//Serial.println(calculatedCheckSumInHex);//DEBUG
+	//_PC_USB_SERIAL_.println(calculatedCheckSumInHex);//DEBUG
 
 	//Grab the received checksum
 	receivedChecksumInHex = inputString.substring(endIndex+1, endIndex+3);//It is the two characters after the *

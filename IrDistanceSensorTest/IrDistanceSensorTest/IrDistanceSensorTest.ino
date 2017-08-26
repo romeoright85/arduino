@@ -6,9 +6,9 @@
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 //Global Variables
@@ -49,8 +49,8 @@ void setup() {
 
 	}
 
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial.begin(MAIN_BAUD_RATE);	
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);	
 }
 
 // the loop function runs over and over again until power down or reset

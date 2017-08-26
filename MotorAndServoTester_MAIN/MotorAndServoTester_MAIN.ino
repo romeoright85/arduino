@@ -10,9 +10,9 @@
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial1
+	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 //Global Variables
@@ -55,8 +55,8 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial1.begin(COMM_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_COMM_SERIAL_.begin(COMM_BAUD_RATE);
 	delay(100);
 	mtrPowerCtrlr->setMotorPower(MTR_ENABLED);
 	_SERIAL_DEBUG_CHANNEL_.println(F("ENABLING MTR"));
@@ -81,7 +81,7 @@ void loop() {
 
 	if (_SERIAL_DEBUG_CHANNEL_.available() > 0)
 	{
-		rxData = Serial1.read();//Get data from COMM
+		rxData = _COMM_SERIAL_.read();//Get data from COMM
 
 		delay(1);
 
@@ -90,9 +90,9 @@ void loop() {
 			case '1'://turn motors on
 				mtrPowerCtrlr->setMotorPower(MTR_ENABLED);
 			#ifdef _DEBUG_COMM_BROADCAST
-				Serial1.println(F("ENABLING MTR"));
+				_COMM_SERIAL_.println(F("ENABLING MTR"));
 			#else
-				Serial.println(F("ENABLING MTR"));
+				_PC_USB_SERIAL_.println(F("ENABLING MTR"));
 			#endif
 				getMotorStatus();
 				delay(500);
@@ -100,9 +100,9 @@ void loop() {
 			case '0'://turn motors off
 				mtrPowerCtrlr->setMotorPower(MTR_DISABLED);
 			#ifdef _DEBUG_COMM_BROADCAST
-				Serial1.println(F("DISABLING MTR"));
+				_COMM_SERIAL_.println(F("DISABLING MTR"));
 			#else
-				Serial.println(F("DISABLING MTR"));
+				_PC_USB_SERIAL_.println(F("DISABLING MTR"));
 			#endif				
 				getMotorStatus();
 				delay(500);

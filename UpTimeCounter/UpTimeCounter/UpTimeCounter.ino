@@ -20,7 +20,7 @@ void setup() {
 		resetArray[i]->reset();
 	}
 
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 
 }
 

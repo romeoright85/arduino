@@ -21,8 +21,8 @@ RoverReset * resetArray[] = { counter50Hz, counter10Hz, timer50Hz, timer10Hz, st
 
 void setup()
 {
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);
 
 	Imu_Init();
 
@@ -80,11 +80,11 @@ void loop() //Main Loop
 		Imu_Calculations();
 
 
-		Serial2.print(F("$"));//Send starting character
-		Serial.print(F("$"));//Send starting character
+		_MAIN_SERIAL_.print(F("$"));//Send starting character
+		_PC_USB_SERIAL_.print(F("$"));//Send starting character
 		
-		Serial2.println(getCorrectedHeading());//Send heading data from AUXI to MAIN (to be routed to NAVI)
-		Serial.println(getCorrectedHeading());//output to PC for debugging
+		_MAIN_SERIAL_.println(getCorrectedHeading());//Send heading data from AUXI to MAIN (to be routed to NAVI)
+		_PC_USB_SERIAL_.println(getCorrectedHeading());//output to PC for debugging
 			
 
 	}

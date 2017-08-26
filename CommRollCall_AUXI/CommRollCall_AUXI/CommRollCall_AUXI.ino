@@ -25,8 +25,8 @@ CMNC->COMM->MAIN->AUXI->MAIN->NAVI->MAIN-COMM->CMNC
 void setup() {
 
 	//Setup the HW_UART for communications between AUXI and MAIN, and AUXI and PC USB
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);
 
 }
 
@@ -36,16 +36,16 @@ void loop() {
 	char rxdChar;
 
 	//Take any data received from MAIN and send it back out to MAIN
-	if (Serial2.available() > 1)
+	if (_MAIN_SERIAL_.available() > 1)
 	{
 		//Send tag to PC USB
-		Serial.println(">AUXI<");
-		while (Serial2.available() > 0)
+		_PC_USB_SERIAL_.println(">AUXI<");
+		while (_MAIN_SERIAL_.available() > 0)
 		{
 			//Read from MAIN
-			rxdChar = (char)Serial2.read();
+			rxdChar = (char)_MAIN_SERIAL_.read();
 			//Transmit back out to MAIN
-			Serial2.print(rxdChar);			
+			_MAIN_SERIAL_.print(rxdChar);			
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while		
 	}//end if

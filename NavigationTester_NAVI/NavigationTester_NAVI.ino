@@ -6,6 +6,10 @@ NavigationTester_AUXI
 NavigationTester_NAVI
 Else if you want to use the fixed test data, you only need to program:
 RoverNavigationTester_NAVI
+
+
+Troubleshooting:
+If you get all 0.0000 or soemthing weird for heading constantly, you might have forgotten to upload NavigationTes and NavigationTester_MAIN taht is required in order to pass heading data over to NavigationTester_NAVI.
 */
 
 //Used for NAVI - 1
@@ -221,9 +225,9 @@ void setup() {
 		resetArray[i]->reset();
 	}
 
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);
-	Serial3.begin(GPS_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);
+	_GPS_SERIAL_.begin(GPS_BAUD_RATE);
 
 	delay(1000);
 }
@@ -441,17 +445,17 @@ double rxCompassData() {
 	byte rxdCharacterIndex = 0;//initialize the cursor to the beginning of the array
 	byte charsToRxdBeforeTimeout;//counts the number of characters received while waiting for the start of the compass data (i.e. $) before timing out
 	char rxData[COMPASS_DATA_CHAR_BUFFER_SIZE];
-	char defaultData[] = "999.9";//a default error/invalid data since the range is 0 to 360
+	char defaultData[] = "999.9";//a default error/invalid heading data since the range is 0 to 360
 	char tempChar;
 	boolean foundStart = false;
 
 
 	//Check availabiltiy of serial data
-	if (Serial2.available())
+	if (_MAIN_SERIAL_.available())
 	{
 		do
 		{
-			if ((char)Serial2.read() == '$')//look for the start of the compass data (do NOT include it in the data string if found)
+			if ((char)_MAIN_SERIAL_.read() == '$')//look for the start of the compass data (do NOT include it in the data string if found)
 			{
 				foundStart = true;
 				delay(1);
@@ -461,9 +465,9 @@ double rxCompassData() {
 		} while (charsToRxdBeforeTimeout <= COMPASS_SENTENCE_LENGTH);
 		if(foundStart)
 		{
-			while (Serial2.available())
+			while (_MAIN_SERIAL_.available())
 			{
-				tempChar = (char)Serial2.read();
+				tempChar = (char)_MAIN_SERIAL_.read();
 
 				if (tempChar == '\r' || tempChar == '\n')//if either newline or return carriage is detected, end the while loop
 				{
@@ -476,12 +480,12 @@ double rxCompassData() {
 				}//end if
 				else
 				{
-					Serial.println(F("CmpBuffOvrFlw"));
+					_PC_USB_SERIAL_.println(F("CmpBuffOvrFlw"));
 					break;//exit out of while loop
 				}//end else
 			}//end while
 		}
-		//else if no start character was foind and time out has occurred, do nothing
+		//else if no start character was found and time out has occurred, do nothing
 
 		
 
@@ -514,14 +518,14 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 	{
 
 		//Check availabiltiy of serial data
-		if (Serial3.available())
+		if (_GPS_SERIAL_.available())
 		{
 			//initialize the counter
 			gpsCharactersToReceiveBeforeTimeout = 0;
 			//Wait for the GPS start of data (i.e. $) else for a time out
 			do
 			{
-				if ((char)Serial3.read() == '$')//look for the start of the GPS data (do NOT include it in the gps data string if found)
+				if ((char)_GPS_SERIAL_.read() == '$')//look for the start of the GPS data (do NOT include it in the gps data string if found)
 				{
 					foundStart = true;
 					delay(1);
@@ -540,14 +544,14 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 				counter = 0;
 
 				//Gather the rest of the GPS String (AFTER the $, so $ is not included)
-				while (Serial3.available() && Serial3.peek() != '$' && counter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
+				while (_GPS_SERIAL_.available() && _GPS_SERIAL_.peek() != '$' && counter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
 				{
 
 
 					//Read one character of serial data at a time
-					//Note: Must type cast the Serial.Read to a char since not saving it to a char type first					
+					//Note: Must type cast the _PC_USB_SERIAL_.Read to a char since not saving it to a char type first					
 
-					roverGps->appendToRxGPSData((char)Serial3.read());//construct the string one char at a time
+					roverGps->appendToRxGPSData((char)_GPS_SERIAL_.read());//construct the string one char at a time
 																	  //DEBUG: Add as needed
 					counter++;
 					delay(1);//add a small delay between each transmission to reduce noisy and garbage characters

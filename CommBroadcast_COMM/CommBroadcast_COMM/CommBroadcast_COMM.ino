@@ -22,16 +22,16 @@ Still load this code, to make sure AUXI or NAVI isn't loaded with any "old" or "
 
 
 
-SoftwareSerial swSerialMAIN(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); 
+SoftwareSerial _MAIN_SWSERIAL_(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); 
 
 
 void setup() {
 
 	//Setup the HW_UART for communications between COMM and CMNC/PC USB
-	Serial.begin(CMNC_BAUD_RATE);
+	_CMNC_SERIAL_.begin(CMNC_BAUD_RATE);
 
 	//Setup the SW_UART for communications between COMM and MAIN
-	swSerialMAIN.begin(MAIN_BAUD_RATE);
+	_MAIN_SWSERIAL_.begin(MAIN_BAUD_RATE);
 }
 
 
@@ -40,38 +40,38 @@ void loop() {
 	char rxdChar;
 
 	//Take any data received from CMNC/PC USB and send it to MAIN
-	if (Serial.available() > 1)
+	if (_CMNC_SERIAL_.available() > 1)
 	{
 		//Output data title/label
-		Serial.println(F("CMNC->COMM:"));
+		_CMNC_SERIAL_.println(F("CMNC->COMM:"));
 
-		while (Serial.available() > 0 )
+		while (_CMNC_SERIAL_.available() > 0 )
 		{
 			//Read from CMNC/PC USB
-			rxdChar = (char)Serial.read();
+			rxdChar = (char)_CMNC_SERIAL_.read();
 			//Transmit out to MAIN
-			swSerialMAIN.print(rxdChar);
+			_MAIN_SWSERIAL_.print(rxdChar);
 			//Also output to PC USB as well for debug
-			Serial.print(rxdChar);
+			_CMNC_SERIAL_.print(rxdChar);
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while
-		Serial.println();//Add a new line at the end
+		_CMNC_SERIAL_.println();//Add a new line at the end
 	}//end if
 	//Take any data received from MAIN and send it to CMNC/PC USB
-	if (swSerialMAIN.available() > 1)
+	if (_MAIN_SWSERIAL_.available() > 1)
 	{
 		//Output data title/label
-		Serial.println(F("COMM->CMNC:"));
+		_CMNC_SERIAL_.println(F("COMM->CMNC:"));
 
-		while (swSerialMAIN.available() > 0)
+		while (_MAIN_SWSERIAL_.available() > 0)
 		{
 			//Read from MAIN
-			rxdChar = (char)swSerialMAIN.read();			
+			rxdChar = (char)_MAIN_SWSERIAL_.read();			
 			//Transmit out to CMNC/PC USB
-			Serial.print(rxdChar);
+			_CMNC_SERIAL_.print(rxdChar);
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while
-		Serial.println();//Add a new line at the end
+		_CMNC_SERIAL_.println();//Add a new line at the end
 	}//end if	
 }//end loop
 

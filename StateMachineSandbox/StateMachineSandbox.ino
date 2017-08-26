@@ -24,13 +24,13 @@ void setup() {
 		resetArray[i]->reset();
 	}
 
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 	
 }
 
 
 void loop() {
-	Serial.println(F("Loop"));
+	_PC_USB_SERIAL_.println(F("Loop"));
 	stateMachine->run();
 	delay(100);
 }

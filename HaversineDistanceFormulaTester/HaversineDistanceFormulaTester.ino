@@ -1,10 +1,13 @@
 #include <math.h>
+#include <RoverConfig.h>
+
+
 #define EARTHS_RADIUS_KM 6371//in KM, will need to use data type double, since it's a big number
 #define EARTHS_RADIUS_M 6371000//will need to use data type double, since it's a big number
 
 
 void setup() {
-  Serial.begin(9600);
+  _PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 }
 
 void loop() {
@@ -15,7 +18,7 @@ void loop() {
   double long2 = -76.609257;
 
 
-  Serial.println(calculateDistance(lat1,long1,lat2,long2),4);
+  _PC_USB_SERIAL_.println(calculateDistance(lat1,long1,lat2,long2),4);
   
 }
 

@@ -12,10 +12,10 @@ void setup() {
 
 
 	//Setup the HW_UART for communications between MAIN and COMM, MAIN and AUXI, MAIN and NAVI, and MAIN and PC USB
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial1.begin(COMM_BAUD_RATE);
-	Serial2.begin(NAVI_BAUD_RATE);
-	Serial3.begin(AUXI_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_COMM_SERIAL_.begin(COMM_BAUD_RATE);
+	_NAVI_SERIAL_.begin(NAVI_BAUD_RATE);
+	_AUXI_SERIAL_.begin(AUXI_BAUD_RATE);
 	//Note: Can't do a reset here since objects aren't created yet until in the loop() code of the state machine.
 }
 

@@ -20,13 +20,13 @@ etc.
 
 
 void setup() {
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 	delay(1000);
-	Serial.println("Arduino Starting Up");
+	_PC_USB_SERIAL_.println("Arduino Starting Up");
 }
 
 
 void loop() {
-	Serial.println("Alive");
+	_PC_USB_SERIAL_.println("Alive");
 	delay(1000);
 }

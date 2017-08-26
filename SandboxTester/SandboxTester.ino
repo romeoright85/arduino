@@ -1,5 +1,5 @@
 #include <RoverSandbox.h>
-
+#include <RoverConfig.h>
 
 //Global Variables
 
@@ -20,12 +20,12 @@ void setup() {
 		}
 
 	}
-	Serial.begin(9600);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 }
 
 
 void loop() {
-	Serial.println("1");
+	_PC_USB_SERIAL_.println("1");
 	delay(1000);
 
 }

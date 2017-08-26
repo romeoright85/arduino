@@ -1,10 +1,10 @@
 #include <CharArray.h>
-
+#include <RoverConfig.h>
 
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	Serial.begin(9600);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 
 }
 
@@ -19,27 +19,27 @@ void loop() {
 	int endIndex = 0;
 	byte test = 1;
 
-	Serial.println(gpsData);
+	_PC_USB_SERIAL_.println(gpsData);
 
 	endIndex = CharArray::indexOf(gpsData, arraySize, ',');
-	Serial.print(F("endIndex: "));
-	Serial.println(endIndex);
+	_PC_USB_SERIAL_.print(F("endIndex: "));
+	_PC_USB_SERIAL_.println(endIndex);
 
 	if (endIndex >= 0)
 	{
 		 CharArray::substring(gpsData, arraySize, startIndex, endIndex, outputCharArray);		 
-		 Serial.println(outputCharArray);
+		 _PC_USB_SERIAL_.println(outputCharArray);
 		 CharArray::substring(gpsData, arraySize, startIndex +7, outputCharArray);//where 7 was chosen aribitrarily just to get a different result than the one above to test the no start index specified function
-		 Serial.println(outputCharArray);
+		 _PC_USB_SERIAL_.println(outputCharArray);
 		 CharArray::substring(gpsData, arraySize, startIndex + 2, gpsData);//where 7 was chosen aribitrarily just to get a different result than the one above to test the no start index specified function
-		 Serial.println(gpsData);
+		 _PC_USB_SERIAL_.println(gpsData);
 	}
 	
 
 
 	
 
-	Serial.println("bye");
+	_PC_USB_SERIAL_.println("bye");
 	
 	while (1);//end the program
 }

@@ -118,10 +118,10 @@ void setup() {
 
 
 	//Setup the HW_UART
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial1.begin(COMM_BAUD_RATE);
-	Serial2.begin(NAVI_BAUD_RATE);
-	Serial3.begin(AUXI_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_COMM_SERIAL_.begin(COMM_BAUD_RATE);
+	_NAVI_SERIAL_.begin(NAVI_BAUD_RATE);
+	_AUXI_SERIAL_.begin(AUXI_BAUD_RATE);
 
 	
 }
@@ -286,16 +286,16 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	if (roverCommType == ROVERCOMM_PC_USB)
 	{
 
-		if (Serial.available() > 1)
+		if (_PC_USB_SERIAL_.available() > 1)
 		{
 			//initialize the counter
 			counter = 0;
 
-			while (Serial.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			while (_PC_USB_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
-				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
+				//Note: Must type cast the _PC_USB_SERIAL_.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_PC_USB_SERIAL_.read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
@@ -309,16 +309,16 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	else if (roverCommType == ROVERCOMM_COMM)
 	{
 
-		if (Serial1.available() > 1)
+		if (_COMM_SERIAL_.available() > 1)
 		{
 			//initialize the counter
 			counter = 0;
 
-			while (Serial1.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			while (_COMM_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
-				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)Serial1.read());//construct the string one char at a time
+				//Note: Must type cast the _PC_USB_SERIAL_.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_COMM_SERIAL_.read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
@@ -334,13 +334,13 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 		//initialize the counter
 		counter = 0;
 
-		if (Serial2.available() > 1)
+		if (_NAVI_SERIAL_.available() > 1)
 		{
-			while (Serial2.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			while (_NAVI_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
-				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)Serial2.read());//construct the string one char at a time
+				//Note: Must type cast the _PC_USB_SERIAL_.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_NAVI_SERIAL_.read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
@@ -353,16 +353,16 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	}//end else if
 	else if (roverCommType == ROVERCOMM_AUXI)
 	{
-		if (Serial3.available() > 1)
+		if (_AUXI_SERIAL_.available() > 1)
 		{
 			//initialize the counter
 			counter = 0;
 
-			while (Serial3.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			while (_AUXI_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
-				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)Serial3.read());//construct the string one char at a time
+				//Note: Must type cast the _PC_USB_SERIAL_.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_AUXI_SERIAL_.read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
@@ -443,26 +443,26 @@ void txData(char * txData, byte roverCommType)
 	if (roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_PC_USB)
 	{
 		//transmit the data through the USB of this Arduino (i.e. for debug)
-		Serial.println(txData);
+		_PC_USB_SERIAL_.println(txData);
 	}//end if
 	else if (roverCommType == ROVERCOMM_COMM)
 	{
 		//transmit the data to COMM
-		Serial1.println(txData);
+		_COMM_SERIAL_.println(txData);
 		#ifdef _DEBUG_IMU_TEST_CASE_
-			Serial.println(F("Out to COMM"));//DEBUG
-			Serial.println(txData);//DEBUG. Normally this output would get sent back to COMM without going out of the USB
+			_PC_USB_SERIAL_.println(F("Out to COMM"));//DEBUG
+			_PC_USB_SERIAL_.println(txData);//DEBUG. Normally this output would get sent back to COMM without going out of the USB
 		#endif
 	}//end else if
 	else if (roverCommType == ROVERCOMM_NAVI)
 	{
 		//transmit the data to NAVI
-		Serial2.println(txData);
+		_NAVI_SERIAL_.println(txData);
 	}//end else if
 	else if (roverCommType == ROVERCOMM_AUXI)
 	{
 		//transmit the data to AUXI
-		Serial3.println(txData);
+		_AUXI_SERIAL_.println(txData);
 	}//end else if
 	else
 	{

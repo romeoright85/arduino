@@ -23,9 +23,9 @@
 //Note: You also have to uncomment _DEBUG_COMM_BROADCAST in ImuSensor.cpp
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 

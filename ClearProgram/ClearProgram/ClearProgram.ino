@@ -15,9 +15,9 @@ Helps with debugging so one Arduino doesn't do anything strange in the backgroun
 #include <RoverConfig.h>
 
 void setup() {
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 	delay(1000);
-	Serial.println("Cleared Program");
+	_PC_USB_SERIAL_.println("Cleared Program");
 	//Do Nothing Else
 }
 

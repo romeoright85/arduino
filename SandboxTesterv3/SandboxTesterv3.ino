@@ -31,18 +31,18 @@ void setup() {
     resetArray[i]->reset();
   }
   
-  Serial.begin(PC_USB_BAUD_RATE);
+  _PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
   
 }
 
 
 void loop() {
 
-  Serial.print("Latitude: ");
-  Serial.println(roverGps->convertLatitudeToDecimalDegrees(latitude_data, "N"),4);//Print 4 Decimal Places
-  Serial.print("Longitude: ");
-  Serial.println(roverGps->convertLongitudeToDecimalDegrees(longitude_data, "W"),4);//Print 4 Decimal Places
+  _PC_USB_SERIAL_.print("Latitude: ");
+  _PC_USB_SERIAL_.println(roverGps->convertLatitudeToDecimalDegrees(latitude_data, "N"),4);//Print 4 Decimal Places
+  _PC_USB_SERIAL_.print("Longitude: ");
+  _PC_USB_SERIAL_.println(roverGps->convertLongitudeToDecimalDegrees(longitude_data, "W"),4);//Print 4 Decimal Places
   delay(1000);
-  Serial.println(M_PI,510);//Math PI
+  _PC_USB_SERIAL_.println(M_PI,510);//Math PI
 }
 

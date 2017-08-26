@@ -23,9 +23,9 @@ Configure (define) flags before calling #include <RoverConfig.h>
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial1
+	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 

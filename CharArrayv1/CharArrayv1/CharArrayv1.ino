@@ -1,4 +1,4 @@
-
+#include <RoverConfig.h>
 
 /*
 References:
@@ -11,7 +11,7 @@ http://www.cplusplus.com/doc/tutorial/ntcs/
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 
 }
 
@@ -28,14 +28,14 @@ void loop() {
 	byte index = 0;
 
 
-	Serial.println(test1);
+	_PC_USB_SERIAL_.println(test1);
 
 
 	index = indexOf(test1, 1, 'a', sizeof(test1) / sizeof(test1[0]));//array, start index, array size
-	Serial.println(index);
+	_PC_USB_SERIAL_.println(index);
 	output = subCharArray(test1, index, index+2);
-	Serial.println(output);
-	Serial.println("bye");
+	_PC_USB_SERIAL_.println(output);
+	_PC_USB_SERIAL_.println("bye");
 	free(output);
 	while (1);//end the program
 }

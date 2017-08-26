@@ -44,21 +44,21 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 }
 
 
 void loop() {
 
 	delay(1000);
-	Serial.println(F("Running..."));
+	_PC_USB_SERIAL_.println(F("Running..."));
 	delay(7000);
-	Serial.println(F("Resetting NAVI..."));
+	_PC_USB_SERIAL_.println(F("Resetting NAVI..."));
 	naviHwResetter->performHwReset();
-	Serial.println(F("Resetting AUXI..."));
+	_PC_USB_SERIAL_.println(F("Resetting AUXI..."));
 	auxiHwResetter->performHwReset();
-	Serial.println(F("Resetting MAIN..."));
+	_PC_USB_SERIAL_.println(F("Resetting MAIN..."));
 	mainHwResetter->performHwReset();
 	delay(1000);
-	Serial.println(F("Reset Complete!"));
+	_PC_USB_SERIAL_.println(F("Reset Complete!"));
 }

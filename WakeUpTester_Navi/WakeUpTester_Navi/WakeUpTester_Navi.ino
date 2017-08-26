@@ -10,9 +10,9 @@
 	//Note: The COMM Broadcast only works if _DEBUG_W_PC_INPUT is commented out
 	
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 //Also see the debug flag _DEBUG_STAY_AWAKE in RoverSleeperServer.h
@@ -60,8 +60,8 @@ void setup() {
 		}
 
 	}
-	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
-	Serial2.begin(MAIN_BAUD_RATE);//Use to talk between MAIN and NAVI
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);//Use to talk between MAIN and NAVI
 
 }
 
@@ -71,16 +71,16 @@ void loop()
 
 	//MAIN puts NAVI to Sleep or Wakes it up.
 #ifdef _DEBUG_W_PC_INPUT	
-	if (Serial.available() > 0)//Check MAIN to NAVI serial bus
+	if (_PC_USB_SERIAL_.available() > 0)//Check MAIN to NAVI serial bus
 #else	
-	if (Serial2.available() > 0)//Check MAIN to NAVI serial bus
+	if (_MAIN_SERIAL_.available() > 0)//Check MAIN to NAVI serial bus
 #endif	
 	{
 	
 	#ifdef _DEBUG_W_PC_INPUT
-		rxData = Serial.read();//Get data from the MAIN to NAVI serial bus
+		rxData = _PC_USB_SERIAL_.read();//Get data from the MAIN to NAVI serial bus
 	#else
-		rxData = Serial2.read();//Get data from the MAIN to NAVI serial bus
+		rxData = _MAIN_SERIAL_.read();//Get data from the MAIN to NAVI serial bus
 	#endif
 		
 		if (rxData == 's')//NAVI sleep

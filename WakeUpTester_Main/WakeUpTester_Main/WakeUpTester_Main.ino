@@ -5,9 +5,9 @@
 //Note: Should be used with _DEBUG_W_PC_INPUT commented out
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial1
+	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 //Note: Since all the Arduinos use this class, you have to define them in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
@@ -71,10 +71,10 @@ void setup() {
 
 	}
 
-	Serial.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
-	Serial1.begin(MAIN_BAUD_RATE);//Use to talk between COMM and MAIN
-	Serial2.begin(NAVI_BAUD_RATE);//Use to talk between MAIN and NAVI
-	Serial3.begin(AUXI_BAUD_RATE);//Use to talk between MAIN and AUXI
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);//Used to talk to the computer, for debugging 
+	_COMM_SERIAL_.begin(COMM_BAUD_RATE);//Use to talk between MAIN and COMM
+	_NAVI_SERIAL_.begin(NAVI_BAUD_RATE);//Use to talk between MAIN and NAVI
+	_AUXI_SERIAL_.begin(AUXI_BAUD_RATE);//Use to talk between MAIN and AUXI
 	
 }
 
@@ -84,15 +84,15 @@ void loop()
 
 	//COMM puts MAIN to Sleep or Wakes it up. When MAIN goes to sleep it also sends a command for AUXI and NAVI to sleep as well.
 #ifdef _DEBUG_W_PC_INPUT
-	if (Serial.available() > 0)//Check COMM to MAIN serial bus
+	if (_PC_USB_SERIAL_.available() > 0)//Check COMM to MAIN serial bus
 #else
-	if (Serial1.available() > 0)//Check COMM to MAIN serial bus
+	if (_COMM_SERIAL_.available() > 0)//Check COMM to MAIN serial bus
 #endif
 	{
 		#ifdef _DEBUG_W_PC_INPUT
-			rxData = Serial.read();//Get data from the PC to MAIN serial bus
+			rxData = _PC_USB_SERIAL_.read();//Get data from the PC to MAIN serial bus
 		#else
-			rxData = Serial1.read();//Get data from the COMM to MAIN serial bus
+			rxData = _COMM_SERIAL_.read();//Get data from the COMM to MAIN serial bus
 		#endif
 		
 		if (rxData == 's')//AUXI, NAVI, MAIN sleep
@@ -168,7 +168,7 @@ void goToSleepNAVI() {
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
 	sleeperNAVI->goToSleep();//update awake flag status
 	//Send command over software serial to shutdown the NAVI
-	Serial2.println('s');//send 's' to the NAVI over NAVI's dedicated serial bus
+	_NAVI_SERIAL_.println('s');//send 's' to the NAVI over NAVI's dedicated serial bus
 
 }
 void wakeUpNAVI() {
@@ -196,7 +196,7 @@ void goToSleepAUXI() {
 	//Note: Don't forget to call this before sending the command, else the status won't be up to date
 	sleeperAUXI->goToSleep();//update awake flag status
 	//Send command over software serial to shutdown the AUXI
-	Serial3.println('s');//send 's' to the AUXI over AUXI's dedicated serial bus
+	_AUXI_SERIAL_.println('s');//send 's' to the AUXI over AUXI's dedicated serial bus
 
 }
 void wakeUpAUXI() {

@@ -4,10 +4,13 @@
  Author:	Richard
 */
 #include <CharArray.h>
+#include <RoverConfig.h>
+
+
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	Serial.begin(9600);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 }
 
 // the loop function runs over and over again until power down or reset
@@ -18,27 +21,27 @@ void loop() {
 	char TrimTemp[] = "  #Hello World! ! ";
 	
 	delay(1);
-	Serial.println(F("Original"));
-	Serial.print(OriginalTemp);
-	Serial.println(F("."));
+	_PC_USB_SERIAL_.println(F("Original"));
+	_PC_USB_SERIAL_.print(OriginalTemp);
+	_PC_USB_SERIAL_.println(F("."));
 
-	Serial.println(F("LTrim"));
+	_PC_USB_SERIAL_.println(F("LTrim"));
 	CharArray::LTrim(LTrimTemp);
-	Serial.print(LTrimTemp);
-	Serial.println(F("."));
+	_PC_USB_SERIAL_.print(LTrimTemp);
+	_PC_USB_SERIAL_.println(F("."));
 
 
 
-	Serial.println(F("RTrim"));
+	_PC_USB_SERIAL_.println(F("RTrim"));
 	CharArray::RTrim(RTrimTemp);
-	Serial.print(RTrimTemp);
-	Serial.println(F("."));
+	_PC_USB_SERIAL_.print(RTrimTemp);
+	_PC_USB_SERIAL_.println(F("."));
 
 
-	Serial.println(F("Trim"));
+	_PC_USB_SERIAL_.println(F("Trim"));
 	CharArray::Trim(TrimTemp);
-	Serial.print(TrimTemp);
-	Serial.println(F("."));
+	_PC_USB_SERIAL_.print(TrimTemp);
+	_PC_USB_SERIAL_.println(F("."));
 
 
 

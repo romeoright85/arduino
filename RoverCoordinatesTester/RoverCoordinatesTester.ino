@@ -1,4 +1,5 @@
 #include <Coordinates.h>
+#include <RoverConfig.h>
 
 //Global Variables
 
@@ -29,7 +30,7 @@ void setup() {
 	}
 	*/
 
-	Serial.begin(9600);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 
 }
 
@@ -40,86 +41,86 @@ void loop() {
 
 
 	//testing different ways to set the position
-	Serial.println(F("TEST CASE 1"));
-	Serial.println(F("Coordinate 1:"));
-	Serial.print(coordinate1->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate1->getLongitudeDeg(), 4);
-	Serial.println();
-	Serial.println(F("Coordinate 2:"));
-	Serial.print(coordinate2->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate2->getLongitudeDeg(), 4);
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("TEST CASE 1"));
+	_PC_USB_SERIAL_.println(F("Coordinate 1:"));
+	_PC_USB_SERIAL_.print(coordinate1->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate1->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 2:"));
+	_PC_USB_SERIAL_.print(coordinate2->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate2->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
 	coordinate1->setLatitudeDeg(7.7);
 	coordinate1->setLongitudeDeg(8.8);
-	Serial.println(F("Coordinate 1:"));
-	Serial.print(coordinate1->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate1->getLongitudeDeg(), 4);
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 1:"));
+	_PC_USB_SERIAL_.print(coordinate1->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate1->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
 	coordinate2->setPositionDeg(56.78, -56.78);
-	Serial.println(F("Coordinate 2:"));
-	Serial.print(coordinate2->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate2->getLongitudeDeg(), 4);
-	Serial.println();
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 2:"));
+	_PC_USB_SERIAL_.print(coordinate2->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate2->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
+	_PC_USB_SERIAL_.println();
 
 	//testing max and min limits of the latitude/longitude
-	Serial.println(F("TEST CASE 2"));
+	_PC_USB_SERIAL_.println(F("TEST CASE 2"));
 	coordinate1->setPositionDeg(45, 45);
-	Serial.println(F("Coordinate 1:"));
-	Serial.print(coordinate1->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate1->getLongitudeDeg(), 4);
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 1:"));
+	_PC_USB_SERIAL_.print(coordinate1->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate1->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
 	coordinate1->setPositionDeg(90, 180);
-	Serial.println(F("Coordinate 1:"));
-	Serial.print(coordinate1->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate1->getLongitudeDeg(), 4);
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 1:"));
+	_PC_USB_SERIAL_.print(coordinate1->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate1->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
 	coordinate1->setPositionDeg(91, 181);
-	Serial.println(F("Coordinate 1:"));
-	Serial.print(coordinate1->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate1->getLongitudeDeg(), 4);
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 1:"));
+	_PC_USB_SERIAL_.print(coordinate1->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate1->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
 	coordinate1->setPositionDeg(-45, -45);
-	Serial.println(F("Coordinate 1:"));
-	Serial.print(coordinate1->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate1->getLongitudeDeg(), 4);
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 1:"));
+	_PC_USB_SERIAL_.print(coordinate1->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate1->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
 	coordinate1->setPositionDeg(-90, -180);
-	Serial.println(F("Coordinate 1:"));
-	Serial.print(coordinate1->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate1->getLongitudeDeg(), 4);
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 1:"));
+	_PC_USB_SERIAL_.print(coordinate1->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate1->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
 	coordinate1->setPositionDeg(-91, -181);
-	Serial.println(F("Coordinate 1:"));
-	Serial.print(coordinate1->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate1->getLongitudeDeg(), 4);
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 1:"));
+	_PC_USB_SERIAL_.print(coordinate1->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate1->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
 
 
 
 	//test resetting the objects
-	Serial.println(F("TEST CASE 3"));
+	_PC_USB_SERIAL_.println(F("TEST CASE 3"));
 	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
 	{
 		resetArray[i]->reset();
 	}
-	Serial.println(F("Coordinate 1:"));
-	Serial.print(coordinate1->getLatitudeDeg(), 4);
-	Serial.print(F(", "));
-	Serial.print(coordinate1->getLongitudeDeg(), 4);
-	Serial.println();
+	_PC_USB_SERIAL_.println(F("Coordinate 1:"));
+	_PC_USB_SERIAL_.print(coordinate1->getLatitudeDeg(), 4);
+	_PC_USB_SERIAL_.print(F(", "));
+	_PC_USB_SERIAL_.print(coordinate1->getLongitudeDeg(), 4);
+	_PC_USB_SERIAL_.println();
 
 
-	Serial.println();
+	_PC_USB_SERIAL_.println();
 	delay(1000);
 }

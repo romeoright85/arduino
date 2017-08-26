@@ -24,8 +24,8 @@ Still load this code, to make sure AUXI or NAVI isn't loaded with any "old" or "
 void setup() {
 
 	//Setup the HW_UART for communications between AUXI and MAIN, and AUXI and PC USB
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);//AUXI and PC USB
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);//AUXI and MAIN
 
 }
 
@@ -34,20 +34,20 @@ void loop() {
 
 	char rxdChar;
 
-	if (Serial2.available() > 1)
+	if (_MAIN_SERIAL_.available() > 1)
 	{
 		//Output data title/label
-		Serial.println(F("MAIN->NAVI:"));
+		_PC_USB_SERIAL_.println(F("MAIN->NAVI:"));
 
-		while (Serial2.available() > 0)
+		while (_MAIN_SERIAL_.available() > 0)
 		{
 			//Read from CMNC/PC USB
-			rxdChar = (char)Serial2.read();
+			rxdChar = (char)_MAIN_SERIAL_.read();
 			//Output to PC USB as well for debug
-			Serial.print(rxdChar);
+			_PC_USB_SERIAL_.print(rxdChar);
 			delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 		}//end while		
-		Serial.println();//Add a new line at the end
+		_PC_USB_SERIAL_.println();//Add a new line at the end
 	}
 }//end loop
 

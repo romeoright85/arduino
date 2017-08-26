@@ -33,8 +33,8 @@ void setup() {
 		resetArray[i]->reset();
 	}
 	
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);//Use to talk between MAIN and AUXI
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);//Use to talk between MAIN and AUXI
 }
 
 

@@ -106,8 +106,8 @@ void setup() {
 
 
 	//Setup the HW_UART
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_..begin(MAIN_BAUD_RATE);
 
 
 
@@ -208,16 +208,16 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	if (roverCommType == ROVERCOMM_PC_USB)
 	{
 
-		if (Serial.available() > 1)
+		if (_PC_USB_SERIAL_.available() > 1)
 		{
 			//initialize the counter
 			counter = 0;
 
-			while (Serial.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			while (_PC_USB_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
-				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
+				//Note: Must type cast the _PC_USB_SERIAL_.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_PC_USB_SERIAL_.read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
@@ -230,16 +230,16 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{
-		if (Serial2.available() > 1)
+		if (_MAIN_SERIAL_..available() > 1)
 		{
 			//initialize the counter
 			counter = 0;
 
-			while (Serial2.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			while (_MAIN_SERIAL_..available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
-				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)Serial2.read());//construct the string one char at a time
+				//Note: Must type cast the _PC_USB_SERIAL_.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_MAIN_SERIAL_..read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
@@ -310,15 +310,15 @@ void txData(char * txData, byte roverCommType)
 	if (roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_PC_USB)
 	{
 		//transmit the data through the USB of this Arduino (i.e. for debug)
-		Serial.println(txData);
+		_PC_USB_SERIAL_.println(txData);
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{
 		//transmit the data to MAIN and then to COMM
-		Serial2.println(txData);
+		_MAIN_SERIAL_..println(txData);
 		#ifdef _DEBUG_IMU_TEST_CASE_
-			Serial.println(F("Out to MAIN then to COMM"));//DEBUG
-			Serial.println(txData);//DEBUG. Normally this output would get sent back to MAIN and then to COMM without going out of the USB
+			_PC_USB_SERIAL_.println(F("Out to MAIN then to COMM"));//DEBUG
+			_PC_USB_SERIAL_.println(txData);//DEBUG. Normally this output would get sent back to MAIN and then to COMM without going out of the USB
 		#endif
 	}//end else if	
 	else

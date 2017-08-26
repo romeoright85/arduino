@@ -1,10 +1,10 @@
-
+#include <RoverConfig.h>
 
 
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	Serial.begin(9600);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 }
 
 // the loop function runs over and over again until power down or reset
@@ -17,7 +17,7 @@ char a[] = "name=RRR&school=AAA&roll=111&address=SSS";
 char* name = splitCharArray(a, ",");
 
 
-Serial.println(name);
+_PC_USB_SERIAL_.println(name);
 
 
 free(name);
@@ -67,7 +67,7 @@ return result;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-	Serial.begin(9600);
+	_PC_USB_SERIAL_.begin(9600);
 }
 
 // the loop function runs over and over again until power down or reset
@@ -83,11 +83,11 @@ void loop() {
 		char* address = getTagValue(a, "address");
 		char* bad = getTagValue(a, "bad");
 
-		Serial.println(name);
-		Serial.println(school);
-		Serial.println(roll);
-		Serial.println(address);
-		Serial.println(bad);
+		_PC_USB_SERIAL_.println(name);
+		_PC_USB_SERIAL_.println(school);
+		_PC_USB_SERIAL_.println(roll);
+		_PC_USB_SERIAL_.println(address);
+		_PC_USB_SERIAL_.println(bad);
 
 		free(name);
 		free(school);

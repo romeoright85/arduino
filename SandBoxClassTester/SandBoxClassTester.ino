@@ -1,5 +1,7 @@
 #include <Sandbox.h>
 #include <DataType.h>
+#include <RoverConfig.h>
+
 
 Sandbox * sandboxObject = new Sandbox();
 
@@ -11,7 +13,7 @@ char charArray[10];
 void setup()
 {
 
-	Serial.begin(9600);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 
 }
 
@@ -23,7 +25,7 @@ void loop()
 	success = DataType::byteToChars(num, tempCharArray, sizeof(tempCharArray));
 	if (success)
 	{
-		Serial.println(tempCharArray);
+		_PC_USB_SERIAL_.println(tempCharArray);
 	}
 	while (1);
 }

@@ -57,7 +57,7 @@ void setup() {
 		resetArray[i]->reset();
 	}
 
-	Serial.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
 
 }
 
@@ -67,27 +67,27 @@ void loop() {
 	byte setUnit = CELSIUS;
 
 #ifdef _SHOW_LIGHT_1
-	Serial.print(F("Photo 1 (Lux): "));
-	Serial.println(getLightValueOf(PHOTOCELL_1, PHOTOCELL_2_FIXED_RESISTOR));
+	_PC_USB_SERIAL_.print(F("Photo 1 (Lux): "));
+	_PC_USB_SERIAL_.println(getLightValueOf(PHOTOCELL_1, PHOTOCELL_2_FIXED_RESISTOR));
 #endif
 #ifdef _SHOW_LIGHT_2
-	Serial.print(F("Photo 2 (Lux): "));
-	Serial.println(getLightValueOf(PHOTOCELL_2, PHOTOCELL_2_FIXED_RESISTOR));
+	_PC_USB_SERIAL_.print(F("Photo 2 (Lux): "));
+	_PC_USB_SERIAL_.println(getLightValueOf(PHOTOCELL_2, PHOTOCELL_2_FIXED_RESISTOR));
 #endif
 #ifdef _SHOW_TEMP
-	Serial.print(F("Temp: "));
-	Serial.print(getTempValueOf(THERMISTOR, THERMISTOR_FIXED_RESISTOR, setUnit));
+	_PC_USB_SERIAL_.print(F("Temp: "));
+	_PC_USB_SERIAL_.print(getTempValueOf(THERMISTOR, THERMISTOR_FIXED_RESISTOR, setUnit));
 	if (setUnit == CELSIUS)
 	{
-		Serial.println(F(" oC"));
+		_PC_USB_SERIAL_.println(F(" oC"));
 	}
 	else if (setUnit == FAHRENHEIT)
 	{
-		Serial.println(F(" oF"));
+		_PC_USB_SERIAL_.println(F(" oF"));
 	}
 	else
 	{
-		Serial.println(F(" oK"));
+		_PC_USB_SERIAL_.println(F(" oK"));
 	}
 #endif
 
@@ -200,14 +200,14 @@ double calculateResistance(double measuredVcc, double outputVoltage, double fixe
 	resistance = outputVoltage * fixedResistorValue / (measuredVcc + outputVoltage);
 
 #ifdef _DEBUG_CALC_RES_
-	Serial.print(F("Vo: "));//DEBUG
-	Serial.println(outputVoltage);//DEBUG		
-	Serial.print(F("Fixed Res: "));//DEBUG
-	Serial.println(fixedResistorValue);//DEBUG	
-	Serial.print(F("Measured Vcc: "));//DEBUG
-	Serial.println(measuredVcc);//DEBUG	
-	Serial.print(F("Calculated Resistance: "));//DEBUG
-	Serial.println(resistance);//DEBUG	
+	_PC_USB_SERIAL_.print(F("Vo: "));//DEBUG
+	_PC_USB_SERIAL_.println(outputVoltage);//DEBUG		
+	_PC_USB_SERIAL_.print(F("Fixed Res: "));//DEBUG
+	_PC_USB_SERIAL_.println(fixedResistorValue);//DEBUG	
+	_PC_USB_SERIAL_.print(F("Measured Vcc: "));//DEBUG
+	_PC_USB_SERIAL_.println(measuredVcc);//DEBUG	
+	_PC_USB_SERIAL_.print(F("Calculated Resistance: "));//DEBUG
+	_PC_USB_SERIAL_.println(resistance);//DEBUG	
 #endif
 
 	return resistance;

@@ -83,7 +83,7 @@ RoverCommand * roverCommand = new RoverCommand();
 
 //{ SW_UART Declarations
 	//{ MAIN SW_UART
-		SoftwareSerial swSerialMAIN(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX, TX, Note declare this in global and not setup() else it won't work
+		SoftwareSerial _MAIN_SWSERIAL_(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN); // RX, TX, Note declare this in global and not setup() else it won't work
 	//} End of MAIN SW_UART
 //} End of SW_UART Declarations
 
@@ -128,7 +128,7 @@ void setup() {
 	Serial.begin(CMNC_BAUD_RATE);
 
 	//Setup the SW_UART
-	swSerialMAIN.begin(MAIN_BAUD_RATE);
+	_MAIN_SWSERIAL_.begin(MAIN_BAUD_RATE);
 }
 
 
@@ -255,16 +255,16 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{
-		if (swSerialMAIN.available() > 1)
+		if (_MAIN_SWSERIAL_.available() > 1)
 		{
 			//initialize the counter
 			counter = 0;
 
-			while (swSerialMAIN.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			while (_MAIN_SWSERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
 				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)swSerialMAIN.read());//construct the string one char at a time
+				roverComm->appendToRxData((char)_MAIN_SWSERIAL_.read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
@@ -341,7 +341,7 @@ void txData(char * txData, byte roverCommType)
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{
 		//transmit the data to MAIN
-		swSerialMAIN.println(txData);
+		_MAIN_SWSERIAL_.println(txData);
 	}//end else if
 	else
 	{
