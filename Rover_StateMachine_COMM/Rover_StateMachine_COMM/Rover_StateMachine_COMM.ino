@@ -1,5 +1,9 @@
 //Rover_StateMachine_COMM
 
+//DEBUG
+//Can send /-c5--*hi or /-c5--*bye to test if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
+
+
 
 //Note: To test with USB Serial for all Serial channels, go to RoverConfig and uncomment the flag _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
 
@@ -635,7 +639,6 @@ boolean dataDirector(RoverData * roverData, byte redirectOption)
 		//if the data is for this unit, CMNC
 		dataWasForThisArduino = true;//set the status such that the data was for this unit, COMM
 		//process it back in the main loop (to prevent software stack from being too deep)
-		return;
 	}//end if
 	//else check to see if the data was for other cases
 	else if(redirectOption == DATA_REDIRECT_ENABLED)
@@ -695,6 +698,8 @@ void commandDirector(char * roverCommand)
 	
 	//=========TEMP CODE BELOW
 	//WRITE ME LATER
+
+
 	
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
 	if (strcmp(roverCommand, "hi") == 0 && commandEnableOption_Hi == true)
@@ -718,7 +723,7 @@ void commandDirector(char * roverCommand)
 			txData(roverCommand, ROVERCOMM_CMNC);
 		}
 	}//end else
-	
+
 	//=========END OF TEMP CODE BELOW
 	
 	
@@ -804,7 +809,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 					//If the data is valid, set the status as such
 					if(roverComm_Ch2->validateData())
 					{
-						ch2Status = DATA_STATUS_VALID;
+						ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
 					}
 					//Else the data is invalid, so set the status as such
 					else
@@ -829,15 +834,15 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 
-
+				
 				
 				if (ch2Status==DATA_STATUS_VALID)
 				{
-					
 					//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
 					//Set no redirections from MAIN	
-					dataWasForCOMM_Ch2 = dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED);//Note: this is a local .ino function
-
+					//Note: this is a local .ino function
+					dataWasForCOMM_Ch2 = dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED);
+					
 					//Set filter to throw away all MAIN data except:
 						//system ready message(s) from MAIN
 						//system go message(s) from MAIN
@@ -866,14 +871,19 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 						commandEnableOption_Hi = true;//DEBUG	
-						//commandEnableOption_Bye  = true;//DEBUG, FOR DEBUGGING, disable this to see that the filter works
+						commandEnableOption_Bye  = true;//DEBUG, FOR DEBUGGING, can disable this to see that the filter works
 						commandEnableOption_Invalid = true;//DEBUG
 
 
 					//END OF TEMP DEBUG CODE
 
 				}//end if
-				//else the data was invalid or not ready, so do nothing
+				else
+				{
+					//else the data was invalid or not ready, so do nothing
+					dataWasForCOMM_Ch2 = false;//set the flag to false since the data was not for COMM
+				}
+				
 				
 						
 	
@@ -891,14 +901,23 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				//Note: Either you should get no data, hw reset, sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
 				//Remember, only  hw reset, sw reset, generic health status error, or system ready or system go message(s) can pass the data filter.
+
+
+
 			if(dataWasForCOMM_Ch2)//If there was data from MAIN (Ch2), and it was for COMM
 			{
 				//1. First send the RoverData to the roverCommand's parser to get the command
 				roverCommand->parseCommand(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
+						
 
+
+
+
+
+						
 				//2. Then run the command director to run the allowed commands
 				commandDirector(roverCommand->getCommand());
-			}
+			}//end if
 
 					//WRITE ME LATER
 					//FINISH ME
@@ -1205,7 +1224,7 @@ void runModeFunction_default()
 
 
 void InterruptDispatch1() {
-	pirSensor->isrUpdate();
+	//pirSensor->isrUpdate();
 }
 
 void InterruptDispatch2() {
