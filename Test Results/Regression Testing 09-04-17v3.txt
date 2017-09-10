@@ -1,0 +1,149 @@
+Note: Don't use a USB hub with the laptop. Even when the Arduino is connected to it, it will have issues for some reason.
+
+Note: When programming the Arduinos, make sure power to all other Arduinos are there by connecting the Rover's USB cables to all the Arduinos to power them. Else you might not be able to get a Done uploading message.
+=========NEED TO DO=========
+
+still need to test xbee and anything connected to navi and auxi to make sure nothing else was fried. though it seemed to burn the chip quick
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results\Recorded Data\Rover Damage 08-27-17v1
+
+
+run all tests
+
+
+
+
+
+
+
+
+	
+	
+MotorAndServoTester_MAIN
+MotorAndServoTester_NAVI
+	also run these with AnalogSignalsTester to see the motor current
+	The motor enable switch works and does effect and override the motor enable status as designed. The motor enable signal also works.
+		The only issue is once the motor enable is disabled, if it's re-enable sometimes the motor controller comes up in an error state and required physical reboot of the system.
+		Therefore it's best to only disable the motors with software for emergency stop and then reboot the system manually in order for the motor controller to get out of any error states.
+		Remember to enable the motor enable on start up before running any motor calibration else you may have issues.
+	Encoders don't seem to be reading/working.
+		
+		
+		
+NavigationTester_AUXI
+NavigationTester_MAIN
+NavigationTester_NAVI
+	STILL NEED TO TEST
+
+
+
+
+
+
+	
+	
+	
+	
+
+
+=========DONE=========
+
+
+
+tests ran successfully
+	LaserControlTester
+	AnalogLedTester
+	AnalogSignalsTester
+		seems to work. did not verify accuracy of data but that it was received and some what changes over time.
+	CommBroadcast_AUXI
+	CommBroadcast_COMM
+	CommBroadcast_MAIN
+	CommBroadcast_NAVI
+		not sure algorithm is correct but the data seems to send through all the arduinos
+
+			
+	CommRollCall_AUXI
+	CommRollCall_COMM
+	CommRollCall_MAIN
+	CommRollCall_NAVI
+		not sure algorithm is correct but the data seems to send through all the arduinos
+
+		
+		
+	CommTester_AUXI
+	CommTester_COMM
+	CommTester_MAIN
+		Got a BuffOvrFlw error when I first sent "/-c4--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+		After trying again it after sending other valid commands, and it worked.
+	CommTester_NAVI
+		Got a BuffOvrFlw error when I first sent "/-c2--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+		After trying again it after sending other valid commands, and it worked.
+		
+	CurrentSensorFaultTester
+	DigitalLedTester
+	GPSSerialEcho
+	
+	IMUTester
+		Heading works.
+		Some reason Roll, Pitch, Yaw and AHRS outputs all zeros. Could be the code and not the device itself. May need to debug later.
+
+	
+	IrDistanceSensorTest
+	irDistanceRearCenter isn't working for some reason. It's not changing with distance.
+		After probing around and injecting voltages, it seem to work again without anything changed. Weird but ok.
+	[future improvement idea]Can change from average to median filter.
+	
+	On level ground, the rover reads:
+		irDistanceForwardCenter: 12 cm
+		irDistanceForwardCenter: 11 cm
+		irDistanceForwardCenter: 12 cm
+		irDistanceForwardCenter: 10 cm
+		irDistanceForwardCenter: 13 cm
+
+		irDistanceSideRight: 10 cm
+		irDistanceSideRight: 12 cm
+		irDistanceSideRight: 11 cm
+		irDistanceSideRight: 12 cm
+		irDistanceSideRight: 11 cm
+
+		irDistanceRearCenter: 15 cm
+		irDistanceRearCenter: 16 cm
+		irDistanceRearCenter: 15 cm
+		irDistanceRearCenter: 14 cm
+		irDistanceRearCenter: 17 cm
+
+		irDistanceSideLeft: 11 cm
+		irDistanceSideLeft: 13 cm
+		irDistanceSideLeft: 13 cm
+		irDistanceSideLeft: 11 cm
+		irDistanceSideLeft: 11 cm
+
+	PirSensorTest
+	
+		
+	RoverHwResetTester_COMM
+	RoverHwResetTester_MAIN
+		Test one HWResetTester at a time (one UUT at a time)
+		Used with PrintSerialAlive on all non UUT Arduinos.
+		Upload all non UUTs with PrintSerialAlive first, then upload the HwTester last so it doesn't reset the non UUTs are you're trying to upload to it.
+		Use two USB cables. One to monitor when the HwReseter is resetting and one to monitor the non-UUTs being reset while running the PrintSerial Alive
+	
+		
+	WakeUpTester_Auxi
+	WakeUpTester_COMM
+	WakeUpTester_Main
+	WakeUpTester_Navi
+		Program all four before using/testing this code.
+		Use two USB cables. One to monitor the UUT, and the other to watch when the devices are sleeping or waking. (and also send commands to do so)
+		It takes about 20 secs or so for the arduinos to wake up and start messaging outputs again.
+		For some reason top wake the COMM you have to send it one character to wake it, then another one to get it printing again.
+
+	UltrasonicSensorTest
+	
+
+
+	RoverGPSTester
+
+
+[nah just run all tests]determine what pins might have had high voltage and how it may have impacted electronics down the line on the navi and mega
+
+Tester the Laser code on AUXI with all others on COMMBroadcast and it works. (no xbee used, just COMM to USB though)

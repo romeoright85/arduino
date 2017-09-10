@@ -17,13 +17,15 @@ NOTE: MAIN will spend a lot of time redirecting data since AUXI and NAVI and COM
 At POR (defaults):
 	Current State: RUN_HOUSEKEEPING_TASKS
 	Next State: RUN_HOUSEKEEPING_TASKS
-	Mode: POWER_ON_AND_HW_RESET *begin*
+	Current Mode: POWER_ON_AND_HW_RESET *begin*
+	Next Mode: POWER_ON_AND_HW_RESET 
 	comm_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 	navi_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 	auxi_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 	redirectToNAVI = false
 	redirectToAUXI = false
 	redirectToCOMM = false
+	invalid_state_or_mode_error = false
 	navi_system_ready = false	
 	auxi_system_ready = false	
 	navi_acknowledgement = false //a shared status flag, used for sw resets, sleep requests, wake requests, etc. Make sure to clear it out before use and only use it for one purpose at a time.
@@ -60,14 +62,13 @@ MAIN:
 			RUN_HOUSEKEEPING_TASKS		
 				POWER_ON_AND_HW_RESET
 					run POR tasks
-					start background tasks
 					Set mode to INITIALIZATION *begin*
 					Go to whatever the next state is
 						(still is Next State: RUN_HOUSEKEEPING_TASKS)							
 				INITIALIZATION
 					run initialization tasks
 						initialize/reinitialize all variables
-					initialize background tasks
+					start background tasks
 					Set mode to SYNCHRONIZATION *begin*
 					//initialize/reset shared counter before use
 					timeout_counter = 0;
@@ -1042,12 +1043,18 @@ MAIN:
 							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
 							go to RUN_HOUSEKEEPING_TASKS	
 						end if
-					end if					
-				
-				
-									
-						
-						
+					end if			
+			DEFAULT:
+				Set mode to SYSTEM_ERROR *begin*
+				cmnc_msg_queue == invalid_state_or_mode_error_STATUS
+				set invalid_state_or_mode_error = true
+						(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
+				//initialize/reset shared counter before use
+				timeout_counter = 0;
+				Set next state to CONTROL_OUTPUTS								
+				go to RUN_HOUSEKEEPING_TASKS								
+							
+							
 		
 			
 
@@ -1064,6 +1071,7 @@ Note: These states don't always have to go in order.
 	RUN_HOUSEKEEPING_TASKS
 		runs in parallel with every loop
 	RX_COMMUNICATIONS
+		rxData()
 	DATA_VALIDATION
 		data parsing and validation
 		validateData()
@@ -1071,6 +1079,7 @@ Note: These states don't always have to go in order.
 		dataDirector()
 	READ_INPUTS
 	PROCESS_DATA
+		commandDirector()
 	CONTROL_OUTPUTS			
 	CREATE_DATA
 	TX_COMMUNICATIONS		
@@ -1090,7 +1099,7 @@ SYSTEM_SLEEPING
 SYSTEM_WAKING
 SW_RESETTING
 SYSTEM_ERROR
-
+DEFAULT
 		
 ==================
 Command Options (i.e. used in the PROCESS_DATA state. Typically from the NORMAL_OPERATIONS mode, but not always)

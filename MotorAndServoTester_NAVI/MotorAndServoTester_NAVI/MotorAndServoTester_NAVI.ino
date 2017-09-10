@@ -11,6 +11,7 @@
 
 
 
+
 #include <RoverConfig.h>
 #include <WheelEncoderSensor.h>
 #include <GlobalDelayTimer.h>
@@ -96,8 +97,8 @@ void setup() {
 	{
 		resetArray[i]->reset();
 	}
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);
 
 	//Instantiate the gimbal servos and motor controller
 	gimbalSetPins(SERVO_PAN_PIN, SERVO_TILT_PIN);
@@ -147,12 +148,12 @@ void loop() {
 	char rxData;
 	if (_SERIAL_DEBUG_CHANNEL_.available() > 0)
 	{
-		rxData = _SERIAL_DEBUG_CHANNEL_.read();//Get data from the computer
+		rxData = (char)_SERIAL_DEBUG_CHANNEL_.read();//Get data from the computer
 		delay(1);
 
 		switch (rxData)
 		{
-			case '1'://Reset
+			case '1'://Reset - Straight, Stop, Center, Middle
 				_SERIAL_DEBUG_CHANNEL_.println(F("RESET"));
 				motorControllerSetSteering(SET_GO_STRAIGHT);
 				motorControllerSetThrottle(SET_STOP_SPEED);
@@ -217,6 +218,7 @@ void loop() {
 				gimbalSetTilt(SET_DOWN_TILT);
 				break;			
 			default:
+				_SERIAL_DEBUG_CHANNEL_.println(F("INVALID INPUT"));
 				break;
 		}//end switch
 	}//end if

@@ -9,6 +9,10 @@
 #include <Servo.h>
 
 
+//Uncomment to debug
+//#define _DEBUG_PRINT_PAN_TILT_DEMO_VALUES
+
+
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
@@ -168,36 +172,72 @@ void gimbalFunctionalDemo()
 		//Start at center and middle
 		gimbalSetPan(GC_CENTER_POSITION_IDEAL);
 		gimbalSetTilt(GC_MIDDLE_POSITION_IDEAL);		
+		#ifdef _DEBUG_PRINT_PAN_TILT_DEMO_VALUES
+			Serial.print(F("panVal: "));
+			Serial.println(GC_CENTER_POSITION_IDEAL);
+			Serial.print(F("tiltVal: "));
+			Serial.println(GC_MIDDLE_POSITION_IDEAL);
+		#endif
 		delay(1000);
 		//Tilt max up
 		gimbalSetTilt(GC_MAX_UP_POSITION_IDEAL);
+		#ifdef _DEBUG_PRINT_PAN_TILT_DEMO_VALUES			
+			Serial.print(F("tiltVal: "));
+			Serial.println(GC_MAX_UP_POSITION_IDEAL);
+		#endif		
 		delay(10);
-		//Pan sweep right to left
-		for(byte panVal = GC_MAX_RIGHT_POSITION_IDEAL; panVal >= GC_MAX_LEFT_POSITION_IDEAL; panVal--)
-		{
+		//Pan sweep right to left		
+		for(byte panVal = GC_MAX_RIGHT_POSITION_IDEAL; panVal > GC_MAX_LEFT_POSITION_IDEAL; panVal--)//going right to left
+		{			
 			gimbalSetPan(panVal);
+			#ifdef _DEBUG_PRINT_PAN_TILT_DEMO_VALUES
+				Serial.print(F("panVal: "));
+				Serial.println(panVal);
+			#endif
 			delay(10);	
 		}
 		//Tilt middle
 		gimbalSetTilt(GC_MIDDLE_POSITION_IDEAL);
+		#ifdef _DEBUG_PRINT_PAN_TILT_DEMO_VALUES			
+			Serial.print(F("tiltVal: "));
+			Serial.println(GC_MIDDLE_POSITION_IDEAL);
+		#endif				
 		delay(10);
-		for(byte panVal = GC_MAX_LEFT_POSITION_IDEAL; panVal >= GC_MAX_RIGHT_POSITION_IDEAL; panVal++)
+		for(byte panVal = GC_MAX_LEFT_POSITION_IDEAL; panVal < GC_MAX_RIGHT_POSITION_IDEAL; panVal++)// going left to right now 
 		{
 			gimbalSetPan(panVal);
+			#ifdef _DEBUG_PRINT_PAN_TILT_DEMO_VALUES
+				Serial.print(F("panVal: "));
+				Serial.println(panVal);
+			#endif
 			delay(10);	
 		}
 		//Tilt max down
 		gimbalSetTilt(GC_MAX_DOWN_POSITION_IDEAL);
+		#ifdef _DEBUG_PRINT_PAN_TILT_DEMO_VALUES			
+			Serial.print(F("tiltVal: "));
+			Serial.println(GC_MAX_DOWN_POSITION_IDEAL);
+		#endif				
 		delay(10);
 		//Pan sweep right to left
-		for(byte panVal = GC_MAX_RIGHT_POSITION_IDEAL; panVal >= GC_MAX_LEFT_POSITION_IDEAL; panVal--)
+		for(byte panVal = GC_MAX_RIGHT_POSITION_IDEAL; panVal > GC_MAX_LEFT_POSITION_IDEAL; panVal--)//going right to left again
 		{
 			gimbalSetPan(panVal);
+			#ifdef _DEBUG_PRINT_PAN_TILT_DEMO_VALUES
+				Serial.print(F("panVal: "));
+				Serial.println(panVal);
+			#endif
 			delay(10);	
 		}
 		//End at center and middle
 		gimbalSetPan(GC_CENTER_POSITION_IDEAL);
 		gimbalSetTilt(GC_MIDDLE_POSITION_IDEAL);		
+		#ifdef _DEBUG_PRINT_PAN_TILT_DEMO_VALUES
+			Serial.print(F("panVal: "));
+			Serial.println(GC_CENTER_POSITION_IDEAL);
+			Serial.print(F("tiltVal: "));
+			Serial.println(GC_MIDDLE_POSITION_IDEAL);
+		#endif		
 		Serial.println(F("Gimbal Demo - Done"));
 
 }

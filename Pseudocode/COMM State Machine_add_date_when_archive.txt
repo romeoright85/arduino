@@ -3,6 +3,8 @@ Note: For command tags, see command creator excel in K:\Working Directory\DESIGN
 Note: Once the system goes into the state, SYSTEM_ERROR, it can only be fixed with a HW or SW reset.
 Note: Some of these defines share names between Arduinos, so make sure you use th RoverConfig to define which each definition should go to which Arduino type
 
+
+
 #define COMM_SYNC_TIMEOUT_VALUE ??
 #define SECURE_LINK_TIMEOUT_VALUE ??
 #define CONCURRENT_TRANSMISSION_DELAY		??//delay for about 1-5ms or so between potentially sending messages out again to the same arduino
@@ -13,8 +15,10 @@ Note: Some of these defines share names between Arduinos, so make sure you use t
 At POR (defaults):
 	Current State: RUN_HOUSEKEEPING_TASKS
 	Next State: RUN_HOUSEKEEPING_TASKS
-	Mode: POWER_ON_AND_HW_RESET *begin*
+	Current Mode: POWER_ON_AND_HW_RESET *begin*
+	Next Mode: POWER_ON_AND_HW_RESET 
 	sync_error = false
+	invalid_state_or_mode_error = false
 	secure_link_error = false
 	sw_reset_error = false
 	generic_health_error = false
@@ -35,14 +39,13 @@ COMM:
 			RUN_HOUSEKEEPING_TASKS
 				POWER_ON_AND_HW_RESET
 					run POR tasks
-					start background tasks
 					Set mode to INITIALIZATION *begin*
 					Go to whatever the next state is
 						(still is Next State: RUN_HOUSEKEEPING_TASKS)
 				INITIALIZATION
 					run initialization tasks
 						initialize/reinitialize all variables
-					initialize background tasks
+					start background tasks
 					Set mode to SYNCHRONIZATION *begin*
 					//initialize/reset shared counter before use
 					timeout_counter = 0;
@@ -897,11 +900,17 @@ COMM:
 							go to RUN_HOUSEKEEPING_TASKS	
 						end if
 					end if
+			DEFAULT:
+				Set mode to SYSTEM_ERROR *begin*
+				cmnc_msg_queue == invalid_state_or_mode_error_STATUS
+				set invalid_state_or_mode_error = true
+						(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
+				//initialize/reset shared counter before use
+				timeout_counter = 0;
+				Set next state to CONTROL_OUTPUTS								
+				go to RUN_HOUSEKEEPING_TASKS
 				
-					
-					
-
-			
+				
 			
 State Matrix Design = States vs. Modes			
 ==================
@@ -911,6 +920,7 @@ Note: These states don't always have to go in order.
 	RUN_HOUSEKEEPING_TASKS
 		runs in parallel with every loop
 	RX_COMMUNICATIONS
+		rxData()
 	DATA_VALIDATION
 		data parsing and validation
 		validateData()
@@ -918,6 +928,7 @@ Note: These states don't always have to go in order.
 		dataDirector()
 	READ_INPUTS
 	PROCESS_DATA
+		commandDirector()
 	CONTROL_OUTPUTS			
 	CREATE_DATA
 	TX_COMMUNICATIONS		
@@ -938,6 +949,7 @@ SYSTEM_SLEEPING
 SYSTEM_WAKING
 SW_RESETTING
 SYSTEM_ERROR
+DEFAULT
 
 		
 ==================

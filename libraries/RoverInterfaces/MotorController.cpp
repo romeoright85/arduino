@@ -162,27 +162,28 @@ void motorControllerPowerOnCalibration(BufferSelect * roverBuffer)
 	//Only run the power on calibration if the roverBuffer is set to auto mode, else do nothing, since in manual mode, the calibration is done with the R/C remote controller
 	if(roverBuffer->inAutoMode())
 	{
+		Serial.println(F("Pwr On Mtr Cal - Start"));
 		//Start at stop and center
 		motorControllerSetSteering(MC_CENTER_POSITION_IDEAL);
 		motorControllerSetThrottle(MC_NO_THROTTLE_IDEAL);				
-		delay(1000);
+		delay(1200);
 		//Turn right max
 		motorControllerSetSteering(MC_MAX_RIGHT_POSITION_IDEAL);
-		delay(1000);
+		delay(1200);
 		//Turn left max
 		motorControllerSetSteering(MC_MAX_LEFT_POSITION_IDEAL);
-		delay(1000);
+		delay(1200);
 		//Return to Center
 		motorControllerSetSteering(MC_CENTER_POSITION_IDEAL);
 		//Go Forward Max
 		motorControllerSetThrottle(MC_MAX_FWD_THROTTLE_IDEAL);
-		delay(1000);
+		delay(1200);
 		//Go Reverse Max
 		motorControllerSetThrottle(MC_MAX_REV_THROTTLE_IDEAL);
-		delay(1000);
+		delay(1200);
 		//Return to stop		
 		motorControllerSetThrottle(MC_NO_THROTTLE_IDEAL);				
-		Serial.println(F("Pwr On Cal - Done"));
+		Serial.println(F("Pwr On Mtr Cal - Done"));
 	}	
 }
 

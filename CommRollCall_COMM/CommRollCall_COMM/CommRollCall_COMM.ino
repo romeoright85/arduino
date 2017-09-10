@@ -16,12 +16,12 @@ Once a command is sent from CMNC:
 //Must define this before calling RoverConfig.h (either directly or through another header file)
 #define _ARD_4_COMM_H //define this flag to turn on COMM definitions
 
-#include <Software_CMNC_SERIAL_.h>
+#include <SoftwareSerial.h>
 #include <RoverConfig.h>
 
 
 
-Software_CMNC_SERIAL_ _MAIN_SW_CMNC_SERIAL__(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN);
+SoftwareSerial _MAIN_SW_CMNC_SERIAL__(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN);
 
 
 void setup() {

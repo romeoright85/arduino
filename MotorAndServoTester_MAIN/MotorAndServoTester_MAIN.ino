@@ -1,5 +1,11 @@
 //Used for MAIN - 3
 
+/*
+When you enable and disable the motor, you're enabling and disabling the MOSFET through an OR gate that is also controled by the toggle switch on the rover.
+Once you disable the motor and then reenable it, you'll probably have to re-run the motor calibration because it lost power.
+It's actually best just to switch buffers to manual mode or auto mode when you want to stop the rover. It's best to only disable the motor controller mosfet for emergency stops only, as it might not come up or work properly again until you physically reboot the rover.
+*/
+
 #include <RoverConfig.h>
 #include <WheelEncoderSensor.h>
 #include <GlobalDelayTimer.h>
@@ -81,7 +87,7 @@ void loop() {
 
 	if (_SERIAL_DEBUG_CHANNEL_.available() > 0)
 	{
-		rxData = _COMM_SERIAL_.read();//Get data from COMM
+		rxData = (char)_SERIAL_DEBUG_CHANNEL_.read();//Get data from COMM or PC USB
 
 		delay(1);
 
@@ -89,30 +95,23 @@ void loop() {
 		{
 			case '1'://turn motors on
 				mtrPowerCtrlr->setMotorPower(MTR_ENABLED);
-			#ifdef _DEBUG_COMM_BROADCAST
-				_COMM_SERIAL_.println(F("ENABLING MTR"));
-			#else
-				_PC_USB_SERIAL_.println(F("ENABLING MTR"));
-			#endif
+				_SERIAL_DEBUG_CHANNEL_.println(F("ENABLING MTR"));
 				getMotorStatus();
 				delay(500);
 				break;
 			case '0'://turn motors off
 				mtrPowerCtrlr->setMotorPower(MTR_DISABLED);
-			#ifdef _DEBUG_COMM_BROADCAST
-				_COMM_SERIAL_.println(F("DISABLING MTR"));
-			#else
-				_PC_USB_SERIAL_.println(F("DISABLING MTR"));
-			#endif				
+				_SERIAL_DEBUG_CHANNEL_.println(F("DISABLING MTR"));
 				getMotorStatus();
 				delay(500);
 				break;
 			default:
+				_SERIAL_DEBUG_CHANNEL_.println(F("INVALID OPTION"));
 				break;
 		}//end switch
 	}//end if
 	
-
+	
 
 	//Wheel Encoder Control and Status
 	//========Mid Left Motor===========
@@ -139,7 +138,13 @@ void loop() {
 
 													 //========Mid Right Motor===========
 	byte direction_MidRight = wheelEncoder_MidRight->getDirection();
+
+
+
 	_SERIAL_DEBUG_CHANNEL_.println(F("=MID RIGHT MTR="));
+
+
+
 	_SERIAL_DEBUG_CHANNEL_.print(F("Dir: "));
 	if (direction_MidRight == MOTOR_FORWARD)//forward, reverse, stopped
 	{
@@ -159,7 +164,7 @@ void loop() {
 	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_MidRight->getSpeed());//in inches per second
 	_SERIAL_DEBUG_CHANNEL_.println();
 
-
+	
 	delay(500);
 	
 

@@ -45,61 +45,66 @@ Note: Once the system goes into the state, SYSTEM_ERROR, it can only be fixed wi
 
 
 
-
-main_pri_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // primary message queue
-main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
-auto_data_array_MAIN[] = {
-	ENC_STATUS_FRT_LEFT,
-	ENC_STATUS_FRT_RIGHT,
-	ENC_STATUS_REAR_LEFT,
-	ENC_STATUS_REAR_RIGHT,
-	MOTOR_TURN_STATUS,
-	MOTOR_SPEED_STATUS,
-	GIMBAL_PAN_STATUS,
-	GIMBAL_TILT_STATUS,
-	LONGITUDE_STATUS,
-	LATITUDE_STATUS,
-	ULTSNC_DISTANCE_FWD_LT_STATUS,
-	ULTSNC_DISTANCE_FWD_CTR_STATUS,
-	ULTSNC_DISTANCE_FWD_RT_STATUS,
-	ULTSNC_DISTANCE_SIDE_RT_STATUS,
-	ULTSNC_DISTANCE_SIDE_LT_STATUS,
-	ULTSNC_DISTANCE_REAR_CTR_STATUS
-}
-auto_data_cnt_MAIN = 0 //data counter
-transmission_delay_cnt = 0;//concurrent transmission delay counter
-first_transmission = true
-main_system_ready = false
-sync_error = false
-timeout_counter = 0 //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), error timeouts, etc. Make sure to clear it out before use and only use it for one purpose at a time.
-motor_turn_value = TURN_NONE
-prev_motor_turn_value = TURN_NONE //used to hold the previous state, before going to sleep
-motor_speed_value = SPEED_NONE
-prev_motor_speed_value = SPEED_NONE //used to hold the previous state, before going to sleep
-gimbal_pan_value = PAN_NONE
-prev_gimbal_pan_value = PAN_NONE //used to hold the previous state, before going to sleep
-gimbal_tilt_value = TILT_NONE
-prev_gimbal_tilt_value = TILT_NONE //used to hold the previous state, before going to sleep
-drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
-prev_drive_setting = AUTONOMOUS_DRIVE//used to hold the previous state, before going to sleep
-buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
-prev_buffer_remote_ctrl_selected = false//used to hold the previous state, before going to sleep
-headlight_enable = LIGHTS_OFF
-prev_headlight_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-foglight_enable = LIGHTS_OFF
-prev_foglight_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-left_signal_light_enable = LIGHTS_OFF
-prev_left_signal_light_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-right_signal_light_enable = LIGHTS_OFF
-prev_right_signal_light_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-underglow_lights_enable = LIGHTS_OFF
-prev_underglow_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-reverse_lights_enable = LIGHTS_OFF
-prev_reverse_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-blue_beacon_lights_enable = LIGHTS_OFF
-prev_blue_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-ir_beacon_lights_enable = LIGHTS_OFF
-prev_ir_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
+At POR (defaults):
+	Current State: RUN_HOUSEKEEPING_TASKS
+	Next State: RUN_HOUSEKEEPING_TASKS
+	Current Mode: POWER_ON_AND_HW_RESET *begin*
+	Next Mode: POWER_ON_AND_HW_RESET 
+	main_pri_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // primary message queue
+	main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
+	auto_data_array_MAIN[] = {
+		ENC_STATUS_FRT_LEFT,
+		ENC_STATUS_FRT_RIGHT,
+		ENC_STATUS_REAR_LEFT,
+		ENC_STATUS_REAR_RIGHT,
+		MOTOR_TURN_STATUS,
+		MOTOR_SPEED_STATUS,
+		GIMBAL_PAN_STATUS,
+		GIMBAL_TILT_STATUS,
+		LONGITUDE_STATUS,
+		LATITUDE_STATUS,
+		ULTSNC_DISTANCE_FWD_LT_STATUS,
+		ULTSNC_DISTANCE_FWD_CTR_STATUS,
+		ULTSNC_DISTANCE_FWD_RT_STATUS,
+		ULTSNC_DISTANCE_SIDE_RT_STATUS,
+		ULTSNC_DISTANCE_SIDE_LT_STATUS,
+		ULTSNC_DISTANCE_REAR_CTR_STATUS
+	}
+	auto_data_cnt_MAIN = 0 //data counter
+	transmission_delay_cnt = 0;//concurrent transmission delay counter
+	first_transmission = true
+	main_system_ready = false
+	sync_error = false
+	invalid_state_or_mode_error = false
+	timeout_counter = 0 //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), error timeouts, etc. Make sure to clear it out before use and only use it for one purpose at a time.
+	motor_turn_value = TURN_NONE
+	prev_motor_turn_value = TURN_NONE //used to hold the previous state, before going to sleep
+	motor_speed_value = SPEED_NONE
+	prev_motor_speed_value = SPEED_NONE //used to hold the previous state, before going to sleep
+	gimbal_pan_value = PAN_NONE
+	prev_gimbal_pan_value = PAN_NONE //used to hold the previous state, before going to sleep
+	gimbal_tilt_value = TILT_NONE
+	prev_gimbal_tilt_value = TILT_NONE //used to hold the previous state, before going to sleep
+	drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
+	prev_drive_setting = AUTONOMOUS_DRIVE//used to hold the previous state, before going to sleep
+	buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
+	prev_buffer_remote_ctrl_selected = false//used to hold the previous state, before going to sleep
+	headlight_enable = LIGHTS_OFF
+	prev_headlight_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	foglight_enable = LIGHTS_OFF
+	prev_foglight_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	left_signal_light_enable = LIGHTS_OFF
+	prev_left_signal_light_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	right_signal_light_enable = LIGHTS_OFF
+	prev_right_signal_light_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	underglow_lights_enable = LIGHTS_OFF
+	prev_underglow_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	reverse_lights_enable = LIGHTS_OFF
+	prev_reverse_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	blue_beacon_lights_enable = LIGHTS_OFF
+	prev_blue_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	ir_beacon_lights_enable = LIGHTS_OFF
+	prev_ir_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
 
 
 
@@ -107,14 +112,13 @@ prev_ir_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, befo
 	RUN_HOUSEKEEPING_TASKS
 		POWER_ON_AND_HW_RESET
 			run POR tasks
-			start background tasks			
 			Set mode to INITIALIZATION *begin*
 			Go to whatever the next state is
 				(still is Next State: RUN_HOUSEKEEPING_TASKS)		
 		INITIALIZATION
 			run background tasks (i.e. counters for LED patterns control)
 				initialize/reinitialize all variables
-			initialize background tasks			
+			start background tasks
 			//Prior to synchronization tasks
 			//These values are already set from INITIALIZATION:
 				//motor_turn_value = TURN_NONE
@@ -978,7 +982,15 @@ prev_ir_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, befo
 					go to RUN_HOUSEKEEPING_TASKS	
 				end if
 			end if
-
+		DEFAULT:
+			Set mode to SYSTEM_ERROR *begin*
+			cmnc_msg_queue == invalid_state_or_mode_error_STATUS
+			set invalid_state_or_mode_error = true
+					(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+			Set next state to CONTROL_OUTPUTS								
+			go to RUN_HOUSEKEEPING_TASKS
 	
 			
 State Matrix Design = States vs. Modes			
@@ -989,6 +1001,7 @@ Note: These states don't always have to go in order.
 	RUN_HOUSEKEEPING_TASKS
 		runs in parallel with every loop
 	RX_COMMUNICATIONS
+		rxData()
 	DATA_VALIDATION
 		data parsing and validation
 		validateData()
@@ -996,6 +1009,7 @@ Note: These states don't always have to go in order.
 		dataDirector()
 	READ_INPUTS
 	PROCESS_DATA
+		commandDirector()
 	PLAN_ROUTE
 	OBJECT_AVOIDANCE
 	CONTROL_OUTPUTS			
@@ -1017,7 +1031,8 @@ SYSTEM_SLEEPING
 SYSTEM_WAKING
 SW_RESETTING
 SYSTEM_ERROR
-		
+DEFAULT
+
 ==================
 Command Options (i.e. used in the PROCESS_DATA state. Typically from the NORMAL_OPERATIONS mode, but not always)
 ==================	

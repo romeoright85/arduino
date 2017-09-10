@@ -11,26 +11,56 @@
 	//Note: CMNC = Command and Control
 	//Note: Make sure the baud rates match on both ends of the pair of devices in communication
 		
-	#define _MAIN_SERIAL_ Serial2
-	#define _PC_USB_SERIAL_ Serial	
-	#define _CMNC_SERIAL_ Serial	
-	#define _MAIN_SWSERIAL_ swSerialMAIN
-	#define _COMM_SERIAL_ Serial1	
-	#define _NAVI_SERIAL_ Serial2
-	#define _AUXI_SERIAL_ Serial3
-	#define _GPS_SERIAL_ Serial3
+		
+	//Uncomment to debug all Serial Algorithms with the USB Serial
+	#define _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
+	
+	#ifdef _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ //used to test all Serial algorithms by using just the local USB Serial interface
+		#define _MAIN_SERIAL_ Serial
+		#define _PC_USB_SERIAL_ Serial	
+		#define _CMNC_SERIAL_ Serial	
+		#define _MAIN_SWSERIAL_ Serial
+		#define _COMM_SERIAL_ Serial	
+		#define _NAVI_SERIAL_ Serial
+		#define _AUXI_SERIAL_ Serial
+		#define _GPS_SERIAL_ Serial
+	#else
+		#define _MAIN_SERIAL_ Serial2
+		#define _PC_USB_SERIAL_ Serial	
+		#define _CMNC_SERIAL_ Serial	
+		#define _MAIN_SWSERIAL_ swSerialMAIN
+		#define _COMM_SERIAL_ Serial1	
+		#define _NAVI_SERIAL_ Serial2
+		#define _AUXI_SERIAL_ Serial3
+		#define _GPS_SERIAL_ Serial3
+	#endif	
+	
+		
+
 	
 	
 	
-	
-	#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
-	#define PC_USB_BAUD_RATE	9600 //used for outputting from UNO, Mega Arduinos to the PC via USB
-	#define MAIN_BAUD_RATE 115200
-	#define COMM_BAUD_RATE 115200
-	#define NAVI_BAUD_RATE 115200
-	#define AUXI_BAUD_RATE 115200	
-	#define GPS_BAUD_RATE 57600// The default GPS baud rate is 57600
-	#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
+	#ifdef _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ //used to test all Serial algorithms by using just the local USB Serial interface	
+		#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
+		#define PC_USB_BAUD_RATE	9600 //used for outputting from UNO, Mega Arduinos to the PC via USB
+		#define MAIN_BAUD_RATE 9600
+		#define COMM_BAUD_RATE 9600
+		#define NAVI_BAUD_RATE 9600
+		#define AUXI_BAUD_RATE 9600	
+		#define GPS_BAUD_RATE 9600// The default GPS baud rate is 57600
+		#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
+	#else
+		#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
+		#define PC_USB_BAUD_RATE	9600 //used for outputting from UNO, Mega Arduinos to the PC via USB
+		#define MAIN_BAUD_RATE 115200
+		#define COMM_BAUD_RATE 115200
+		#define NAVI_BAUD_RATE 115200
+		#define AUXI_BAUD_RATE 115200	
+		#define GPS_BAUD_RATE 57600// The default GPS baud rate is 57600
+		#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
+	#endif	
+
+
 	
 	//Arduino Types
 	//Matching the Arduino numbering with the Microcontroller labels
@@ -64,6 +94,11 @@
 	#ifdef _ROVERDATA
 		//Char Array Sizes				
 		#define ROVER_DATA_BUFFER_SIZE		120				
+		//Rover Data Status
+		#define DATA_STATUS_NOT_READY	0
+		#define DATA_STATUS_READY	1		
+		#define DATA_STATUS_INVALID	2
+		#define DATA_STATUS_VALID	3
 	#endif
 
 	//definition for Character Buffer Array Sizes
@@ -226,6 +261,9 @@
 		#define ROVERCOMM_MAIN 4
 		#define ROVERCOMM_COMM 5		
 		#define ROVERCOMM_PC_USB 6		
+		//Redirect Enable/Disable
+		#define DATA_REDIRECT_DISABLED		0
+		#define DATA_REDIRECT_ENABLED		1
 	#endif
 	
 	//definition for DelayCounter Periods

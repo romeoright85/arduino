@@ -125,7 +125,7 @@ void setup() {
 
 
 	//Setup the HW_UART
-	Serial.begin(CMNC_BAUD_RATE);
+	_CMNC_SERIAL_.begin(CMNC_BAUD_RATE);
 
 	//Setup the SW_UART
 	_MAIN_SWSERIAL_.begin(MAIN_BAUD_RATE);
@@ -169,7 +169,7 @@ void loop() {
 
 	//2. Transmit data and/or execute command
 	
-	//2a. For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+	//2a. For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
 	//		or take any actions if the data was meant for this unit, COMM
 	if (ch1Valid)
 	{
@@ -193,7 +193,7 @@ void loop() {
 		//The data was invalid, so do nothing			
 	}
 
-	//2b. For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
+	//2b. For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
 	//		or take any actions if the data was meant for this unit, COMM
 	if (ch2Valid)
 	{
@@ -232,16 +232,16 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 	if (roverCommType == ROVERCOMM_CMNC)
 	{
 
-		if (Serial.available() > 1)
+		if (_CMNC_SERIAL_.available() > 1)
 		{
 			//initialize the counter
 			counter = 0;
 
-			while (Serial.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			while (_CMNC_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
-				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
-				roverComm->appendToRxData((char)Serial.read());//construct the string one char at a time
+				//Note: Must type cast the _CMNC_SERIAL_.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_CMNC_SERIAL_.read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
 			}//end while
@@ -295,7 +295,7 @@ boolean rxData(RoverComm * roverComm, byte roverCommType) {
 
 
 
-}
+}//end of rxData()
 
 void dataDirector(RoverData * roverData)
 {
@@ -327,7 +327,7 @@ void dataDirector(RoverData * roverData)
 	}//end else		
 		
 	return;
-}
+}//end of dataDirector()
 
 void txData(char * txData, byte roverCommType)
 {
@@ -336,7 +336,7 @@ void txData(char * txData, byte roverCommType)
 	if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
 	{
 		//transmit the data to CMNC or through the USB of this Arduino (i.e. for debug) [in this case, it means the same thing]
-		Serial.println(txData);
+		_CMNC_SERIAL_.println(txData);
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{
@@ -347,7 +347,7 @@ void txData(char * txData, byte roverCommType)
 	{
 		//do nothing
 	}//end else
-}
+}//end of txData()
 
 void commandDirector(char * roverCommand)
 {
@@ -372,4 +372,4 @@ void commandDirector(char * roverCommand)
 		txData("Rx'd:", ROVERCOMM_CMNC);
 		txData(roverCommand, ROVERCOMM_CMNC);
 	}//end else
-}
+}//end of commandDirector()

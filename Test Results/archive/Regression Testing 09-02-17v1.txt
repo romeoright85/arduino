@@ -1,0 +1,89 @@
+Note: Don't use a USB hub with the laptop. Even when the Arduino is connected to it, it will have issues for some reason.
+
+Note: When programming the Arduinos, make sure power to all other Arduinos are there by connecting the Rover's USB cables to all the Arduinos to power them. Else you might not be able to get a Done uploading message.
+=========NEED TO DO=========
+
+still need to test xbee and anything connected to navi and auxi to make sure nothing else was fried. though it seemed to burn the chip quick
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results\Recorded Data\Rover Damage 08-27-17v1
+
+
+run all tests
+
+
+
+
+GPSSerialEcho
+IMUTester
+IrDistanceSensorTest
+
+MotorAndServoTester_MAIN
+MotorAndServoTester_NAVI
+
+NavigationTester_AUXI
+NavigationTester_MAIN
+NavigationTester_NAVI
+
+PirSensorTest
+RoverGPSTester
+
+RoverHwResetTester_COMM
+RoverHwResetTester_MAIN
+
+RoverPhotoAndTempTester
+UltrasonicSensorTest
+
+WakeUpTester_Auxi
+WakeUpTester_COMM
+WakeUpTester_Main
+WakeUpTester_Navi
+
+
+
+
+
+
+
+
+=========DONE=========
+
+
+
+tests ran successfully
+	LaserControlTester
+	AnalogLedTester
+	AnalogSignalsTester
+		seems to work. did not verify accuracy of data but that it was received and some what changes over time.
+	CommBroadcast_AUXI
+	CommBroadcast_COMM
+	CommBroadcast_MAIN
+	CommBroadcast_NAVI
+		not sure algorithm is correct but the data seems to send through all the arduinos
+
+			
+	CommRollCall_AUXI
+	CommRollCall_COMM
+	CommRollCall_MAIN
+	CommRollCall_NAVI
+		not sure algorithm is correct but the data seems to send through all the arduinos
+
+		
+		
+	CommTester_AUXI
+	CommTester_COMM
+	CommTester_MAIN
+		Got a BuffOvrFlw error when I first sent "/-c4--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+		After trying again it after sending other valid commands, and it worked.
+	CommTester_NAVI
+		Got a BuffOvrFlw error when I first sent "/-c2--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+		After trying again it after sending other valid commands, and it worked.
+		
+	CurrentSensorFaultTester
+	DigitalLedTester
+	
+	
+	
+	
+	
+[nah just run all tests]determine what pins might have had high voltage and how it may have impacted electronics down the line on the navi and mega
+
+Tester the Laser code on AUXI with all others on COMMBroadcast and it works. (no xbee used, just COMM to USB though)

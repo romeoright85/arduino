@@ -1,0 +1,123 @@
+encoders from navi when motor full forward
+
+Steering: 90
+Throttle: 5
+Pan: 90
+Tilt: 90
+=FRONT LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=FRONT RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=REAR LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=REAR RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+
+
+Motors on Full Reverse from navi
+
+
+Steering: 90
+Throttle: 175
+Pan: 90
+Tilt: 90
+=FRONT LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=FRONT RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=REAR LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=REAR RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+
+
+
+
+motors stopped from navi
+
+Steering: 90
+Throttle: 90
+Pan: 90
+Tilt: 90
+=FRONT LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=FRONT RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=REAR LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=REAR RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+
+
+
+====
+motor stopped from main
+
+=MID LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=MID RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+
+=MID LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=MID RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+
+====
+
+motor full forward from main
+
+=MID LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=MID RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+
+
+
+====
+motor full reverse from main
+
+=MID LEFT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0
+=MID RIGHT MTR=
+Dir: Stopped
+Dist: 0
+Spd: 0

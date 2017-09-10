@@ -1,0 +1,8 @@
+=========NEED TO DO=========
+determine what pins might have had high voltage and how it may have impacted electronics down the line on the navi and mega
+
+still need to test xbee and anything connected to navi and auxi to make sure nothing else was fried. though it seemed to burn the chip quick
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results\Recorded Data\Rover Damage 08-27-17v1
+
+=========DONE=========
+Tester the Laser code on AUXI with all others on COMMBroadcast and it works. (no xbee used, just COMM to USB though)

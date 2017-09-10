@@ -5,22 +5,64 @@ Where I left off
 
 	
 
-	
 =================1 weekend===================				
 
-				
-		
-	[RETEST, it was in debugging mode last time with main code commented out] LaserControlTester. Test this using COMM Broadcast
-										
 	
-	Test
-		PrintSerialAlive
-			
+
+
+
+	
+	
+	
+Need to go back and test everything after replacing it.
+See "Regression Testing ... txt": K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results
+
+
+
+FIX THE ENCODERS FOR MAIN AND NAVI
+	try this code on an external test arduino
+	try outputting the encoder counts
+		then if it works, try outputting the counts when connected to the rover
+		then check algorithm
+	measure voltages and check wiring too if you must (though it both MAIN and NAVI have the issue, it's probably the code)
+	then re-run tests for:
+		MotorAndServoTester_MAIN
+		MotorAndServoTester_NAVI
+
+FINISH REGRESSION TESTING
+	NavigationTester_AUXI
+	NavigationTester_MAIN
+	NavigationTester_NAVI
+	
+	Connect Xbees to the explorer as well. The explorers were confirmed fried, but the Xbees may (or may not) be still good.
+		Both ID 0001 annd 0005 Xbees with the Explorer boards when they have come in the mail.
+	
+ANALYZE DATA FOR ANALOG SIGNALS TESTER
+	See if the currents make sense.
+	Take a look at the voltages as well to look for any voltage drops.
+	
+	
+	See: data to analyze part 1_09-04-17v1 and data to analyze part 2_09-04-17v1
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results
+
+
+
 	[IN PROGRESS]MotorAndServoTester_MAIN
 	[IN PROGRESS]MotorAndServoTester_NAVI
 		[NEED TO DO]review rover encoder output when testing these
 		[NEED TO DO] test mosfet off
 	also run AnalogSignalsTester at the same time to capture the current readings
+	
+	
+	NEED TO DO:
+	[DONE, encoders didn't work on both NAVI and MAIN]Still need to read the encoder output and test it.	
+	[DONE]Still need to test the motor mosfet controller.
+	[DONE, need to analyzer]also run AnalogSignalsTester at the same time to capture the current readings
+	
+	
+	
+	
+	
 	
 	
 	
@@ -37,11 +79,16 @@ Where I left off
 	
 	
 			
-=================12 weekends===================			
+=================16 weekends===================			
 
-~3 weekends per an Arduino
+~4 weekends per an Arduino
 
 Test code as you go!!!
+
+
+
+PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER DOWN THE CODE A LOT (i.e. remove secured comms, etc.)
+
 
 
 
@@ -56,11 +103,47 @@ while referencing:
 		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverShared
 
 
-get the rover to control motors
-then get the rover to follow navigation
-add the health sensors later on
+
+get basic state machine infrastructure up		
+	
+	
+	
+	
+	
+	getting all the state and mode transitions created so the framework is there for a particular "mode loop"
+		[
+			[DONE] I got the whole sync mode loop in place.
+				[WHERE LEFT OFF---IN PROGRESS]now I have to write some of the functions
+					Update on commandDirector commands/functions
+						Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
+							Update the DATA_FILTER state with command options
+						Also update //Flag(s) - Command Filter Options and setAllCommandsTo()
+						Then update the PROCESS_DATA state for the SYNCHRONIZATION mode, with what happens once the commandDirector does it's tasks. (i.e. once a system ready or system go message has been received, then what is the next thing that should happen like main_msg_queue = SYSTEM_READY_STATUS, etc.)
+			[DONE] first, go through all other COMM code and add all the objects I will need to the state machine code and get them created.
+			[DONE, i have 50% memory left]see how much memory I have left. if it's not an issue, continue, else you'll need to redesign and trim the fat
+			left off at //LEFT OFF HERE...
+			[IN PROGRESS, MAIN rxCode works. Now need to write the rxData for CMNC code] add in the rxData function... aka lay the groundwork for serial communications
+				[DONE]then go back and write the DATA_VALIDATION state in the SYNCHRONIZATION mode
+				[DONE]write the data filter for the data
+			
+			
+		]
+	then start adding the functions to do stuff (aka the business logic) next
+	then repeat for all other modes
+	get rovers to take commands
+	get the rover to control motors
+	then get the rover to follow navigation
+	add the health sensors later on
 
 
+
+Note: when doing rx data for other arduinos, you'll have to refactor it like you did for COMM
+	byte vs boolean status
+	splitting out rx data, validate data, data director, etc.
+	An option to disable/enable redirect (if no redirect, then only local command processing only for that channel)
+	creating a flag for each data channel for the dataWasFor (i.e. dataWasForCOMM), since the commands are split in between states now and global variable flags are needed to keep track in between the states
+	data director now passes back a boolean, which is the dataWasFor... variable
+	etc.
 
 
 plan to write code in four blocks
@@ -1078,3 +1161,16 @@ Hardware hacked the IMU on the rover to fix signal integrity issues. Data hacked
 	
 	
 	Note: Try not to add any more functionality that will delay your project. Write a good enough project, take what you learned, and move on to school.
+
+	
+	
+	[DONE]Test
+		PrintSerialAlive
+			
+			
+
+
+	[DONE] LaserControlTester. Test this using COMM Broadcast
+							
+							
+	[DONE] NEED TO REPLACE MAIN and NAVI Arduino boards since I fried it by connecting them to a USB hub with an A/C Adapter with 12V instead of 5V.

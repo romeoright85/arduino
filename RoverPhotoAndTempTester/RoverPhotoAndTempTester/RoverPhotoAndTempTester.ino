@@ -1,3 +1,5 @@
+//Test code for any Arduino (i.e. external UUT and not on the Rover)
+
 
 #include <RoverAdc.h>
 
@@ -144,7 +146,7 @@ double getTempValueOf(byte analogSignalName, double fixedResistorValue, byte uni
 {
 
 	/*
-	Steinhart–Hart equation
+	Steinhartï¿½Hart equation
 	https://arduinodiy.wordpress.com/2015/11/10/measuring-temperature-with-ntc-the-steinhart-hart-formula/
 	https://en.wikipedia.org/wiki/Steinhart%E2%80%93Hart_equation
 	http://www.eidusa.com/Electronics_Kits_TEMP_THERMISTOR_1.htm

@@ -7,60 +7,70 @@ Note: Once the system goes into the state, SYSTEM_ERROR, it can only be fixed wi
 #define CONCURRENT_TRANSMISSION_DELAY		??//delay for about 1-5ms or so between potentially sending messages out again to the same arduino
 #define AUTO_DATA_LOOP_MAX_MAIN ?? //max number of auto data before looping over (should be the number of elements in the auto_data_array_MAIN array - 1, since the index starts at 0], data going to MAIN
 
-main_pri_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // primary message queue
-main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
-auto_data_array_MAIN[] = {
-	VOLTAGE_7D2_ACTUAL_STATUS,
-	CURRENT_7D2_PRESW25A_ACTUAL_STATUS,
-	CURRENT_7D2_SW12D5A_ACTUAL_STATUS,
-	PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_ACTUAL_STATUS,
-	PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_ACTUAL_STATUS,
-	TEMPSENSOR_BEACONCCA_CENTERSIDE_ACTUAL_STATUS,
-	TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_ACTUAL_STATUS,
-	VOLTAGE_5_ANALOGCCA_ACTUAL_STATUS,
-	CURRENT_3D3_SW12D5A_ACTUAL_STATUS,
-	PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_ACTUAL_STATUS,
-	PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_ACTUAL_STATUS,
-	PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL_STATUS,
-	TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_ACTUAL_STATUS,
-	TEMPSENSOR_DIGITALCCA_MIDDLESIDE_ACTUAL_STATUS,
-	VOLTAGE_3D3_SW_ACTUAL_STATUS,
-	CURRENT_MOTORCTRLR_CH1_12D5A_ACTUAL_STATUS,
-	PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_ACTUAL_STATUS,
-	PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_ACTUAL_STATUS,
-	PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_ACTUAL_STATUS,
-	TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_ACTUAL_STATUS,
-	GAS_BEACONCCA_RIGHTPOINTING_ACTUAL_STATUS,
-	CURRENT_MOTORCTRLR_CH2_12D5A_ACTUAL_STATUS,
-	PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_ACTUAL_STATUS,
-	PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_ACTUAL_STATUS,
-	PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL_STATUS,
-	TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_ACTUAL_STATUS,
-	IR_DISTANCE_FWD_CTR_STATUS,
-	IR_DISTANCE_SIDE_RT_STATUS,
-	IR_DISTANCE_SIDE_LT_STATUS,
-	IR_DISTANCE_REAR_CTR_STATUS,	
-	HEADING_STATUS,
-	ROLL_STATUS,
-	PITCH_STATUS,
-	YAW_STATUS,
-	CURRENT_FAULT_1_7D2V_25A_PRESW_STATUS,
-	CURRENT_FAULT_2_3D3V_12D5A_SW_STATUS,
-	CURRENT_FAULT_3_MCTRLRCH1_12D5A_STATUS,
-	CURRENT_FAULT_4_MCTRLRCH2_12D5A_STATUS,
-	CURRENT_FAULT_5_7D2_12D5A_SW_STATUS
-}// add more as needed
-auto_data_cnt_MAIN = 0 //data counter
-transmission_delay_cnt = 0;//concurrent transmission delay counter
-first_transmission = true
-main_system_ready = false
-sync_error = false
-health_error = false
-timeout_counter = 0 //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), error timeouts, etc. Make sure to clear it out before use and only use it for one purpose at a time.
-enable_left_laser = false
-enable_right_laser = false
-left_laser_prev_state = false //used to save the last state the left laser was on before turning it off to go to sleep
-right_laser_prev_state = false //used to save the last state the right laser was on before turning it off to go to sleep
+
+
+
+
+At POR (defaults):
+	Current State: RUN_HOUSEKEEPING_TASKS
+	Next State: RUN_HOUSEKEEPING_TASKS
+	Current Mode: POWER_ON_AND_HW_RESET *begin*
+	Next Mode: POWER_ON_AND_HW_RESET 
+	main_pri_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // primary message queue
+	main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
+	auto_data_array_MAIN[] = {
+		VOLTAGE_7D2_ACTUAL_STATUS,
+		CURRENT_7D2_PRESW25A_ACTUAL_STATUS,
+		CURRENT_7D2_SW12D5A_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_ACTUAL_STATUS,
+		TEMPSENSOR_BEACONCCA_CENTERSIDE_ACTUAL_STATUS,
+		TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_ACTUAL_STATUS,
+		VOLTAGE_5_ANALOGCCA_ACTUAL_STATUS,
+		CURRENT_3D3_SW12D5A_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL_STATUS,
+		TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_ACTUAL_STATUS,
+		TEMPSENSOR_DIGITALCCA_MIDDLESIDE_ACTUAL_STATUS,
+		VOLTAGE_3D3_SW_ACTUAL_STATUS,
+		CURRENT_MOTORCTRLR_CH1_12D5A_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_ACTUAL_STATUS,
+		PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_ACTUAL_STATUS,
+		TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_ACTUAL_STATUS,
+		GAS_BEACONCCA_RIGHTPOINTING_ACTUAL_STATUS,
+		CURRENT_MOTORCTRLR_CH2_12D5A_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_ACTUAL_STATUS,
+		PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL_STATUS,
+		TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_ACTUAL_STATUS,
+		IR_DISTANCE_FWD_CTR_STATUS,
+		IR_DISTANCE_SIDE_RT_STATUS,
+		IR_DISTANCE_SIDE_LT_STATUS,
+		IR_DISTANCE_REAR_CTR_STATUS,	
+		HEADING_STATUS,
+		ROLL_STATUS,
+		PITCH_STATUS,
+		YAW_STATUS,
+		CURRENT_FAULT_1_7D2V_25A_PRESW_STATUS,
+		CURRENT_FAULT_2_3D3V_12D5A_SW_STATUS,
+		CURRENT_FAULT_3_MCTRLRCH1_12D5A_STATUS,
+		CURRENT_FAULT_4_MCTRLRCH2_12D5A_STATUS,
+		CURRENT_FAULT_5_7D2_12D5A_SW_STATUS
+	}// add more as needed
+	auto_data_cnt_MAIN = 0 //data counter
+	transmission_delay_cnt = 0;//concurrent transmission delay counter
+	first_transmission = true
+	main_system_ready = false
+	sync_error = false
+	invalid_state_or_mode_error = false
+	health_error = false
+	timeout_counter = 0 //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), error timeouts, etc. Make sure to clear it out before use and only use it for one purpose at a time.
+	enable_left_laser = false
+	enable_right_laser = false
+	left_laser_prev_state = false //used to save the last state the left laser was on before turning it off to go to sleep
+	right_laser_prev_state = false //used to save the last state the right laser was on before turning it off to go to sleep
 
 
 
@@ -71,14 +81,13 @@ right_laser_prev_state = false //used to save the last state the right laser was
 	RUN_HOUSEKEEPING_TASKS
 		POWER_ON_AND_HW_RESET
 			run POR tasks
-			start background tasks			
 			Set mode to INITIALIZATION *begin*
 			Go to whatever the next state is
 				(still is Next State: RUN_HOUSEKEEPING_TASKS)		
 		INITIALIZATION
 			run initialization tasks
 				initialize/reinitialize all variables
-			initialize background tasks
+			start background tasks
 			//Note: Lasers are turned off in the variable initial declarations above
 			Set mode to SYNCHRONIZATION *begin*
 			//initialize/reset shared counter before use
@@ -784,11 +793,19 @@ right_laser_prev_state = false //used to save the last state the right laser was
 					go to RUN_HOUSEKEEPING_TASKS	
 				end if
 			end if				
+		DEFAULT:
+			Set mode to SYSTEM_ERROR *begin*
+			cmnc_msg_queue == invalid_state_or_mode_error_STATUS
+			set invalid_state_or_mode_error = true
+					(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+			Set next state to CONTROL_OUTPUTS								
+			go to RUN_HOUSEKEEPING_TASKS
 
-	
 
-	
-	
+
+
 	
 	
 
@@ -801,6 +818,7 @@ Note: These states don't always have to go in order.
 	RUN_HOUSEKEEPING_TASKS
 		runs in parallel with every loop
 	RX_COMMUNICATIONS
+		rxData()
 	DATA_VALIDATION
 		data parsing and validation
 		validateData()
@@ -809,6 +827,7 @@ Note: These states don't always have to go in order.
 	READ_INPUTS
 	SYSTEM_HEALTH
 	PROCESS_DATA
+		commandDirector()
 	CONTROL_OUTPUTS			
 	CREATE_DATA
 	TX_COMMUNICATIONS		
@@ -827,6 +846,7 @@ SYSTEM_SLEEPING
 SYSTEM_WAKING
 SW_RESETTING
 SYSTEM_ERROR
+DEFAULT
 		
 ==================
 Command Options (i.e. used in the PROCESS_DATA state. Typically from the NORMAL_OPERATIONS mode, but not always)
