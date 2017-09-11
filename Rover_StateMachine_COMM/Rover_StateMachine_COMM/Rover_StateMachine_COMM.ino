@@ -5,7 +5,7 @@
 
 
 
-//Note: To test with USB Serial for all Serial channels, go to RoverConfig and uncomment the flag _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
+//Note: To test with USB Serial for all Serial channels, go to RoverConfig and uncomment the flag _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ as long as commandEnableOption_Hi and commandEnableOption_Bye are set true in the filter in runModeFunction_SYNCHRONIZATION()
 
 //Configuration defines for #includes (must come before the #includes)
 #ifndef _ROVER_STATES_AND_MODES
@@ -141,8 +141,8 @@ boolean sw_reset_error = false;
 boolean generic_health_error = false;
 boolean sleeping_error = false;
 //Flag(s) - Message Controls
-boolean redirectToCMNC = false;
-boolean redirectToMAIN = false;
+boolean redirectToCMNC = false;//redirect data to CMNC from any Arduino since this is a shared flag. Priority will be given to whatever is hardcoded and the other message will be dropped. (but in this case it would only be from MAIN since COMM only had one other source)
+boolean redirectToMAIN = false;//redirect data to MAIN from any Arduino since this is a shared flag. Priority will be given to whatever is hardcoded and the other message will be dropped. (but in this case it would only be from CMNC since COMM only had one other source)
 //Flag(s) - Status
 boolean main_system_ready = false;
 boolean communications_secure = false;//(used to keep track is the communications link is already secure or not, and is useful for things like when going to sleep and waking back up and needing to synchronize again without needing to resecure the link)
@@ -157,6 +157,7 @@ byte ch2Status = DATA_STATUS_NOT_READY;//for MAIN
 boolean commandEnableOption_Hi = false;//DEBUG
 boolean commandEnableOption_Bye = false;//DEBUG
 boolean commandEnableOption_Invalid = false;//DEBUG
+boolean commandEnableOption_EstablishSecureLink = false;
 //Counters
 unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
 unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
@@ -323,18 +324,23 @@ void loop() {
 					break;
 				case SECURING_LINK:		
 					runModeFunction_SECURING_LINK(currentState);
+					queuedState = DATA_VALIDATION;
 					break;
 				case NORMAL_OPERATIONS:		
 					runModeFunction_NORMAL_OPERATIONS(currentState);
+					queuedState = DATA_VALIDATION;
 					break;
 				case SYSTEM_SLEEPING:		
 					runModeFunction_SYSTEM_SLEEPING(currentState);
+					queuedState = DATA_VALIDATION;
 					break;
 				case SW_RESETTING:		
 					runModeFunction_SW_RESETTING(currentState);
+					queuedState = DATA_VALIDATION;
 					break;
 				case SYSTEM_ERROR:		
 					runModeFunction_SYSTEM_ERROR(currentState);
+					queuedState = DATA_VALIDATION;
 					break;		
 				default: //default mode
 					runModeFunction_default();//no state needed, all states do the same thing
@@ -343,8 +349,7 @@ void loop() {
 				break;
 			}//end switch			
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-			break;
-			
+			break;			
 		case DATA_VALIDATION:
 			_PRINT_STATE_(F("STATE: DATA_VALIDATION"));
 			switch (currentMode)
@@ -354,9 +359,31 @@ void loop() {
 					queuedState = DATA_FILTER;		
 					//Keep the currentMode the same (unchanged)	
 					break;
-			
-//ADD MORE MODE CASES HERE
-					
+				case SECURING_LINK:		
+					runModeFunction_SECURING_LINK(currentState);
+					queuedState = DATA_FILTER;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case NORMAL_OPERATIONS:		
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					queuedState = DATA_FILTER;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case SYSTEM_SLEEPING:		
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					queuedState = DATA_FILTER;		
+					//Keep the currentMode the same (unchanged)	
+					break;											
+				case SW_RESETTING:		
+					runModeFunction_SW_RESETTING(currentState);
+					queuedState = DATA_FILTER;		
+					//Keep the currentMode the same (unchanged)	
+					break;							
+				case SYSTEM_ERROR:		
+					runModeFunction_SYSTEM_ERROR(currentState);
+					queuedState = DATA_FILTER;		
+					//Keep the currentMode the same (unchanged)	
+					break;									
 				default: //default mode
 					runModeFunction_default();//no state needed, all states do the same thing
 					queuedState = CONTROL_OUTPUTS;
@@ -365,8 +392,6 @@ void loop() {
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
-
-
 		case DATA_FILTER:
 			_PRINT_STATE_(F("STATE: DATA_FILTER"));
 			switch (currentMode)
@@ -376,9 +401,31 @@ void loop() {
 					queuedState = PROCESS_DATA;
 					//Keep the currentMode the same (unchanged)	
 					break;
-			
-//ADD MORE MODE CASES HERE
-					
+				case SECURING_LINK:		
+					runModeFunction_SECURING_LINK(currentState);
+					queuedState = READ_INPUTS;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case NORMAL_OPERATIONS:		
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					queuedState = READ_INPUTS;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case SYSTEM_SLEEPING:		
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					queuedState = PROCESS_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;											
+				case SW_RESETTING:		
+					runModeFunction_SW_RESETTING(currentState);
+					queuedState = PROCESS_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;							
+				case SYSTEM_ERROR:		
+					runModeFunction_SYSTEM_ERROR(currentState);
+					queuedState = READ_INPUTS;		
+					//Keep the currentMode the same (unchanged)	
+					break;					
 				default: //default mode
 					runModeFunction_default();//no state needed, all states do the same thing
 					queuedState = CONTROL_OUTPUTS;
@@ -387,18 +434,67 @@ void loop() {
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
+		case READ_INPUTS:	
+			_PRINT_STATE_(F("STATE: READ_INPUTS"));
+			switch (currentMode)
+			{
+				case SECURING_LINK:		
+					runModeFunction_SECURING_LINK(currentState);
+					queuedState = PROCESS_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case NORMAL_OPERATIONS:		
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					queuedState = PROCESS_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case SYSTEM_ERROR:		
+					runModeFunction_SYSTEM_ERROR(currentState);
+					queuedState = PROCESS_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;					
+				default: //default mode
+					runModeFunction_default();//no state needed, all states do the same thing
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+				break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state		
+			break;			
 		case PROCESS_DATA:
 			_PRINT_STATE_(F("STATE: PROCESS_DATA"));
 			switch (currentMode)
 			{
 				case SYNCHRONIZATION:		
 					runModeFunction_SYNCHRONIZATION(currentState);
-					queuedState = CONTROL_OUTPUTS;
-					//Keep the currentMode the same (unchanged)	
+					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					currentMode = SYNCHRONIZATION;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
 					break;
-			
-//ADD MORE MODE CASES HERE
-					
+				case SECURING_LINK:		
+					runModeFunction_SECURING_LINK(currentState);
+					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					currentMode = SECURING_LINK;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					break;	
+				case NORMAL_OPERATIONS:		
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					currentMode = NORMAL_OPERATIONS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					break;	
+				case SYSTEM_SLEEPING:		
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					currentMode = SYSTEM_SLEEPING;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					break;											
+				case SW_RESETTING:		
+					runModeFunction_SW_RESETTING(currentState);
+					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					currentMode = SW_RESETTING;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					break;							
+				case SYSTEM_ERROR:		
+					runModeFunction_SYSTEM_ERROR(currentState);
+					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					currentMode = SYSTEM_ERROR;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					break;					
 				default: //default mode
 					runModeFunction_default();//no state needed, all states do the same thing
 					queuedState = CONTROL_OUTPUTS;
@@ -416,9 +512,41 @@ void loop() {
 					queuedState = CREATE_DATA;
 					//Keep the currentMode the same (unchanged)	
 					break;
-			
-//ADD MORE MODE CASES HERE
-					
+				case SECURING_LINK:		
+					runModeFunction_SECURING_LINK(currentState);
+					queuedState = CREATE_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case NORMAL_OPERATIONS:		
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					queuedState = CREATE_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case HW_RESETTING:		
+					runModeFunction_HW_RESETTING(currentState);
+					queuedState = CREATE_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;						
+				case SYSTEM_SLEEPING:		
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					queuedState = CREATE_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;									
+				case SYSTEM_WAKING:		
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					queuedState = CREATE_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;							
+				case SW_RESETTING:		
+					runModeFunction_SW_RESETTING(currentState);
+					queuedState = CREATE_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;							
+				case SYSTEM_ERROR:		
+					runModeFunction_SYSTEM_ERROR(currentState);
+					queuedState = CREATE_DATA;		
+					//Keep the currentMode the same (unchanged)	
+					break;
 				default: //default mode
 					runModeFunction_default();//no state needed, all states do the same thing
 					queuedState = CONTROL_OUTPUTS;
@@ -436,9 +564,41 @@ void loop() {
 					queuedState = TX_COMMUNICATIONS;
 					//Keep the currentMode the same (unchanged)	
 					break;
-			
-//ADD MORE MODE CASES HERE
-					
+				case SECURING_LINK:		
+					runModeFunction_SECURING_LINK(currentState);
+					queuedState = TX_COMMUNICATIONS;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case NORMAL_OPERATIONS:		
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					queuedState = TX_COMMUNICATIONS;		
+					//Keep the currentMode the same (unchanged)	
+					break;	
+				case HW_RESETTING:		
+					runModeFunction_HW_RESETTING(currentState);
+					queuedState = TX_COMMUNICATIONS;		
+					//Keep the currentMode the same (unchanged)	
+					break;						
+				case SYSTEM_SLEEPING:		
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					queuedState = TX_COMMUNICATIONS;		
+					//Keep the currentMode the same (unchanged)	
+					break;									
+				case SYSTEM_WAKING:		
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					queuedState = TX_COMMUNICATIONS;		
+					//Keep the currentMode the same (unchanged)	
+					break;							
+				case SW_RESETTING:		
+					runModeFunction_SW_RESETTING(currentState);
+					queuedState = TX_COMMUNICATIONS;		
+					//Keep the currentMode the same (unchanged)	
+					break;							
+				case SYSTEM_ERROR:		
+					runModeFunction_SYSTEM_ERROR(currentState);
+					queuedState = TX_COMMUNICATIONS;		
+					//Keep the currentMode the same (unchanged)	
+					break;					
 				default: //default mode
 					runModeFunction_default();//no state needed, all states do the same thing
 					queuedState = CONTROL_OUTPUTS;
@@ -455,8 +615,45 @@ void loop() {
 					runModeFunction_SYNCHRONIZATION(currentState);
 					queuedState = RX_COMMUNICATIONS;
 					//Keep the currentMode the same (unchanged)	
-					break;
-//ADD MORE MODE CASES HERE					
+					break;					
+				case SECURING_LINK:		
+					runModeFunction_SECURING_LINK(currentState);					
+//FIX ME LATER					
+					queuedState = RX_COMMUNICATIONS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					//Keep the currentMode the same (unchanged)	
+					break;					
+				case NORMAL_OPERATIONS:		
+					runModeFunction_NORMAL_OPERATIONS(currentState);					
+//FIX ME LATER					
+					queuedState = RX_COMMUNICATIONS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					//Keep the currentMode the same (unchanged)	
+					break;					
+				case HW_RESETTING:		
+					runModeFunction_HW_RESETTING(currentState);					
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					break;					
+				case SYSTEM_SLEEPING:		
+					runModeFunction_SYSTEM_SLEEPING(currentState);					
+					queuedState = RX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					break;					
+				case SYSTEM_WAKING:		
+					runModeFunction_SYSTEM_WAKING(currentState);					
+					queuedState = RX_COMMUNICATIONS;
+					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*		
+					break;					
+				case SW_RESETTING:		
+					runModeFunction_SW_RESETTING(currentState);					
+					queuedState = RX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					break;				
+				case SYSTEM_ERROR:		
+					runModeFunction_SYSTEM_ERROR(currentState);					
+//FIX ME LATER					
+					queuedState = RX_COMMUNICATIONS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					//Keep the currentMode the same (unchanged)	
+					break;				
 				default: //default mode
 					runModeFunction_default();//no state needed, all states do the same thing
 					queuedState = CONTROL_OUTPUTS;
@@ -464,10 +661,7 @@ void loop() {
 				break;
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-			break;							
-//ADD MORE STATES CASES HERE				
-			
-			
+			break;		
 		default: //default state
 			_PRINT_STATE_(F("STATE: default"));
 			runModeFunction_default();//no state needed, all states do the same thing
@@ -540,6 +734,7 @@ void initializeVariables()
 	commandEnableOption_Hi = false;//DEBUG
 	commandEnableOption_Bye = false;//DEBUG
 	commandEnableOption_Invalid = false;//DEBUG
+	commandEnableOption_EstablishSecureLink = false;
 //ADD MORE COMMAND OPTIONS HERE (remember to update setAllCommandsTo() as well)
 
 
@@ -646,12 +841,12 @@ boolean dataDirector(RoverData * roverData, byte redirectOption)
 		if (roverCommType == ROVERCOMM_CMNC)
 		{
 			//if the data is for CMNC, transmit the data out from COMM to CMNC
-			txData(roverData->getData(), ROVERCOMM_CMNC);		
+			redirectToCMNC = true;			
 		}//end else if
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 		{
 			//if the data is for either NAVI, AUXI, or MAIN, transmit the data out from COMM to MAIN since COMM only can talk to MAIN and not NAVI or AUXI (and MAIN will process it accordingly or reroute it if needed)
-			txData(roverData->getData(), ROVERCOMM_MAIN);
+			redirectToMAIN = true;
 		}//end else if
 		//else the command type is ROVERCOMM_NONE
 		//invalid RoverComm Type, so do nothing		
@@ -699,6 +894,9 @@ void commandDirector(char * roverCommand)
 	//=========TEMP CODE BELOW
 	//WRITE ME LATER
 
+	//MOVE THE TX CODE OUT OF HERE
+	//ACTUALLY THE TX CODE IS SUPPOSED TO BE DONE LATER. (same with controlling outputs)
+	//ALL THAT SHOULD BE DONE HERE IS PUTTING MESSAGE IN MESSAGE QUEUES AND/OR SETTING FLAGS
 
 	
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
@@ -714,6 +912,12 @@ void commandDirector(char * roverCommand)
 		txData("Rx'd:", ROVERCOMM_CMNC);
 		txData(roverCommand, ROVERCOMM_CMNC);
 	}//end else if
+	else if(commandEnableOption_EstablishSecureLink == true)//DEBUG, DELETE ME AND USE BELOW LATER
+	//else if(strcmp(roverCommand, "??ADD SECURE LINK MESSAGE HERE???") == 0 && commandEnableOption_EstablishSecureLink == true)//DEBUG, FIX ME LATER
+	{
+		//WRITE ME LATER
+		//establish secure link logic here
+	}
 	else
 	{
 		if(commandEnableOption_Invalid == true)
@@ -732,12 +936,50 @@ void commandDirector(char * roverCommand)
 
 void setAllCommandsTo(boolean choice)
 {
+	//Note: Right now this function doesn't discriminate where the commands are coming from. So if they're all set to true, in theory, for example CMNC can "inject" or "spoof" a command that looks like it's coming from somewhere else.
+	//This is a bug that can be fixed later if needed. Keeping it simple for now.
+	
 	commandEnableOption_Hi = choice;
 	commandEnableOption_Bye = choice;
 	commandEnableOption_Invalid = choice;
 //ADD MORE COMMAND OPTIONS HERE
 }//end of setAllCommands()
+void redirectData()
+{
 
+	byte roverCommType;
+
+	roverCommType = roverDataCh2_COMM->getCommType();//get the roverComm Destination for roverDataCh2_COMM
+	
+	if(redirectToCMNC)
+	{
+		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
+			//Note: For the COMM there is only one other channel, so it always gets the priority
+		//Priority 1: MAIN to CMNC
+		if (roverCommType == ROVERCOMM_CMNC)
+		{
+			//if the data is for CMNC, transmit the data out from COMM to CMNC
+			txData(roverDataCh2_COMM->getData(), ROVERCOMM_CMNC);		
+		}//end if
+	}//end if	
+		
+	roverCommType = roverDataCh1_COMM->getCommType();//get the roverComm Destination for roverDataCh1_COMM
+		
+	if(redirectToMAIN)
+	{
+		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
+			//Note: For the COMM there is only one other channel, so it always gets the priority
+		//Priority 1: CMNC to MAIN
+		if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+		{
+			//if the data is for MAIN, transmit the data out from COMM to CMNC
+			txData(roverDataCh1_COMM->getData(), ROVERCOMM_MAIN);		
+		}//end if
+	}//end if	
+		
+}//End of redirectData()
+				
+				
 //====End of: Misc Functions
 
 
@@ -822,18 +1064,24 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;
 		case DATA_FILTER:
 			
+			
+			//Reset flags to default (no data for COMM)
+			dataWasForCOMM_Ch1 = false;
+			dataWasForCOMM_Ch2 = false;
+			//Reset flags to default (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			redirectToCMNC = false;
+			redirectToMAIN = false;
+			
+			
 			//Transmit data and/or execute command
-				//Note:
-				//For data from MAIN, transmit the data to it's proper destination if it was meant
-				//For another Arduino or take any actions if the data was meant for this unit, COMM
-	
-			//skip for CMNC (since the link isn't secure yet)
+
+			//Skip for CMNC (since the link isn't secure yet)
 					//Note: no reset (hw or sw) allowed from CMNC yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
 					//no redirections from CMNC
 
-
-
-
+			
+			//For data from MAIN, transmit the data to it's proper destination if it was meant
+				//For another Arduino or take any actions if the data was meant for this unit, COMM
 				
 				
 				if (ch2Status==DATA_STATUS_VALID)
@@ -841,19 +1089,21 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 					//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
 					//Set no redirections from MAIN	
 					//Note: this is a local .ino function
-					dataWasForCOMM_Ch2 = dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED);
+					dataWasForCOMM_Ch2 = dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED);//DataDirection will set dataWasForCOMM_Ch2 to true if it was for this Arduino
 					
-					//Set filter to throw away all MAIN data except:
-						//system ready message(s) from MAIN
-						//system go message(s) from MAIN
-						//hw reset requests message(s) from MAIN
-						//sw reset requests message(s) from MAIN
-						//generic status error message(s) from MAIN (redirected from AUXI)
-						
+					/*
+						Set filter to throw away all MAIN data except:
+							system ready message(s) from MAIN
+							system go message(s) from MAIN
+							hw reset requests message(s) from MAIN
+							sw reset requests message(s) from MAIN
+							generic status error message(s) from MAIN (redirected from AUXI)
+					*/
+					
 					//Set Command Filter Options
 					//First initialize all command choices to false
 					setAllCommandsTo(false);
-					//Then enable the allowed commands
+					//Then enable the allowed commands:
 
 					//TEMP DEBUG CODE
 
@@ -878,19 +1128,9 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 					//END OF TEMP DEBUG CODE
 
 				}//end if
-				else
-				{
-					//else the data was invalid or not ready, so do nothing
-					dataWasForCOMM_Ch2 = false;//set the flag to false since the data was not for COMM
-				}
-				
-				
-						
-	
+				//else the data was invalid or not ready, so do nothing
 
-			
-
-	
+				
 			break;
 		case PROCESS_DATA:
 			//WRITE ME LATER
@@ -964,6 +1204,10 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;
 		case TX_COMMUNICATIONS:
 			//WRITE ME LATER
+			
+			redirectData();//This function will redirect data as required
+			
+			
 			break;					
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				//This code should never execute, if it does, there is a logical or programming error
@@ -980,16 +1224,127 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
+				
+			//rxData() from CMNC
+				//1. Reset status flag
+				ch1Status = DATA_STATUS_NOT_READY;				
+				//2. Clear data before getting new data				
+				roverDataCh1_COMM->clearData();
+				//3. Receive data
+				ch1Status = rxData(roverComm_Ch1, ROVERCOMM_CMNC);//Note: this is a local .ino function
+				
+			//rxData() from MAIN
+				//1. Reset status flag
+				ch2Status = DATA_STATUS_NOT_READY;				
+				//2. Clear data before getting new data				
+				roverDataCh2_COMM->clearData();
+				//3. Receive data
+				ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+				
 			break;
 		case DATA_VALIDATION:
-			//WRITE ME LATER
+			
+			//validateData() from CMNC
+				//Process/validate the data that was received
+				if ( ch1Status == DATA_STATUS_READY)
+				{
+					//If the data is valid, set the status as such
+					if(roverComm_Ch1->validateData())
+					{
+						ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+					}//end if
+					//Else the data is invalid, so set the status as such
+					else
+					{
+						ch1Status = DATA_STATUS_INVALID;
+					}//end else
+				}//end if
+				//Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+				
+				
+			//validateData() from MAIN
+				//Process/validate the data that was received
+				if ( ch2Status == DATA_STATUS_READY)
+				{
+					//If the data is valid, set the status as such
+					if(roverComm_Ch2->validateData())
+					{
+						ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+					}//end if
+					//Else the data is invalid, so set the status as such
+					else
+					{
+						ch2Status = DATA_STATUS_INVALID;
+					}//end else
+				}//end if
+				//Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+				
+				
+				
 			break;
 		case DATA_FILTER:
-			//WRITE ME LATER
+	
+			//Reset flags to default (no data for COMM)
+			dataWasForCOMM_Ch1 = false;
+			dataWasForCOMM_Ch2 = false;
+			//Reset flags to default (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			redirectToCMNC = false;
+			redirectToMAIN = false;
+			
+			
+			
+			//Transmit data and/or execute command
+				//For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
+				//or take any actions if the data was meant for this unit, COMM
+				if (ch2Status==DATA_STATUS_VALID)
+				{
+					//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+					//Set no redirections from MAIN	
+					//Note: this is a local .ino function
+					dataWasForCOMM_Ch2 = dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED);//DataDirection will set dataWasForCOMM_Ch2 to true if it was for this Arduino
+		
+							
+					/*
+						Set filter to throw away all CMNC data except:
+							establish secure link message(s) from CMNC
+							Note: no reset (hw or sw) allowed from CMNC yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
+					*/
+					
+					//Set Command Filter Options
+					//First initialize all command choices to false
+					setAllCommandsTo(false);
+					//Then enable the allowed commands:
+					commandEnableOption_EstablishSecureLink = true;				
+		
+				}//end if
+			
+				
+
+				//For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+				//or take any actions if the data was meant for this unit, COMM		
+				if (ch2Status==DATA_STATUS_VALID)
+				{
+					//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+					//Set no redirections from MAIN	
+					//Note: this is a local .ino function
+					dataWasForCOMM_Ch2 = dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED);//DataDirection will set dataWasForCOMM_Ch2 to true if it was for this Arduino
+		
+							
+					/*
+						No filter on MAIN data. (Allow all data from MAIN)
+					*/
+					
+					//Set Command Filter Options
+					//No commands from MAIN are filtered, so set all to true.
+					setAllCommandsTo(true);
+		
+				}//end if
+				//else the data was invalid or not ready, so do nothing						
 			break;
 		case READ_INPUTS:
 			//WRITE ME LATER
+//LEFT OFF HERE
+			
 			break;
 		case PROCESS_DATA:
 			//WRITE ME LATER
@@ -1002,6 +1357,12 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			break;
 		case TX_COMMUNICATIONS:
 			//WRITE ME LATER
+			
+						
+			redirectData();//This function will redirect data as required
+					
+			
+			
 			break;					
 			default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				//This code should never execute, if it does, there is a logical or programming error

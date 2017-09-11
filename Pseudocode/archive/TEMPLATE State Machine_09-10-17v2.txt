@@ -1,0 +1,649 @@
+
+============COMM Template Below================
+
+//Rover_StateMachine_COMM
+
+//Configuration defines for #includes (must come before the #includes)
+#define _ROVER_STATES_AND_MODES
+#define _COMMAND_CREATION_DEFINITIONS
+#define _ARD_4_COMM_H //Must define this before calling RoverConfig.h (either directly or through another header file), define this flag to turn on COMM definitions
+
+//#includes
+#include <RoverStatesAndModes.h>
+#include <RoverCommandDefs.h>
+#include <RoverConfig.h>
+#include <SoftwareSerial.h>
+
+
+
+//============Debugging: Serial Channel Selection
+//Used to output debugging messages only when the _DEBUG_COMM_BROADCAST flag is defined
+//Uncomment the flag below in order to output debugging messages
+//#define _DEBUG_COMM_BROADCAST
+
+//Flag Logic, no need to edit this below
+//Reference the "Where Left Off...txt" at: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Planning
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ //for COMM, either way it goes to the PC USB Serial
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#endif
+//============End of Debugging: Serial Channel Selection
+
+
+//============Debugging: Print Mode and/or State
+//Uncomment the flag below in order to print the current state
+#define _DEBUG_PRINT_CURRENT_STATE
+//Uncomment the flag below in order to print the current mode
+#define _DEBUG_PRINT_CURRENT_MODE
+
+
+//Flag Logic, no need to edit this below
+#ifdef _DEBUG_PRINT_CURRENT_STATE
+	#define _PRINT_STATE_ _SERIAL_DEBUG_CHANNEL_.println
+#else
+	#define _PRINT_STATE_ void
+#endif
+
+#ifdef _DEBUG_PRINT_CURRENT_MODE
+	#define _PRINT_MODE_ _SERIAL_DEBUG_CHANNEL_.println
+#else
+	#define _PRINT_MODE_ void
+#endif
+//============End Debugging: Print Mode and/or State
+
+
+
+//============Global Declarations
+
+//=====Non-Reinitializing Variables (do not reinitialize these variables on software reset)
+
+//States
+byte currentState = RUN_HOUSEKEEPING_TASKS;
+byte nextState = RUN_HOUSEKEEPING_TASKS;
+byte queuedState = RUN_HOUSEKEEPING_TASKS;
+
+//Modes
+byte currentMode = POWER_ON_AND_HW_RESET;
+
+//Software Serial
+SoftwareSerial _MAIN_SWSERIAL_(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN);
+
+
+//=====End of: Non-Reinitializing Variables
+
+
+//=====Reinitializing Variables (reinitialize these variables on software reset)
+
+//Message Queues
+byte cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+
+//Flags - Error
+boolean invalid_state_or_mode_error = false;
+boolean sync_error = false;
+boolean secure_link_error = false;
+boolean sw_reset_error = false;
+boolean generic_health_error = false;
+boolean sleeping_error = false;
+//Flags - Message Controls
+boolean redirectToCMNC = false;
+boolean redirectToMAIN = false;
+//Flags - Status
+boolean main_system_ready = false;
+boolean communications_secure = false;//(used to keep track is the communications link is already secure or not, and is useful for things like when going to sleep and waking back up and needing to synchronize again without needing to resecure the link)
+boolean first_transmission = true;
+
+//Counters
+unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
+unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
+
+//=====End of: Reinitializing Variables
+
+//============End of Global Declarations
+
+
+
+
+
+
+
+void setup() {
+
+
+	//Serial Communications
+	//Setup the HW_UART for communications between COMM and CMNC/PC USB
+	_CMNC_SERIAL_.begin(CMNC_BAUD_RATE);
+	//Setup the SW_UART for communications between COMM and MAIN
+	_MAIN_SWSERIAL_.begin(MAIN_BAUD_RATE);
+
+	
+
+}//end of setup()
+
+
+void loop() {
+  
+
+
+
+
+	//State Machine
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			_PRINT_STATE_(F("STATE: RUN_HOUSEKEEPING_TASKS"));
+
+			switch (currentMode)
+			{
+				case POWER_ON_AND_HW_RESET:
+					runModeFunction_POWER_ON_AND_HW_RESET(currentState);
+					queuedState = RUN_HOUSEKEEPING_TASKS;//Set next aka queued state (since in RUN_HOUSEKEEPING_TASKS) to: RUN_HOUSEKEEPING_TASKS
+					currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*				
+					break;
+				case INITIALIZATION:
+					runModeFunction_INITIALIZATION(currentState);
+					queuedState = RX_COMMUNICATIONS;// Set next state to RX_COMMUNICATIONS
+					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
+					break;
+				case SYNCHRONIZATION:		
+					runModeFunction_SYNCHRONIZATION(currentState);
+					break;
+				case SECURING_LINK:		
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:		
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case HW_RESETTING:		
+					runModeFunction_HW_RESETTING(currentState);
+					break;
+				case SYSTEM_SLEEPING:		
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SYSTEM_WAKING:		
+					runModeFunction_SYSTEM_WAKING(currentState);
+					break;					
+				case SW_RESETTING:		
+					runModeFunction_SW_RESETTING(currentState);
+					break;
+				case SYSTEM_ERROR:		
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;												
+//ADD MORE MODES HERE					
+				default: //default mode
+					runModeFunction_default();//no state needed, all states do the same thing
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+				break;
+			}//end switch
+
+			//Advance to the queued (saved) state
+			nextState = queuedState;
+				//This happens only when in the RUN_HOUSEKEEPING_TASKS state.
+				//All other states will always go to the RUN_HOUSEKEEPING_TASKS as it's next state in order to run housekeeping tasks with every loop.
+			
+
+			break;
+		case RX_COMMUNICATIONS:
+				_PRINT_STATE_(F("STATE: RX_COMMUNICATIONS"));
+while (1);//DEBUG, LEFT OFF HERE
+					switch (currentMode)
+					{
+						case SYNCHRONIZATION:		
+							runModeFunction_SYNCHRONIZATION(currentState);
+							break;
+						case SECURING_LINK:		
+							runModeFunction_SECURING_LINK(currentState);
+							break;
+						case NORMAL_OPERATIONS:		
+							runModeFunction_NORMAL_OPERATIONS(currentState);
+							break;
+						case SYSTEM_SLEEPING:		
+							runModeFunction_SYSTEM_SLEEPING(currentState);
+							break;
+						case SW_RESETTING:		
+							runModeFunction_SW_RESETTING(currentState);
+							break;
+						case SYSTEM_ERROR:		
+							runModeFunction_SYSTEM_ERROR(currentState);
+							break;						
+		//ADD MORE MODES HERE					
+						default: //default mode
+							runModeFunction_default();//no state needed, all states do the same thing
+							queuedState = CONTROL_OUTPUTS;
+							currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+						break;
+					}//end switch			
+			break;
+
+//ADD MORE STATES CASES HERE				
+			
+			
+		default: //default state
+			_PRINT_STATE_(F("STATE: default"));
+
+			runModeFunction_default();//no state needed, all states do the same thing
+			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+			queuedState = CONTROL_OUTPUTS;
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every state except RUN_HOUSEKEEPING_TASKS
+
+			break;
+	}//end switch
+
+
+	//Advance to the next state
+	currentState = nextState;//go to the next state
+  
+  
+}//end of loop()
+
+
+
+
+//============Function Definitions
+
+
+//====Misc Functions
+void runPORTasks()
+{
+	//run POR tasks
+//WRITE ME LATER	
+	
+}//runPORTasks()
+void initializeVariables()
+{
+	//(re)initialize most global variables (i.e. for software reset)
+
+	//Message Queues
+	cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+	main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+
+	//Flags - Error
+	invalid_state_or_mode_error = false;
+	sync_error = false;
+	secure_link_error = false;
+	sw_reset_error = false;
+	generic_health_error = false;
+	sleeping_error = false;
+	//Flags - Message Controls
+	redirectToCMNC = false;
+	redirectToMAIN = false;
+	//Flags - Status
+	main_system_ready = false;
+	communications_secure = false;//(used to keep track is the communications link is already secure or not, and is useful for things like when going to sleep and waking back up and needing to synchronize again without needing to resecure the link)
+	first_transmission = true;
+
+	//Counters
+	timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
+	transmission_delay_cnt = 0;//concurrent transmission delay counter
+	
+} //end of initializeVariables()
+void startBackgroundTasks()
+{
+	//start background tasks
+//WRITE ME LATER
+}//end of startBackgroundTasks()
+void runBackgroundTasks()
+{
+	//run background tasks
+//WRITE ME LATER
+}//end of runBackgroundTasks()
+
+//====End of: Misc Functions
+
+
+//====Mode Functions
+
+void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: POWER_ON_AND_HW_RESET"));
+
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			runPORTasks();
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			//This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runStateFunction_POWER_ON_AND_HW_RESET
+void runModeFunction_INITIALIZATION(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: INITIALIZATION"));
+
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+				//initialize / reinitialize all variables
+				initializeVariables();
+				//start background tasks
+				startBackgroundTasks();
+				//initialize/reset shared counter before use
+				timeout_counter = 0;
+				break;
+			default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				//This code should never execute, if it does, there is a logical or programming error
+				runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runModeFunction_INITIALIZATION
+void runModeFunction_SYNCHRONIZATION(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SYNCHRONIZATION"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			//WRITE ME LATER
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;					
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				//This code should never execute, if it does, there is a logical or programming error
+				runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch	
+}//end of runModeFunction_SYNCHRONIZATION()
+void runModeFunction_SECURING_LINK(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SECURING_LINK"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			//WRITE ME LATER
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case READ_INPUTS:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;					
+			default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				//This code should never execute, if it does, there is a logical or programming error
+				runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch	
+}//end of runModeFunction_SECURING_LINK()
+void runModeFunction_NORMAL_OPERATIONS(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: NORMAL_OPERATIONS"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			//WRITE ME LATER
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case READ_INPUTS:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;					
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				//This code should never execute, if it does, there is a logical or programming error
+				runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch		
+}//end of runModeFunction_NORMAL_OPERATIONS()
+void runModeFunction_HW_RESETTING(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: HW_RESETTING"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			//WRITE ME LATER
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case READ_INPUTS:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;					
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				//This code should never execute, if it does, there is a logical or programming error
+				runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch	
+}//end of runModeFunction_HW_RESETTING()
+void runModeFunction_SYSTEM_SLEEPING(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SYSTEM_SLEEPING"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			//WRITE ME LATER
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case READ_INPUTS:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;					
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				//This code should never execute, if it does, there is a logical or programming error
+				runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch	
+}//end of runModeFunction_SYSTEM_SLEEPING()
+void runModeFunction_SYSTEM_WAKING(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SYSTEM_WAKING"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			//WRITE ME LATER
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case READ_INPUTS:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;					
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				//This code should never execute, if it does, there is a logical or programming error
+				runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch	
+}//end of runModeFunction_SYSTEM_WAKING()
+void runModeFunction_SW_RESETTING(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SW_RESETTING"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			//WRITE ME LATER
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case READ_INPUTS:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;					
+		default: //default state
+				//This code should never execute, if it does, there is a logical or programming error
+				runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch	
+}//end of runModeFunction_SW_RESETTING()
+void runModeFunction_SYSTEM_ERROR(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SYSTEM_ERROR"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			//WRITE ME LATER
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case READ_INPUTS:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;					
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				//This code should never execute, if it does, there is a logical or programming error
+				runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch	
+}//end of runModeFunction_SYSTEM_ERROR()
+void runModeFunction_default()
+{
+	_PRINT_MODE_(F("MODE: default"));
+	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
+	//No switch case needed for the states, all states do the same thing
+	cmnc_msg_queue = CMD_TAG_INVALID_STATE_ERROR_STATUS;
+	invalid_state_or_mode_error = true;//Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset
+	//initialize/reset shared counter before use
+	timeout_counter = 0;	
+}//end of runStateFunction_default
+ 
+ //====End of: Mode Functions
+//============End of Function Definitions
+
+
+

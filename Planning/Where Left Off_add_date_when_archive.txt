@@ -110,24 +110,48 @@ get basic state machine infrastructure up
 	
 	
 	
+	
+	
 	getting all the state and mode transitions created so the framework is there for a particular "mode loop"
-		[
+	{
 			[DONE] I got the whole sync mode loop in place.
-				[WHERE LEFT OFF---IN PROGRESS]now I have to write some of the functions
-					Update on commandDirector commands/functions
-						Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
-							Update the DATA_FILTER state with command options
-						Also update //Flag(s) - Command Filter Options and setAllCommandsTo()
-						Then update the PROCESS_DATA state for the SYNCHRONIZATION mode, with what happens once the commandDirector does it's tasks. (i.e. once a system ready or system go message has been received, then what is the next thing that should happen like main_msg_queue = SYSTEM_READY_STATUS, etc.)
+			
+				[WHERE LEFT OFF 0]
+				Note: The last thing I did before stopping the last time, was enter all the state transitions for all the states and their modes in the main loop()
+					To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
+					Then send /-c5--*hi or /-c5--*bye to test (as long as the flags commandEnableOption_Hi and commandEnableOption_Bye are set true in the filter in runModeFunction_SYNCHRONIZATION()
+				[WHERE LEFT OFF 1 --- IN PROGRESS]now I have to write some of the functions
+					[NEED TO DO]Update on commandDirector commands/functions
+						[NEED TO DO]Also any Tx code is supposed to be move out of commandDirector as it transmits data in a different state. Only flags (to send data or control outputs) should be changed and messages should be loaded into queues at this point.
+						[NEED TO DO]Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
+							[NEED TO DO]Update the DATA_FILTER state with command options
+						[NEED TO DO]Also update //Flag(s) - Command Filter Options and setAllCommandsTo()
+						[NEED TO DO]Then update the PROCESS_DATA state for the SYNCHRONIZATION mode, with what happens once the commandDirector does it's tasks. (i.e. once a system ready or system go message has been received, then what is the next thing that should happen like main_msg_queue = SYSTEM_READY_STATUS, etc.)						
 			[DONE] first, go through all other COMM code and add all the objects I will need to the state machine code and get them created.
 			[DONE, i have 50% memory left]see how much memory I have left. if it's not an issue, continue, else you'll need to redesign and trim the fat
 			left off at //LEFT OFF HERE...
-			[IN PROGRESS, MAIN rxCode works. Now need to write the rxData for CMNC code] add in the rxData function... aka lay the groundwork for serial communications
+				[WHERE LEFT OFF 2 --- IN PROGRESS. Already done one loop/template for MAIN, need to do the same for CMNC] add in the rxData function... aka lay the groundwork for serial communications
+					[NEED TO DO]I started SECURING_LINK for RX_COMMUNICATIONS in order to write rxData() from CMNC since SYNCHRONIZATION only has it for MAIN
+					[NEED TO DO]I just finished writing DATA_FILTER for runModeFunction_SECURING_LINK()
+					[NEED TO DO]So write READ_INPUTS for runModeFunction_SECURING_LINK() next until you go through all the states down the to TX_COMMUNICATIONS and send out any data from CMNC
 				[DONE]then go back and write the DATA_VALIDATION state in the SYNCHRONIZATION mode
 				[DONE]write the data filter for the data
-			
-			
-		]
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
 	then start adding the functions to do stuff (aka the business logic) next
 	then repeat for all other modes
 	get rovers to take commands
