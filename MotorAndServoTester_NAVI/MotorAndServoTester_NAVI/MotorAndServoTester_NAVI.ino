@@ -125,19 +125,38 @@ void setup() {
 
 	//Run Gimbal Functional Demo
 	gimbalFunctionalDemo();
+
+
+	//Setting Up Timer Interrupt
+	OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
+	TIMSK0 |= _BV(OCIE0A);//Activating the Timer Interrupt by setting the Mask Register
+	/*
+	Reference:
+	https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
+	http://forum.arduino.cc/index.php?topic=3240.0
+	https://protostack.com.au/2010/09/timer-interrupts-on-an-atmega168/
+	*/
 	
 	
 }
 
 
-void loop() {
-
-	//Tasks always running in the background with every loop() cycle
-	//Timers
+SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
+{
+	//Tasks always running in the background, called by the timer about every 1 ms
+	//This will allow the millis value to be checked every millisecond and not get missed.
+	//Timer(s)
 	frontLeftSyncTimer->Running();
 	frontRightSyncTimer->Running();
 	rearLeftSyncTimer->Running();
 	rearRightSyncTimer->Running();
+
+}
+
+
+
+void loop() {
+
 	//Wheel Encoders
 	wheelEncoder_FrontLeft->sensorOnline();
 	wheelEncoder_FrontRight->sensorOnline();

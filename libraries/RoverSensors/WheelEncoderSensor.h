@@ -7,6 +7,13 @@
 	#include <RoverReset.h>
 	#include <DelayCounter.h>
 	
+	
+	
+	//Uncomment the line below to use simulated encoder counts to test this code on an Arduino without the encoders hooked up
+	//#define _DEBUG_SIMULATED_ENCODER_COUNT_
+	
+	
+	
 	#define _WHEEL_ENCODER_DEFINITIONS
 	/*******************************************************************
 	Configure (define) flags before calling #include <RoverConfig.h>

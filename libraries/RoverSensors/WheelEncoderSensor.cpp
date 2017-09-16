@@ -57,8 +57,10 @@ void WheelEncoderSensor::sensorOnline()
 	//Motors are slow, and there is only 12 edges per a revolution, so a 1Hz refresh rate is okay.
 	
 	
-//UNCOMMENT THE LINE BELOW FOR DEBUGGING	WITHOUT MOTORS CONNECTED TO THE ARDUINO
-this->_encoderAEdgeCount=this->_encoderAEdgeCount+50;//KEEP FOR DEBUG
+
+	#ifdef _DEBUG_SIMULATED_ENCODER_COUNT_
+		this->_encoderAEdgeCount=this->_encoderAEdgeCount+random(0,100);
+	#endif
 
 	if (this->_counterPtr->countReached())//waits for the delay to finish counting to 1 second (determined the by delay periods * delayInterval/resolution)
 	{

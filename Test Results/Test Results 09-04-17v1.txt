@@ -38,7 +38,31 @@ Need to analyze to see if data expected is correct (i.e. current changes when mo
 
 
 
+	
 
+MotorAndServoTester_NAVI
+	Comments:
+		I found in WheelEncoderSensor.cpp there was some debug code there left in and should have been commented out.
+			this->_encoderAEdgeCount=this->_encoderAEdgeCount+50;//KEEP FOR DEBUG
+		So I added an #ifdef #end if to it
+		Also I found the delay code is terrible. It is set to 200 periods of 5ms. But the actual delay was much longer due to having a lot of serial output in the main loop. This cause the whole code to slow down and hence each loop isn't as fast as it should be. Therefore it incrementing the timing code too slowly.
+		This part of the code needs to be redesigned and fixed.
+			DelayCounter
+			GlobalDelayTimer
+		For now, a shortened delay has been implement for testing. But it's not accurate timing.
+		
+
+		
+MotorAndServoTester_MAIN
+	Comments:
+		I found in WheelEncoderSensor.cpp there was some debug code there left in and should have been commented out.
+			this->_encoderAEdgeCount=this->_encoderAEdgeCount+50;//KEEP FOR DEBUG
+		So I added an #ifdef #end if to it
+		Also I found the delay code is terrible. It is set to 200 periods of 5ms. But the actual delay was much longer due to having a lot of serial output in the main loop. This cause the whole code to slow down and hence each loop isn't as fast as it should be. Therefore it incrementing the timing code too slowly.
+		This part of the code needs to be redesigned and fixed.
+			DelayCounter
+			GlobalDelayTimer
+		For now, a shortened delay has been implement for testing. But it's not accurate timing.
 
 
 

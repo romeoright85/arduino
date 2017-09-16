@@ -112,6 +112,6 @@ void DelayCounter::initializeCounter(unsigned int startValue, unsigned int stopV
 void DelayCounter::reset()
 {
 		//software reset
-		this->counterReset();		
+		this->counterReset();
 }
 

@@ -9,7 +9,40 @@ Only once the number of delay intervals have been achieved, the counter (that is
 	
 
 The timer will check for the time each time GlobalDelayTimer::Running() is executed.
-So it need to be executed in a loop such as loop().
+This code should be placed in an interrupt service handler of a timer output compare.
+
+
+Place the output compare interrupt setup code in the setup function:
+	setup(){
+		//Setting Up Timer Interrupt
+		OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
+		TIMSK0 |= _BV(OCIE0A);//Activating the Timer Interrupt by setting the Mask Register	
+	}
+
+
+Then create a interrupt service routine:
+	SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
+	{
+		//Tasks always running in the background, called by the timer about every 1 ms
+		//This will allow the millis value to be checked every millisecond and not get missed.
+		//Timer(s)
+		yourTimer->Running();
+		
+	}
+
+
+
+Reference:
+https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
+http://forum.arduino.cc/index.php?topic=3240.0
+https://protostack.com.au/2010/09/timer-interrupts-on-an-atmega168/
+
+
+
+		
+		
+		
+
 The design for this is instead of using delay() which holds up the program from doing anything else, you can check for GlobalDelayTimer::Running() then go do something else and check it again later in a polling style.
 The timer will be running in the background then.
 

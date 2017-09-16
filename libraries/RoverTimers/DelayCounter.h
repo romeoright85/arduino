@@ -18,6 +18,18 @@ Use DelayCounter::counterReset() to reset the counter to the startValue and clea
 //Note: Careful not using delay() in the loop when using timers as it will slow everything down in proportion
 //Note: The timer/delay won't be accurate because things like Serial.println() will also slow it down. But good enough if you want parallel processing (using the poll method).
 
+
+
+Reference:
+https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
+http://forum.arduino.cc/index.php?topic=3240.0
+https://protostack.com.au/2010/09/timer-interrupts-on-an-atmega168/
+
+
+
+
+
+
 --------------------
 Example Use:
 --------------------
@@ -28,8 +40,25 @@ DelayCounter * counter = new DelayCounter(DELAY_10_PERIODS);//initialize it to c
 GlobalDelayTimer * timer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, counter);//set each period to be 5ms long (delay interval)
 
 
-In the main loop() function put:
-	timer->Running();//activate the timer
+
+Place the output compare interrupt setup code in the setup function:
+	setup(){
+		//Setting Up Timer Interrupt
+		OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
+		TIMSK0 |= _BV(OCIE0A);//Activating the Timer Interrupt by setting the Mask Register	
+	}
+
+
+Then create a interrupt service routine:
+	SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
+	{
+		//Tasks always running in the background, called by the timer about every 1 ms
+		//This will allow the millis value to be checked every millisecond and not get missed.
+		//Timer(s)
+		timer->Running();
+		
+	}
+	
 	
 Then in the loop (either directly or by some other function, class method, etc.)
 

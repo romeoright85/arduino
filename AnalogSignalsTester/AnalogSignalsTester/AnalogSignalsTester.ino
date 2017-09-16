@@ -66,18 +66,34 @@ void setup() {
 
 	_SERIAL_DEBUG_CHANNEL_.println(F("Gas Sensor Warming Up And Calibrating - Wait ~3:26"));
 
+
+	//Setting Up Timer Interrupt
+	OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
+	TIMSK0 |= _BV(OCIE0A);//Activating the Timer Interrupt by setting the Mask Register
+	/*
+	Reference:
+	https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
+	http://forum.arduino.cc/index.php?topic=3240.0
+	https://protostack.com.au/2010/09/timer-interrupts-on-an-atmega168/
+	*/
+}
+
+
+SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
+{
+	//Tasks always running in the background, called by the timer about every 1 ms
+	//This will allow the millis value to be checked every millisecond and not get missed.
+	//Timer(s)
+	timerGasRead->Running();//activate the 50mS timer
+	timerGasCal->Running();//activate the 500mS timer
+	//Uptime Monitor
+	roverUptime->run();//active the uptime monitor
 }
 
 
 void loop() {
 
-
-	//Background running tasks
-	roverUptime->run();//active the uptime monitor
-	timerGasRead->Running();//activate the 50mS timer
-	timerGasCal->Running();//activate the 500mS timer
 	
-
 	//wait for warm up of the MQ gas sensor, the calibrate once
 	if (!analogSignals->gasSensorIsCalibrated())
 	{
@@ -88,7 +104,7 @@ void loop() {
 		#else
 			//Wait for a >= 3 minute warm up
 			//Note: Calibration takes a few seconds, measured at about 26 seconds to begin	
-			analogSignals->calibrateGasSensor(mqGasSensor, roverUptime->getMinutes());
+			analogSignals->calibrateGasSensor(mqGasSensor, roverUptime->getMinutes(), counterGasCal);
 		#endif
 	
 	}

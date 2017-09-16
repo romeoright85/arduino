@@ -20,6 +20,29 @@ See "Regression Testing ... txt": K:\Working Directory\DESIGN_PROJ\Design Projec
 
 
 FIX THE ENCODERS FOR MAIN AND NAVI
+	look at the code and any obvious issues
+		[FIXED]found one part of the code that was left for debugging that should be uncommented out.
+		[FIXED, using output compare interrupts to call the timer->Running() function so it occurs about every 1ms instead of when the loop() gets around to it]found problems with the timer code. it's slower than designed due to the unanticipated serial outputs
+			The following code may need to be modified if a new timer will be implemented:
+				[FIXED, NEED TO TEST]AnalogLedTester
+				[FIXED, NEED TO TEST]AnalogSignalsTester
+				[FIXED, NEED TO TEST]IMUTester
+				[FIXED, NEED TO TEST]MotorAndServoTester_MAIN
+				[FIXED, NEED TO TEST]MotorAndServoTester_NAVI
+				[FIXED, NEED TO TEST]NavigationTester_AUXI
+					Test with (no new changes on code(s) below though):
+						NavigationTester_MAIN
+						NavigationTester_NAVI
+				[FIXED, NEED TO TEST]Rover_StateMachine_COMM
+			UpTimer is also effected, so besides AnalogSignalsTester, the following code also needs a similar solution using output compare timer interrupts.
+				[DONE, fixed and tested]UpTimeCounter
+			
+			
+	Try fixing the code using interrupt timers
+		https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
+				
+				
+		
 	try this code on an external test arduino
 	try outputting the encoder counts
 		then if it works, try outputting the counts when connected to the rover
@@ -29,13 +52,15 @@ FIX THE ENCODERS FOR MAIN AND NAVI
 		MotorAndServoTester_MAIN
 		MotorAndServoTester_NAVI
 
+		
+		
+		
 FINISH REGRESSION TESTING
 	NavigationTester_AUXI
 	NavigationTester_MAIN
 	NavigationTester_NAVI
 	
-	Connect Xbees to the explorer as well. The explorers were confirmed fried, but the Xbees may (or may not) be still good.
-		Both ID 0001 annd 0005 Xbees with the Explorer boards when they have come in the mail.
+	
 	
 ANALYZE DATA FOR ANALOG SIGNALS TESTER
 	See if the currents make sense.
@@ -1198,3 +1223,7 @@ Hardware hacked the IMU on the rover to fix signal integrity issues. Data hacked
 							
 							
 	[DONE] NEED TO REPLACE MAIN and NAVI Arduino boards since I fried it by connecting them to a USB hub with an A/C Adapter with 12V instead of 5V.
+	
+	
+[DONE]Connect Xbees to the explorer as well. The explorers were confirmed fried, but the Xbees may (or may not) be still good.
+		[DONE, works]Both ID 0001 annd 0005 Xbees with the Explorer boards when they have come in the mail.	

@@ -10,6 +10,7 @@ once the rollover has occured, the number will be low again
 */
 
 
+	
 
 
 /*
@@ -39,6 +40,44 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see .
 
+
+*/
+
+/*
+
+--------------------
+Example Use:
+--------------------
+#include <UpTime.h>
+
+
+UpTime * upTimeMonitor = new UpTime();
+
+
+Place the output compare interrupt setup code in the setup function:
+	setup(){
+		//Setting Up Timer Interrupt
+		OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
+		TIMSK0 |= _BV(OCIE0A);//Activating the Timer Interrupt by setting the Mask Register	
+	}
+
+
+Then create a interrupt service routine:
+	SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
+	{
+		//Uptime Monitor
+		upTimeMonitor->run();//active the uptime monitor
+	}
+	
+	
+Then in the loop (either directly or by some other function, class method, etc.)
+
+Example for loop() use:
+	Serial.println(roverUptime->getSeconds());
+	
+	
+	
+--------------------
 
 */
 
