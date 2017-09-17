@@ -1132,7 +1132,7 @@ Note: With external commands, you only want to do all sleep requests (and not in
 	But internally, it may call individual commands as required.
 
 	
-Non-Conflicting Functions
+Non-Conflicting Functions (i.e. it doesn't override the message queues or change states or modes)
 
 	System Ready
 		//Check to see where the command was from
@@ -1143,10 +1143,19 @@ Non-Conflicting Functions
 		else if command was from COMM
 			set comm_system_ready = true							
 		end if
+		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
+		if(navi_system_ready && auxi_system_ready && comm_system_ready) // if all systetms are ready, reset the timeout counter
+			timeout_counter = 0;//reset timer
+		end if
+		
+		
+		
 
 Conflicting Functions Ordered By Priority	
-Most of the time (but not always), these commands will be ran from NORMAL_OPERATIONS mode under the PROCESS_DATA state. The next state is CONTROL_OUTPUTS, unless overwritten.
+	Note: Don't forget to look at Non-Conflicting Functions as well.
+	Most of the time (but not always), these commands will be ran from NORMAL_OPERATIONS mode under the PROCESS_DATA state. The next state is CONTROL_OUTPUTS, unless overwritten.
 
+	
 	COMM HW Reset Request
 		Note: The current state is PROCESS_DATA and current mode is SYNCHRONIZATION since MAIN just got HW resetted and now COMM is waiting to be HW resetted.
 		Note: There MAIN doesn't really have it's own HW Reset Request. That's done by the COMM, which will HW reset the MAIN, NAVI, and AUXI.

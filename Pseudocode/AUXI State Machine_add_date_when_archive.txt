@@ -862,14 +862,17 @@ Note: With external commands, you only want to do all sleep requests (and not in
 
 --------------	
 
-Non-Conflicting Functions
+Non-Conflicting Functions (i.e. it doesn't override the message queues or change states or modes)
 
 	MAIN System Ready (from MAIN)
 		main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
+		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
 		timeout_counter = 0 (for future use)
 
 Conflicting Functions Ordered By Priority	
+	Note: Don't forget to look at Non-Conflicting Functions as well.
 	Most of the time (but not always), these commands will be ran from NORMAL_OPERATIONS mode under the PROCESS_DATA state. The next state is CONTROL_OUTPUTS, unless overwritten.
+
 		AUXI SW Reset Request (usually from MAIN)
 			main_pri_msg_queue = SW_IS_RESETTING
 			//Turn off Lasers, since the next state from here will be CONTROL_OUTPUTS

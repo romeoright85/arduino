@@ -359,11 +359,17 @@ COMM:
 						
 
 						//Run lower priority functions here.
-											
+						
+						
+						//Keep requesting for a secure link from CMNC until one is received
+						If !(establish secure link msg received from CMNC)
+							cmnc_msg_queue = SECURE_LINK_REQUEST (tells CMNC it's ready for a secure link)
+						end if
+
+						
 						//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 						
-						
-						Note: If system go or system ready msg received from MAIN, see "Command Options" below for more info.
+												
 						If no establish secure link message(s) from CMNC (keep incrementing the timeout counter)
 							timeout_counter++
 						end if							
@@ -608,8 +614,8 @@ COMM:
 					if main_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for MAIN, NAVI, AUXI (since they all go through MAIN) as needed based on main_msg_queue
 					end if
-					if cmnc_msg_queue == SYSTEM_READY_STATUS
-						create system ready msg for CMNC (tells CMNC it's ready for a secure link)
+					if cmnc_msg_queue == SECURE_LINK_REQUEST
+						create secure link request for CMNC (tells CMNC it's ready for a secure link)
 					Mode: SECURING_LINK
 					set next state to TX_COMMUNICATIONS
 					go to RUN_HOUSEKEEPING_TASKS						
@@ -982,14 +988,17 @@ Note: With external commands, you only want to do all sleep requests (and not in
 	But internally, it may call individual commands as required.
 
 --------------	
-Non-Conflicting Functions
 
+
+
+Non-Conflicting Functions (i.e. it doesn't override the message queues or change states or modes)
 	MAIN System Ready (from MAIN)
 		main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
+		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
 		timeout_counter = 0 (for future use)
-
 		
-Conflicting Functions Ordered By Priority	
+Conflicting Functions Ordered By Priority
+	Note: Don't forget to look at Non-Conflicting Functions as well.
 	Most of the time (but not always), these commands will be ran from NORMAL_OPERATIONS mode under the PROCESS_DATA state. The next state is CONTROL_OUTPUTS, unless overwritten.
 	
 		HW Reset Request
@@ -1013,12 +1022,16 @@ Conflicting Functions Ordered By Priority
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 		System Go (from MAIN)
-			if communications_secure = false
-				Mode: SECURING_LINK *begin*
-				cmnc_msg_queue = SYSTEM_READY_STATUS (tells CMNC it's ready for a secure link)
+			if main_system_ready = false //if for some reason the system ready message was no received before the system go message, go ahead and make it true as any system go must also mean system ready. this doesn't really matter, but just doing it for consistency since the flags are global.
+				main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
+			end if
+			if communications_secure = false //it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it justs needs to sync up again
+				Mode: SECURING_LINK *begin*				
+				cmnc_msg_queue = SECURE_LINK_REQUEST (tells CMNC it's ready for a secure link)
 			else //the link is already secure from earlier
 				Mode: NORMAL_OPERATIONS *begin*
-			end if
+				cmnc_msg_queue = SYSTEM_READY_STATUS (tells CMNC the system is ready)
+			end if			
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 		Break Secure Link
@@ -1052,9 +1065,9 @@ Conflicting Functions Ordered By Priority
 			cmnc_msg_queue or main_msg_queue (based on the requester) = PIR_STATUS
 			Note: The PIR status message will be created in the CREATE_DATA state
 		Received Error Messages
-		//For now just forward it to CMNC, keeping the original destination
-		//All errors from main, navi, auxi should be redirected to COMM, and COMM will redirect it to CMNC
-		//Then CMNC will talk to COMM where it can then anyl hw and sw resets, etc.
+			//For now just forward it to CMNC, keeping the original destination
+			//All errors from main, navi, auxi should be redirected to COMM, and COMM will redirect it to CMNC
+			//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
 		Improvement Tip: COMM can go into error mode if it gets an error message from NAVI, AUXI, or MAIN
 
 		Redirect any system errors from MAIN/NAVI/AUXI to CMNC for manual human in the loop disposition (i.e. hw or sw reset)		

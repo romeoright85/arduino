@@ -144,15 +144,7 @@ get basic state machine infrastructure up
 							-getting the the system go message to work and switch from sync mode to securing link mode. You still need to go back and write all the other sync mode code.
 							-creating the framework for all commands in the commandDirector. And it's ordered by priority.
 							-created flags for all commands so the DATA_FILTER state can filter stuff in the future
-							-Note:
-								Could not create a roverCommand object for CMNC and MAIN. The program was running out of memory and couldn't afford another roverCommand object. (I tested this fact by not adding a second object, and adding it without even using it, and the program crashed). The program goes into error mode/state or just freezes when it crashes.
-								Could also not have txMsgBufferCMNC and txMsgBufferMAIN. There isn't enough memory for both.
-									Program size: 13,832 bytes (used 43% of a 32,256 byte maximum) (7.72 secs)
-									Minimum Memory Usage: 1169 bytes (57% of a 2048 byte maximum)
-							-Pick up from wthe work around for the last major issues I had due to memory, see "HIGHEST PRIORITY 1" and "HIGHEST PRIORITY 2"
-					
-					
-					
+							-moved code out of commandDirector and into the CREATE_DATA state
 					
 					
 					To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
@@ -160,7 +152,7 @@ get basic state machine infrastructure up
 						/-c5--*hi
 						/-c5--*bye
 						/-c5--*sysrdy //no output will show in the command line. it's all behind the scenes.
-						/-c5--*sysgo //no output will show in the command line. it's all behind the scenes. You can monitor the states and modes though. And ocne in this state, hi, bye, etc. will be filtered out.
+						/-c5--*sysgo //no output will show in the command line. it's all behind the scenes. You can monitor the states and modes though.
 						/-c5--*hwrst //not yet implemented
 						/-c5--*cswrst //not yet implemented
 						/-c5--*cslprqst //not yet implemented
@@ -175,17 +167,8 @@ get basic state machine infrastructure up
 					to test (as long as the flags commandEnableOption_Hi and commandEnableOption_Bye are set true in the filter in runModeFunction_SYNCHRONIZATION()
 				[WHERE LEFT OFF 1 --- IN PROGRESS]now I have to write some of the functions
 					Update on commandDirector commands/functions
-					
-					
-HIGHEST PRIORITY 1->[NEED TO DO]Due to lack of memory, update documentation AND code to do the following:
-							For commands, let it transmit right away in the process_data state (in command director).
-							For redirects, let it be transmitted right away in the dataDirector which is called in the DATA_FILTER state.
-							Use CREATE_DATA and TX_DATA states only for internally generated data.
-HIGHEST PRIORITY 2->[NEED TO DO]Use command creator to create commands. (it will add the necessary headers of origin, destination, etc.
-						
-							
-							
-						
+									
+						[NEED TO DO]Move any create data tasks out of the command director and into the CREATE_DATA state
 						[NEED TO DO]Update commandDirector commands to something else if desired (i.e. not "esl" but some other string)
 							"esl"
 							"sysrdy"
@@ -200,18 +183,17 @@ HIGHEST PRIORITY 2->[NEED TO DO]Use command creator to create commands. (it will
 									
 						[NEED TO DO]Also update //Flag(s) - Command Filter Options and setAllCommandsTo()
 						[NEED TO DO]Then update the PROCESS_DATA state for the SYNCHRONIZATION mode, with what happens once the commandDirector does it's tasks. (i.e. once a system ready or system go message has been received, then what is the next thing that should happen like main_msg_queue = SYSTEM_READY_STATUS, etc.)						
-						
-									[NEED TO DO]write the code/algorithm for all other commands in commandDirector
-									
+						[DONE]Add other commands in the framework for COMM in commandDirector
+									[NEED TO DO]write the code/algorithm for all other commands
+									[DONE] first, go through all other COMM code and add all the objects I will need to the state machine code and get them created.
+									[DONE, i have 50% memory left]see how much memory I have left. if it's not an issue, continue, else you'll need to redesign and trim the fat
 			left off at //LEFT OFF HERE...
 				[WHERE LEFT OFF 2 --- IN PROGRESS. Already done one loop/template for MAIN data to/from COMM, need to do the same for CMNC data to/from COMM] add in the rxData function... aka lay the groundwork for serial communications
-					[NEED TO DO]Finish writing the other code for PROCESS_DATA in runModeFunction_SYNCHRONIZATION
 					[NEED TO DO]I started SECURING_LINK for RX_COMMUNICATIONS in order to write rxData() from CMNC since SYNCHRONIZATION only has it for MAIN
 					[NEED TO DO]I just finished writing DATA_FILTER for runModeFunction_SECURING_LINK()
 					[NEED TO DO]So write READ_INPUTS for runModeFunction_SECURING_LINK() next until you go through all the states down the to TX_COMMUNICATIONS and send out any data from CMNC
 									[DONE]then go back and write the DATA_VALIDATION state in the SYNCHRONIZATION mode
 									[DONE]write the data filter for the data
-					[NEED TO DO] Write other message for createDataFromQueue()
 				[WHERE LEFT OFF 3]
 					Once the sync mode code is done for the COMM, write all other state machines for other Arduinos, and try to get it to sync up.
 					Then write the hardware reset code and try to get it to sync up after a hardware reset.
@@ -1303,9 +1285,4 @@ Hardware hacked the IMU on the rover to fix signal integrity issues. Data hacked
 [DONE]hw reset requests message(s) from MAIN
 [DONE]sw reset requests message(s) from MAIN
 [DONE]generic status error message(s) from MAIN (redirected from AUXI)
-[DONE]Add other commands in the framework for COMM in commandDirector
-[DONE] first, go through all other COMM code and add all the objects I will need to the state machine code and get them created.
-[DONE, i have 50% memory left]see how much memory I have left. if it's not an issue, continue, else you'll need to redesign and trim the fat
-
-
 									

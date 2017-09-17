@@ -71,7 +71,7 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 //============Debugging: Print Mode and/or State
 //Uncomment the flag below in order to print the current state and/or mode
 //#define _DEBUG_PRINT_CURRENT_STATE
-//#define _DEBUG_PRINT_CURRENT_MODE
+#define _DEBUG_PRINT_CURRENT_MODE
 
 
 //Flag Logic, no need to edit this below
@@ -138,8 +138,8 @@ RoverSleeperClient * sleeperMAIN = new RoverSleeperClient(MAIN_WAKEUP_CTRL_PIN);
 byte cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 //Message Char Array
-char txMsgBuffer[UNIV_BUFFER_SIZE];//shared buffer amongst MAIN and CMNC (due to limited memory resources)
-
+char txMsgBufferCMNC[UNIV_BUFFER_SIZE];
+char txMsgBufferMAIN[UNIV_BUFFER_SIZE];
 
 //Fixed Strings (to store in flash)
 const char string_0[] PROGMEM = "Valid Cmd! =)\nRx'd:\n";//DEBUG
@@ -1005,12 +1005,12 @@ void txData(char * txData, byte roverCommType)
 	if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
 	{
 		//transmit the data to CMNC or through the USB of this Arduino (i.e. for debug) [in this case, it means the same thing]
-		_CMNC_SERIAL_.println(txData);		
+		_CMNC_SERIAL_.println(txData);
 	}//end if
 	else if (roverCommType == ROVERCOMM_MAIN)
 	{
 		//transmit the data to MAIN
-		_MAIN_SWSERIAL_.println(txData);		
+		_MAIN_SWSERIAL_.println(txData);
 	}//end else if
 	else
 	{
@@ -1018,8 +1018,8 @@ void txData(char * txData, byte roverCommType)
 	}//end else
 }//end of txData()
 
-
-void commandDirector(char * receivedCommand, byte roverCommType)
+//void commandDirector(char * receivedCommand, byte roverCommType)//Sometimes the roverCommType is used to determine which queue the message/command should go to. Other times it's predetermined by the state machine or inherit to the command itself
+void commandDirector(char * receivedCommand)//DEBUG
 {
 	
 	
@@ -1083,10 +1083,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		{
 			currentMode = SECURING_LINK;//Set mode to SECURING_LINK *begin*				
 			cmnc_msg_queue = CMD_TAG_SECURE_LINK_REQUEST;//(tells CMNC it's ready for a secure link)
-//WRITE LATER, TRANSMIT A MESSAGE HERE USING THE CMD TAG, CMD_TAG_SECURE_LINK_REQUEST
-
-
-
+//WRITE LATER, THE MESSAGE TO SEND TO CMNC for CMD_TAG_SECURE_LINK_REQUEST		
 		}//end if
 		else//the link is already secure from earlier
 		{
@@ -1110,13 +1107,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		currentMode = NORMAL_OPERATIONS;//Overriding the Default Next Mode to NORMAL_OPERATIONS *begin*
 		communications_secure = true;//set flag for secure link established
 		timeout_counter = 0; //reset for future use
-		
-		
-		
 		cmnc_msg_queue = CMD_TAG_ESTABLISH_SECURE_LINK;
-		
-//WRITE LATER, TRANSMIT A MESSAGE HERE USING THE CMD TAG, CMD_TAG_ESTABLISH_SECURE_LINK		
-		
 	}//end else if
 	//COMM Sleep Request (usually from MAIN)
 	else if(strcmp(receivedCommand, "cslprqst") == 0 && commandEnableOption_CommSleepRequest == true)//FIX ME LATER, change the actual send command to compare later
@@ -1145,79 +1136,130 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 	//Hi Command - DEBUG
 	else if (strcmp(receivedCommand, "hi") == 0 && commandEnableOption_Hi == true)
 	{
+
+
+strcpy_P(txMsgBufferCMNC, (char*)pgm_read_word(&(string_table[0])));//DEBUG
+sprintf(txMsgBufferCMNC, "%s%s\0", txMsgBufferCMNC, receivedCommand);//DEBUG
+txData(txMsgBufferCMNC, ROVERCOMM_CMNC);
+
+
+
+/*
+strcpy_P(txMsgBufferCMNC, (char*)pgm_read_word(&(string_table[0])));//DEBUG
+sprintf(txMsgBufferCMNC, "%s%s\0", txMsgBufferCMNC, receivedCommand);//DEBUG
+txData(txMsgBufferCMNC, ROVERCOMM_CMNC);
+
+	strcpy_P(txMsgBufferMAIN, (char*)pgm_read_word(&(string_table[0])));//DEBUG
+	sprintf(txMsgBufferMAIN, "%s%s\0", txMsgBufferMAIN, receivedCommand);//DEBUG
+	txData(txMsgBufferMAIN, ROVERCOMM_MAIN);
 	
-		strcpy_P(txMsgBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
-		sprintf(txMsgBuffer, "%s%s\0", txMsgBuffer, receivedCommand);//DEBUG
 	
-		if (roverCommType == ROVERCOMM_CMNC)
+		if(roverCommType == ROVERCOMM_CMNC)
 		{
-			cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
-//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_CMNC);
-		}
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+			cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;//DEBUG
+		}//end if
+		else if(roverCommType == ROVERCOMM_MAIN)
 		{
-			main_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
-//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_MAIN);
-		}
-		//else do nothing
-		
-		
+			main_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;//DEBUG
+		}//end else if		
+*/
 	}//end if
 	//Bye Command - DEBUG
 	else if (strcmp(receivedCommand, "bye") == 0 && commandEnableOption_Bye == true)
 	{
-		strcpy_P(txMsgBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
-		sprintf(txMsgBuffer, "%s%s\0", txMsgBuffer, receivedCommand);//DEBUG
-
-	
-		if (roverCommType == ROVERCOMM_CMNC)
+	/*
+		if(roverCommType == ROVERCOMM_CMNC)
 		{
-			cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
-//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_CMNC);
-		}
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+			cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;//DEBUG
+		}//end if
+		else if(roverCommType == ROVERCOMM_MAIN)
 		{
-			main_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
-//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_MAIN);
-		}
-		//else do nothing		
-		
-		
+			main_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;//DEBUG
+		}//end else if
+		*/
 	}//end else if
 	//Invalid - DEBUG
 	else if(commandEnableOption_Invalid == true)
 	{
 	
-		strcpy_P(txMsgBuffer, (char*)pgm_read_word(&(string_table[1])));//copy the fixed string from flash into the char buffer
-		sprintf(txMsgBuffer, "%s%s\0", txMsgBuffer, roverCommand->getCommand());//DEBUG, append other chars into the char buffer if
-		
-	
-		if (roverCommType == ROVERCOMM_CMNC)
+	/*
+		if(roverCommType == ROVERCOMM_CMNC)
 		{
-			cmnc_msg_queue = CMD_TAG_INVALID_CMD;
-//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_CMNC);
-		}
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+			cmnc_msg_queue = CMD_TAG_INVALID_CMD;//DEBUG
+		}//end if
+		else if(roverCommType == ROVERCOMM_MAIN)
 		{
-			main_msg_queue = CMD_TAG_INVALID_CMD;
-//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_MAIN);
-		}
-		//else do nothing
-
-
-		
-	}
+			main_msg_queue = CMD_TAG_INVALID_CMD;//DEBUG
+		}//end else if
+		*/
+	}//end else if
 	//else output nothing	
 	
 	return;
 }//end of commandDirector()
 
+
+void createDataFromQueue(byte roverCommType)
+{
+
+
+	if(roverCommType == ROVERCOMM_CMNC)
+	{
+		switch(cmnc_msg_queue)
+		{
+			case CMD_TAG_NO_MSG:
+				//do nothing
+				break;
+			case CMD_TAG_SECURE_LINK_REQUEST:
+//WRITE ME LATER
+				break;				
+			case CMD_TAG_ESTABLISH_SECURE_LINK:
+//WRITE ME LATER
+
+				//MOVE THIS TO CREATE DATA
+				strcpy_P(txMsgBufferCMNC, (char*)pgm_read_word(&(string_table[2])));//DEBUG, copy the array from flash into the char buffer
+				sprintf(txMsgBufferCMNC, "%s\0", txMsgBufferCMNC);//DEBUG, append other chars into the char buffer
+
+				break;				
+//ADD MORE COMMAND TAGS HERE			
+			case CMD_TAG_DEBUG_OUTPUT_RXD_CMD:
+				strcpy_P(txMsgBufferCMNC, (char*)pgm_read_word(&(string_table[0])));//DEBUG, copy the array from flash into the char buffer
+				sprintf(txMsgBufferCMNC, "%s%s\0", txMsgBufferCMNC, roverCommand->getCommand());//DEBUG, append other chars into the char buffer
+				break;	
+			case CMD_TAG_INVALID_CMD:
+				strcpy_P(txMsgBufferCMNC, (char*)pgm_read_word(&(string_table[1])));//DEBUG, copy the array from flash into the char buffer
+				sprintf(txMsgBufferCMNC, "%s%s\0", txMsgBufferCMNC, roverCommand->getCommand());//DEBUG, append other chars into the char buffer
+				break;				
+			default:
+				//do nothing
+				break;
+		}//end switch
+	}//end if
+	else if(roverCommType == ROVERCOMM_MAIN)
+	{
+		switch(main_msg_queue)
+		{
+			case CMD_TAG_NO_MSG:
+				//do nothing
+				break;
+			case CMD_TAG_DEBUG_OUTPUT_RXD_CMD:
+			
+				//strcpy_P(txMsgBufferMAIN, (char*)pgm_read_word(&(string_table[0])));//DEBUG, copy the array from flash into the char buffer
+				//sprintf(txMsgBufferMAIN, "%s%s\0", txMsgBufferMAIN, roverCommand->getCommand());//DEBUG, append other chars into the char buffer
+				break;	
+			case CMD_TAG_INVALID_CMD:
+				//strcpy_P(txMsgBufferMAIN, (char*)pgm_read_word(&(string_table[1])));//DEBUG, copy the array from flash into the char buffer
+				//sprintf(txMsgBufferMAIN, "%s%s\0", txMsgBufferMAIN, roverCommand->getCommand());//DEBUG, append other chars into the char buffer
+				break;					
+//ADD MORE COMMAND TAGS HERE				
+			default:
+				//do nothing
+				break;
+		}//end switch	
+	}//end else if
+	//else do nothing
+	
+}//end of createDataFromQueue()
 
 
 void setAllCommandsTo(boolean choice)
@@ -1440,7 +1482,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				
 				
 				//2. Then run the command director to run the allowed commands
-				commandDirector(roverCommand->getCommand(), ROVERCOMM_MAIN);				
+				//commandDirector(roverCommand->getCommand(), ROVERCOMM_MAIN);
+				commandDirector(roverCommand->getCommand());
 				
 
 			}//end if
@@ -1515,7 +1558,21 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;
 		case TX_COMMUNICATIONS:
 			//WRITE ME LATER
-		
+			if(cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				//transmit internally generated data for CMNC
+				txData(txMsgBufferCMNC, ROVERCOMM_CMNC);
+				//clear message queue for CMNC
+				cmnc_msg_queue = CMD_TAG_NO_MSG;
+			}//end if
+			if(main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				//transmit internally generated data for MAIN
+				txData(txMsgBufferMAIN, ROVERCOMM_MAIN);
+				//clear message queue for MAIN
+				main_msg_queue = CMD_TAG_NO_MSG;
+			}//end if			
+			
 			redirectData();//This function will redirect data as required
 			
 			
