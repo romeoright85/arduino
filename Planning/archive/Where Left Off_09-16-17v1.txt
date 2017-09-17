@@ -18,22 +18,6 @@ Need to go back and test everything after replacing it.
 See "Regression Testing ... txt": K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results
 
 
-		
-FINISH REGRESSION TESTING
-	NavigationTester_AUXI
-	NavigationTester_MAIN
-	NavigationTester_NAVI
-	
-	
-	
-ANALYZE DATA FOR ANALOG SIGNALS TESTER
-	See if the currents make sense.
-	Take a look at the voltages as well to look for any voltage drops.
-		For the 7.2V sense it isn't giving correct results. I tried measuring the blue wire on AMUX CCA 1 J2-7 but I didn't measure anything. So perhaps the wire that's coming from the CURRENT CCA is loose or something. But it's not worth taking the rover apart.
-	
-	See: data to analyze part 1_09-04-17v1 and data to analyze part 2_09-04-17v1
-	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results
-
 
 FIX THE ENCODERS FOR MAIN AND NAVI
 	look at the code and any obvious issues
@@ -53,17 +37,12 @@ FIX THE ENCODERS FOR MAIN AND NAVI
 			UpTimer is also effected, so besides AnalogSignalsTester, the following code also needs a similar solution using output compare timer interrupts.
 				[DONE, fixed and tested]UpTimeCounter
 			
-	
-	
+			
+	Try fixing the code using interrupt timers
+		https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
+				
+				
 		
-		
-
-
-	[DONE, needs rework]MotorAndServoTester_MAIN
-	[DONE, needs rework]MotorAndServoTester_NAVI
-		[DONE, wasn't working]review rover encoder output when testing these
-		[DONE, works but when your turn it back on, the calibration is thrown off] test mosfet off
-	also run AnalogSignalsTester at the same time to capture the current readings		
 	try this code on an external test arduino
 	try outputting the encoder counts
 		then if it works, try outputting the counts when connected to the rover
@@ -72,10 +51,33 @@ FIX THE ENCODERS FOR MAIN AND NAVI
 	then re-run tests for:
 		MotorAndServoTester_MAIN
 		MotorAndServoTester_NAVI
+
 		
-	Try fixing the code using interrupt timers
-		https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
-				
+		
+		
+FINISH REGRESSION TESTING
+	NavigationTester_AUXI
+	NavigationTester_MAIN
+	NavigationTester_NAVI
+	
+	
+	
+ANALYZE DATA FOR ANALOG SIGNALS TESTER
+	See if the currents make sense.
+	Take a look at the voltages as well to look for any voltage drops.
+		For the 7.2V sense it isn't giving correct results. I tried measuring the blue wire on AMUX CCA 1 J2-7 but I didn't measure anything. So perhaps the wire that's coming from the CURRENT CCA is loose or something. But it's not worth taking the rover apart.
+	
+	See: data to analyze part 1_09-04-17v1 and data to analyze part 2_09-04-17v1
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results
+
+
+
+	[IN PROGRESS]MotorAndServoTester_MAIN
+	[IN PROGRESS]MotorAndServoTester_NAVI
+		[NEED TO DO]review rover encoder output when testing these
+		[NEED TO DO] test mosfet off
+	also run AnalogSignalsTester at the same time to capture the current readings
+	
 	
 	NEED TO DO:
 	[DONE, encoders didn't work on both NAVI and MAIN]Still need to read the encoder output and test it.	
@@ -102,9 +104,9 @@ FIX THE ENCODERS FOR MAIN AND NAVI
 	
 	
 			
-=================24 weekends===================			
+=================16 weekends===================			
 
-~6 weekends per an Arduino
+~4 weekends per an Arduino
 
 Test code as you go!!!
 
@@ -137,36 +139,28 @@ get basic state machine infrastructure up
 	
 	getting all the state and mode transitions created so the framework is there for a particular "mode loop"
 	{
-									[DONE] I got the whole sync mode loop in place.
+			[DONE] I got the whole sync mode loop in place.
 			
 				[WHERE LEFT OFF 0]
-				Note: The last thing I did before stopping was getting the secure link command to process and switch modes from sync to normal in the commandDirector
+				Note: The last thing I did before stopping the last time, was enter all the state transitions for all the states and their modes in the main loop()
 					To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
-					Then send
-						/-c5--*hi
-						/-c5--*bye
-						/-c5--*esl
-						/-c5--*(anything else)
-					to test (as long as the flags commandEnableOption_Hi and commandEnableOption_Bye are set true in the filter in runModeFunction_SYNCHRONIZATION()
+					Then send /-c5--*hi or /-c5--*bye to test (as long as the flags commandEnableOption_Hi and commandEnableOption_Bye are set true in the filter in runModeFunction_SYNCHRONIZATION()
 				[WHERE LEFT OFF 1 --- IN PROGRESS]now I have to write some of the functions
-					Update on commandDirector commands/functions
-									[DONE]Also any Tx code is supposed to be move out of commandDirector as it transmits data in a different state. Only flags (to send data or control outputs) should be changed and messages should be loaded into queues at this point.
-						[NEED TO DO]Move any create data tasks out of the command director and into the CREATE_DATA state
-						[NEED TO DO]Update the command to send from "esl" to something else
+					[NEED TO DO]Update on commandDirector commands/functions
+						[NEED TO DO]Also any Tx code is supposed to be move out of commandDirector as it transmits data in a different state. Only flags (to send data or control outputs) should be changed and messages should be loaded into queues at this point.
 						[NEED TO DO]Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
 							[NEED TO DO]Update the DATA_FILTER state with command options
 						[NEED TO DO]Also update //Flag(s) - Command Filter Options and setAllCommandsTo()
 						[NEED TO DO]Then update the PROCESS_DATA state for the SYNCHRONIZATION mode, with what happens once the commandDirector does it's tasks. (i.e. once a system ready or system go message has been received, then what is the next thing that should happen like main_msg_queue = SYSTEM_READY_STATUS, etc.)						
-						[NEED TO DO]Add other commands for COMM in commandDirector
-									[DONE] first, go through all other COMM code and add all the objects I will need to the state machine code and get them created.
-									[DONE, i have 50% memory left]see how much memory I have left. if it's not an issue, continue, else you'll need to redesign and trim the fat
+			[DONE] first, go through all other COMM code and add all the objects I will need to the state machine code and get them created.
+			[DONE, i have 50% memory left]see how much memory I have left. if it's not an issue, continue, else you'll need to redesign and trim the fat
 			left off at //LEFT OFF HERE...
-				[WHERE LEFT OFF 2 --- IN PROGRESS. Already done one loop/template for MAIN data to/from COMM, need to do the same for CMNC data to/from COMM] add in the rxData function... aka lay the groundwork for serial communications
+				[WHERE LEFT OFF 2 --- IN PROGRESS. Already done one loop/template for MAIN, need to do the same for CMNC] add in the rxData function... aka lay the groundwork for serial communications
 					[NEED TO DO]I started SECURING_LINK for RX_COMMUNICATIONS in order to write rxData() from CMNC since SYNCHRONIZATION only has it for MAIN
 					[NEED TO DO]I just finished writing DATA_FILTER for runModeFunction_SECURING_LINK()
 					[NEED TO DO]So write READ_INPUTS for runModeFunction_SECURING_LINK() next until you go through all the states down the to TX_COMMUNICATIONS and send out any data from CMNC
-									[DONE]then go back and write the DATA_VALIDATION state in the SYNCHRONIZATION mode
-									[DONE]write the data filter for the data
+				[DONE]then go back and write the DATA_VALIDATION state in the SYNCHRONIZATION mode
+				[DONE]write the data filter for the data
 	}
 
 

@@ -24,7 +24,16 @@ MM-DD-YY
 	
 Need to rework and fix:	
 	MotorAndServoTester_NAVI	
+		Needs Rework:
+			Encoders are working but forward and reversed are swapped.
+		Working:
+			The correct encoders are detecting. i.e. when steer left, the right motors are moving and the right encoders are detecting. Similar for steering right as well.
+			When motors stop, the encoders stop.
 	MotorAndServoTester_MAIN
+		Mid left and right motors encoder detects, but it's direction of forward and reverse are also opposite.
+		You can disable the motor using the mostfet control. But when you turn it back on, the calibration is all off. So it's best to turn it off, but manually power it back on and do a recalibration again.
+
+		
 Need to analyze to see if data expected is correct (i.e. current changes when motors are on and go forward or backward.
 	AnalogSignalsTester
 	
@@ -34,10 +43,15 @@ Need to analyze to see if data expected is correct (i.e. current changes when mo
 	
 
 
+-------------
+09-16-17
+-------------
+	
 
-
-
-
+ImuTester
+	Comments:
+		With the Timer code fixed using output compare timer interrupt, roll, pitch, yaw, and ahrs output seems to be outputting now. Have not verified the data but it seems to at least output unlike before.
+		
 	
 
 MotorAndServoTester_NAVI
@@ -49,9 +63,7 @@ MotorAndServoTester_NAVI
 		This part of the code needs to be redesigned and fixed.
 			DelayCounter
 			GlobalDelayTimer
-		For now, a shortened delay has been implement for testing. But it's not accurate timing.
-		
-
+		I fixed it using output timer compare interrupt to poll the timer running code every millisecond.
 		
 MotorAndServoTester_MAIN
 	Comments:
@@ -63,7 +75,7 @@ MotorAndServoTester_MAIN
 			DelayCounter
 			GlobalDelayTimer
 		For now, a shortened delay has been implement for testing. But it's not accurate timing.
-
+		I fixed it using output timer compare interrupt to poll the timer running code every millisecond.
 
 
 	

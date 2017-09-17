@@ -1030,6 +1030,7 @@ Conflicting Functions Ordered By Priority
 			communications_secure = true
 			Mode: NORMAL_OPERATIONS *begin*
 			timeout_counter = 0 (clear for future use)
+			cmnc_msg_queue = ESTABLISH_SECURE_LINK (tells CMNC link is now secured)
 		COMM Sleep Request (usually from MAIN)
 			timeout_counter = 0;//clear counter for future use
 			Mode: SYSTEM_WAKING *begin* //setup this mode ahead of time before going to sleep		

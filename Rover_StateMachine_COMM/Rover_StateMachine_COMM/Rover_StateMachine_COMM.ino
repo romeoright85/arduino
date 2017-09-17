@@ -37,7 +37,7 @@
 #include <RoverSleeperServer.h>
 #include <RoverSleeperClient.h>
 #include <RoverConfig.h>	
-	
+#include <avr/pgmspace.h> //To store certain variables in Flash
 	
 
 
@@ -132,6 +132,17 @@ RoverSleeperClient * sleeperMAIN = new RoverSleeperClient(MAIN_WAKEUP_CTRL_PIN);
 //Message Queues
 byte cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+//Message Char Array
+char txMsgBufferCMNC[UNIV_BUFFER_SIZE];
+char txMsgBufferMAIN[UNIV_BUFFER_SIZE];
+
+//Fixed Strings (to store in flash)
+const char string_0[] PROGMEM = "Valid Cmd! =)\nRx'd:\n";//DEBUG
+const char string_1[] PROGMEM = "Invalid Cmd! =(\nRx'd:\n";//DEBUG
+const char string_2[] PROGMEM = "Link Status: Secured";//DEBUG
+
+//Table of Fixed Strings (array of strings stroed in flash)
+const char* const string_table[] PROGMEM = {string_0, string_1, string_2};
 
 //Flag(s) - Error
 boolean invalid_state_or_mode_error = false;
@@ -277,59 +288,70 @@ void loop() {
 			switch (currentMode)
 			{
 				case POWER_ON_AND_HW_RESET:
-					runModeFunction_POWER_ON_AND_HW_RESET(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = RUN_HOUSEKEEPING_TASKS;//Set next aka queued state (since in RUN_HOUSEKEEPING_TASKS) to: RUN_HOUSEKEEPING_TASKS
 					currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*				
+					runModeFunction_POWER_ON_AND_HW_RESET(currentState);					
 					break;
 				case INITIALIZATION:
-					runModeFunction_INITIALIZATION(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = RX_COMMUNICATIONS;// Set next state to RX_COMMUNICATIONS
 					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
+					runModeFunction_INITIALIZATION(currentState);					
 					break;
 				case SYNCHRONIZATION:		
-					runModeFunction_SYNCHRONIZATION(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					//Keep the queuedState the same (unchanged)
 					//Keep the currentMode the same (unchanged)				
+					runModeFunction_SYNCHRONIZATION(currentState);					
 					break;
 				case SECURING_LINK:		
-					runModeFunction_SECURING_LINK(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					//Keep the queuedState the same (unchanged)
 					//Keep the currentMode the same (unchanged)
+					runModeFunction_SECURING_LINK(currentState);					
 					break;
 				case NORMAL_OPERATIONS:		
-					runModeFunction_NORMAL_OPERATIONS(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					//Keep the queuedState the same (unchanged)
 					//Keep the currentMode the same (unchanged)
+					runModeFunction_NORMAL_OPERATIONS(currentState);					
 					break;
 				case HW_RESETTING:		
-					runModeFunction_HW_RESETTING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					//Keep the queuedState the same (unchanged)
 					//Keep the currentMode the same (unchanged)
+					runModeFunction_HW_RESETTING(currentState);
 					break;
 				case SYSTEM_SLEEPING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					//Keep the queuedState the same (unchanged)
 					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_SLEEPING(currentState);					
 					break;
 				case SYSTEM_WAKING:		
-					runModeFunction_SYSTEM_WAKING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					//Keep the queuedState the same (unchanged)
 					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_WAKING(currentState);					
 					break;					
 				case SW_RESETTING:		
-					runModeFunction_SW_RESETTING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					//Keep the queuedState the same (unchanged)
 					//Keep the currentMode the same (unchanged)
+					runModeFunction_SW_RESETTING(currentState);
 					break;
 				case SYSTEM_ERROR:		
-					runModeFunction_SYSTEM_ERROR(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					//Keep the queuedState the same (unchanged)
 					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_ERROR(currentState);
 					break;												
 				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing					
 				break;
 			}//end switch
 			//Advance to the queued (saved) state
@@ -342,34 +364,46 @@ void loop() {
 			switch (currentMode)
 			{
 				case SYNCHRONIZATION:		
-					runModeFunction_SYNCHRONIZATION(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = DATA_VALIDATION;
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);					
 					break;
 				case SECURING_LINK:		
-					runModeFunction_SECURING_LINK(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SECURING_LINK(currentState);					
 					break;
 				case NORMAL_OPERATIONS:		
-					runModeFunction_NORMAL_OPERATIONS(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_NORMAL_OPERATIONS(currentState);					
 					break;
 				case SYSTEM_SLEEPING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;
 				case SW_RESETTING:		
-					runModeFunction_SW_RESETTING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SW_RESETTING(currentState);
 					break;
 				case SYSTEM_ERROR:		
-					runModeFunction_SYSTEM_ERROR(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_ERROR(currentState);
 					break;		
 				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
-					queuedState = CONTROL_OUTPUTS;
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = CONTROL_OUTPUTS;					
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing
 				break;
 			}//end switch			
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
@@ -379,40 +413,47 @@ void loop() {
 			switch (currentMode)
 			{
 				case SYNCHRONIZATION:		
-					runModeFunction_SYNCHRONIZATION(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
 					queuedState = DATA_FILTER;		
-					//Keep the currentMode the same (unchanged)	
+					//Keep the currentMode the same (unchanged)						
+					runModeFunction_SYNCHRONIZATION(currentState);
 					break;
 				case SECURING_LINK:		
-					runModeFunction_SECURING_LINK(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = DATA_FILTER;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
 					break;	
 				case NORMAL_OPERATIONS:		
-					runModeFunction_NORMAL_OPERATIONS(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
 					queuedState = DATA_FILTER;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;	
 				case SYSTEM_SLEEPING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = DATA_FILTER;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;											
 				case SW_RESETTING:		
-					runModeFunction_SW_RESETTING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
 					queuedState = DATA_FILTER;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);
 					break;							
 				case SYSTEM_ERROR:		
-					runModeFunction_SYSTEM_ERROR(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = DATA_FILTER;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
 					break;									
 				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-				break;
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
@@ -421,40 +462,47 @@ void loop() {
 			switch (currentMode)
 			{
 				case SYNCHRONIZATION:		
-					runModeFunction_SYNCHRONIZATION(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = PROCESS_DATA;
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
 					break;
 				case SECURING_LINK:		
-					runModeFunction_SECURING_LINK(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = READ_INPUTS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
 					break;	
 				case NORMAL_OPERATIONS:		
-					runModeFunction_NORMAL_OPERATIONS(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = READ_INPUTS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;	
 				case SYSTEM_SLEEPING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = PROCESS_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;											
 				case SW_RESETTING:		
-					runModeFunction_SW_RESETTING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = PROCESS_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);
 					break;							
 				case SYSTEM_ERROR:		
-					runModeFunction_SYSTEM_ERROR(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = READ_INPUTS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
 					break;					
 				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-				break;
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
@@ -463,25 +511,29 @@ void loop() {
 			switch (currentMode)
 			{
 				case SECURING_LINK:		
-					runModeFunction_SECURING_LINK(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = PROCESS_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
 					break;	
 				case NORMAL_OPERATIONS:		
-					runModeFunction_NORMAL_OPERATIONS(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = PROCESS_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;	
 				case SYSTEM_ERROR:		
-					runModeFunction_SYSTEM_ERROR(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = PROCESS_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
 					break;					
 				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-				break;
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state		
 			break;			
@@ -490,40 +542,47 @@ void loop() {
 			switch (currentMode)
 			{
 				case SYNCHRONIZATION:		
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SYNCHRONIZATION;//Default Next Mode. This may be overriden by the runModeFunction...()
 					runModeFunction_SYNCHRONIZATION(currentState);
-					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
-					currentMode = SYNCHRONIZATION;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
 					break;
 				case SECURING_LINK:		
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SECURING_LINK;//Default Next Mode. This may be overriden by the runModeFunction...()
 					runModeFunction_SECURING_LINK(currentState);
-					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
-					currentMode = SECURING_LINK;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
 					break;	
 				case NORMAL_OPERATIONS:		
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = NORMAL_OPERATIONS;//Default Next Mode. This may be overriden by the runModeFunction...()
 					runModeFunction_NORMAL_OPERATIONS(currentState);
-					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
-					currentMode = NORMAL_OPERATIONS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
 					break;	
 				case SYSTEM_SLEEPING:		
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SYSTEM_SLEEPING;//Default Next Mode. This may be overriden by the runModeFunction...()
 					runModeFunction_SYSTEM_SLEEPING(currentState);
-					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
-					currentMode = SYSTEM_SLEEPING;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
 					break;											
 				case SW_RESETTING:		
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SW_RESETTING;//Default Next Mode. This may be overriden by the runModeFunction...()
 					runModeFunction_SW_RESETTING(currentState);
-					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
-					currentMode = SW_RESETTING;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
 					break;							
 				case SYSTEM_ERROR:		
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SYSTEM_ERROR;//Default Next Mode. This may be overriden by the runModeFunction...()
 					runModeFunction_SYSTEM_ERROR(currentState);
-					queuedState = CONTROL_OUTPUTS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
-					currentMode = SYSTEM_ERROR;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
 					break;					
 				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-				break;
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
@@ -532,50 +591,59 @@ void loop() {
 			switch (currentMode)
 			{
 				case SYNCHRONIZATION:		
-					runModeFunction_SYNCHRONIZATION(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
 					break;
 				case SECURING_LINK:		
-					runModeFunction_SECURING_LINK(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
 					break;	
 				case NORMAL_OPERATIONS:		
-					runModeFunction_NORMAL_OPERATIONS(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;	
 				case HW_RESETTING:		
-					runModeFunction_HW_RESETTING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_HW_RESETTING(currentState);
 					break;						
 				case SYSTEM_SLEEPING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;									
 				case SYSTEM_WAKING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;							
 				case SW_RESETTING:		
-					runModeFunction_SW_RESETTING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);
 					break;							
 				case SYSTEM_ERROR:		
-					runModeFunction_SYSTEM_ERROR(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-				break;
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;			
@@ -584,50 +652,59 @@ void loop() {
 			switch (currentMode)
 			{
 				case SYNCHRONIZATION:		
-					runModeFunction_SYNCHRONIZATION(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
 					break;
 				case SECURING_LINK:		
-					runModeFunction_SECURING_LINK(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
 					break;	
 				case NORMAL_OPERATIONS:		
-					runModeFunction_NORMAL_OPERATIONS(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;	
 				case HW_RESETTING:		
-					runModeFunction_HW_RESETTING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_HW_RESETTING(currentState);
 					break;						
 				case SYSTEM_SLEEPING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;									
 				case SYSTEM_WAKING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;							
 				case SW_RESETTING:		
-					runModeFunction_SW_RESETTING(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);
 					break;							
 				case SYSTEM_ERROR:		
-					runModeFunction_SYSTEM_ERROR(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;		
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
 					break;					
 				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-				break;
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
@@ -636,62 +713,72 @@ void loop() {
 			switch (currentMode)
 			{
 				case SYNCHRONIZATION:		
-					runModeFunction_SYNCHRONIZATION(currentState);
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = RX_COMMUNICATIONS;
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
 					break;					
 				case SECURING_LINK:		
-					runModeFunction_SECURING_LINK(currentState);					
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 //FIX ME LATER					
-					queuedState = RX_COMMUNICATIONS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);					
 					break;					
 				case NORMAL_OPERATIONS:		
-					runModeFunction_NORMAL_OPERATIONS(currentState);					
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 //FIX ME LATER					
-					queuedState = RX_COMMUNICATIONS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);					
 					break;					
 				case HW_RESETTING:		
-					runModeFunction_HW_RESETTING(currentState);					
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_HW_RESETTING(currentState);					
 					break;					
 				case SYSTEM_SLEEPING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);					
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = RX_COMMUNICATIONS;
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);					
 					break;					
 				case SYSTEM_WAKING:		
-					runModeFunction_SYSTEM_WAKING(currentState);					
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = RX_COMMUNICATIONS;
 					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*		
+					runModeFunction_SYSTEM_WAKING(currentState);					
 					break;					
 				case SW_RESETTING:		
-					runModeFunction_SW_RESETTING(currentState);					
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = RX_COMMUNICATIONS;
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);					
 					break;				
 				case SYSTEM_ERROR:		
-					runModeFunction_SYSTEM_ERROR(currentState);					
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 //FIX ME LATER					
-					queuedState = RX_COMMUNICATIONS;//DEBUG, WRITE CONDITIONAL STATEMENTS LATER AS THIS MAY BE OVERRIDDEN
+					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
 					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);					
 					break;				
 				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-				break;
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
 			}//end switch	
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;		
 		default: //default state
 			_PRINT_STATE_(F("STATE: default"));
-			runModeFunction_default();//no state needed, all states do the same thing
+			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes							
 			queuedState = CONTROL_OUTPUTS;
 			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
+			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
 
@@ -902,6 +989,8 @@ void txData(char * txData, byte roverCommType)
 
 void commandDirector(char * roverCommand)
 {
+	
+	
 	//Note: This function varies for different Arduinos
 
 
@@ -926,35 +1015,53 @@ void commandDirector(char * roverCommand)
 	//This checks to see if the roverCommand matches any of the known values. Else it's an invalid command
 	if (strcmp(roverCommand, "hi") == 0 && commandEnableOption_Hi == true)
 	{
-		txData("Valid Cmd! =)", ROVERCOMM_CMNC);
-		txData("Rx'd:", ROVERCOMM_CMNC);
-		txData(roverCommand, ROVERCOMM_CMNC);
+		
+		strcpy_P(txMsgBufferCMNC, (char*)pgm_read_word(&(string_table[0])));//DEBUG, copy the array from flash into the char buffer
+		sprintf(txMsgBufferCMNC, "%s%s\0", txMsgBufferCMNC, roverCommand);//DEBUG, append other chars into the char buffer
+		cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;//DEBUG
+		
+		
 	}//end if
 	else if (strcmp(roverCommand, "bye") == 0 && commandEnableOption_Bye == true)
 	{
-		txData("Valid Cmd! =)", ROVERCOMM_CMNC);
-		txData("Rx'd:", ROVERCOMM_CMNC);
-		txData(roverCommand, ROVERCOMM_CMNC);
+
+	
+//MOVE THIS TO CREATE DATA
+strcpy_P(txMsgBufferCMNC, (char*)pgm_read_word(&(string_table[0])));//DEBUG, copy the array from flash into the char buffer
+sprintf(txMsgBufferCMNC, "%s%s\0", txMsgBufferCMNC, roverCommand);//DEBUG, append other chars into the char buffer
+		cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;//DEBUG
+		
 	}//end else if
-	else if(commandEnableOption_EstablishSecureLink == true)//DEBUG, DELETE ME AND USE BELOW LATER
-	//else if(strcmp(roverCommand, "??ADD SECURE LINK MESSAGE HERE???") == 0 && commandEnableOption_EstablishSecureLink == true)//DEBUG, FIX ME LATER
+	else if(strcmp(roverCommand, "esl") == 0 && commandEnableOption_EstablishSecureLink == true)//FIX ME LATER, change the actual send command to compare later (instead of "esl" - establish secure link)
 	{
-		//WRITE ME LATER
+		//WRITE ME LATER - IN PROGRESS
 		//establish secure link logic here
+
+
+//MOVE THIS TO CREATE DATA
+strcpy_P(txMsgBufferCMNC, (char*)pgm_read_word(&(string_table[2])));//DEBUG, copy the array from flash into the char buffer
+sprintf(txMsgBufferCMNC, "%s\0", txMsgBufferCMNC);//DEBUG, append other chars into the char buffer
+
+		currentMode = NORMAL_OPERATIONS;//Overriding the Default Next Mode to NORMAL_OPERATIONS *begin*
+		communications_secure = true;//set flag for secure link established
+		timeout_counter = 0; //reset for future use
+		cmnc_msg_queue = CMD_TAG_ESTABLISH_SECURE_LINK;
 	}
 	else
 	{
 		if(commandEnableOption_Invalid == true)
 		{
-			txData("Invalid Cmd! =(", ROVERCOMM_CMNC);
-			txData("Rx'd:", ROVERCOMM_CMNC);
-			txData(roverCommand, ROVERCOMM_CMNC);
+			
+			strcpy_P(txMsgBufferCMNC, (char*)pgm_read_word(&(string_table[1])));//DEBUG, copy the array from flash into the char buffer
+			sprintf(txMsgBufferCMNC, "%s%s\0", txMsgBufferCMNC, roverCommand);//DEBUG, append other chars into the char buffer
+			cmnc_msg_queue = CMD_TAG_INVALID_CMD;//DEBUG		
 		}
+		//else output nothing		
 	}//end else
 
 	//=========END OF TEMP CODE BELOW
 	
-	
+	return;
 }//end of commandDirector()
 
 
@@ -1000,6 +1107,9 @@ void redirectData()
 			txData(roverDataCh1_COMM->getData(), ROVERCOMM_MAIN);		
 		}//end if
 	}//end if	
+	
+	
+	//else do nothing
 		
 }//End of redirectData()
 				
@@ -1147,7 +1257,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 						commandEnableOption_Hi = true;//DEBUG	
 						commandEnableOption_Bye  = true;//DEBUG, FOR DEBUGGING, can disable this to see that the filter works
 						commandEnableOption_Invalid = true;//DEBUG
-
+						commandEnableOption_EstablishSecureLink = true;
 
 					//END OF TEMP DEBUG CODE
 
@@ -1181,6 +1291,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 						
 				//2. Then run the command director to run the allowed commands
 				commandDirector(roverCommand->getCommand());
+
+
 			}//end if
 
 					//WRITE ME LATER
@@ -1228,6 +1340,14 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;
 		case TX_COMMUNICATIONS:
 			//WRITE ME LATER
+			if(cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				//transmit internally generated data for CMNC
+				txData(txMsgBufferCMNC, ROVERCOMM_CMNC);
+				//clear message queue for CMNC
+				cmnc_msg_queue = CMD_TAG_NO_MSG;
+			}//end if
+			
 			
 			redirectData();//This function will redirect data as required
 			
