@@ -3,39 +3,26 @@ Note: Don't use a USB hub with the laptop. Even when the Arduino is connected to
 Note: When programming the Arduinos, make sure power to all other Arduinos are there by connecting the Rover's USB cables to all the Arduinos to power them. Else you might not be able to get a Done uploading message.
 =========NEED TO DO=========
 
+
+Regression Tests All Completed 9/17/17	
+
+
+=========DONE=========
+
+	
 still need to test xbee and anything connected to navi and auxi to make sure nothing else was fried. though it seemed to burn the chip quick
 K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results\Recorded Data\Rover Damage 08-27-17v1
 
 
 run all tests
 
-
-
-
-
-
-
-
 		
 NavigationTester_AUXI
 NavigationTester_MAIN
 NavigationTester_NAVI
-	STILL NEED TO TEST
-
-
-
-
-
-
-	
-	
-	
 	
 
 
-=========DONE=========
-
-	
 	
 MotorAndServoTester_MAIN
 MotorAndServoTester_NAVI

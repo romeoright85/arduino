@@ -1,0 +1,1 @@
+Most of the current data isn't very accurate. But at least the CURRENT_7D2_PRESW25A_ACTUAL goes from some negative or small number to around 1.00A when it's going forward.

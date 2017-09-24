@@ -35,10 +35,31 @@
 		#define _GPS_SERIAL_ Serial3
 	#endif	
 	
-		
+	
 
+
+	//"Boolean" Bit Flags
+	#ifdef _COMM_BIT_FLAGS_
+		//Error Flags
+		#define _BTFG_NONE_													0x00
+		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
+		#define _BTFG_SYNC_ERROR_										0x02
+		#define _BTFG_SECURE_LINK_ERROR_							0x04
+		#define _BTFG_SW_RESET_ERROR_								0x08
+		#define _BTFG_GENERIC_HEALTH_ERROR_					0x10
+		#define _BTFG_SLEEPING_ERROR_								0x20
+	#endif
 	
+	#ifdef _NAVI_BIT_FLAGS_
+	#endif
 	
+	#ifdef _AUXI_BIT_FLAGS_
+	#endif
+	
+	#ifdef _MAIN_BIT_FLAGS_
+	#endif
+	
+
 	
 	#ifdef _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ //used to test all Serial algorithms by using just the local USB Serial interface	
 		#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)

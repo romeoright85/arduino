@@ -9,7 +9,7 @@ RoverNavigationTester_NAVI
 
 
 Troubleshooting:
-If you get all 0.0000 or soemthing weird for heading constantly, you might have forgotten to upload NavigationTes and NavigationTester_MAIN taht is required in order to pass heading data over to NavigationTester_NAVI.
+If you get all 0.0000 or something weird for heading constantly, you might have forgotten to upload NavigationTes and NavigationTester_MAIN taht is required in order to pass heading data over to NavigationTester_NAVI.
 */
 
 //Used for NAVI - 1
@@ -28,7 +28,7 @@ Desired Lat/Long in Degrees (Hersh's Pizza in South Baltimore)
 39.268603, -76.611702
 */
 
-
+#define DECIMAL_PRECISION	5
 #define DESIRED_LATITUDE_COORDINATE 39.268603
 #define DESIRED_LONGITUDE_COORDINATE -76.611702
 #define COMPASS_DATA_CHAR_BUFFER_SIZE 10
@@ -339,27 +339,27 @@ void loop() {
 #endif
 		_SERIAL_DEBUG_CHANNEL_.println(F("========"));
 		_SERIAL_DEBUG_CHANNEL_.print(F("Desired Lat: "));
-		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_DESIRED, UNIT_DEGREES), 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_DESIRED, UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
 		_SERIAL_DEBUG_CHANNEL_.print(F("Desired Lon: "));
-		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_DESIRED, UNIT_DEGREES), 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_DESIRED, UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
 		_SERIAL_DEBUG_CHANNEL_.print(F("Actual Lat: "));
-		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_ACTUAL, UNIT_DEGREES), 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_ACTUAL, UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
 		_SERIAL_DEBUG_CHANNEL_.print(F("Actual Lon: "));
-		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_ACTUAL, UNIT_DEGREES), 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_ACTUAL, UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
 		_SERIAL_DEBUG_CHANNEL_.print(F("Rover Heading: "));
-		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getHeading(UNIT_DEGREES), 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getHeading(UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
 
 
 		_SERIAL_DEBUG_CHANNEL_.print(F("Distance: "));
 		value = roverNavigation->getDistance(UNIT_M);
-		_SERIAL_DEBUG_CHANNEL_.println(value, 4);//print with 4 decimals
+		_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision
 		_SERIAL_DEBUG_CHANNEL_.print(F("True Bearing: "));
 		value = roverNavigation->getTrueBearing();
-		_SERIAL_DEBUG_CHANNEL_.println(value, 4);//print with 4 decimals	
+		_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision	
 
 		_SERIAL_DEBUG_CHANNEL_.print(F("Relative Bearing: "));
 		value = roverNavigation->getRelativeBearing();
-		_SERIAL_DEBUG_CHANNEL_.println(value, 4);//print with 4 decimals	
+		_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision	
 
 		_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Steering: "));
 		value = roverNavigation->getCalculatedMotorSteering();

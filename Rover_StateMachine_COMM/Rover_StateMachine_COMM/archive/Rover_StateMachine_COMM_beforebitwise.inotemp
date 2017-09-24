@@ -150,14 +150,12 @@ const char string_2[] PROGMEM = "Link Status: Secured";//DEBUG
 const char* const string_table[] PROGMEM = { string_0, string_1, string_2 };
 
 //Flag(s) - Error
-
 boolean invalid_state_or_mode_error = false;
 boolean sync_error = false;
 boolean secure_link_error = false;
 boolean sw_reset_error = false;
 boolean generic_health_error = false;
 boolean sleeping_error = false;
-
 //Flag(s) - Message Controls
 boolean redirectToCMNC = false;//redirect data to CMNC from any Arduino since this is a shared flag. Priority will be given to whatever is hardcoded and the other message will be dropped. (but in this case it would only be from MAIN since COMM only had one other source)
 boolean redirectToMAIN = false;//redirect data to MAIN from any Arduino since this is a shared flag. Priority will be given to whatever is hardcoded and the other message will be dropped. (but in this case it would only be from CMNC since COMM only had one other source)

@@ -16,24 +16,46 @@ MM-DD-YY
 -------------
 	
 
-	MotorAndServoTester_NAVI
-	MotorAndServoTester_MAIN
 	
 	Analyze data
 		AnalogSignalsTester
-
+			Need to analyze to see if data expected is correct (i.e. current changes when motors are on and go forward or backward.	
+		NavigationTester_NAVI
+			Check calculations.
+			See if 4 decimals is enough accuracy or increase it to 5?
 	
 			
 **LEFT OFF RETESTING HERE (SEE ABOVE)**	
 		
 	
-	AnalogSignalsTester
-	Need to analyze to see if data expected is correct (i.e. current changes when motors are on and go forward or backward.	
-	
-	
+
 
 	
 **LEFT OFF REWORK HERE (SEE ABOVE)**		
+	
+	
+	
+	
+	
+
+-------------
+09-17-17
+-------------
+	
+	[DONE]MotorAndServoTester_MAIN
+		Comments:
+			Encoder Direction Works
+			Mid Right Motor Encoder at first didn't detect again. After jiggling wires on MAIN and the Digital CCA, it seems to work now.
+	[DONE]MotorAndServoTester_NAVI
+		Comments:
+			Encoder Direction Works
+		
+	
+
+-------------
+09-16-17
+-------------
+	
 	
 	
 Need to rework and fix:	
@@ -49,10 +71,6 @@ Need to rework and fix:
 
 		
 
-
--------------
-09-16-17
--------------
 	
 
 ImuTester
