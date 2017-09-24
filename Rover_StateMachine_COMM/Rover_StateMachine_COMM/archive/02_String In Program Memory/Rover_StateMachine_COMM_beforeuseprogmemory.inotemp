@@ -73,8 +73,8 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 
 						  //============Debugging: Print Mode and/or State
 						  //Uncomment the flag below in order to print the current state and/or mode
-						  //#define _DEBUG_PRINT_CURRENT_STATE
-						  //#define _DEBUG_PRINT_CURRENT_MODE
+//#define _DEBUG_PRINT_CURRENT_STATE
+//#define _DEBUG_PRINT_CURRENT_MODE
 
 
 						  //Flag Logic, no need to edit this below
@@ -149,51 +149,8 @@ const char string_0[] PROGMEM = "Valid Cmd! =)\nRx'd:\n";//DEBUG
 const char string_1[] PROGMEM = "Invalid Cmd! =(\nRx'd:\n";//DEBUG
 const char string_2[] PROGMEM = "Link Status: Secured";//DEBUG
 
-													   //Table of Fixed Strings (array of strings stored in flash)
+													   //Table of Fixed Strings (array of strings stroed in flash)
 const char* const string_table[] PROGMEM = { string_0, string_1, string_2 };
-
-
-//Fixed Commands Strings (to store in flash)
-const static char cmd_strg_0[] PROGMEM = "sysrdy";//getCmdString(0)
-const static char cmd_strg_1[] PROGMEM = "hwrst";//getCmdString(1)
-const static char cmd_strg_2[] PROGMEM = "cswrst";//getCmdString(2)
-const static char cmd_strg_3[] PROGMEM = "aswrst";//getCmdString(3)
-const static char cmd_strg_4[] PROGMEM = "gherr";//getCmdString(4)
-const static char cmd_strg_5[] PROGMEM = "sysgo";//getCmdString(5)
-const static char cmd_strg_6[] PROGMEM = "brkseclnk";//getCmdString(6)
-const static char cmd_strg_7[] PROGMEM = "esl";//getCmdString(7)
-const static char cmd_strg_8[] PROGMEM = "cslprqst";//getCmdString(8)
-const static char cmd_strg_9[] PROGMEM = "aslprqst";//getCmdString(9)
-const static char cmd_strg_10[] PROGMEM = "pirsts";//getCmdString(10)
-const static char cmd_strg_11[] PROGMEM = "rxerrmsg";//getCmdString(11)
-const static char cmd_strg_12[] PROGMEM = "hi";//getCmdString(12)
-const static char cmd_strg_13[] PROGMEM = "bye";//getCmdString(13)
-												//Buffer to use for Command Strings
-#define _MAX_CMD_STR_LEN_ 14
-char programMem2RAMBuffer[_MAX_CMD_STR_LEN_];
-
-
-//Table of Fixed Commaned Strings (array of strings stored in flash)
-const char* const cmd_str_table[] PROGMEM = {
-	cmd_strg_0,
-	cmd_strg_1,
-	cmd_strg_2,
-	cmd_strg_3,
-	cmd_strg_4,
-	cmd_strg_5,
-	cmd_strg_6,
-	cmd_strg_7,
-	cmd_strg_8,
-	cmd_strg_9,
-	cmd_strg_10,
-	cmd_strg_11,
-	cmd_strg_12,
-	cmd_strg_13
-};
-
-
-
-
 //Flag(s) - Rover Data Channels Status
 byte ch1Status = DATA_STATUS_NOT_READY;//for PC USB/CNMC
 byte ch2Status = DATA_STATUS_NOT_READY;//for MAIN
@@ -312,6 +269,9 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 
 
 void loop() {
+
+
+
 
 
 	//State Machine
@@ -1031,8 +991,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 
 	//=====Non-Conflicting Functions					
 	//Run lower priority functions here. (i.e. system ready msgs)
-
-	if (strcmp(receivedCommand, getCmdString(0)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY))//FIX ME LATER, change the actual send command to compare later
+	if (strcmp(receivedCommand, "sysrdy") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//so it can stop checking for this message since the MAIN system is known to be ready
@@ -1049,29 +1008,29 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 	 //=====Conflicting Functions Ordered By Priority
 	 //Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 	 //HW Reset Request
-	if (strcmp(receivedCommand, getCmdString(1)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST))//FIX ME LATER, change the actual send command to compare later
+	if (strcmp(receivedCommand, "hwrst") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST))//FIX ME LATER, change the actual send command to compare later
 	{
 		//WRITE ME LATER	
 	}//end else if
 	 //COMM SW Request
-	else if (strcmp(receivedCommand, getCmdString(2)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, "cswrst") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if
 	 //ALL SW Request
-	else if (strcmp(receivedCommand, getCmdString(3)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, "aswrst") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST))//FIX ME LATER, change the actual send command to compare later
 	{
 		//WRITE ME LATER	
 	}//end else if
 	 //Generic Health Error
-	else if (strcmp(receivedCommand, getCmdString(4)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, "gherr") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if	
 	 //System Go (from MAIN)
-	else if (strcmp(receivedCommand, getCmdString(5)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, "sysgo") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO))//FIX ME LATER, change the actual send command to compare later
 	{
 		//if for some reason the system ready message was no received before the system go message, go ahead and make it true as any system go must also mean system ready. this doesn't really matter, but just doing it for consistency since the flags are global.
 		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_))
@@ -1098,14 +1057,14 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 
 	}//end else if
 	 //Break Secure Link
-	else if (strcmp(receivedCommand, getCmdString(6)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, "brkseclnk") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if		
 	 //Establish Secure Link
 	 //This checks to see if the receivedCommand matches any of the known values. Else it's an invalid command
-	else if (strcmp(receivedCommand, getCmdString(7)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK))//FIX ME LATER, change the actual send command to compare later (instead of "esl" - establish secure link)
+	else if (strcmp(receivedCommand, "esl") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK))//FIX ME LATER, change the actual send command to compare later (instead of "esl" - establish secure link)
 	{
 		currentMode = NORMAL_OPERATIONS;//Overriding the Default Next Mode to NORMAL_OPERATIONS *begin*
 										//set flag for secure link established
@@ -1122,30 +1081,30 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 
 	}//end else if
 	 //COMM Sleep Request (usually from MAIN)
-	else if (strcmp(receivedCommand, getCmdString(8)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, "cslprqst") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST))//FIX ME LATER, change the actual send command to compare later
 	{
 		//WRITE ME LATER	
 	}//end else if		
 	 //All Sleep Request
-	else if (strcmp(receivedCommand, getCmdString(9)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, "aslprqst") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if			
 	 //PIR Status
-	else if (strcmp(receivedCommand, getCmdString(10)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, "pirsts") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if			
 	 //Received Error Messages
-	else if (strcmp(receivedCommand, getCmdString(11)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, "rxerrmsg") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if					
 	 //Hi Command - DEBUG
-	else if (strcmp(receivedCommand, getCmdString(12)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI))
+	else if (strcmp(receivedCommand, "hi") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI))
 	{
 
 		strcpy_P(txMsgBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
@@ -1168,10 +1127,11 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 
 	}//end if
 	 //Bye Command - DEBUG
-	else if (strcmp(receivedCommand, getCmdString(13)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE))
+	else if (strcmp(receivedCommand, "bye") == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE))
 	{
 		strcpy_P(txMsgBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
 		sprintf(txMsgBuffer, "%s%s\0", txMsgBuffer, receivedCommand);//DEBUG
+
 
 		if (roverCommType == ROVERCOMM_CMNC)
 		{
@@ -1923,12 +1883,3 @@ void InterruptDispatch2() {
 	//Have to keep the ISR short else the program won't work
 	sleeperCOMM->isrUpdate();//update the awake flag to reflect current status
 }
-
-char * getCmdString(byte arrayIndex) {
-	memset(programMem2RAMBuffer, 0, sizeof(programMem2RAMBuffer));//clear char array buffer
-	return strcpy_P(programMem2RAMBuffer, (char*)pgm_read_word(&(cmd_str_table[arrayIndex])));//copy the fixed string from flash into the char buffer		 
-}
-
-
-
-

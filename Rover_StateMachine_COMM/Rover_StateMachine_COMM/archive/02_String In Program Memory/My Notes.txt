@@ -1,0 +1,21 @@
+------------------------------
+When Storing Strings in Flash Memory
+------------------------------
+Compiling 'Rover_StateMachine_COMM' for 'Arduino/Genuino Uno'
+Program size: 13,930 bytes (used 43% of a 32,256 byte maximum) (6.71 secs)
+Minimum Memory Usage: 1146 bytes (56% of a 2048 byte maximum)
+ 
+Uploading 'Rover_StateMachine_COMM' to 'Arduino/Genuino Uno' using 'COM5'
+	The upload process has finished.
+
+
+------------------------------
+When Storing Strings in Program Memory
+------------------------------
+
+Compiling 'Rover_StateMachine_COMM' for 'Arduino/Genuino Uno'
+Program size: 14,054 bytes (used 44% of a 32,256 byte maximum) (7.58 secs)
+Minimum Memory Usage: 1066 bytes (52% of a 2048 byte maximum)
+ 
+Uploading 'Rover_StateMachine_COMM' to 'Arduino/Genuino Uno' using 'COM5'
+	The upload process has finished.

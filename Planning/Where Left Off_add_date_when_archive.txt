@@ -11,17 +11,9 @@ Where I left off
 		
 ---------------CODING---------------	
 
-Convert Rover State Machine COMM to use the bitbooleanflags
-
+	
 	
 	Redesign the state machines due to memory limitations
-	use command creator to create commands with headers
-		Note: With a quick test, 12% memory is saved when the boolean flags for the filter were removed.
-		
-	See below for	
-		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
-	
-	
 	update state machine plans
 	
 	
@@ -57,7 +49,12 @@ ANALYZE DATA FOR NAVIGATION TESTER
 		
 ---------------CODING---------------	
 
-See below for other coding priorities	
+	use command creator to create commands with headers
+	
+	See below for	
+		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
+	
+	
 
 	
 =================24 weekends===================			
@@ -1331,6 +1328,10 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 	See: data to analyze part 1_09-04-17v1 and data to analyze part 2_09-04-17v1
 	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results
 
+	[DONE]Convert Rover State Machine COMM to use the bitbooleanflags
+	
+		Note: With a quick test, 12% memory is saved when all the boolean flags for the filter were removed.
+		Note: After converted boolean flags to byte flags, only 1% of memory was saved.
 	
 	
 	
