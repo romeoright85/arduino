@@ -24,6 +24,18 @@ void BooleanBitFlags::clearFlagBit(byte &flag, byte flagOfInterest)
 {
 	flag = flag & (~flagOfInterest);
 }
+void BooleanBitFlags::assignFlagBit(byte &flag, byte flagOfInterest, boolean choice)
+{
+	if(choice)
+	{
+		BooleanBitFlags::setFlagBit(flag, flagOfInterest);
+	}//end if
+	else
+	{
+		BooleanBitFlags::clearFlagBit(flag, flagOfInterest);
+	}//end else
+	
+}
 boolean BooleanBitFlags::flagIsSet(byte &flag, byte flagOfInterest)
 {
 	if (flag & flagOfInterest)

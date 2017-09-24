@@ -20,6 +20,7 @@ public:
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	static void resetFlag(byte &);//(flag set) resets the flag set
 	static void setFlagBit(byte &, byte);//(flag set, bit to set) sets the desired bit in the flag set
+	static void assignFlagBit(byte &, byte, boolean);//(flag set, bit to set, true: set or false: cleaer) sets or clears the desired bit in the flag set
 	static void clearFlagBit(byte &, byte);//(flag set, bit to clear) clears the desired bit in the flag set
 	static boolean flagIsSet(byte &, byte);//(flag set, bit to check if set) returns true is set and false if not.
 

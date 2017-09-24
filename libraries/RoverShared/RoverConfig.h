@@ -40,23 +40,60 @@
 
 	//"Boolean" Bit Flags
 	#ifdef _COMM_BIT_FLAGS_
-		//Error Flags
+	
+		//Flag(s) - Universal
 		#define _BTFG_NONE_													0x00
+		//Flag(s) - Error: flagSet_Error
 		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
 		#define _BTFG_SYNC_ERROR_										0x02
 		#define _BTFG_SECURE_LINK_ERROR_							0x04
 		#define _BTFG_SW_RESET_ERROR_								0x08
-		#define _BTFG_GENERIC_HEALTH_ERROR_					0x10
-		#define _BTFG_SLEEPING_ERROR_								0x20
+		#define _BTFG_GENERIC_HEALTH_ERROR_						0x10
+		#define _BTFG_SLEEPING_ERROR_									0x20
+		//Flag(s) - Message Controls: flagSet_MessageControl
+		#define _BTFG_REDIRECT_TO_CMNC								0x01
+		#define _BTFG_REDIRECT_TO_MAIN_								0x02		
+		#define _BTFG_DATA_WAS_FOR_COMM_CH1_				0x04
+		#define _BTFG_DATA_WAS_FOR_COMM_CH2_				0x08
+		//Flag(s) - System Status: flagSet_SystemStatus
+		#define _BTFG_REDIRECT_TO_CMNC								0x01
+		#define _BTFG_MAIN_SYSTEM_READY_							0x02
+		#define _BTFG_COMMUNICATIONS_SECURE_					0x04
+		#define _BTFG_FIRST_TRANSMISSION_							0x08
+		 //Flag(s) - Command Filter Options
+		 //Command Filter Options: Set 1: commandFilterOptionsSet1
+		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY							0x01
+		#define _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST						0x02
+		#define _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST				0x04
+		#define _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST					0x08
+		#define _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR				0x10
+		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO									0x20
+		#define _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK						0x40
+		#define _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK				0x80
+		//Command Filter Options: Set 2: commandFilterOptionsSet2
+		#define _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST					0x01
+		#define _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST						0x02
+		#define _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS									0x04
+		#define _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES					0x08
+		#define _BTFG_COMMAND_ENABLE_OPTION_HI												0x10
+		#define _BTFG_COMMAND_ENABLE_OPTION_BYE											0x20
+		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID										0x40
+		 
+		 
+		 
+		
 	#endif
 	
 	#ifdef _NAVI_BIT_FLAGS_
+		#define _BTFG_NONE_													0x00
 	#endif
 	
 	#ifdef _AUXI_BIT_FLAGS_
+		#define _BTFG_NONE_													0x00
 	#endif
 	
 	#ifdef _MAIN_BIT_FLAGS_
+		#define _BTFG_NONE_													0x00
 	#endif
 	
 

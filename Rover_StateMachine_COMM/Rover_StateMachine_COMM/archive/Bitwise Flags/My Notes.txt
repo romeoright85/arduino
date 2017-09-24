@@ -1,0 +1,3 @@
+The memory use went from 57% down to 56% using bit wise flags.
+
+Though it seems little, 1% can be a lot.

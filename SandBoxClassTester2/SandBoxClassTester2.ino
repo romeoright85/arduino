@@ -98,7 +98,41 @@ void loop() {
 	}
 
 
-
+	
+	
+	
+	
+	
+	
+	
+	Serial.println(F("Trial 5: Reset, then Set Bit 7, then Clear Bit 7 using the assign function"));
+	BooleanBitFlags::resetFlag(flagSet1);	
+	if (BooleanBitFlags::flagIsSet(flagSet1, _FLAG_BIT_7_))
+	{
+		Serial.println(F("Bit 7 is set."));
+	}
+	else
+	{
+		Serial.println(F("Bit 7 is cleared."));
+	}
+	BooleanBitFlags::assignFlagBit(flagSet1, _FLAG_BIT_7_, true);
+	if (BooleanBitFlags::flagIsSet(flagSet1, _FLAG_BIT_7_))
+	{
+		Serial.println(F("Bit 7 is set."));
+	}
+	else
+	{
+		Serial.println(F("Bit 7 is cleared."));
+	}
+	BooleanBitFlags::assignFlagBit(flagSet1, _FLAG_BIT_7_, false);
+	if (BooleanBitFlags::flagIsSet(flagSet1, _FLAG_BIT_7_))
+	{
+		Serial.println(F("Bit 7 is set."));
+	}
+	else
+	{
+		Serial.println(F("Bit 7 is cleared."));
+	}
 
 
 
