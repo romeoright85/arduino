@@ -21,24 +21,20 @@ Where I left off
 
 
 LEFT OFF:
+	working on trying to break up the commandDirector so TX_COMMUNICATIONS and CREATE_DATA can handle it's own functions instead of all in commandDirector. but there may be a memory limitation where one buffer may have to be shared so create data and txdata may have to happen right away instead of being broken up.
+	last thing i did was removed the received command, so i broke up the dependency between commandDirector and txData. Then I moved the txData function into TX_COMMUNICATIONS
+	this assumes there can be enough memory for two buffers. else if not, you'll have to move txdata back into commandDirector.
+	PICK UP FROM:
+		try to work on the hi command in command director as a template. the goal is to split up functions for CREATE_DATA and TX_COMMUNICATIONS if possible. you may have buffer limitations, and may have to share and redesign.
 
-	UPDATE: I just tested to see if two buffers will work and it won't. The memory usage went from 53% to 59% and the program crashed. So will have to redesign code.
-		[DONE, the functions can't be broken out due to memory limitations, redesign is needed]working on trying to break up the commandDirector so TX_COMMUNICATIONS and CREATE_DATA can handle it's own functions instead of all in commandDirector. but there may be a memory limitation where one buffer may have to be shared so create data and txdata may have to happen right away instead of being broken up.
-		[DONE] last thing i did was removed the received command, so i broke up the dependency between commandDirector and txData. Then I moved the txData function into TX_COMMUNICATIONS. this assumes there can be enough memory for two buffers. else if not, you'll have to move txdata back into commandDirector.
-		[DONE, OUT OF DATE]try to work on the hi command in command director as a template. the goal is to split up functions for CREATE_DATA and TX_COMMUNICATIONS if possible. you may have buffer limitations, and may have to share and redesign.
-		redesign code such that data is created and transmitted from commandDirector and not broken into different states
-			TX_COMMUNICATIONS should be deleted
-				data redirection should happen at the time of datafilter?
-			CREATE_DATA should be deleted
-				data should be created in real time (i.e. at READ_INPUTS or PROCESS_DATA??)
-		best to read through the whole state machine for COMM, redesign it, code it, test it. once good with memory limitations and all... then update the state machine templates for MAIN, AUXI, and NAVI
-			
-
-		
+ 
+	[in progress]use command creator to create commands with headers
+	remove the transmit function to another state
+		fix commandDirector()
 	
-=================1 weekend===================				
-
-
+	See below for	
+		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
+	
 	
 	
 ---------------TESTING---------------
@@ -56,6 +52,12 @@ ANALYZE DATA FOR NAVIGATION TESTER
 	Review the true bearing, distance, etc. calculation.
 	Maybe need to increase the decimal point from 4 to 5 for more accuracy?
 		
+	
+		
+	
+=================1 weekend===================				
+
+
 	
 	
 
@@ -1354,6 +1356,7 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 	
 	
 	
+		
 -------------------State Machine for COMM
 
 [DONE] I got the whole sync mode loop in place.
@@ -1366,9 +1369,7 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 [DONE]Add other commands in the framework for COMM in commandDirector
 [DONE] first, go through all other COMM code and add all the objects I will need to the state machine code and get them created.
 [DONE, i have 50% memory left]see how much memory I have left. if it's not an issue, continue, else you'll need to redesign and trim the fat
-[DONE]use command creator to create commands with headers
-	
-		
+
 
 									
 									

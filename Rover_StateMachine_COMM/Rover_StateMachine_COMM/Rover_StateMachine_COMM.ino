@@ -8,10 +8,10 @@ The best way to read this code from scratch is look at the global default values
 
 //DEBUG
 //Can send /-c5--*hi or /-c5--*bye to test if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
+//To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
 
 
-
-//Note: To test with USB Serial for all Serial channels, go to RoverConfig and uncomment the flag _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ as long as _BTFG_COMMAND_ENABLE_OPTION_HI and _BTFG_COMMAND_ENABLE_OPTION_BYE are set true in the filter in runModeFunction_SYNCHRONIZATION()
+//Note: To test with USB Serial for all Serial channels, go to RoverConfig and uncomment the flag _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ as long as _BTFG_COMMAND_ENABLE_OPTION_HI_ and _BTFG_COMMAND_ENABLE_OPTION_BYE_ are set true in the filter in runModeFunction_SYNCHRONIZATION()
 
 //Configuration defines for #includes (must come before the #includes)
 #ifndef _ROVER_STATES_AND_MODES
@@ -142,14 +142,13 @@ RoverSleeperClient * sleeperMAIN = new RoverSleeperClient(MAIN_WAKEUP_CTRL_PIN);
 byte cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 									  //Message Char Array
-char txMsgBuffer_CMNC[UNIV_BUFFER_SIZE];//transmit buffer for CMNC
-char txMsgBuffer_MAIN[UNIV_BUFFER_SIZE];//transmit buffer for MAIN
+char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between MAIN and CMNC
 
 
 								   //Fixed Strings (to store in flash)
-const char string_0[] PROGMEM = "\nValid Cmd! =)\nRx'd:\n";//DEBUG
-const char string_1[] PROGMEM = "\nInvalid Cmd! =(\nRx'd:\n";//DEBUG
-const char string_2[] PROGMEM = "\nLink Status: Secured";//DEBUG
+const char string_0[] PROGMEM = "ValidCmd";//DEBUG
+const char string_1[] PROGMEM = "InvalidCmd";//DEBUG
+const char string_2[] PROGMEM = "LinkSecured";//DEBUG
 
 													   //Table of Fixed Strings (array of strings stored in flash)
 const char* const string_table[] PROGMEM = { string_0, string_1, string_2 };
@@ -981,7 +980,7 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 		{
 			//if the data is for CMNC, transmit the data out from COMM to CMNC
 			//Set redirect to CMNC flag to true			
-			BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC);
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
 
 		}//end else if
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
@@ -1034,7 +1033,7 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 	//=====Non-Conflicting Functions					
 	//Run lower priority functions here. (i.e. system ready msgs)
 
-	if (strcmp(receivedCommand, getCmdString(0)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY))//FIX ME LATER, change the actual send command to compare later
+	if (strcmp(receivedCommand, getCmdString(0)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//so it can stop checking for this message since the MAIN system is known to be ready
@@ -1051,29 +1050,29 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 	 //=====Conflicting Functions Ordered By Priority
 	 //Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 	 //HW Reset Request
-	if (strcmp(receivedCommand, getCmdString(1)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST))//FIX ME LATER, change the actual send command to compare later
+	if (strcmp(receivedCommand, getCmdString(1)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_))//FIX ME LATER, change the actual send command to compare later
 	{
 		//WRITE ME LATER	
 	}//end else if
 	 //COMM SW Request
-	else if (strcmp(receivedCommand, getCmdString(2)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, getCmdString(2)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if
 	 //ALL SW Request
-	else if (strcmp(receivedCommand, getCmdString(3)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, getCmdString(3)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_))//FIX ME LATER, change the actual send command to compare later
 	{
 		//WRITE ME LATER	
 	}//end else if
 	 //Generic Health Error
-	else if (strcmp(receivedCommand, getCmdString(4)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, getCmdString(4)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if	
 	 //System Go (from MAIN)
-	else if (strcmp(receivedCommand, getCmdString(5)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, getCmdString(5)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_))//FIX ME LATER, change the actual send command to compare later
 	{
 		//if for some reason the system ready message was no received before the system go message, go ahead and make it true as any system go must also mean system ready. this doesn't really matter, but just doing it for consistency since the flags are global.
 		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_))
@@ -1100,14 +1099,14 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 
 	}//end else if
 	 //Break Secure Link
-	else if (strcmp(receivedCommand, getCmdString(6)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, getCmdString(6)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if		
 	 //Establish Secure Link
 	 //This checks to see if the receivedCommand matches any of the known values. Else it's an invalid command
-	else if (strcmp(receivedCommand, getCmdString(7)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK))//FIX ME LATER, change the actual send command to compare later (instead of "esl" - establish secure link)
+	else if (strcmp(receivedCommand, getCmdString(7)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_))//FIX ME LATER, change the actual send command to compare later (instead of "esl" - establish secure link)
 	{
 		currentMode = NORMAL_OPERATIONS;//Overriding the Default Next Mode to NORMAL_OPERATIONS *begin*
 										//set flag for secure link established
@@ -1124,105 +1123,103 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 
 	}//end else if
 	 //COMM Sleep Request (usually from MAIN)
-	else if (strcmp(receivedCommand, getCmdString(8)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, getCmdString(8)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_))//FIX ME LATER, change the actual send command to compare later
 	{
 		//WRITE ME LATER	
 	}//end else if		
 	 //All Sleep Request
-	else if (strcmp(receivedCommand, getCmdString(9)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, getCmdString(9)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if			
 	 //PIR Status
-	else if (strcmp(receivedCommand, getCmdString(10)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, getCmdString(10)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if			
 	 //Received Error Messages
-	else if (strcmp(receivedCommand, getCmdString(11)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES))//FIX ME LATER, change the actual send command to compare later
+	else if (strcmp(receivedCommand, getCmdString(11)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_))//FIX ME LATER, change the actual send command to compare later
 	{
 
 		//WRITE ME LATER	
 	}//end else if					
 	 //Hi Command - DEBUG
-	else if (strcmp(receivedCommand, getCmdString(12)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI))
+	else if (strcmp(receivedCommand, getCmdString(12)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_))
 	{
-
+		
+		
+		//Create the base message
 		strcpy_P(charBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
-		sprintf(charBuffer, "%s%s\0", charBuffer, receivedCommand);//DEBUG
-
+				
 		if (roverCommType == ROVERCOMM_CMNC)
 		{
-			cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
-			
+			cmnc_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
 			//Use the Rover Command Creator to add the headers to the data string
 			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, charBuffer));
+			
 
 //DEBUG-move this function to a different state!!
-			txData(charBuffer, ROVERCOMM_CMNC);
+			//txData(charBuffer, ROVERCOMM_CMNC);
 		}
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 		{
 			//Use the Rover Command Creator to add the headers to the data string
-			main_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
+			main_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
 			//Use the Rover Command Creator to add the headers to the data string
 			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, charBuffer));
 //DEBUG-move this function to a different state!!
-			txData(charBuffer, ROVERCOMM_MAIN);
+			//txData(charBuffer, ROVERCOMM_MAIN);
 		}
 		//else do nothing
 
 
 	}//end if
 	 //Bye Command - DEBUG
-	else if (strcmp(receivedCommand, getCmdString(13)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE))
+	else if (strcmp(receivedCommand, getCmdString(13)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
 	{
 		strcpy_P(charBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
-		sprintf(charBuffer, "%s%s\0", charBuffer, receivedCommand);//DEBUG
 
 		if (roverCommType == ROVERCOMM_CMNC)
 		{
-			cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
+			cmnc_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
 			//Use the Rover Command Creator to add the headers to the data string
 			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, charBuffer));
 //DEBUG-move this function to a different state!!			
-			txData(charBuffer, ROVERCOMM_CMNC);
+			//txData(charBuffer, ROVERCOMM_CMNC);
 		}
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 		{
-			main_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
+			main_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
 			//Use the Rover Command Creator to add the headers to the data string
 			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, charBuffer));
 //DEBUG-move this function to a different state!!
-			txData(charBuffer, ROVERCOMM_MAIN);
+			//txData(charBuffer, ROVERCOMM_MAIN);
 		}
 		//else do nothing		
 
 
 	}//end else if
 	 //Invalid - DEBUG
-	else if (BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID))
+	else if (BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))
 	{
 
 		strcpy_P(charBuffer, (char*)pgm_read_word(&(string_table[1])));//copy the fixed string from flash into the char buffer
-		sprintf(charBuffer, "%s%s\0", charBuffer, roverCommand->getCommand());//DEBUG, append other chars into the char buffer if
-
-
+	
 		if (roverCommType == ROVERCOMM_CMNC)
 		{
 			cmnc_msg_queue = CMD_TAG_INVALID_CMD;
 			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
 //DEBUG-move this function to a different state!!
-			txData(charBuffer, ROVERCOMM_CMNC);
+			//txData(charBuffer, ROVERCOMM_CMNC);
 		}
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 		{
 			main_msg_queue = CMD_TAG_INVALID_CMD;
 			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
 //DEBUG-move this function to a different state!!
-			txData(charBuffer, ROVERCOMM_MAIN);
+			//txData(charBuffer, ROVERCOMM_MAIN);
 		}
 		//else do nothing
 
@@ -1233,67 +1230,82 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 
 	return;
 }//end of commandDirector()
+void createDataFromQueue(byte roverCommType)
+{
 
-
-
+}//end of createDataFromQueue()
 void setAllCommandsTo(boolean choice)
 {
 	//Note: Right now this function doesn't discriminate where the commands are coming from. So if they're all set to true, in theory, for example CMNC can "inject" or "spoof" a command that looks like it's coming from somewhere else.
 	//This is a bug that can be fixed later if needed. Keeping it simple for now.
 
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_, choice);
 
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI, choice);//DEBUG
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE, choice);//DEBUG
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID, choice);//DEBUG
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_, choice);
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);//DEBUG
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);//DEBUG
+	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);//DEBUG
 
 }//end of setAllCommands()
 void redirectData()
 {
 
+	/*
+	Note:
+	For program efficiency, instead of sending all redirect messages, it sends only one per channel
+	This is because between each message transmission, there needs to be a delay (since the receiving code is designed only to receive so many messages at once.
+	And if there are a lot of redirects, it will be stuck in the TX_COMMUNICATIONS for a while.
+	*/
+	
 	byte roverCommType;
 
+
+	//Data from MAIN being redirected to CMNC
 	roverCommType = roverDataCh2_COMM->getCommType();//get the roverComm Destination for roverDataCh2_COMM
 
+	//Redirection from MAIN to CMNC
+	if (BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_))
+	{	
 
-													 //If redirect to CMNC flag is set
-	if (BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC))
-	{
 		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
-		//Note: For the COMM there is only one other channel, so it always gets the priority
-		//Priority 1: MAIN to CMNC
+		//Priority 1: MAIN (MAIN, AUXI, or NAVI) to CMNC
 		if (roverCommType == ROVERCOMM_CMNC)
 		{
-			//if the data is for CMNC, transmit the data out from COMM to CMNC
+			//if the data is for CMNC, transmit the data out to CMNC
 			txData(roverDataCh2_COMM->getData(), ROVERCOMM_CMNC);
 		}//end if
+		//Priority 2: No other cases
+		//else (place holder)
+			//Note: For the COMM there is only one other channel, so it always gets the priority
 	}//end if	
-
+	
+	//Data from CMNC being redirected to MAIN
 	roverCommType = roverDataCh1_COMM->getCommType();//get the roverComm Destination for roverDataCh1_COMM
-
-
-													 //If redirect to MAIN flag is set
-	if (BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_))
+	
+	//Redirection from CMNC to MAIN, AUXI, or NAVI
+	if (BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, AUXI, or NAVI
 	{
 		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
-		//Note: For the COMM there is only one other channel, so it always gets the priority
-		//Priority 1: CMNC to MAIN
-		if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+		//Priority 1: CMNC to MAIN, AUXI, or NAVI
+		if ( roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_NAVI )
 		{
-			//if the data is for MAIN, transmit the data out from COMM to CMNC
+			//if the data is for MAIN, AUXI, or NAVI, transmit the data out to MAIN
 			txData(roverDataCh1_COMM->getData(), ROVERCOMM_MAIN);
 		}//end if
+		//Priority 2: No other cases
+		//else (place holder)
+			//Note: For the COMM there is only one other channel, so it always gets the priority
+			
 	}//end if	
 
 
@@ -1391,7 +1403,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 		//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC);
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
 		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_);
 
 
@@ -1428,19 +1440,19 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			setAllCommandsTo(false);
 			//Then enable the allowed commands:
 
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
 
 
 																												//TEMP DEBUG CODE
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI);//DEBUG
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE);////DEBUG, FOR DEBUGGING, can disable this to see that the filter works
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID);//DEBUG
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK);//DEBUG ONLY, this command should be be available at this stage
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_);//DEBUG
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_);////DEBUG, FOR DEBUGGING, can disable this to see that the filter works
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID_);//DEBUG
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_);//DEBUG ONLY, this command should be be available at this stage
 
 																												   //END OF TEMP DEBUG CODE
 
@@ -1470,9 +1482,10 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			roverCommand->parseCommand(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
 
 
-			//2. Then run the command director to run the allowed commands
-			commandDirector(roverCommand->getCommand(), ROVERCOMM_MAIN, txMsgBuffer_MAIN);
-
+			//2. Then run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)
+			commandDirector(roverCommand->getCommand(), ROVERCOMM_MAIN, txMsgBufferShared);
+			
+			
 			
 		}//end if
 
@@ -1528,6 +1541,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 	case CREATE_DATA:
 		//WRITE ME LATER
 
+				
 		/*
 		if main_msg_queue == SYSTEM_READY_STATUS (the COMM, aka this arduino, is up and running, so let MAIN know)
 		create system ready msg for MAIN (tells MAIN it's ready to synchronize)
@@ -1545,11 +1559,20 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 		break;
 	case TX_COMMUNICATIONS:
-		//WRITE ME LATER
-
-		redirectData();//This function will redirect data as required
-
-
+				
+		//Sends data to MAIN
+		if(main_msg_queue != CMD_TAG_NO_MSG)
+		{
+			txData(txMsgBufferShared, ROVERCOMM_MAIN);			
+		}//end if
+		
+		//clears message queue(s) and redirect flags		
+		cmnc_msg_queue = CMD_TAG_NO_MSG;
+		main_msg_queue = CMD_TAG_NO_MSG;
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_);
+						
+						
 		break;
 	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -1630,7 +1653,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 		//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC);
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
 		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_);
 
 		//Transmit data and/or execute command
@@ -1654,7 +1677,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 																														  //First initialize all command choices to false
 			setAllCommandsTo(false);
 			//Then enable the allowed commands:
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_);
 
 		}//end if
 
@@ -1698,10 +1721,11 @@ void runModeFunction_SECURING_LINK(byte currentState)
 	case TX_COMMUNICATIONS:
 		//WRITE ME LATER
 
+		redirectData();//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
 
-		redirectData();//This function will redirect data as required
-
-
+		
+		
+		
 
 		break;
 	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
@@ -1741,6 +1765,15 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 		break;
 	case TX_COMMUNICATIONS:
 		//WRITE ME LATER
+	
+
+		redirectData();//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+
+		
+		
+		
+		
+		
 		break;
 	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 			 //This code should never execute, if it does, there is a logical or programming error
