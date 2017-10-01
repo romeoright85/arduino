@@ -8,45 +8,15 @@ Where I left off
 	
 =================1 weekend===================				
 
-		
----------------CODING---------------	
 
 	
-	
-	Redesign the state machines due to memory limitations
-	update state machine plans
-	
-	
-	
-	
-	
-	
+
 	
 	
 =================1 weekend===================				
 
----------------TESTING---------------
-	
-	
-	get ranges for light sensors and define parameters for meaning use for if conditionals
-	for light sensors, use a range of bright, medium, and dark
-			use https://learn.adafruit.com/photocells/using-a-photocell for a lux table reference	
-			
-			
-	Retest with more decimal precison.
-	Then plot and analyze the data.
-		NavigationTester_AUXI
-		NavigationTester_MAIN
-		NavigationTester_NAVI
-	
 
-		
-ANALYZE DATA FOR NAVIGATION TESTER
-	Review the true bearing, distance, etc. calculation.
-	Maybe need to increase the decimal point from 4 to 5 for more accuracy?
-		
-		
-		
+
 ---------------CODING---------------	
 
 	use command creator to create commands with headers
@@ -55,7 +25,47 @@ ANALYZE DATA FOR NAVIGATION TESTER
 		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
 	
 	
+	
+		
+	
+=================1 weekend===================				
 
+
+	
+	
+
+---------------CODING---------------	
+
+	See below for	
+		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
+	
+	
+---------------TESTING---------------
+	
+	
+	Retest with more decimal precison.
+	Then plot and analyze the data.
+		NavigationTester_AUXI
+		NavigationTester_MAIN
+		NavigationTester_NAVI
+		
+	
+		
+ANALYZE DATA FOR NAVIGATION TESTER
+	Review the true bearing, distance, etc. calculation.
+	Maybe need to increase the decimal point from 4 to 5 for more accuracy?
+		
+	
+	
+	get ranges for light sensors and define parameters for meaning use for if conditionals
+	for light sensors, use a range of bright, medium, and dark
+			use https://learn.adafruit.com/photocells/using-a-photocell for a lux table reference	
+			
+			
+		
+
+		
+			
 	
 =================24 weekends===================			
 
@@ -1329,9 +1339,9 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results
 
 	[DONE]Convert Rover State Machine COMM to use the bitbooleanflags
-	
-		Note: With a quick test, 12% memory is saved when all the boolean flags for the filter were removed.
-		Note: After converted boolean flags to byte flags, only 1% of memory was saved.
+	[just moved strings used with strcmp to program memory. this reduced some ram use, about 4%. move on for now and redesign later if needed]Redesign the state machines due to memory limitations
+		[After converted boolean flags to byte flags, only 1% of memory was saved.]Note: With a quick test, 12% memory is saved when all the boolean flags for the filter were removed.
+		
 	
 	
 	

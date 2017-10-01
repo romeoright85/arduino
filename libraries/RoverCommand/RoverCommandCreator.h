@@ -3,6 +3,7 @@
 #define _ROVERCOMMANDCREATOR_H
 
 #define _ROVERCOMM_DEFINITIONS
+#include <RoverCommandDefs.h>
 #include <RoverConfig.h>
 #include <Arduino.h>
 #include <RoverDebug.h>
@@ -58,7 +59,8 @@ public:
 	
 	
 	char * createCmd(byte, byte, byte, char *);//(origin, destination, priority level, command - if a tag used then it must be appended manually)	
-	char * createCmd(byte, byte, byte, char *, char *);//(origin, destination, priority level, command tag, command)
+	char * createCmd(byte, byte, byte, byte, char *);//(origin, destination, priority level, command tag, command)
+	static char * byteToCharArray(byte);//(input byte) returns char array
 private:
 	//Non-SW Resettable
 	//SW Resettable

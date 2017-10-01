@@ -63,7 +63,7 @@ char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priori
 	return inputCharArray;//DEBUG
 	
 }
-char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, char * commandTag, char * commandString)
+char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, byte commandTag, char * commandString)
 {
 	
 	//Using delegation and function overloading
@@ -71,8 +71,12 @@ char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priori
 	char inputCharArray[ROVER_COMM_SENTENCE_LENGTH] = "";
 		
 	//Concantenate Strings
+	
+	
+	 
+	
 	//Adding the command tag
-	strcat(inputCharArray, commandTag);
+	strcat(inputCharArray, RoverCommandCreator::byteToCharArray(commandTag));
 	//Adding the commandString
 	strcat(inputCharArray, commandString);
 	//Add the null terminating character (just in case if there isn't already one)
@@ -83,3 +87,33 @@ char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priori
 	
 	
 }
+char * RoverCommandCreator::byteToCharArray(byte input)
+{
+	
+	char tempCharArray[4];//for 3 digit character but string null character
+	
+	
+	//add leadings zeros as required
+	if(input > 99)
+	{
+		//no leading zeros required
+		sprintf(tempCharArray, "%u\0", input);	
+	}
+	else if(input > 9)
+	{
+		//one leading zero required
+		sprintf(tempCharArray, "0%u\0", input);	
+	}
+	else
+	{
+		//two leading zeros required
+		sprintf(tempCharArray, "00%u\0", input);	
+	}
+	
+return tempCharArray;
+	
+}
+
+
+	
+	
