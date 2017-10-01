@@ -899,7 +899,7 @@ byte rxData(RoverComm * roverComm, byte roverCommType) {
 	//Note: Make sure validateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
 	if (roverCommType == ROVERCOMM_CMNC)
 	{
-
+		
 		if (_CMNC_SERIAL_.available() > 1)
 		{
 
@@ -1019,7 +1019,7 @@ void txData(char * txData, byte roverCommType)
 }//end of txData()
 
 
-void commandDirector(char * receivedCommand, byte roverCommType, char * charBuffer)
+void commandDirector(char * receivedCommand, byte roverCommType)
 {
 
 
@@ -1029,7 +1029,9 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 	//Allow for all non-conflicting commands to run.
 	//Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 
-
+	byte genericRoverCommType = roverCommType;//in most case the passed in roverCommType will determine which message queue to use. In some cases, where it's not, then genericRoverCommType will be overwritten with the correct roverCommType.
+	byte genericMessageQueue;//used to be shared between cmnc_msg_queue and main_msg_queue to reduce duplicate code. The final selection code is placed once at the end instead of throughout every if/else statement.
+	
 	//=====Non-Conflicting Functions					
 	//Run lower priority functions here. (i.e. system ready msgs)
 
@@ -1042,9 +1044,6 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code		
 		timeout_counter = 0;//reset counter (for future use)
 	}//end if
-
-
-
 
 
 	 //=====Conflicting Functions Ordered By Priority
@@ -1083,8 +1082,11 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 
 		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_COMMUNICATIONS_SECURE_))//it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it justs needs to sync up again
 		{
+				
 			currentMode = SECURING_LINK;//Set mode to SECURING_LINK *begin*				
-			cmnc_msg_queue = CMD_TAG_SECURE_LINK_REQUEST;//(tells CMNC it's ready for a secure link)
+					
+			genericRoverCommType = ROVERCOMM_CMNC;//manual override of roverCommType to force the message queue to cmnc_msg_queue
+			genericMessageQueue = CMD_TAG_SECURE_LINK_REQUEST;//(tells CMNC it's ready for a secure link)
 														 //WRITE LATER, TRANSMIT A MESSAGE HERE USING THE CMD TAG, CMD_TAG_SECURE_LINK_REQUEST
 
 
@@ -1116,8 +1118,8 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 		timeout_counter = 0; //reset for future use
 
 
-
-		cmnc_msg_queue = CMD_TAG_ESTABLISH_SECURE_LINK;
+		genericRoverCommType = ROVERCOMM_CMNC;//manual override of roverCommType to force the message queue to cmnc_msg_queue
+		genericMessageQueue = CMD_TAG_ESTABLISH_SECURE_LINK;
 
 		//WRITE LATER, TRANSMIT A MESSAGE HERE USING THE CMD TAG, CMD_TAG_ESTABLISH_SECURE_LINK		
 
@@ -1148,91 +1150,95 @@ void commandDirector(char * receivedCommand, byte roverCommType, char * charBuff
 	 //Hi Command - DEBUG
 	else if (strcmp(receivedCommand, getCmdString(12)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_))
 	{
-		
-		
-		//Create the base message
-		strcpy_P(charBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
 				
-		if (roverCommType == ROVERCOMM_CMNC)
-		{
-			cmnc_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
-			//Use the Rover Command Creator to add the headers to the data string
-			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, charBuffer));
-			
 
-//DEBUG-move this function to a different state!!
-			//txData(charBuffer, ROVERCOMM_CMNC);
-		}
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
-		{
-			//Use the Rover Command Creator to add the headers to the data string
-			main_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
-			//Use the Rover Command Creator to add the headers to the data string
-			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, charBuffer));
-//DEBUG-move this function to a different state!!
-			//txData(charBuffer, ROVERCOMM_MAIN);
-		}
-		//else do nothing
+		genericMessageQueue = CMD_TAG_DEBUG_HI_TEST_MSG;						
 
 
 	}//end if
 	 //Bye Command - DEBUG
 	else if (strcmp(receivedCommand, getCmdString(13)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
 	{
-		strcpy_P(charBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
 
-		if (roverCommType == ROVERCOMM_CMNC)
-		{
-			cmnc_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
-			//Use the Rover Command Creator to add the headers to the data string
-			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, charBuffer));
-//DEBUG-move this function to a different state!!			
-			//txData(charBuffer, ROVERCOMM_CMNC);
-		}
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
-		{
-			main_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
-			//Use the Rover Command Creator to add the headers to the data string
-			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, charBuffer));
-//DEBUG-move this function to a different state!!
-			//txData(charBuffer, ROVERCOMM_MAIN);
-		}
-		//else do nothing		
-
+		genericMessageQueue = CMD_TAG_DEBUG_BYE_TEST_MSG;
 
 	}//end else if
 	 //Invalid - DEBUG
 	else if (BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))
 	{
-
-		strcpy_P(charBuffer, (char*)pgm_read_word(&(string_table[1])));//copy the fixed string from flash into the char buffer
-	
-		if (roverCommType == ROVERCOMM_CMNC)
-		{
-			cmnc_msg_queue = CMD_TAG_INVALID_CMD;
-			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-//DEBUG-move this function to a different state!!
-			//txData(charBuffer, ROVERCOMM_CMNC);
-		}
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
-		{
-			main_msg_queue = CMD_TAG_INVALID_CMD;
-			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-//DEBUG-move this function to a different state!!
-			//txData(charBuffer, ROVERCOMM_MAIN);
-		}
-		//else do nothing
-
-
-
+		genericMessageQueue = CMD_TAG_INVALID_CMD;			
 	}
 	//else output nothing	
+	
+	
+	//Selection code for the genericMessageQueue (to determine which queue the data should go to)
+	//Note: It uses genericRoverCommType, which is usually set to the roverCommType that was passed into this function. But it can be overwritten when it needs to go to a different queue
+	if (genericRoverCommType == ROVERCOMM_CMNC)
+	{
+		cmnc_msg_queue = genericMessageQueue;			
+	}//end if
+	else if (genericRoverCommType == ROVERCOMM_NAVI || genericRoverCommType == ROVERCOMM_AUXI || genericRoverCommType == ROVERCOMM_MAIN)
+	{
+		main_msg_queue = genericMessageQueue;		
+	}//end else if		
 
 	return;
 }//end of commandDirector()
-void createDataFromQueue(byte roverCommType)
+void createDataFromQueue(byte roverCommDestination)
 {
 
+	byte queueOfInterest;
+	
+	if (roverCommDestination == ROVERCOMM_CMNC)
+	{
+		queueOfInterest = cmnc_msg_queue;
+		
+	}//end if
+	else if (roverCommDestination == ROVERCOMM_MAIN)
+	{
+		queueOfInterest = main_msg_queue;		
+	}//end else if
+	//else
+		//do nothing
+		
+		
+	switch(queueOfInterest)
+	{
+		case CMD_TAG_DEBUG_HI_TEST_MSG:
+			//Create the base message
+			strcpy_P(txMsgBufferShared, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
+			//Use the Rover Command Creator to add the headers to the data string
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, txMsgBufferShared));
+		break;
+		case CMD_TAG_DEBUG_BYE_TEST_MSG:
+			//Create the base message
+			strcpy_P(txMsgBufferShared, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
+			//Use the Rover Command Creator to add the headers to the data string
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, txMsgBufferShared));
+		break;	
+		case CMD_TAG_INVALID_CMD:
+			//Create the base message
+			strcpy_P(txMsgBufferShared, (char*)pgm_read_word(&(string_table[1])));//copy the fixed string from flash into the char buffer
+			//Use the Rover Command Creator to add the headers to the data string
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, txMsgBufferShared));
+		break;	
+
+		
+		default:
+		//do nothing
+		break;
+	}//end switch
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
 }//end of createDataFromQueue()
 void setAllCommandsTo(boolean choice)
 {
@@ -1483,7 +1489,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 			//2. Then run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)
-			commandDirector(roverCommand->getCommand(), ROVERCOMM_MAIN, txMsgBufferShared);
+			commandDirector(roverCommand->getCommand(), ROVERCOMM_MAIN);
 			
 			
 			
@@ -1541,6 +1547,13 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 	case CREATE_DATA:
 		//WRITE ME LATER
 
+		//Creates data for MAIN
+		if (main_msg_queue != CMD_TAG_NO_MSG)
+		{
+			createDataFromQueue(ROVERCOMM_MAIN);
+		}//end if
+		
+		
 				
 		/*
 		if main_msg_queue == SYSTEM_READY_STATUS (the COMM, aka this arduino, is up and running, so let MAIN know)
