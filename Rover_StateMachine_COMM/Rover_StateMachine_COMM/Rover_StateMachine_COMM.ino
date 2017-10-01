@@ -32,6 +32,7 @@ The best way to read this code from scratch is look at the global default values
 //#includes
 #include <RoverStatesAndModes.h>
 #include <RoverCommandDefs.h>
+#include <RoverCommandCreator.h>
 #include <SoftwareSerial.h>
 #include <RoverData.h>
 #include <RoverComm.h> //calls RoverConfig.h
@@ -141,13 +142,14 @@ RoverSleeperClient * sleeperMAIN = new RoverSleeperClient(MAIN_WAKEUP_CTRL_PIN);
 byte cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 									  //Message Char Array
-char txMsgBuffer[UNIV_BUFFER_SIZE];//shared buffer amongst MAIN and CMNC (due to limited memory resources)
+char txMsgBuffer_CMNC[UNIV_BUFFER_SIZE];//transmit buffer for CMNC
+char txMsgBuffer_MAIN[UNIV_BUFFER_SIZE];//transmit buffer for MAIN
 
 
 								   //Fixed Strings (to store in flash)
-const char string_0[] PROGMEM = "Valid Cmd! =)\nRx'd:\n";//DEBUG
-const char string_1[] PROGMEM = "Invalid Cmd! =(\nRx'd:\n";//DEBUG
-const char string_2[] PROGMEM = "Link Status: Secured";//DEBUG
+const char string_0[] PROGMEM = "\nValid Cmd! =)\nRx'd:\n";//DEBUG
+const char string_1[] PROGMEM = "\nInvalid Cmd! =(\nRx'd:\n";//DEBUG
+const char string_2[] PROGMEM = "\nLink Status: Secured";//DEBUG
 
 													   //Table of Fixed Strings (array of strings stored in flash)
 const char* const string_table[] PROGMEM = { string_0, string_1, string_2 };
@@ -1018,7 +1020,7 @@ void txData(char * txData, byte roverCommType)
 }//end of txData()
 
 
-void commandDirector(char * receivedCommand, byte roverCommType)
+void commandDirector(char * receivedCommand, byte roverCommType, char * charBuffer)
 {
 
 
@@ -1148,20 +1150,27 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 	else if (strcmp(receivedCommand, getCmdString(12)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI))
 	{
 
-		strcpy_P(txMsgBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
-		sprintf(txMsgBuffer, "%s%s\0", txMsgBuffer, receivedCommand);//DEBUG
+		strcpy_P(charBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
+		sprintf(charBuffer, "%s%s\0", charBuffer, receivedCommand);//DEBUG
 
 		if (roverCommType == ROVERCOMM_CMNC)
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
-			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_CMNC);
+			
+			//Use the Rover Command Creator to add the headers to the data string
+			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, charBuffer));
+
+//DEBUG-move this function to a different state!!
+			txData(charBuffer, ROVERCOMM_CMNC);
 		}
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 		{
+			//Use the Rover Command Creator to add the headers to the data string
 			main_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
-			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_MAIN);
+			//Use the Rover Command Creator to add the headers to the data string
+			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, charBuffer));
+//DEBUG-move this function to a different state!!
+			txData(charBuffer, ROVERCOMM_MAIN);
 		}
 		//else do nothing
 
@@ -1170,20 +1179,24 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 	 //Bye Command - DEBUG
 	else if (strcmp(receivedCommand, getCmdString(13)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE))
 	{
-		strcpy_P(txMsgBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
-		sprintf(txMsgBuffer, "%s%s\0", txMsgBuffer, receivedCommand);//DEBUG
+		strcpy_P(charBuffer, (char*)pgm_read_word(&(string_table[0])));//copy the fixed string from flash into the char buffer
+		sprintf(charBuffer, "%s%s\0", charBuffer, receivedCommand);//DEBUG
 
 		if (roverCommType == ROVERCOMM_CMNC)
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
-			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_CMNC);
+			//Use the Rover Command Creator to add the headers to the data string
+			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, charBuffer));
+//DEBUG-move this function to a different state!!			
+			txData(charBuffer, ROVERCOMM_CMNC);
 		}
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 		{
 			main_msg_queue = CMD_TAG_DEBUG_OUTPUT_RXD_CMD;
-			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_MAIN);
+			//Use the Rover Command Creator to add the headers to the data string
+			sprintf(charBuffer, RoverCommandCreator::createCmd(ROVERCOMM_COMM, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, charBuffer));
+//DEBUG-move this function to a different state!!
+			txData(charBuffer, ROVERCOMM_MAIN);
 		}
 		//else do nothing		
 
@@ -1193,21 +1206,23 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 	else if (BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID))
 	{
 
-		strcpy_P(txMsgBuffer, (char*)pgm_read_word(&(string_table[1])));//copy the fixed string from flash into the char buffer
-		sprintf(txMsgBuffer, "%s%s\0", txMsgBuffer, roverCommand->getCommand());//DEBUG, append other chars into the char buffer if
+		strcpy_P(charBuffer, (char*)pgm_read_word(&(string_table[1])));//copy the fixed string from flash into the char buffer
+		sprintf(charBuffer, "%s%s\0", charBuffer, roverCommand->getCommand());//DEBUG, append other chars into the char buffer if
 
 
 		if (roverCommType == ROVERCOMM_CMNC)
 		{
 			cmnc_msg_queue = CMD_TAG_INVALID_CMD;
 			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_CMNC);
+//DEBUG-move this function to a different state!!
+			txData(charBuffer, ROVERCOMM_CMNC);
 		}
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 		{
 			main_msg_queue = CMD_TAG_INVALID_CMD;
 			//WRITE CODE HERE TO USE COMMAND CREATOR, then clear the tag after the command is created			
-			txData(txMsgBuffer, ROVERCOMM_MAIN);
+//DEBUG-move this function to a different state!!
+			txData(charBuffer, ROVERCOMM_MAIN);
 		}
 		//else do nothing
 
@@ -1456,9 +1471,9 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 			//2. Then run the command director to run the allowed commands
-			commandDirector(roverCommand->getCommand(), ROVERCOMM_MAIN);
+			commandDirector(roverCommand->getCommand(), ROVERCOMM_MAIN, txMsgBuffer_MAIN);
 
-
+			
 		}//end if
 
 		 //WRITE ME LATER

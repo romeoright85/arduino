@@ -19,7 +19,9 @@ Where I left off
 
 ---------------CODING---------------	
 
-	use command creator to create commands with headers
+	[in progress]use command creator to create commands with headers
+	remove the transmit function to another state
+		fix commandDirector()
 	
 	See below for	
 		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2

@@ -7,10 +7,9 @@
 
 //Global Variables
 
-RoverCommandCreator * roverCommandCreator = new RoverCommandCreator();
 
 RoverReset * resetArray[] = {
-	roverCommandCreator
+	
 };
 
 
@@ -25,7 +24,7 @@ void setup() {
 	}
 	
 	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
-	
+	delay(100);
 }
 
 
@@ -35,21 +34,22 @@ void loop() {
 	//Test with the command tag
 	
 	//Two leading zeros test
-	_PC_USB_SERIAL_.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_NO_MSG, "NoData"));// Result: /1c400000NoData
-	_PC_USB_SERIAL_.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_DEBUG_OUTPUT_RXD_CMD
-		, "NoData"));// Result: 
+	_PC_USB_SERIAL_.println(RoverCommandCreator::createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_NO_MSG, "NoData"));
+	_PC_USB_SERIAL_.println(RoverCommandCreator::createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_DEBUG_OUTPUT_RXD_CMD
+		, "NoData"));
 
 
 	//One leading zero test
-	_PC_USB_SERIAL_.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_NAVI_SLEEP_REQUEST
-		, "NoData"));// Result: 
+	_PC_USB_SERIAL_.println(RoverCommandCreator::createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_NAVI_SLEEP_REQUEST
+		, "NoData"));
 
 	//No leading zeros test
-	_PC_USB_SERIAL_.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_LATITUDE_REQUEST
-		, "12.3456N"));// Result: /1c40016912.3456N
+	_PC_USB_SERIAL_.println(RoverCommandCreator::createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_0, CMD_TAG_LATITUDE_REQUEST
+		, "12.3456N"));
 	
 	//Test without the command tag
-	_PC_USB_SERIAL_.println(roverCommandCreator->createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_1, "987601.2545E"));// Result: /1c401987601.2545E
+	_PC_USB_SERIAL_.println(RoverCommandCreator::createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_1, "987601.2545E"));
+
 	
 
 

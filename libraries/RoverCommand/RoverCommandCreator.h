@@ -58,8 +58,8 @@ public:
 	//Note: origin and destination variables are defined in _ROVERCOMM_DEFINITIONS, see RoverConfig.h
 	
 	
-	char * createCmd(byte, byte, byte, char *);//(origin, destination, priority level, command - if a tag used then it must be appended manually)	
-	char * createCmd(byte, byte, byte, byte, char *);//(origin, destination, priority level, command tag, command)
+	static char * createCmd(byte, byte, byte, char *);//(origin, destination, priority level, command - if a tag used then it must be appended manually)	
+	static char * createCmd(byte, byte, byte, byte, char *);//(origin, destination, priority level, command tag, command)
 	static char * byteToCharArray(byte);//(input byte) returns char array
 private:
 	//Non-SW Resettable
