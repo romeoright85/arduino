@@ -76,7 +76,7 @@ void RoverCaptain::createObjects()
 	this->_roverCommand = new RoverCommand();
 		
 	//Command Creator
-	this->_roverCommandCreator = new RoverCommandCreator();
+	this->_roverCommandProcessor = new RoverCommandProcessor();
 	
 	//Rover Sleeper Server	
 	this->_sleeperMAIN = new RoverSleeperServer(MAIN_WAKEUP_CTRL_PIN, this->_interruptDispatch_sleeperMAIN);//MAIN Wakeup Pin Control

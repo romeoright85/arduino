@@ -46,7 +46,7 @@ Configure (define) flags before calling #include <RoverConfig.h>
 #include <RoverData.h>
 #include <RoverComm.h> //calls RoverConfig.h
 #include <RoverCommand.h>
-#include <RoverCommandCreator.h>
+#include <RoverCommandProcessor.h>
 #include <RoverSleeperServer.h>
 
 
@@ -145,7 +145,7 @@ private:
 	RoverCommand * _roverCommand;
 
 	//Command Creator
-	RoverCommandCreator * _roverCommandCreator;
+	RoverCommandProcessor * _roverCommandProcessor;
 	
 	//Rover Sleeper Server	
 	RoverSleeperServer * _sleeperAUXI;//Controls the self wakeup of AUXI
@@ -188,7 +188,7 @@ private:
 		//Command Parser
 		_roverCommand,
 		//Command Creator
-		_roverCommandCreator,
+		_roverCommandProcessor,
 		//Rover Sleeper Server
 		_sleeperAUXI
 		

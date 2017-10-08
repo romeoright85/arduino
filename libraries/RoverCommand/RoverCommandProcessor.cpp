@@ -10,7 +10,7 @@ RoverCommandProcessor::~RoverCommandProcessor()
 }
 void RoverCommandProcessor::reset()
 {
-}
+}//end of reset()
 char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte priorityLevel, char * commandString)
 {
 
@@ -64,7 +64,7 @@ char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte prio
 		
 	return inputCharArray;//DEBUG
 	
-}
+}//end of createCmd() without commandTag
 char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte priorityLevel, byte commandTag, char * commandString)
 {
 	
@@ -84,7 +84,7 @@ char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte prio
 	return createCmd(origin, destination, priorityLevel, inputCharArray);//DEBUG	
 	
 	
-}
+}//end of createCmd() with commandTag
 char * RoverCommandProcessor::byteToCharArray(byte input)
 {
 	
@@ -110,7 +110,27 @@ char * RoverCommandProcessor::byteToCharArray(byte input)
 	
 return tempCharArray;
 	
-}
+}//end of byteToCharArray()
+byte RoverCommandProcessor::parseCmd(char * roverCommand, char * commandData)
+{
+	
+	byte commandTag;
+
+
+//WRITE ME
+	
+	//Extract the commandTag from the roverCommand
+//use the substring method in CharArray. See K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\UtilityClasses
+	//Convert the commandTag char array to a byte
+		
+	//Extract the commandData from the roverCommand
+//use the substring method in CharArray. See K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\UtilityClasses
+
+
+		
+	
+	return commandTag;
+}//end of charArrayToByte()
 
 
 	

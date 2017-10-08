@@ -20,7 +20,7 @@ char DataType::byteToChar(byte num)
 	{
 		return 'Z';//error
 	}//end else
-}
+}//end of byteToChar()
 char DataType::byteToHex(byte num)
 {
 	if(num >= 0 && num <= 15)//in range of hexidecimal (0 to 15)
@@ -83,7 +83,7 @@ char DataType::byteToHex(byte num)
 	{
 		return 'Z';//error
 	}//end else
-}
+}//end of byteToHex()
 byte DataType::byteToChars(byte num, char * tempCharArray, byte arraySize)
 {
 		
@@ -108,5 +108,14 @@ byte DataType::byteToChars(byte num, char * tempCharArray, byte arraySize)
 	//Add the null terminating character
 	tempCharArray[3] = '\0';
 	return 1;//return 1 for true, there were no errors
-}
+}//end of byteToChars()
+byte DataType::charsToByte(char * inputCharArray)
+{
+	
+	
+	//Convert the char array to a byte (which has a range from 0 to 255)
+//see byte RoverGpsSensor::getGpsFixQuality()
+//use atoi, but return a byte instead of an integer
 
+
+}//end of charsToByte()

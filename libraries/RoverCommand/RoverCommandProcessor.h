@@ -60,7 +60,13 @@ public:
 	
 	static char * createCmd(byte, byte, byte, char *);//(origin, destination, priority level, command - if a tag used then it must be appended manually)	
 	static char * createCmd(byte, byte, byte, byte, char *);//(origin, destination, priority level, command tag, command)
-	static char * byteToCharArray(byte);//(input byte) returns char array
+	static char * byteToCharArray(byte);//(input byte) returns char array, with a range of 0 to 255.
+	
+	
+	
+	static byte parseCmd(char *, char *);//(input RoverCommand, output-command data char array) Returns the commandTag.
+	
+	
 private:
 	//Non-SW Resettable
 	//SW Resettable

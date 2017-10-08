@@ -81,7 +81,7 @@ void RoverHealthAndStatus::createObjects()
 		this->_roverCommand = new RoverCommand();
 
 		//Command Creator
-		this->_roverCommandCreator = new RoverCommandCreator();
+		this->_roverCommandProcessor = new RoverCommandProcessor();
 	
 		//Rover Sleeper Server
 		this->_sleeperAUXI = new RoverSleeperServer(AUXI_WAKEUP_CTRL_PIN, this->_interruptDispatch_sleeperAUXI);//AUXI Wakeup Pin Control

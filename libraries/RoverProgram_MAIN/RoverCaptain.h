@@ -36,7 +36,7 @@ Configure (define) flags before calling #include <RoverConfig.h>
 #include <RoverData.h>
 #include <RoverComm.h> //calls RoverConfig.h
 #include <RoverCommand.h>
-#include <RoverCommandCreator.h>
+#include <RoverCommandProcessor.h>
 #include <RoverSleeperServer.h>
 #include <RoverSleeperClient.h>
 
@@ -118,7 +118,7 @@ private:
 	RoverCommand * _roverCommand;
 
 	//Command Creator
-	RoverCommandCreator * _roverCommandCreator;
+	RoverCommandProcessor * _roverCommandProcessor;
 	
 	//Rover Sleeper Server	
 	RoverSleeperServer * _sleeperMAIN;
@@ -153,7 +153,7 @@ private:
 		//Command Parser
 		_roverCommand,
 		//Command Creator
-		_roverCommandCreator,
+		_roverCommandProcessor,
 		//Rover Sleeper Server	
 		_sleeperMAIN,
 		//Rover Sleeper Client
