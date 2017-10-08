@@ -1,6 +1,6 @@
-//RoverCommandCreator.h
-#ifndef _ROVERCOMMANDCREATOR_H
-#define _ROVERCOMMANDCREATOR_H
+//RoverCommandProcessor.h
+#ifndef _ROVERCOMMANDPROCESSOR_H
+#define _ROVERCOMMANDPROCESSOR_H
 
 #define _ROVERCOMM_DEFINITIONS
 #include <RoverCommandDefs.h>
@@ -49,10 +49,10 @@ Reference: Also see the spreadsheet "Command Creator..." at K:\Working Directory
 		
 */	
 
-class RoverCommandCreator : public virtual RoverReset {
+class RoverCommandProcessor : public virtual RoverReset {
 public:
-	RoverCommandCreator();//constructor
-	~RoverCommandCreator();//destructor
+	RoverCommandProcessor();//constructor
+	~RoverCommandProcessor();//destructor
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	
 	//Note: origin and destination variables are defined in _ROVERCOMM_DEFINITIONS, see RoverConfig.h

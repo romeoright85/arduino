@@ -38,7 +38,7 @@ Currently the priority level is not being used to prioritize right now. It's jus
 //#includes
 #include <RoverStatesAndModes.h>
 #include <RoverCommandDefs.h>
-#include <RoverCommandCreator.h>
+#include <RoverCommandProcessor.h>
 #include <SoftwareSerial.h>
 #include <RoverData.h>
 #include <RoverComm.h> //calls RoverConfig.h
@@ -1285,7 +1285,7 @@ void createDataFromQueue(byte roverCommDestination)
 	
 		case CMD_TAG_COMM_HW_RESET_REQUEST:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0)));
+			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0)));
 		break;
 		case CMD_TAG_HW_IS_RESETTING:
 		break;		
@@ -1307,26 +1307,26 @@ void createDataFromQueue(byte roverCommDestination)
 		break;
 		case CMD_TAG_PIR_STATUS:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(0)));//DEBUG
+			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(0)));//DEBUG
 //WRITE ME LATER			
 //ADD IN THE DATA FOR PIR STATUS HERE									
-			//sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, ADD PIR STATUS HERE));
+			//sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, ADD PIR STATUS HERE));
 		break;
 		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(0)));			
+			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(0)));			
 		break;		
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, getMsgString(0)));			
+			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, getMsgString(0)));			
 		break;
 		case CMD_TAG_DEBUG_BYE_TEST_MSG:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, getMsgString(0)));
+			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, getMsgString(0)));
 		break;	
 		case CMD_TAG_INVALID_CMD:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)			
-			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1)));
+			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1)));
 		break;	
 		
 		

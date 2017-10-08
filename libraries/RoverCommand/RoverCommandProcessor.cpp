@@ -1,17 +1,17 @@
-#include <RoverCommandCreator.h>
+#include <RoverCommandProcessor.h>
 
 
-RoverCommandCreator::RoverCommandCreator()
+RoverCommandProcessor::RoverCommandProcessor()
 {
 }
-RoverCommandCreator::~RoverCommandCreator()
+RoverCommandProcessor::~RoverCommandProcessor()
 {
 	//do nothing
 }
-void RoverCommandCreator::reset()
+void RoverCommandProcessor::reset()
 {
 }
-char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, char * commandString)
+char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte priorityLevel, char * commandString)
 {
 
 		
@@ -55,6 +55,8 @@ char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priori
 	
 	//Concantenate Strings
 	strcat(inputCharArray, priorityLevelCharArray);
+	//Add the command format identifier '*'
+	strcat(inputCharArray, "*");	
 	//Adding the commandString (should have commandTag appended already if commandTag is being used for this command)
 	strcat(inputCharArray, commandString);
 	//Add the null terminating character (just in case if there isn't already one)
@@ -63,20 +65,16 @@ char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priori
 	return inputCharArray;//DEBUG
 	
 }
-char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, byte commandTag, char * commandString)
+char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte priorityLevel, byte commandTag, char * commandString)
 {
 	
 	//Using delegation and function overloading
 	
 	char inputCharArray[ROVER_COMM_SENTENCE_LENGTH] = "";
 		
-	//Concantenate Strings
-	
-	
-	 
-	
+	//Concantenate Strings		
 	//Adding the command tag
-	strcat(inputCharArray, RoverCommandCreator::byteToCharArray(commandTag));
+	strcat(inputCharArray, RoverCommandProcessor::byteToCharArray(commandTag));	
 	//Adding the commandString
 	strcat(inputCharArray, commandString);
 	//Add the null terminating character (just in case if there isn't already one)
@@ -87,7 +85,7 @@ char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priori
 	
 	
 }
-char * RoverCommandCreator::byteToCharArray(byte input)
+char * RoverCommandProcessor::byteToCharArray(byte input)
 {
 	
 	char tempCharArray[4];//for 3 digit character but string null character

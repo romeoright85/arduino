@@ -21,16 +21,22 @@ Where I left off
 
 
 LEFT OFF:
-
 	
+	Realized I should use command tags as the command and the data as the data. Sending command tags and command strings + data is redundant. It should just be command tags + data.
+
+
+	[DONE]Relabel RoverCommandCreator to RoverCommandProcessor
+	Write RoverCommandProcessor::createCmd such that it can take in a rovercommand and break it up to Command Tag and Command Data
+	 
+	 
 	Update commandirector
 		the first three characters of the receivedCommand should be parsed out into two pieces: command tags and the command data
-			Note: Command tags are commands, but they are enumarated to be more efficient and/or standardized.
+			Note: Command tags are commands, but they are enumarated to be more efficient and/or standardized. Also it allows for less characters needing to be sent with every command since all commands are limited to 3 characters.
 				i.e. Instead of writing out hi, it will be 002 to represent that message.
 		all strcmp should be comparing the cmd tags with the tags from RoverCommandDefs.h
 		Instead of sending /-c5--*hi, etc. it should be /-c5--*002hi
 			Update all notes/references for sending /-c5--*hi in the rovercomm state machine as well as the where left off
-		Fix RoverCommandCreator::createCmd to add the * (as part of the header format) in the command as well
+		
 			Is:
 				/5c400002nodata
 			Should be:
@@ -1377,6 +1383,8 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 	[just moved strings used with strcmp to program memory. this reduced some ram use, about 4%. move on for now and redesign later if needed]Redesign the state machines due to memory limitations
 		[After converted boolean flags to byte flags, only 1% of memory was saved.]Note: With a quick test, 12% memory is saved when all the boolean flags for the filter were removed.
 		
+	[FIXED] Found out that the RoverCommandCreator::createCmd  in CREATE_DATA forgot to add the * as part of the header
+	[FIXED] Fix RoverCommandCreator::createCmd to add the * (as part of the header format) in the command as well
 	
 	
 	
