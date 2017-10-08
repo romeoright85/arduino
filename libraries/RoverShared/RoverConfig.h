@@ -35,69 +35,7 @@
 		#define _GPS_SERIAL_ Serial3
 	#endif	
 	
-	
-
-
-	//"Boolean" Bit Flags
-	#ifdef _COMM_BIT_FLAGS_
-	
-		//Flag(s) - Universal
-		#define _BTFG_NONE_													0x00
-		//Flag(s) - Error: flagSet_Error
-		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
-		#define _BTFG_SYNC_ERROR_										0x02
-		#define _BTFG_SECURE_LINK_ERROR_							0x04
-		#define _BTFG_SW_RESET_ERROR_								0x08
-		#define _BTFG_GENERIC_HEALTH_ERROR_						0x10
-		#define _BTFG_SLEEPING_ERROR_									0x20
-		//Flag(s) - Message Controls: flagSet_MessageControl
-		#define _BTFG_REDIRECT_TO_CMNC_								0x01
-		#define _BTFG_REDIRECT_TO_MAIN_								0x02		
-		#define _BTFG_DATA_WAS_FOR_COMM_CH1_					0x04
-		#define _BTFG_DATA_WAS_FOR_COMM_CH2_				0x08
-		//Flag(s) - System Status: flagSet_SystemStatus
-		#define _BTFG_REDIRECT_TO_CMNC_								0x01
-		#define _BTFG_MAIN_SYSTEM_READY_								0x02
-		#define _BTFG_COMMUNICATIONS_SECURE_						0x04
-		#define _BTFG_FIRST_TRANSMISSION_								0x08
-		 //Flag(s) - Command Filter Options
-		 //Command Filter Options: Set 1: commandFilterOptionsSet1
-		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_							0x01
-		#define _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_					0x02
-		#define _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_				0x04
-		#define _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_					0x08
-		#define _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_				0x10
-		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_									0x20
-		#define _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_						0x40
-		#define _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_				0x80
-		//Command Filter Options: Set 2: commandFilterOptionsSet2
-		#define _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_					0x01
-		#define _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_						0x02
-		#define _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_									0x04
-		#define _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_					0x08
-		#define _BTFG_COMMAND_ENABLE_OPTION_HI_												0x10
-		#define _BTFG_COMMAND_ENABLE_OPTION_BYE_										0x20
-		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID_										0x40
-		 
-		 
-		 
 		
-	#endif
-	
-	#ifdef _NAVI_BIT_FLAGS_
-		#define _BTFG_NONE_													0x00
-	#endif
-	
-	#ifdef _AUXI_BIT_FLAGS_
-		#define _BTFG_NONE_													0x00
-	#endif
-	
-	#ifdef _MAIN_BIT_FLAGS_
-		#define _BTFG_NONE_													0x00
-	#endif
-	
-
-	
 	#ifdef _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ //used to test all Serial algorithms by using just the local USB Serial interface	
 		#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
 		#define PC_USB_BAUD_RATE	9600 //used for outputting from UNO, Mega Arduinos to the PC via USB
@@ -106,7 +44,6 @@
 		#define NAVI_BAUD_RATE 9600
 		#define AUXI_BAUD_RATE 9600	
 		#define GPS_BAUD_RATE 9600// The default GPS baud rate is 57600
-		#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
 	#else
 		#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
 		#define PC_USB_BAUD_RATE	9600 //used for outputting from UNO, Mega Arduinos to the PC via USB
@@ -115,10 +52,12 @@
 		#define NAVI_BAUD_RATE 115200
 		#define AUXI_BAUD_RATE 115200	
 		#define GPS_BAUD_RATE 57600// The default GPS baud rate is 57600
-		#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
 	#endif	
 
-
+	//Buffer Sizes
+	#define UNIV_BUFFER_SIZE 128//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
+	#define _MAX_PROGMEM_BUFF_STR_LEN_ 14//Buffer Size to use for Command and Message Strings, this should be the max string length allowed  for any of the string in the cmd_str_table[] array
+	
 	
 	//Arduino Types
 	//Matching the Arduino numbering with the Microcontroller labels

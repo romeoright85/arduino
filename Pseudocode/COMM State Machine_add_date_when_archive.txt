@@ -1003,14 +1003,14 @@ Conflicting Functions Ordered By Priority
 	
 		HW Reset Request
 			Mode: HW_RESETTING *begin*
-			main_msg_queue == COMM_HW_RESET_REQUEST					
-			cmnc_msg_queue == HW_IS_RESETTING			
+			main_msg_queue = COMM_HW_RESET_REQUEST					
+			cmnc_msg_queue = HW_IS_RESETTING			
 		COMM SW Reset Request (usually from MAIN)
 			Mode: INITIALIZATION *begin*			
 			Next State: RUN_HOUSEKEEPING_TASKS
 		All SW Reset Request
-			main_msg_queue == ALL_SW_RESET_REQUEST
-			cmnc_msg_queue == SW_IS_RESETTING			
+			main_msg_queue = ALL_SW_RESET_REQUEST
+			cmnc_msg_queue = SW_IS_RESETTING			
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 			Mode: SW_RESETTING *begin*				
@@ -1035,19 +1035,20 @@ Conflicting Functions Ordered By Priority
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 		Break Secure Link
-			Mode: SECURING_LINK *begin*
-			//initialize/reset shared counter before use
-			timeout_counter = 0;
 			communications_secure = false			
+			Mode: SECURING_LINK *begin* //Starting over with having to securing link again
+			//initialize/reset shared counter before use
+			timeout_counter = 0;			
 		Establish Secure Link
 			communications_secure = true
 			Mode: NORMAL_OPERATIONS *begin*
 			timeout_counter = 0 (clear for future use)
 			cmnc_msg_queue = ESTABLISH_SECURE_LINK (tells CMNC link is now secured)
 		COMM Sleep Request (usually from MAIN)
+			//Pre-sleep tasks - Setting up wake tasks before going to sleep
 			timeout_counter = 0;//clear counter for future use
 			Mode: SYSTEM_WAKING *begin* //setup this mode ahead of time before going to sleep		
-			cmnc_msg_queue == SYSTEM_IS_WAKING			
+			cmnc_msg_queue = SYSTEM_IS_WAKING			
 			Run other pre-sleep tasks. (i.e. end software serial, as needed)
 			Put COMM to sleep
 				Don't switch states yet. Go to sleep in the current PROCESS_DATA state.
@@ -1057,8 +1058,8 @@ Conflicting Functions Ordered By Priority
 				Then it will go to the next state, which will default to CONTROL_OUTPUTS		
 		All Sleep Request
 			Mode: SYSTEM_SLEEPING *begin*
-			main_msg_queue == ALL_SLEEP_REQUEST
-			cmnc_msg_queue == SYSTEM_IS_SLEEPING
+			main_msg_queue = ALL_SLEEP_REQUEST
+			cmnc_msg_queue = SYSTEM_IS_SLEEPING
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 		PIR Status
@@ -1066,7 +1067,7 @@ Conflicting Functions Ordered By Priority
 			Note: The PIR status message will be created in the CREATE_DATA state
 		Received Error Messages
 			//For now just forward it to CMNC, keeping the original destination
-			cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS
+			cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS
 			
 			//All errors from main, navi, auxi should be redirected to COMM, and COMM will redirect it to CMNC
 			//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.

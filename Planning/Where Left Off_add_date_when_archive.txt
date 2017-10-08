@@ -22,16 +22,47 @@ Where I left off
 
 LEFT OFF:
 
-	[already completed for hi, bye, and invalid. now work on it for other commands]Finish with commandDirector() and splitting up functions and using the message queues. then make the string in CREATE_DATA and send it in TX_COMMUNICATION.
-	the finish out the synchonization mode and move on to secure link
-	pay attention to memory use!
+	
+	Update commandirector
+		the first three characters of the receivedCommand should be parsed out into two pieces: command tags and the command data
+			Note: Command tags are commands, but they are enumarated to be more efficient and/or standardized.
+				i.e. Instead of writing out hi, it will be 002 to represent that message.
+		all strcmp should be comparing the cmd tags with the tags from RoverCommandDefs.h
+		Instead of sending /-c5--*hi, etc. it should be /-c5--*002hi
+			Update all notes/references for sending /-c5--*hi in the rovercomm state machine as well as the where left off
+		Fix RoverCommandCreator::createCmd to add the * (as part of the header format) in the command as well
+			Is:
+				/5c400002nodata
+			Should be:
+				/5c400*002nodata
+			in order to match the format
+				/OcDLL*CCCC
+			
+			
+			when have time wingrep /OcDLL*CCCC and update all references with CCCC should be TTTdddd... where TTT is the 3 digit command tag, and dddd is the data
+			
+		NOTE:		
+			I need to fix my messages for createDataFromQueue or fix the way the commanddirector processes commands.
+				[NAH]right now it sends commands via the command tags and not the data. so either allow createDataFromQueue to also put in the commands under the data
+				[YES DO THIS]or more likely, fix commanddirector to read the tags and not the data string to determine commands. then have it read the data string if it's expected data with the commands
+				
+		
+		
 		
 		
 	
 =================1 weekend===================				
 
 
+
+---------------CODING---------------	
+
+
 	
+	work on createDataFromQueue and messages for it (or place holders)
+	the finish out the synchonization mode and move on to secure link
+	Note: pay attention to memory use!
+		
 	
 ---------------TESTING---------------
 	
@@ -108,6 +139,8 @@ get basic state machine infrastructure up
 				[WHERE LEFT OFF 0]
 				Note: The last thing I did before stopping was:
 							-Remember to uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ in RoverConfig. only MAIN is allowed to chat in the beginning and CMNC is shut off until the unit is sychronized. Then CMNC can send to COMM but wil lget no response until links are secured.
+							-When debugging, check the boolean bit flag as well as the bit flag set. As you might forgot to update both when copying and pasting and using templates.
+								-Also make sure not to confuse Status Flags vs. filter option flags
 							-getting the the system go message to work and switch from sync mode to securing link mode. You still need to go back and write all the other sync mode code.
 							-creating the framework for all commands in the commandDirector. And it's ordered by priority.
 							-created flags for all commands so the DATA_FILTER state can filter stuff in the future
@@ -1375,6 +1408,6 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 			
 
 
-									
+	[DONE, at least for the code that is ready now. else added placeholders. already completed for hi, bye, and invalid. now work on it for other commands]Finish with commandDirector() and splitting up functions and using the message queues. then make the string in CREATE_DATA and send it in TX_COMMUNICATION.									
 									
 									
