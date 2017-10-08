@@ -1066,6 +1066,8 @@ Conflicting Functions Ordered By Priority
 			Note: The PIR status message will be created in the CREATE_DATA state
 		Received Error Messages
 			//For now just forward it to CMNC, keeping the original destination
+			cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS
+			
 			//All errors from main, navi, auxi should be redirected to COMM, and COMM will redirect it to CMNC
 			//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
 		Improvement Tip: COMM can go into error mode if it gets an error message from NAVI, AUXI, or MAIN
