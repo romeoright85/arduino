@@ -1,0 +1,1 @@
+This was one of the previous concepts for a state machine. It was abandon and Rover_StateMachine_AUXI was created instead.

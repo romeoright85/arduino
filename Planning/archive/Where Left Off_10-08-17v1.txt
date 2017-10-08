@@ -22,26 +22,18 @@ Where I left off
 
 LEFT OFF:
 	
-	Last thing I did was create the framework and pseudocode for DataType::charsToByte and RoverCommandProcessor::parseCmd
 
 	
-	--------------
-		
-	Write methods for the RoverCommandProcessor class and the DataType class such that it can take in a rovercommand and break it up to Command Tag and Command Data
+	Write methods for the RoverCommandProcessor class such that it can take in a rovercommand and break it up to Command Tag and Command Data
 	 
-	 work on DataType::charsToByte
-	 and work on RoverCommandProcessor::parseCmd
-	 
-	 
-	 Then go back to Rover_StateMachine_COMM and update commandirector to use the new methods written in RoverCommandProcessor and DataType to parse out data
+	 	
+		Instead of sending /-c5--*hi, etc. it should be /-c5--*002hi
+				 
+	Update commandirector to use the new methods written in RoverCommandProcessor to prase out data
 		the first three characters of the receivedCommand should be parsed out into two pieces: command tags and the command data
 		all strcmp should be comparing the cmd tags with the tags from RoverCommandDefs.h instead of sommands like hi, bye, sysgo, etc.
 		maybe delete some of the prog mem arrays for cmd strings if no longer needed (to save memory)
 	
-	
-	
-		Instead of sending /-c5--*hi, etc. it should be /-c5--*002hi
-			
 		Update all notes/references for sending /-c5--*hi in the rovercomm state machine as well as the where left off
 		
 			Is:
@@ -52,11 +44,7 @@ LEFT OFF:
 				/OcDLL*CCCC
 			
 			
-	
-		when have time wingrep /OcDLL*CCCC and update all references with CCCC should be TTTdddd... where TTT is the 3 digit command tag, and dddd is the data
-			
-			
-			
+			when have time wingrep /OcDLL*CCCC and update all references with CCCC should be TTTdddd... where TTT is the 3 digit command tag, and dddd is the data
 			
 		NOTE:		
 			I need to fix my messages for createDataFromQueue or fix the way the commanddirector processes commands.
