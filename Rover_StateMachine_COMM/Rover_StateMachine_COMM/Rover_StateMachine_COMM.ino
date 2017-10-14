@@ -13,7 +13,21 @@ Currently the priority level is not being used to prioritize right now. It's jus
 //Rover_StateMachine_COMM
 
 //DEBUG
-//Can send /-c5--*hi or /-c5--*bye to test if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
+
+
+/*
+To test locally with only one Arduino (best to test the UNO to make sure it can handle the memory needs for the COMM), first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
+Can send:
+	Hi Command
+		/-c5--*002<any data up to 14 chars>
+		/-c5--*002hiworld
+	Bye Commands
+		/-c5--*003<any data up to 14 chars>
+		/-c5--*003bye
+	
+	
+*/
+
 //To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
 
 
@@ -61,31 +75,31 @@ Currently the priority level is not being used to prioritize right now. It's jus
 //============Function Prototypes
 void InterruptDispatch1();//For PirSensorTest
 void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "InterruptDispatch1", but had a name conflict
-						  //============End of Function Prototypes
+//============End of Function Prototypes
 
 
-						  //============Debugging: Serial Channel Selection
-						  //Used to output debugging messages only when the _DEBUG_COMM_BROADCAST flag is defined
-						  //Uncomment the flag below in order to output debugging messages
-						  //#define _DEBUG_COMM_BROADCAST
+//============Debugging: Serial Channel Selection
+//Used to output debugging messages only when the _DEBUG_COMM_BROADCAST flag is defined
+//Uncomment the flag below in order to output debugging messages
+//#define _DEBUG_COMM_BROADCAST
 
-						  //Flag Logic, no need to edit this below
-						  //Reference the "Where Left Off...txt" at: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Planning
+//Flag Logic, no need to edit this below
+//Reference the "Where Left Off...txt" at: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Planning
 #ifdef _DEBUG_COMM_BROADCAST
 #define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ //for COMM, either way it goes to the PC USB Serial
 #else
 #define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
-						  //============End of Debugging: Serial Channel Selection
+//============End of Debugging: Serial Channel Selection
 
 
-						  //============Debugging: Print Mode and/or State
-						  //Uncomment the flag below in order to print the current state and/or mode
-						  //#define _DEBUG_PRINT_CURRENT_STATE
-						  //#define _DEBUG_PRINT_CURRENT_MODE
+//============Debugging: Print Mode and/or State
+//Uncomment the flag below in order to print the current state and/or mode
+//#define _DEBUG_PRINT_CURRENT_STATE
+//#define _DEBUG_PRINT_CURRENT_MODE
 
 
-						  //Flag Logic, no need to edit this below
+//Flag Logic, no need to edit this below
 #ifdef _DEBUG_PRINT_CURRENT_STATE
 #define _PRINT_STATE_ _SERIAL_DEBUG_CHANNEL_.println
 #else
@@ -97,7 +111,7 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 #else
 #define _PRINT_MODE_ void
 #endif
-						  //============End Debugging: Print Mode and/or State
+//============End Debugging: Print Mode and/or State
 
 
 
@@ -108,13 +122,13 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 
 
 
-						  //============TEMPORARY Global Declarations (to test to see if the program can handle the memory)
+//============TEMPORARY Global Declarations (to test to see if the program can handle the memory)
 
-						  //STILL NEED TO INTEGRATE THIS INTO THE FULL CODE
-						  //ADD ANY OBJECTS TO THE RESET ARRAY
-						  //ADD ANY SW RESETTABLE VARIABLES INTO THE initializeVariables function
+//STILL NEED TO INTEGRATE THIS INTO THE FULL CODE
+//ADD ANY OBJECTS TO THE RESET ARRAY
+//ADD ANY SW RESETTABLE VARIABLES INTO THE initializeVariables function
 
-						  //------------------From AnalogLedTester
+//------------------From AnalogLedTester
 DelayCounter * heartLedCounter = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods, though can pass anything here as the heart led will automatically set it to the number of short delay periods (that is also passed to it as DELAY_10_PERIODS) anyways.
 HeartLed * heartLed = new HeartLed(HEART_LED_PIN, heartLedCounter, DELAY_10_PERIODS, DELAY_80_PERIODS);
 GlobalDelayTimer * mainTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, heartLedCounter);
@@ -150,48 +164,12 @@ byte cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by 
 byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 									  //Message Char Array
 char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between MAIN and CMNC
-char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Command and Message Strings
+char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
 
 
-//Fixed Commands Strings (to store in flash)
-const static char cmd_strg_0[] PROGMEM = "nodata";//getCmdString(0), No Data
-const static char cmd_strg_1[] PROGMEM = "sysrdy";//getCmdString(1), Main System Ready
-const static char cmd_strg_2[] PROGMEM = "hwrst";//getCmdString(2), Hardware Reset
-const static char cmd_strg_3[] PROGMEM = "cswrst";//getCmdString(3), COMM SW Reset
-const static char cmd_strg_4[] PROGMEM = "aswrst";//getCmdString(4), All SW Reset
-const static char cmd_strg_5[] PROGMEM = "gherr";//getCmdString(5), Generic Health Error
-const static char cmd_strg_6[] PROGMEM = "sysgo";//getCmdString(6), System Go
-const static char cmd_strg_7[] PROGMEM = "brkseclnk";//getCmdString(7), Break Secure Link
-const static char cmd_strg_8[] PROGMEM = "esl";//getCmdString(8), Establish Secure Link
-const static char cmd_strg_9[] PROGMEM = "cslprqst";//getCmdString(9), COMM Sleep Request
-const static char cmd_strg_10[] PROGMEM = "aslprqst";//getCmdString(10), All Sleep Request
-const static char cmd_strg_11[] PROGMEM = "pirsts";//getCmdString(11), PIR Status
-const static char cmd_strg_12[] PROGMEM = "rxerrmsg";//getCmdString(12), Received Error Messages
-const static char cmd_strg_13[] PROGMEM = "hi";//getCmdString(13), Hi
-const static char cmd_strg_14[] PROGMEM = "bye";//getCmdString(14), Bye
-//Note, for invalid commands, there is no command to send to get that (i.e. invalid command has no command string, that's the point). It's the default response when the command is not recognized.
-//Note: Make sure to update  the cmd_str_table[] array
+char roverCommandData_MAIN[_MAX_ROVER_COMMAND_DATA_LEN_];//Buffer to use for Rover Command Data
+char roverCommandData_CMNC[_MAX_ROVER_COMMAND_DATA_LEN_];//Buffer to use for Rover Command Data
 
-
-
-//Table of Fixed Commaned Strings (array of strings stored in flash)
-const char* const cmd_str_table[] PROGMEM = {
-	cmd_strg_0,
-	cmd_strg_1,
-	cmd_strg_2,
-	cmd_strg_3,
-	cmd_strg_4,
-	cmd_strg_5,
-	cmd_strg_6,
-	cmd_strg_7,
-	cmd_strg_8,
-	cmd_strg_9,
-	cmd_strg_10,
-	cmd_strg_11,
-	cmd_strg_12,
-	cmd_strg_13,
-	cmd_strg_14
-};
 
 
 
@@ -237,9 +215,9 @@ unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
 
 
 
-										//=====Non-SW Resettable Variables (do not reinitialize these variables on software reset)
+//=====Non-SW Resettable Variables (do not reinitialize these variables on software reset)
 
-										//States
+//States
 byte currentState = RUN_HOUSEKEEPING_TASKS;
 byte nextState = RUN_HOUSEKEEPING_TASKS;
 byte queuedState = RUN_HOUSEKEEPING_TASKS;
@@ -306,12 +284,12 @@ void setup() {
 	//Setting Up Timer Interrupt
 	OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
 	TIMSK0 |= _BV(OCIE0A);//Activating the Timer Interrupt by setting the Mask Register
-						  /*
-						  Reference:
-						  https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
-						  http://forum.arduino.cc/index.php?topic=3240.0
-						  https://protostack.com.au/2010/09/timer-interrupts-on-an-atmega168/
-						  */
+	/*
+	Reference:
+	https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
+	http://forum.arduino.cc/index.php?topic=3240.0
+	https://protostack.com.au/2010/09/timer-interrupts-on-an-atmega168/
+	*/
 
 
 }//end of setup()
@@ -412,8 +390,8 @@ void loop() {
 		}//end switch
 		 //Advance to the queued (saved) state
 		nextState = queuedState;//Setting the Queued State as the Next State while in RUN_HOUSEKEEPING_TASKS state. And then when this state ends, outside the switch case for states, the Next State will change into the Current State.
-								//This happens only when in the RUN_HOUSEKEEPING_TASKS state.
-								//All other states will always go to the RUN_HOUSEKEEPING_TASKS as it's next state in order to run housekeeping tasks with every loop.
+		//This happens only when in the RUN_HOUSEKEEPING_TASKS state.
+		//All other states will always go to the RUN_HOUSEKEEPING_TASKS as it's next state in order to run housekeeping tasks with every loop.
 		break;
 	case RX_COMMUNICATIONS:
 		_PRINT_STATE_(F("STATE: RX_COMMUNICATIONS"));
@@ -1039,7 +1017,7 @@ void txData(char * txData, byte roverCommType)
 }//end of txData()
 
 
-void commandDirector(char * receivedCommand, byte roverCommType)
+void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte roverCommType)
 {
 
 
@@ -1049,12 +1027,30 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 	//Allow for all non-conflicting commands to run.
 	//Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 
+	
+	
+	
+	byte commandTag;//holds the commandtag that was sent with this rover command
+	
+	
+	//Extract the rover command tag and the rover command data
+	
+		
+	if( roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN )
+	{
+		commandTag = RoverCommandProcessor::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_MAIN);
+	}//end if
+	else if( roverCommType == ROVERCOMM_CMNC )
+	{
+		commandTag = RoverCommandProcessor::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_CMNC);
+	}//end else
+	//else do nothing
 
 	//=====Non-Conflicting Functions					
 	//Run lower priority functions here. (i.e. system ready msgs)
 
 	//Main System Ready
-	if (strcmp(receivedCommand, getCmdString(1)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))//FIX ME LATER, change the actual send command to compare later
+	if ( commandTag == CMD_TAG_SYSTEM_READY_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))
 	{
 
 		//so it can stop checking for this message since the MAIN system is known to be ready
@@ -1067,8 +1063,8 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 
 	 //=====Conflicting Functions Ordered By Priority
 	 //Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
-	 //HW Reset Request
-	if (strcmp(receivedCommand, getCmdString(2)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_))//FIX ME LATER, change the actual send command to compare later
+	 //All HW Reset Request
+	if (commandTag == CMD_TAG_ALL_HW_RESET_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_))
 	{
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = HW_RESETTING;//Set mode to HW_RESETTING *begin*				
@@ -1076,13 +1072,13 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		main_msg_queue = CMD_TAG_HW_IS_RESETTING;
 	}//end else if
 	 //COMM SW Request
-	else if (strcmp(receivedCommand, getCmdString(3)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_COMM_SW_RESET_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_))
 	{
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*	
 	}//end else if
-	 //ALL SW Request
-	else if (strcmp(receivedCommand, getCmdString(4)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_))//FIX ME LATER, change the actual send command to compare later
+	//ALL SW Request
+	else if (commandTag == CMD_TAG_ALL_SW_RESET_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_))//FIX ME LATER, change the actual send command to compare later
 	{
 	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
@@ -1092,7 +1088,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		timeout_counter = 0;//reset counter (for future use)
 	}//end else if
 	 //Generic Health Error
-	else if (strcmp(receivedCommand, getCmdString(5)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_GENERIC_HEALTH_STATUS_ERROR && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_))//FIX ME LATER, change the actual send command to compare later
 	{
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*				
@@ -1104,7 +1100,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		timeout_counter = 0;//reset counter (for future use)
 	}//end else if	
 	 //System Go (from MAIN)
-	else if (strcmp(receivedCommand, getCmdString(6)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_SYSTEM_GO_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_))//FIX ME LATER, change the actual send command to compare later
 	{
 	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
@@ -1133,7 +1129,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 
 	}//end else if
 	 //Break Secure Link
-	else if (strcmp(receivedCommand, getCmdString(7)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_BREAK_SECURE_LINK && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_))//FIX ME LATER, change the actual send command to compare later
 	{
 	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
@@ -1146,7 +1142,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 	}//end else if		
 	//Establish Secure Link
 	//This checks to see if the receivedCommand matches any of the known values. Else it's an invalid command
-	else if (strcmp(receivedCommand, getCmdString(8)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_))//FIX ME LATER, change the actual send command to compare later (instead of "esl" - establish secure link)
+	else if (commandTag == CMD_TAG_ESTABLISH_SECURE_LINK && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_))//FIX ME LATER, change the actual send command to compare later (instead of "esl" - establish secure link)
 	{
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
 		currentMode = NORMAL_OPERATIONS;//Set mode to NORMAL_OPERATIONS *begin*
@@ -1156,7 +1152,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		cmnc_msg_queue = CMD_TAG_ESTABLISH_SECURE_LINK;//tells CMNC link is now secured
 	}//end else if
 	 //COMM Sleep Request (usually from MAIN)
-	else if (strcmp(receivedCommand, getCmdString(9)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_COMM_SLEEP_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_))//FIX ME LATER, change the actual send command to compare later
 	{
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft			
 		//Pre-sleep tasks - Setting up wake tasks before going to sleep
@@ -1177,7 +1173,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		
 	}//end else if		
 	 //All Sleep Request
-	else if (strcmp(receivedCommand, getCmdString(10)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_ALL_SLEEP_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_))//FIX ME LATER, change the actual send command to compare later
 	{
 
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
@@ -1187,7 +1183,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		timeout_counter = 0; //reset for future use				
 	}//end else if			
 	 //PIR Status
-	else if (strcmp(receivedCommand, getCmdString(11)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_PIR_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_))//FIX ME LATER, change the actual send command to compare later
 	{
 		
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
@@ -1206,13 +1202,13 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		
 	}//end else if			
 	 //Received Error Messages
-	else if (strcmp(receivedCommand, getCmdString(12)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_))//FIX ME LATER, change the actual send command to compare later
 	{
 		cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//DEBUG
 		//WRITE ME LATER	
 	}//end else if					
 	 //Hi Command - DEBUG
-	else if (strcmp(receivedCommand, getCmdString(13)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_))
+	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_))
 	{
 	
 		//Based on which Arduino sent the command, that same Arduino will get a response
@@ -1227,7 +1223,7 @@ void commandDirector(char * receivedCommand, byte roverCommType)
 		
 	}//end if
 	 //Bye Command - DEBUG
-	else if (strcmp(receivedCommand, getCmdString(14)) == 0 && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
+	else if (commandTag == CMD_TAG_DEBUG_BYE_TEST_MSG && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
 	{
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
@@ -1265,15 +1261,18 @@ void createDataFromQueue(byte roverCommDestination)
 {
 
 	byte queueOfInterest;
+	char * roverCommandDataOfInterest;
 	
 	if (roverCommDestination == ROVERCOMM_CMNC)
 	{
 		queueOfInterest = cmnc_msg_queue;
+		roverCommandDataOfInterest = roverCommandData_CMNC;
 		
 	}//end if
 	else if (roverCommDestination == ROVERCOMM_MAIN)
 	{
 		queueOfInterest = main_msg_queue;		
+		roverCommandDataOfInterest = roverCommandData_MAIN;
 	}//end else if
 	//else
 		//do nothing
@@ -1318,11 +1317,11 @@ void createDataFromQueue(byte roverCommDestination)
 		break;		
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, getMsgString(0)));			
+			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, roverCommandDataOfInterest));			
 		break;
 		case CMD_TAG_DEBUG_BYE_TEST_MSG:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, getMsgString(0)));
+			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, roverCommandDataOfInterest));
 		break;	
 		case CMD_TAG_INVALID_CMD:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)			
@@ -1601,7 +1600,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 			//2. Then run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)
-			commandDirector(roverCommand->getCommand(), ROVERCOMM_MAIN);
+			commandDirector(roverCommand->getCommand(), roverCommand->getCommandLength(), ROVERCOMM_MAIN);
 			
 			
 			
@@ -2097,10 +2096,8 @@ void InterruptDispatch2() {
 	sleeperCOMM->isrUpdate();//update the awake flag to reflect current status
 }
 
-char * getCmdString(byte arrayIndex) {
-	memset(programMem2RAMBuffer, 0, sizeof(programMem2RAMBuffer));//clear char array buffer
-	return strcpy_P(programMem2RAMBuffer, (char*)pgm_read_word(&(cmd_str_table[arrayIndex])));//copy the fixed string from flash into the char buffer
-}
+
+
 
 char * getMsgString(byte arrayIndex) {
 	memset(programMem2RAMBuffer, 0, sizeof(programMem2RAMBuffer));//clear char array buffer

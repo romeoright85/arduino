@@ -27,20 +27,6 @@ LEFT OFF:
 	
 	--------------
 		
-	Write methods for the RoverCommandProcessor class and the DataType class such that it can take in a rovercommand and break it up to Command Tag and Command Data
-	 
-	 [DONE] work on DataType::charsToByte
-	 [DONE]and work on RoverCommandProcessor::parseCmd
-	 
-	 
-	 Then go back to Rover_StateMachine_COMM and update commandirector to use RoverCommandProcessor to parse out data and commandTag
-		Note: the first three characters of the receivedCommand should be parsed out into two pieces: command tags and the command data
-		all strcmp should be comparing the cmd tags with the tags from RoverCommandDefs.h instead of sommands like hi, bye, sysgo, etc.
-		maybe delete some of the prog mem arrays for cmd strings if no longer needed (to save memory)
-	
-	
-	
-		Instead of sending /-c5--*hi, etc. it should be /-c5--*002hi
 			
 		Update all notes/references for sending /-c5--*hi in the rovercomm state machine as well as the where left off
 		
@@ -97,7 +83,7 @@ LEFT OFF:
 		NavigationTester_MAIN
 		NavigationTester_NAVI
 		
-	
+	Retest RoverGPSTester and RoverIMUTester since I shurnk my buffer size from 128 to 100 to save RAM
 		
 ANALYZE DATA FOR NAVIGATION TESTER
 	Review the true bearing, distance, etc. calculation.
@@ -1412,6 +1398,24 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 	[FIXED] Fix RoverCommandCreator::createCmd to add the * (as part of the header format) in the command as well
 	[DONE]Relabel RoverCommandCreator to RoverCommandProcessor
 	
+	
+	
+	[DONE]Write methods for the RoverCommandProcessor class and the DataType class such that it can take in a rovercommand and break it up to Command Tag and Command Data
+	 
+	 [DONE]work on DataType::charsToByte
+	 [DONE]and work on RoverCommandProcessor::parseCmd
+	 
+	 
+	 [DONE]Then go back to Rover_StateMachine_COMM and update commandirector to use RoverCommandProcessor to parse out data and commandTag
+		Note: the first three characters of the receivedCommand should be parsed out into two pieces: command tags and the command data
+		[DONE]all strcmp should be comparing the cmd tags with the tags from RoverCommandDefs.h instead of sommands like hi, bye, sysgo, etc.
+		[DONE]maybe delete some of the prog mem arrays for cmd strings if no longer needed (to save memory)
+	
+	
+	
+		[DONE]Instead of sending /-c5--*hi, etc. it should be /-c5--*002hi
+		
+		
 	
 -------------------State Machine for COMM
 

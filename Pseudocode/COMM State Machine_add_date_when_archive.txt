@@ -796,7 +796,7 @@ COMM:
 				HW_RESETTING
 					Note: No redirection during hw resets
 					if main_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to MAIN
+						Sends interally generated msg(s) to MAIN (i.e. COMM HW Reset Requests to let MAIN know to reset the COMM)
 					end if
 					if cmnc_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to CMNC
@@ -1001,7 +1001,8 @@ Conflicting Functions Ordered By Priority
 	Note: Don't forget to look at Non-Conflicting Functions as well.
 	Most of the time (but not always), these commands will be ran from NORMAL_OPERATIONS mode under the PROCESS_DATA state. The next state is CONTROL_OUTPUTS, unless overwritten.
 	
-		HW Reset Request
+		All HW Reset Request
+			Note: When a HW reset is requested, it first goes through COMM, which resets everything and sends MAIN a "COMM_HW_RESET_REQUEST" message telling MAIN to HW reset COMM since COMM can't reset itself.
 			Mode: HW_RESETTING *begin*
 			main_msg_queue = COMM_HW_RESET_REQUEST					
 			cmnc_msg_queue = HW_IS_RESETTING			
