@@ -72,7 +72,7 @@ void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex
 	//make a copy of the input array, just in case it is also used as the output array, this allows it to be read and write to at the same time
 	strncpy(tempCharArray, inputCharArray, arraySize);
 	
-	for(byte i = startIndex; i < endIndex; i++)
+	for(byte i = startIndex; i < endIndex; i++)//It doesn't include the element at endIndex but stops before it
 	{
 		outputCharArray[j] = tempCharArray[i];
 		j++;	
@@ -116,6 +116,8 @@ void CharArray::substring(char * inputCharArray, byte arraySize, byte startIndex
 }
 int CharArray::stringSize(char * charArray, byte arraySize)
 {
+	
+	//Note: This function determines the string size (where the null termination character is). Where as array size is more generic, and is the size of the array, which can contain other stuff  and it may not sometimes even contain the null termination character.
 	
 	for(int i = 0; i < arraySize; i++)
 	{

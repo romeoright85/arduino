@@ -112,10 +112,16 @@ byte DataType::byteToChars(byte num, char * tempCharArray, byte arraySize)
 byte DataType::charsToByte(char * inputCharArray)
 {
 	
-	
+	int tempInt;//temporary integer
 	//Convert the char array to a byte (which has a range from 0 to 255)
-//see byte RoverGpsSensor::getGpsFixQuality()
-//use atoi, but return a byte instead of an integer
-
+	tempInt = atoi(inputCharArray);
+	if( tempInt > 255 || tempInt < 0 )
+	{
+		return 0;
+	}//end if
+	else
+	{
+		return (byte) tempInt;
+	}//end else
 
 }//end of charsToByte()

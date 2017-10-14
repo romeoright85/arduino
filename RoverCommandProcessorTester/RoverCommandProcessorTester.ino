@@ -51,5 +51,11 @@ void loop() {
 	_PC_USB_SERIAL_.println(RoverCommandProcessor::createCmd(ROVERCOMM_CMNC, ROVERCOMM_MAIN, CMD_PRI_LVL_1, "123987601.2545E"));
 
 
+	char testCharArray[] = "1239abcdefg";
+	char outputCharArray[11];//should be a max size of 14 (_MAX_PROGMEM_BUFF_STR_LEN_) - 3 (for the command tag) = 11
+
+	_PC_USB_SERIAL_.println(RoverCommandProcessor::parseCmd(testCharArray, sizeof(testCharArray)/sizeof(testCharArray[0]), outputCharArray));//For the commandTag, it should only grab the first three numbers, 123, 9 should not be included
+	_PC_USB_SERIAL_.println(outputCharArray);//should get 9abcdefg
+
 	while (1);
 }

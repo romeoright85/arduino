@@ -74,7 +74,7 @@ char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte prio
 		
 	//Concantenate Strings		
 	//Adding the command tag
-	strcat(inputCharArray, RoverCommandProcessor::byteToCharArray(commandTag));	
+	strcat(inputCharArray, RoverCommandProcessor::byteToCharArrayWithLeadingZeros(commandTag));
 	//Adding the commandString
 	strcat(inputCharArray, commandString);
 	//Add the null terminating character (just in case if there isn't already one)
@@ -85,7 +85,7 @@ char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte prio
 	
 	
 }//end of createCmd() with commandTag
-char * RoverCommandProcessor::byteToCharArray(byte input)
+char * RoverCommandProcessor::byteToCharArrayWithLeadingZeros(byte input)
 {
 	
 	char tempCharArray[4];//for 3 digit character but string null character
@@ -110,25 +110,22 @@ char * RoverCommandProcessor::byteToCharArray(byte input)
 	
 return tempCharArray;
 	
-}//end of byteToCharArray()
-byte RoverCommandProcessor::parseCmd(char * roverCommand, char * commandData)
+}//end of byteToCharArrayWithLeadingZeros()
+byte RoverCommandProcessor::parseCmd(char * roverCommand, byte arraySize, char * commandData)
 {
 	
-	byte commandTag;
-
-
-//WRITE ME
+	char commandTagCharArray[4];
+	byte commandTag;		
 	
 	//Extract the commandTag from the roverCommand
-//use the substring method in CharArray. See K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\UtilityClasses
+	CharArray::substring(roverCommand, CharArray::stringSize(roverCommand, arraySize), 0, 3, commandTagCharArray);//grab the first 3 numbers and stop before the 4th number (element 3)
+
 	//Convert the commandTag char array to a byte
+	commandTag = DataType::charsToByte(commandTagCharArray);
 		
 	//Extract the commandData from the roverCommand
-//use the substring method in CharArray. See K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\UtilityClasses
-
-
-		
-	
+	CharArray::substring(roverCommand, CharArray::stringSize(roverCommand, arraySize), 3, commandData);//With No End Index, goes to the end of the array or to the terminating character (input char array, array size, start index, output char array). Note the array size you can use the stringSize() function as a helper. Note: Start index can be as small as 0.
+			
 	return commandTag;
 }//end of charArrayToByte()
 

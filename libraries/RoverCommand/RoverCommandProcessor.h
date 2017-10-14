@@ -9,6 +9,7 @@
 #include <RoverDebug.h>
 #include <RoverReset.h>
 #include <DataType.h>
+#include <CharArray.h>
 
 #define _COMMAND_CREATION_DEFINITIONS
 #include <RoverCommandDefs.h>
@@ -60,11 +61,11 @@ public:
 	
 	static char * createCmd(byte, byte, byte, char *);//(origin, destination, priority level, command - if a tag used then it must be appended manually)	
 	static char * createCmd(byte, byte, byte, byte, char *);//(origin, destination, priority level, command tag, command)
-	static char * byteToCharArray(byte);//(input byte) returns char array, with a range of 0 to 255.
+	static char * byteToCharArrayWithLeadingZeros(byte);//(input byte) returns char array, with a range of 0 to 255 (with leading zeros)
 	
 	
 	
-	static byte parseCmd(char *, char *);//(input RoverCommand, output-command data char array) Returns the commandTag.
+	static byte parseCmd(char *, byte, char *);//(input RoverCommand, array size, output-command data char array) Returns the commandTag.
 	
 	
 private:
