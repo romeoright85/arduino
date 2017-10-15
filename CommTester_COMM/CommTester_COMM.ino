@@ -4,7 +4,7 @@
 
 //Note: The test cases varies for different Arduinos
 
-//Note: Can send this (about max size) to test: "/-c5--*cmd2asdasdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+//Note: Can send this (about max size) to test: "/-c5--*002cmd2asdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
 
 
 //Test cases for debugging
@@ -21,7 +21,7 @@ Also uncomment the _DEBUG_OUTPUT_RXDATA_ in RoverComm.h to see the received stri
 	//#define _DEBUG_ROVER_TEST_CASE_A_
 /*
 Uncomment the line above to test the Rover formatted data
-Debug data: /4c101*HelloMAINtoCMNC
+Debug data: /4c101*002HelloMAINtoCMNC
 Also uncomment flag(s) in RoverComm.h to see the received string, etc.
 Note: The data is meant to route to the PC USB (i.e. CMNC) without any command processing, so it will be a clean output of "/4c101*HelloMAINtoCMNC"
 */
@@ -45,14 +45,14 @@ Note: You will get an "Invalid Cmd! =(" but that is expected and fine since "Hel
 //Test case 3a:
 /*
 	Send (i.e. with your keyboard and using a terminal window) over USB serial
-		/-c5--*hi
+		/-c5--*002hi
 	to test the command interface for this Arduino
 */
 
 //Test case 3b:
 /*
 	Send (i.e. with your keyboard and using a terminal window) over USB serial
-		/-c5--*bye
+		/-c5--*003bye
 	to test the command interface for this Arduino
 */
 

@@ -12,14 +12,39 @@ Where I left off
 	
 
 	
+	
+=================1 weekend===================				
+
+
+
+---------------CODING---------------	
+
 
 LEFT OFF:
 	
 	
 
+	
+	--------------
+		
+	
+			
+			
+		NOTE:		
+			I need to fix my messages for createDataFromQueue or fix the way the commanddirector processes commands.
+				[NAH]right now it sends commands via the command tags and not the data. so either allow createDataFromQueue to also put in the commands under the data
+				[YES DO THIS]or more likely, fix commanddirector to read the tags and not the data string to determine commands. then have it read the data string if it's expected data with the commands
+				
+		
+		
+		
+		
+	
+=================1 weekend===================				
+
+
 
 ---------------CODING---------------	
-
 
 
 	
@@ -29,17 +54,11 @@ LEFT OFF:
 	
 	
 	
-		
-	
-=================1 weekend===================				
-
-	
-
----------------CODING---------------	
-
 	See below for	
 		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
 	
+	
+		
 	
 ---------------TESTING---------------
 	
@@ -1398,14 +1417,6 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 		when have time wingrep /OcDLL*CCCC and update all references with CCCC should be tttdddd... where ttt is the 3 digit command tag, and dddd is the data
 			/OcDLL*tttdddd 
 			
-	
-			
-		NOTE:		
-			I need to fix my messages for createDataFromQueue or fix the way the commanddirector processes commands.
-				[NAH]right now it sends commands via the command tags and not the data. so either allow createDataFromQueue to also put in the commands under the data
-				[DONE, YES DO THIS]or more likely, fix commanddirector to read the tags and not the data string to determine commands. then have it read the data string if it's expected data with the commands
-				
-					
 	
 -------------------State Machine for COMM
 

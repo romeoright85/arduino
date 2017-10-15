@@ -19,7 +19,7 @@ char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte prio
 	char priorityLevelCharArray[4] = "";//size for since it's three characters and 1 null terminator
 	byte charIndex;
 	
-	//The format is /OcDLL*CCCC... (Note: There could be more than four C's so hence CCCC...)
+	//The format is /OcDLL*tttdddd... (Note: The d's can range from none to up to _MAX_ROVER_COMMAND_DATA_LEN_ - 1, i.e. 15-1=14. Minus 1 due to null character. So hence dddd....)
 	
 	//Start at index 0
 	charIndex = 0;		
