@@ -14,7 +14,8 @@ void RoverCommandProcessor::reset()
 char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte priorityLevel, char * commandString)
 {
 
-		
+	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the createCmd with ROVERCOMM_COMM passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+	
 	char inputCharArray[ROVER_COMM_SENTENCE_LENGTH] = "";	
 	char priorityLevelCharArray[4] = "";//size for since it's three characters and 1 null terminator
 	byte charIndex;

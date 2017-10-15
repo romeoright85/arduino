@@ -72,8 +72,47 @@
 		RoverData();//constructor
 		~RoverData();//destructor
 		
-		byte getCommType();//returns the RoverComm Type
-		void setCommType(byte);//set the RoverComm type
+		void setOriginCommType(byte);//set the origin RoverComm type
+		byte getOriginCommType();//returns the origin RoverComm Type		
+		void clearOriginCommType();//clear the origin RoverComm type
+		
+		void setDestinationCommType(byte);//set the destination RoverComm type		
+		byte getDestinationCommType();//returns the destination RoverComm Type		
+		void clearDestinationCommType();//clear the destination RoverComm type
+		
+		void setCommandData(char *, byte);//(charArray, array size) save the data string in _commandData
+		char * getCommandData();//retrieves the _commandData
+		byte getCommandDataLength();//retrieve the _commandData length
+		void clearCommandData();//clear the stored data in _commandData
+		
+		void setCommandTag(byte);//set the rover command tag
+		byte getCommandTag();//returns the rover command tag	
+		void clearCommandTag();//clears the rover command tag (i.e. to 0: CMD_TAG_NO_MSG)		
+		
+		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)		
+	private:		
+		byte _roverOriginCommType;
+		byte _roverDestinationCommType;
+		char _commandData[_MAX_ROVER_COMMAND_DATA_LEN_];//holds the rover's command data string
+		byte _commandTag;
+		
+	};	
+	
+#endif 
+
+
+
+/*
+//#DELETE ME
+
+OLD CODE
+	class RoverData : public virtual RoverReset {
+	public:
+		RoverData();//constructor
+		~RoverData();//destructor
+		
+		byte getCommType();//returns the destination RoverComm Type
+		void setCommType(byte);//set the destination RoverComm type
 		
 		void setData(char *, byte);//save the data string in _dataString (charArray, array size)		
 		void clearData();//clear the stored data in _dataString
@@ -87,6 +126,4 @@
 	};
 
 	
-
-	
-#endif 
+*/

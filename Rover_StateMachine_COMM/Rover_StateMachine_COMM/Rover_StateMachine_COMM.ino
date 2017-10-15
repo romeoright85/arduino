@@ -19,12 +19,13 @@ Currently the priority level is not being used to prioritize right now. It's jus
 To test locally with only one Arduino (best to test the UNO to make sure it can handle the memory needs for the COMM), first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
 Can send:
 	Hi Command
-		/-c5--*002<any data up to 14 chars>
-		/-c5--*002hiworld
+		/4c5--*002<any data up to 14 chars>
+		/4c5--*002hiworld
 	Bye Commands
-		/-c5--*003<any data up to 14 chars>
-		/-c5--*003bye
-	
+		/4c5--*003<any data up to 14 chars>
+		/4c5--*003bye
+	Where 4 is coming from MAIN (so it can echo back with a response when using the Hi or Bye commands)
+	and 5 is to COMM (and not a redirection to another unit)
 	
 */
 
@@ -202,8 +203,8 @@ byte flagSet_Error = _BTFG_NONE_;
 byte flagSet_MessageControl = _BTFG_NONE_;
 //Flag(s) - System Status
 byte flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
-													  //Flag(s) - Command Filter Options
-													  //Command Filter Options: Set 1
+//Flag(s) - Command Filter Options
+//Command Filter Options: Set 1
 byte commandFilterOptionsSet1 = _BTFG_NONE_;
 byte commandFilterOptionsSet2 = _BTFG_NONE_;
 
@@ -434,7 +435,7 @@ void loop() {
 			runModeFunction_SYSTEM_ERROR(currentState);
 			break;
 		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+			 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 			queuedState = CONTROL_OUTPUTS;
 			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 			runModeFunction_default();//no state needed, all states do the same thing
@@ -1017,9 +1018,8 @@ void txData(char * txData, byte roverCommType)
 }//end of txData()
 
 
-void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte roverCommType)
+void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte originRoverCommType, byte destinationRoverCommType)
 {
-
 
 	//Note: This function varies for different Arduinos
 	//Categorize all commands/data from all sources.					
@@ -1028,19 +1028,15 @@ void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte
 	//Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 
 	
-	
-	
 	byte commandTag;//holds the commandtag that was sent with this rover command
 	
 	
-	//Extract the rover command tag and the rover command data
-	
-		
-	if( roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN )
+	//Extract the rover command tag and the rover command data and send it to the correct destination
+	if( destinationRoverCommType == ROVERCOMM_NAVI || destinationRoverCommType == ROVERCOMM_AUXI || destinationRoverCommType == ROVERCOMM_MAIN )//If the destination is either MAIN, NAVI, or AUXI, send it out through the MAIN channel
 	{
 		commandTag = RoverCommandProcessor::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_MAIN);
 	}//end if
-	else if( roverCommType == ROVERCOMM_CMNC )
+	else if( destinationRoverCommType == ROVERCOMM_CMNC )//If the destination is CMNC, send it out through the CMNC channe;
 	{
 		commandTag = RoverCommandProcessor::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_CMNC);
 	}//end else
@@ -1189,11 +1185,11 @@ void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
 		//Note: The PIR status message will be created in the CREATE_DATA state
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (roverCommType == ROVERCOMM_CMNC)
+		if (originRoverCommType == ROVERCOMM_CMNC)
 		{
 			cmnc_msg_queue = CMD_TAG_PIR_STATUS;			
 		}//end if
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+		else if (originRoverCommType == ROVERCOMM_NAVI || originRoverCommType == ROVERCOMM_AUXI || originRoverCommType == ROVERCOMM_MAIN)
 		{
 			main_msg_queue = CMD_TAG_PIR_STATUS;		
 		}//end else if	
@@ -1212,11 +1208,11 @@ void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte
 	{
 	
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (roverCommType == ROVERCOMM_CMNC)
+		if (originRoverCommType == ROVERCOMM_CMNC)
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;			
 		}//end if
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+		else if (originRoverCommType == ROVERCOMM_NAVI || originRoverCommType == ROVERCOMM_AUXI || originRoverCommType == ROVERCOMM_MAIN)
 		{
 			main_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;		
 		}//end else if		
@@ -1227,11 +1223,11 @@ void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte
 	{
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (roverCommType == ROVERCOMM_CMNC)
+		if (originRoverCommType == ROVERCOMM_CMNC)
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;			
 		}//end if
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+		else if (originRoverCommType == ROVERCOMM_NAVI || originRoverCommType == ROVERCOMM_AUXI || originRoverCommType == ROVERCOMM_MAIN)
 		{
 			main_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;		
 		}//end else if		
@@ -1243,11 +1239,11 @@ void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte
 	{
 	
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (roverCommType == ROVERCOMM_CMNC)
+		if (originRoverCommType == ROVERCOMM_CMNC)
 		{
 			cmnc_msg_queue = CMD_TAG_INVALID_CMD;			
 		}//end if
-		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+		else if (originRoverCommType == ROVERCOMM_NAVI || originRoverCommType == ROVERCOMM_AUXI || originRoverCommType == ROVERCOMM_MAIN)
 		{
 			main_msg_queue = CMD_TAG_INVALID_CMD;		
 		}//end else if	
@@ -1260,9 +1256,14 @@ void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte
 void createDataFromQueue(byte roverCommDestination)
 {
 
+
+	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the createCmd with ROVERCOMM_COMM passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+	
 	byte queueOfInterest;
 	char * roverCommandDataOfInterest;
 	
+	
+	//Sets which queue the message should go to based on which queue it's processing right now.  Also selects the correct rover command data for that destination as well.
 	if (roverCommDestination == ROVERCOMM_CMNC)
 	{
 		queueOfInterest = cmnc_msg_queue;
@@ -1499,7 +1500,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		//Process/validate the data that was received
 		if (ch2Status == DATA_STATUS_READY)
 		{
-			//If the data is valid, set the status as such
+			//If the data is valid as well as parses it, set the status as such
 			if (roverComm_Ch2->validateData())
 			{
 				ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
@@ -1596,11 +1597,11 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
 		{
 			//1. First send the RoverData to the roverCommand_MAIN's parser to get the command
-			roverCommand->parseCommand(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
+			roverCommand->parseRxdMessage(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
 
 
 			//2. Then run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)
-			commandDirector(roverCommand->getCommand(), roverCommand->getCommandLength(), ROVERCOMM_MAIN);
+			commandDirector(roverCommand->getCommand(), roverCommand->getCommandLength(), roverCommand->getMsgOrigin(),roverCommand->getMsgDestination());
 			
 			
 			

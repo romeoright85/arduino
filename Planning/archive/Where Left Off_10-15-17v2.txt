@@ -16,20 +16,11 @@ Where I left off
 LEFT OFF:
 	
 	
-	Summary: Finding duplicate code, so doing a code refactoring (to make it easier to read and maybe also save memory)
-	
 	The last thing I did was edit RoverCommand.cpp to getMsgDestination and getMsgOrigin, in which that data was used in Command director and createDataFromQueue. I tested it and it worked half way. it grabbed the right origina and destination but didn't recognize the hi command, etc. for some reason.
 	As I was digging through the code I found RoverComm already has getDestinationCommType but it's not used or implement. Digging into it some more I found RoverComm's validateData already extracts the destination as commandType. (used to validate it's a valid destination)
 	Also I found some duplicate code in RoverCommandProcessor and RoverComm's validate data
 		So the fix is:
-
-
-Note: Do not delete anything yet. Comment everything you don't need out and move it to the bottom of the code. Save it as a template for algorithms. Mark it with a //#DELETE ME tag so you can find it easier
-
-
-
-
-[LEFT OFF HERE. IN PROGRESS. Completed the .h. Now need to work on the .cpp]
+		
 			In RoverData:
 				rename _roverCommType to _roverDestinationCommType
 				create _roverOriginCommType
@@ -37,17 +28,11 @@ Note: Do not delete anything yet. Comment everything you don't need out and move
 				rename getCommType to getDestinationCommType			
 				create setOriginCommType
 				create getOriginCommType
-				delete setData, getData, _dataString, clearData
-				create
-						getCommandData()
-						setCommandData()
-						clearCommandData()
-						_commandData
-						getCommandTag()
-						setCommandTag()
-						clearCommandTag()
-						_commandTag
-[NEED TO DO]						
+					
+					
+			In
+				delete parseRxdMessage (once called getCommand)
+					
 			In RoverComm:
 				rename validateData to parseAndValidateData()
 					Note: it will check to see if it's IMU data or Rover Command data. If it's Rover Command data it will check the data framing as well as the origin and destination of the message. Once valid, it will save the data, the origin, and the destination into its RoverData object as well.)
@@ -59,12 +44,11 @@ Note: Do not delete anything yet. Comment everything you don't need out and move
 				then have it also parse the commandTag and commandData as well and save it into RoverData				
 				update clearRxDataVariables accordingly as well
 
-[NEED TO DO]				
+				
 			In RoverCommandProcessor:
 				delete the parseCmd. It is now being implement in RoverComm's validate data
 				Rename RoverCommandProcessor to RoverCommandCreator
-
-[NEED TO DO]				
+			
 			In Rover_StateMachine_COMM:
 				Update it so you no longer need roverCommand->parseRxdMessage(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
 					instead you can go straight to commandDirector and pass it the roverData object: roverDataCh2_COMM, etc.
@@ -77,16 +61,10 @@ Note: Do not delete anything yet. Comment everything you don't need out and move
 				Update it from validateData to parseAndValidateData
 				Update to use RoverData's getOriginCommType and getDestinationCommType in commandDirector
 				Update such that commandDirector no longer calls roverCommand->getCommand(). Instead it should call
-
-
-[NEED TO DO]				
-				In RoverCommand
-					delete this object. it's now combined with RoverData
-
-[NEED TO DO]					
-Note: Once all code is tested and works on Rover_StateMachine_COMM, then go back to RoverData, RoverComm, RoverCommand, and maybe even Rover_StateMachine_COMM and delete out any commented out code
 				
-[NEED TO DO]				
+				
+				
+				
 		Test Codes:
 			Update any tester code that uses RoverComm, RoverData, RoverCommandProcessor due to these fixes
 	

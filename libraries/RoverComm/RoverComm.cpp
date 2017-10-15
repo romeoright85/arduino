@@ -89,12 +89,15 @@ boolean RoverComm::validateData()
 	//==Process for IMU AHRS Data Format==	
 
 	
+	
+	//The format is /OcDLL*tttdddd... (Note: The d's can range from none to up to _MAX_ROVER_COMMAND_DATA_LEN_ - 1, i.e. 15-1=14. Minus 1 due to null character. So hence dddd....)
+	
 	//Process Substring Extractions for use with if/else statements below
-	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 0, 5, tempSubstring1);//get the first 4 characters
-	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 0, 1, tempSubstring2);//get the 1st character
-	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 2, 3, tempSubstring3);//get the 3rd character
-	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 6, 7, tempSubstring4);//get the 7th character
-	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 3, 4, tempSubstring5);//get the 4th character
+	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 0, 5, tempSubstring1);//get the first 4 characters, to test to see if it's IMU data (i.e. "ANG!")
+	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 0, 1, tempSubstring2);//get the 0th element of the character array, to test to see if it's Rover Command Data Frame (i.e. '/')
+	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 2, 3, tempSubstring3);//get the 2nd element of the character array, to test to see if it's Rover Command Data Frame (i.e. 'c')
+	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 6, 7, tempSubstring4);//get the 6th element of the character array, to test to see if it's Rover Command Data Frame (i.e. '*')
+	CharArray::substring(this->_rxDataString, this->getRxDataLength(), 3, 4, tempSubstring5);//get the 3rd element of the character array, the destination
 
 	#ifdef _DEBUG_SHOW_TEMPSUBSTRINGS_
 		Serial.println(F("Tempsubstring 1:"));//DEBUG

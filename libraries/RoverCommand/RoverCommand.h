@@ -62,6 +62,10 @@
 	#include <RoverDebug.h>
 	#include <RoverReset.h>
 	#include <CharArray.h>
+	#include <DataType.h>
+	#ifndef _ROVERCOMM_DEFINITIONS
+		#define _ROVERCOMM_DEFINITIONS
+	#endif
 	#include <RoverConfig.h>
 	
 	
@@ -70,13 +74,19 @@
 	public:
 		RoverCommand();//constructor
 		~RoverCommand();//destructor
-		void parseCommand(char * dataString, byte);//(charArray, array size) parse the rover command and store it interally to this object in _roverCommand
-		char * getCommand();//retrieved the parsed rover command, _roverCommand
+		void parseRxdMessage(char * dataString, byte);//(charArray, array size) parse the rover command and store it interally to this object in _roverCommand
+		char * getCommand();//retrieves the parsed rover command, _roverCommand
+		byte getMsgOrigin();//retrieves the parsed rover message origin, _roverMessageOrigin
+		byte getMsgDestination();//retrieves the parsed rover message destination, _roverMessageDestination		
 		byte getCommandLength();//returns the length of the corresponding string
-		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
-		void clearCommand();//clear the string in _roverCommand
+		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden). Clears the rover command, message origin, and message destination
+		void clearCommand();//clear the string in _roverCommand		
+		void clearMsgOrigin();//Clears the message origin
+		void clearMsgDestination();//Clears the message destination
 	private:
 		char _roverCommand[ROVER_DATA_BUFFER_SIZE];
+		byte _roverMessageOrigin;
+		byte _roverMessageDestination;
 	};
 
 #endif 
