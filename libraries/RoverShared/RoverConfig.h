@@ -57,8 +57,7 @@
 	//Buffer Sizes
 	#define UNIV_BUFFER_SIZE 100//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
 	#define _MAX_PROGMEM_BUFF_STR_LEN_ 15//Buffer Size to use for Command and Message Strings in flash, this should be the max string length allowed for any of the string in the cmd_str_table[] array. Note: Allow the last element of the array to hold the null character. So you will always have n-1 elements for the actual message.
-	#define _MAX_ROVER_COMMAND_DATA_LEN_ 15//Buffer Size with max length of Rover Command Data (does not include the command tag) Note: Allow the last element of the array to hold the null character. So you will always have n-1 elements for the actual message.
-	
+
 	
 	//Arduino Types
 	//Matching the Arduino numbering with the Microcontroller labels
@@ -91,12 +90,15 @@
 	//definition for Rover Data
 	#ifdef _ROVERDATA
 		//Char Array Sizes				
-		#define ROVER_DATA_BUFFER_SIZE		120				
+		#define ROVER_DATA_BUFFER_SIZE		100				
+		#define ROVER_IMU_DATA_BUFFER_SIZE		30
 		//Rover Data Status
 		#define DATA_STATUS_NOT_READY	0
 		#define DATA_STATUS_READY	1		
 		#define DATA_STATUS_INVALID	2
 		#define DATA_STATUS_VALID	3
+		#define _MAX_ROVER_COMMAND_DATA_LEN_ 15//Buffer Size with max length of Rover Command Data (does not include the command tag) Note: Allow the last element of the array to hold the null character. So you will always have n-1 elements for the actual message.
+		#define CMD_DATA_CMD_TAG_ARRAY_SIZE	4 //It's three characters (i.e. 002 ) and one more character for the end of the string ( i.e. \0 )
 	#endif
 
 	//definition for Character Buffer Array Sizes

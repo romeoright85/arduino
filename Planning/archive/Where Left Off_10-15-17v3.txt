@@ -12,94 +12,104 @@ Where I left off
 	
 
 	
-	
-	
----------------CODING---------------	
-
-
-
 
 LEFT OFF:
 	
-
-	I last left off Sunday night updating RoverComm::parseAndValidateData(). Also see #LEFT OFF HERE (in the document) in two places.
-
-
-	Summary: Finding duplicate code, so doing a code refactoring (to make it easier to read and maybe also save memory). 
+	
+	Summary: Finding duplicate code, so doing a code refactoring (to make it easier to read and maybe also save memory)
 	
 	The last thing I did was I was editting RoverCommand.cpp to getMsgDestination and getMsgOrigin, in which that data was used in Command director and createDataFromQueue. I tested it and it worked half way (i.e. it grabbed the right origin and destination but didn't recognize the hi command, etc. for some reason. I didn't fix this problem yet. Still need to go back and fix why the hi and bye, etc. commands aren't working)
 	As I was digging through the code I found RoverComm already has getDestinationCommType but it's not used or implement. Then digging into it even some more I found RoverComm's validateData already extracts the destination as commandType. (used to validate it's a valid destination)
 	Also I found some duplicate code in RoverCommandProcessor and RoverComm's validate data
-		Refer "IN PROGRESS PRIOR TO 10/15/17" in this document.
-	Note: Do not delete anything yet. Comment everything you don't need out and move it to the bottom of the code. Save it as a template for algorithms. Mark it with a //#DELETE ME tag so you can find it easier
+		So the fix is:
 
 
-			
-----------------------------------				
-#LEFT OFF HERE				
-----------------------------------
+Note: Do not delete anything yet. Comment everything you don't need out and move it to the bottom of the code. Save it as a template for algorithms. Mark it with a //#DELETE ME tag so you can find it easier
 
-			
+
+
+
+[LEFT OFF HERE. IN PROGRESS. Completed the .h. Now need to work on the .cpp]
+			In RoverData:
+				rename _roverCommType to _roverDestinationCommType
+				create _roverOriginCommType
+				rename setCommType to setDestinationCommType
+				rename getCommType to getDestinationCommType			
+				create setOriginCommType
+				create getOriginCommType
+				delete setData, getData, _dataString, clearData
+				create
+						getCommandData()
+						setCommandData()
+						clearCommandData()
+						_commandData
+						getCommandTag()
+						setCommandTag()
+						clearCommandTag()
+						_commandTag
+[NEED TO DO]						
+			In RoverComm:
+				rename validateData to parseAndValidateData()
+					Note: it will check to see if it's IMU data or Rover Command data. If it's Rover Command data it will check the data framing as well as the origin and destination of the message. Once valid, it will save the data, the origin, and the destination into its RoverData object as well.)
+				_destinationCommType should be removed
+				getDestinationCommType should be removed			
+				The commandType extracted in RoverComm should be set to it's RoverData Object's _roverDestinationCommType using setDestinationCommType (once called setCommType)
+				then also parse and validate the origin commtype as well
+					once done, set it to the RoverData Object's _roverOriginCommType
+				then have it also parse the commandTag and commandData as well and save it into RoverData				
+				update clearRxDataVariables accordingly as well
+
+[NEED TO DO]				
+			In RoverCommandProcessor:
+				delete the parseCmd. It is now being implement in RoverComm's validate data
+				Rename RoverCommandProcessor to RoverCommandCreator
+
+[NEED TO DO]				
 			In Rover_StateMachine_COMM:
-						
-[IN PROGRESS, in commandDirector, see "//FIX ME LATER NEXT WEEK". still need to write the new algorithm] Update it so you no longer use RoverCommandProcessor's parseCmd anymore
+				Update it so you no longer need roverCommand->parseRxdMessage(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
+				Update such that commandDirector no longer calls roverCommand->getCommand()
+					instead you can go straight to commandDirector and pass it the roverData object: roverDataCh2_COMM, etc.
 						Then within commandDirector function it will use 
 							roverData->getCommandData
 							roverData->getCommandTag
 							roverData->getOriginCommType
 							roverData->getDestinationCommType							
-[NEED TO DO]							
+				Update it so you no longer use RoverCommandProcessor's parseCmd anymore
 				Update it from validateData to parseAndValidateData
-				
-[NEED TO DO]
-		In RoverComm:
-				see if setCommandData requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
-					then go back through all code and make it consistent. use wingrep to see where RoverComm::setCommandData is used
-						
-[NEED TO DO]	
-				in CharArray.cpp
-				check to see if CharArray::stringSize requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
-					then go back through all code and make it consistent. use wingrep to see where CharArray::stringSize is used
-		
-				
-[NEED TO DO]				
-				In RoverCommand:
-					delete this object. it's now combined with RoverData
-			
-				
-[NEED TO DO]											
-				In Rover_StateMachine_COMM:
-				
 				Get the hi and bye command to work again. (check out the createDataFromQueue as well as the command director). I broke this part of the code before I started to refactor it. You may have to serial println, and debug it and see where it isn't working.				
-				Fix the data reroute using the new functions like getDestinationCommType() as well
 				
+
+
+[NEED TO DO]				
+				In RoverCommand
+					delete this object. it's now combined with RoverData
 
 [NEED TO DO]					
-	Note: Once all code is tested and works on Rover_StateMachine_COMM, then go back to RoverData, RoverComm, RoverCommand, and maybe even Rover_StateMachine_COMM and delete out any commented out code (i.e. tagged with //#DELETE ME)
-	Update any notes and references so you always have to send an origin as well and not just -. i.e. /4c5... instead of /-c5...
-
-	Go to :
-		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverCommand\delete me
-			and delete DELETEME_RoverCommand.cpp and DELETEME_RoverCommand.h
-		
-		
+Note: Once all code is tested and works on Rover_StateMachine_COMM, then go back to RoverData, RoverComm, RoverCommand, and maybe even Rover_StateMachine_COMM and delete out any commented out code
+				
 [NEED TO DO]				
 		Test Codes:
-			Update any tester code that uses RoverComm, RoverData, RoverCommand, RoverCommandProcessor due to these fixes
-		Update the state machine notes at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Pseudocode
-			i.e. from validateData to parseAndValidateData, etc.
+			Update any tester code that uses RoverComm, RoverData, RoverCommandProcessor due to these fixes
+	
 	
 
-	
-	
-	[IN PROGRESS PRIOR TO 10/15/17]Need to parse where the message originated and where it's going to. And then use the origin and destination in commandDirector to set the queue of interest as well as where the rover command data should be stored in.
+---------------CODING---------------	
+
+
+	[IN PROGRESS]Need to parse where the message originated and where it's going to. And then use the origin and destination in commandDirector to set the queue of interest as well as where the rover command data should be stored in.
 		Note: It doesn't matter which serial channel the message came from physical as it could be rerouted. What matters is what's in the message itself.
 		Note: The origin of the messsage will change every time it passes through an Arduino. It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+	
+	
+
 	
 	Found an error. I think I have duplicate code
 		maybe remove RoverComm::getDestinationCommType? not used? double check with wingrep
 		
-
+	
+	finish createDataFromQueue and messages for it (or place holders)
+	the finish out the synchonization mode and move on to secure link
+	Note: pay attention to memory use!
 	
 	
 	
@@ -111,14 +121,6 @@ LEFT OFF:
 
 ---------------CODING---------------	
 
-
-		
-	finish createDataFromQueue and messages for it (or place holders)
-	the finish out the synchonization mode and move on to secure link
-	Note: pay attention to memory use!
-	
-	
-	
 	See below for	
 		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
 	
@@ -1487,79 +1489,7 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 				[NAH]right now it sends commands via the command tags and not the data. so either allow createDataFromQueue to also put in the commands under the data
 				[DONE, YES DO THIS]or more likely, fix commanddirector to read the tags and not the data string to determine commands. then have it read the data string if it's expected data with the commands
 				
-				
-			Updated ROVER_DATA_BUFFER_SIZE from 120 to 100
-			Updated UNIV_BUFFER_SIZE from 120 to 100
 					
-					
-			Moved _MAX_ROVER_COMMAND_DATA_LEN_ in RoverConfig to be under the #ifdef _ROVERDATA. You may have to #define _ROVERDATA in any code later if you build it and it doesn't work.
-			
-			
-			
-
-----------------------------------
-[DONE]
-----------------------------------
-			In RoverData:
-				rename _roverCommType to _roverDestinationCommType
-				create _roverOriginCommType
-				rename setCommType to setDestinationCommType
-				rename getCommType to getDestinationCommType			
-				create setOriginCommType
-				create getOriginCommType
-				delete setData, getData, _dataString, clearData
-				create
-						getCommandData()
-						setCommandData()
-						clearCommandData()
-						_commandData
-						getCommandTag()
-						setCommandTag()
-						clearCommandTag()
-						_commandTag
-				add _imuDataString[ROVER_IMU_DATA_BUFFER_SIZE]; (it's still required for IMU data)
-					and any functions needed to support it
-					i.e.
-						setData
-						getData
-					
-			
-			In RoverComm:
-				[DONE]delete RoverComm::clearRxDataVariables() and move it's algorithm into RoverComm::reset()
-				[DONE]go through and change any references to clearRxDataVariables(0 with reset()
-				[DONE]RoverData still needs char _imuDataString[ROVER_IMU_DATA_BUFFER_SIZE] which is separate from RoverComm's _rxDataString, such that the raw received string is stored separately from the validated IMU data (which is longer than the regular size of the command data, _commandData[_MAX_ROVER_COMMAND_DATA_LEN_].
-				[DONE]rename validateData to parseAndValidateData()
-					Note: it will check to see if it's IMU data or Rover Command data. If it's Rover Command data it will check the data framing as well as the origin and destination of the message. Once valid, it will save the data, the origin, and the destination into its RoverData object as well.)
-				[DONE]_destinationCommType should be removed
-				[DONE]RoverComm::getDestinationCommType should be removed (and RoverData->getDestinationCommType will take its place)
-				[DONE]The commandType extracted in RoverComm should be set to it's RoverData Object's _roverDestinationCommType using setDestinationCommType (once called setCommType)
-				[DONE]then also parse and validate the origin commtype as well
-					[DONE]once done, set it to the RoverData Object's _roverOriginCommType
-				[DONE]then have it also parse the commandTag and commandData as well and save it into RoverData				
-
-				
-			In RoverCommandProcessor:
-				[DONE]delete the parseCmd. It is now being implement in RoverComm's validate data
-				[DONE]Rename RoverCommandProcessor to RoverCommandCreator
-
-				
-				
-			
-			In Rover_StateMachine_COMM:
-			[DONE]update the commandDirection arguments
-				[DONE]i.e. WAS: void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte originRoverCommType, byte destinationRoverCommType)
-				[DONE]SHOULD BE: update it such that it takes in the correct parameters and not any unnessary ones. Many of this is already parsed stored when parseAndValidateData() was called in an earlier state
-					[DONE]pass it a rover data such as roverDataCh2_COMM
-					[DONE]Update such that commandDirector no longer calls roverCommand->getCommand()
-					[DONE]instead you can go straight to commandDirector and pass it the roverData object: roverDataCh2_COMM, etc.
-			[DONE]In the commandDirector, maybe create a different pointer for the RoverData (i.e. commandDataForMain and commandDataForCmnc) and have them point to 
-			[DONE]rid roverCommandData_MAIN and roverCommandData_CMNC and create 
-			[DONE]Update it so you no longer need roverCommand->parseRxdMessage(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
-			
-			
-
-
-			
 	
 -------------------State Machine for COMM
 

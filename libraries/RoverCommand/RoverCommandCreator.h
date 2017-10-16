@@ -1,6 +1,6 @@
-//RoverCommandProcessor.h
-#ifndef _ROVERCOMMANDPROCESSOR_H
-#define _ROVERCOMMANDPROCESSOR_H
+//RoverCommandCreator.h
+#ifndef _ROVERCOMMANDCREATOR_H
+#define _ROVERCOMMANDCREATOR_H
 
 #define _ROVERCOMM_DEFINITIONS
 #include <RoverCommandDefs.h>
@@ -51,10 +51,10 @@ Reference: Also see the spreadsheet "Command Creator..." at K:\Working Directory
 		
 */	
 
-class RoverCommandProcessor : public virtual RoverReset {
+class RoverCommandCreator : public virtual RoverReset {
 public:
-	RoverCommandProcessor();//constructor
-	~RoverCommandProcessor();//destructor
+	RoverCommandCreator();//constructor
+	~RoverCommandCreator();//destructor
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	
 	//Note: origin and destination variables are defined in _ROVERCOMM_DEFINITIONS, see RoverConfig.h
@@ -64,10 +64,7 @@ public:
 	static char * createCmd(byte, byte, byte, byte, char *);//(origin, destination, priority level, command tag, command)
 	static char * byteToCharArrayWithLeadingZeros(byte);//(input byte) returns char array, with a range of 0 to 255 (with leading zeros)
 	
-	
-	
-	static byte parseCmd(char *, byte, char *);//(input RoverCommand, array size, output-command data char array) Returns the commandTag.
-	
+		
 	
 private:
 	//Non-SW Resettable
@@ -75,3 +72,9 @@ private:
 };
 
 #endif 
+
+
+/*
+//#DELETE ME
+static byte parseCmd(char *, byte, char *);//(input RoverCommand, array size, output-command data char array) Returns the commandTag.
+*/

@@ -1,17 +1,17 @@
-#include <RoverCommandProcessor.h>
+#include <RoverCommandCreator.h>
 
 
-RoverCommandProcessor::RoverCommandProcessor()
+RoverCommandCreator::RoverCommandCreator()
 {
 }
-RoverCommandProcessor::~RoverCommandProcessor()
+RoverCommandCreator::~RoverCommandCreator()
 {
 	//do nothing
 }
-void RoverCommandProcessor::reset()
+void RoverCommandCreator::reset()
 {
 }//end of reset()
-char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte priorityLevel, char * commandString)
+char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, char * commandString)
 {
 
 	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the createCmd with ROVERCOMM_COMM passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
@@ -66,7 +66,7 @@ char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte prio
 	return inputCharArray;//DEBUG
 	
 }//end of createCmd() without commandTag
-char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte priorityLevel, byte commandTag, char * commandString)
+char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, byte commandTag, char * commandString)
 {
 	
 	//Using delegation and function overloading
@@ -75,7 +75,7 @@ char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte prio
 		
 	//Concantenate Strings		
 	//Adding the command tag
-	strcat(inputCharArray, RoverCommandProcessor::byteToCharArrayWithLeadingZeros(commandTag));
+	strcat(inputCharArray, RoverCommandCreator::byteToCharArrayWithLeadingZeros(commandTag));
 	//Adding the commandString
 	strcat(inputCharArray, commandString);
 	//Add the null terminating character (just in case if there isn't already one)
@@ -86,7 +86,7 @@ char * RoverCommandProcessor::createCmd(byte origin, byte destination, byte prio
 	
 	
 }//end of createCmd() with commandTag
-char * RoverCommandProcessor::byteToCharArrayWithLeadingZeros(byte input)
+char * RoverCommandCreator::byteToCharArrayWithLeadingZeros(byte input)
 {
 	
 	char tempCharArray[4];//for 3 digit character but string null character
@@ -112,7 +112,12 @@ char * RoverCommandProcessor::byteToCharArrayWithLeadingZeros(byte input)
 return tempCharArray;
 	
 }//end of byteToCharArrayWithLeadingZeros()
-byte RoverCommandProcessor::parseCmd(char * roverCommand, byte arraySize, char * commandData)
+
+
+	
+/*
+//#DELETE ME
+byte RoverCommandCreator::parseCmd(char * roverCommand, byte arraySize, char * commandData)
 {
 	
 	char commandTagCharArray[4];
@@ -130,6 +135,5 @@ byte RoverCommandProcessor::parseCmd(char * roverCommand, byte arraySize, char *
 	return commandTag;
 }//end of charArrayToByte()
 
-
-	
+*/
 	

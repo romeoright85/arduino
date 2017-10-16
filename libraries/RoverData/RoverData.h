@@ -62,9 +62,13 @@
 	
 	#include <Arduino.h>
 	#include <RoverDebug.h>
-	#include <RoverReset.h>	
+	#include <RoverReset.h>
+	#ifndef _ROVERCOMM_DEFINITIONS	
+		#define _ROVERCOMM_DEFINITIONS	
+	#endif
 	#include <RoverConfig.h>
 	#include <CharArray.h>
+	#include<RoverCommandDefs.h>
 	
 
 	class RoverData : public virtual RoverReset {
@@ -72,30 +76,37 @@
 		RoverData();//constructor
 		~RoverData();//destructor
 		
-		void setOriginCommType(byte);//set the origin RoverComm type
+		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
+		
+		void setOriginCommType(byte);//(origin Rover Comm Type)set the origin RoverComm type
 		byte getOriginCommType();//returns the origin RoverComm Type		
-		void clearOriginCommType();//clear the origin RoverComm type
+		void clearOriginCommType();//clears the origin RoverComm type
 		
-		void setDestinationCommType(byte);//set the destination RoverComm type		
+		void setDestinationCommType(byte);//(destination Rover Comm Type)set the destination RoverComm type		
 		byte getDestinationCommType();//returns the destination RoverComm Type		
-		void clearDestinationCommType();//clear the destination RoverComm type
+		void clearDestinationCommType();//clears the destination RoverComm type
 		
-		void setCommandData(char *, byte);//(charArray, array size) save the data string in _commandData
+		void setCommandData(char *, byte);//(command data char array, array size) save the data string in _commandData
 		char * getCommandData();//retrieves the _commandData
-		byte getCommandDataLength();//retrieve the _commandData length
-		void clearCommandData();//clear the stored data in _commandData
+		byte getCommandDataLength();//returns the _commandData length
+		void clearCommandData();//clears the stored data in _commandData
 		
-		void setCommandTag(byte);//set the rover command tag
+		void setCommandTag(byte);//(rover command tag) set the rover command tag
 		byte getCommandTag();//returns the rover command tag	
 		void clearCommandTag();//clears the rover command tag (i.e. to 0: CMD_TAG_NO_MSG)		
 		
-		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)		
+		void setIMUData(char *, byte);//(IMU data char array, array size) save the _imuDataString
+		void clearIMUData();//clear the stored data in _imuDataString
+		char * getIMUData();//retrieve the _imuDataString
+		byte getIMUDataLength();//retrieve the _imuDataString length
+		
+		
 	private:		
 		byte _roverOriginCommType;
 		byte _roverDestinationCommType;
 		char _commandData[_MAX_ROVER_COMMAND_DATA_LEN_];//holds the rover's command data string
 		byte _commandTag;
-		
+		char _imuDataString[ROVER_IMU_DATA_BUFFER_SIZE];//holds the IMU data string		
 	};	
 	
 #endif 

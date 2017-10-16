@@ -53,11 +53,12 @@ Can send:
 //#includes
 #include <RoverStatesAndModes.h>
 #include <RoverCommandDefs.h>
-#include <RoverCommandProcessor.h>
+#include <RoverCommandCreator.h>
+//#DELETE ME #include <RoverCommandProcessor.h>
 #include <SoftwareSerial.h>
 #include <RoverData.h>
 #include <RoverComm.h> //calls RoverConfig.h
-#include <RoverCommand.h>
+//#DELETE ME //#include <RoverCommand.h>
 #include <SoftwareSerial.h>
 #include <HeartLed.h>
 #include <GlobalDelayTimer.h>
@@ -168,9 +169,15 @@ char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between MAIN a
 char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
 
 
+RoverData * roverDataForMain;//pointer used access the RoverData which has the command data outgoing to MAIN
+RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
+
+
+/*
+//#DELETE ME
 char roverCommandData_MAIN[_MAX_ROVER_COMMAND_DATA_LEN_];//Buffer to use for Rover Command Data
 char roverCommandData_CMNC[_MAX_ROVER_COMMAND_DATA_LEN_];//Buffer to use for Rover Command Data
-
+*/
 
 
 
@@ -1018,7 +1025,9 @@ void txData(char * txData, byte roverCommType)
 }//end of txData()
 
 
-void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte originRoverCommType, byte destinationRoverCommType)
+
+//#DELETE ME //void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte originRoverCommType, byte destinationRoverCommType)
+void commandDirector(RoverData * roverDataPointer)
 {
 
 	//Note: This function varies for different Arduinos
@@ -1027,20 +1036,39 @@ void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte
 	//Allow for all non-conflicting commands to run.
 	//Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 
-	
+
+//FIX ME LATER NEXT WEEK
+		/*
+		WRITE ME LATER
+		detect the destination of the rover command data.
+		If the destination is COMM, then just process the data 
+		Else if the destination was CMNC then set
+			roverDataForCMNC = roverDataPointer;
+		Else if destination was MAIN, AUXI, or NAVI then set
+			roverDataForMain = roverDataPointer;
+			
+		then update createDataFromQueue to grab the roverDataForMain->getCommandData() and roverDataForCMNC->getCommandData() to use that data when it's creating it's command	
+		*/
+
+
+
+
+/*	
+//#DELETE ME
+
 	byte commandTag;//holds the commandtag that was sent with this rover command
-	
-	
+
 	//Extract the rover command tag and the rover command data and send it to the correct destination
 	if( destinationRoverCommType == ROVERCOMM_NAVI || destinationRoverCommType == ROVERCOMM_AUXI || destinationRoverCommType == ROVERCOMM_MAIN )//If the destination is either MAIN, NAVI, or AUXI, send it out through the MAIN channel
 	{
-		commandTag = RoverCommandProcessor::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_MAIN);
+		commandTag = RoverCommandCreator::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_MAIN);
 	}//end if
 	else if( destinationRoverCommType == ROVERCOMM_CMNC )//If the destination is CMNC, send it out through the CMNC channe;
 	{
-		commandTag = RoverCommandProcessor::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_CMNC);
+		commandTag = RoverCommandCreator::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_CMNC);
 	}//end else
 	//else do nothing
+*/
 
 	//=====Non-Conflicting Functions					
 	//Run lower priority functions here. (i.e. system ready msgs)
@@ -1267,13 +1295,15 @@ void createDataFromQueue(byte roverCommDestination)
 	if (roverCommDestination == ROVERCOMM_CMNC)
 	{
 		queueOfInterest = cmnc_msg_queue;
-		roverCommandDataOfInterest = roverCommandData_CMNC;
-		
+		//#DELETE ME //roverCommandDataOfInterest = roverCommandData_CMNC;
+//FIX ME LATER		
 	}//end if
 	else if (roverCommDestination == ROVERCOMM_MAIN)
 	{
 		queueOfInterest = main_msg_queue;		
-		roverCommandDataOfInterest = roverCommandData_MAIN;
+		
+		//#DELETE ME //roverCommandDataOfInterest = roverCommandData_MAIN;
+//FIX ME LATER
 	}//end else if
 	//else
 		//do nothing
@@ -1285,7 +1315,7 @@ void createDataFromQueue(byte roverCommDestination)
 	
 		case CMD_TAG_COMM_HW_RESET_REQUEST:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0)));
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0)));
 		break;
 		case CMD_TAG_HW_IS_RESETTING:
 		break;		
@@ -1307,26 +1337,26 @@ void createDataFromQueue(byte roverCommDestination)
 		break;
 		case CMD_TAG_PIR_STATUS:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(0)));//DEBUG
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(0)));//DEBUG
 //WRITE ME LATER			
 //ADD IN THE DATA FOR PIR STATUS HERE									
-			//sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, ADD PIR STATUS HERE));
+			//sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, ADD PIR STATUS HERE));
 		break;
 		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(0)));			
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(0)));			
 		break;		
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, roverCommandDataOfInterest));			
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, roverCommandDataOfInterest));			
 		break;
 		case CMD_TAG_DEBUG_BYE_TEST_MSG:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, roverCommandDataOfInterest));
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, roverCommandDataOfInterest));
 		break;	
 		case CMD_TAG_INVALID_CMD:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)			
-			sprintf(txMsgBufferShared, RoverCommandProcessor::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1)));
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1)));
 		break;	
 		
 		
@@ -1596,14 +1626,20 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
 		{
+		
+		/*
+		//#DELETE ME
 			//1. First send the RoverData to the roverCommand_MAIN's parser to get the command
 			roverCommand->parseRxdMessage(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
-
-
+			
 			//2. Then run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)
 			commandDirector(roverCommand->getCommand(), roverCommand->getCommandLength(), roverCommand->getMsgOrigin(),roverCommand->getMsgDestination());
-			
-			
+		*/
+						
+		//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+		commandDirector(roverDataCh2_COMM);
+		
+		
 			
 		}//end if
 

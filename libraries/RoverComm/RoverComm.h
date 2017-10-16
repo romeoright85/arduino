@@ -74,11 +74,12 @@
 	//uncomment the debug flag below to see the stages in the code that is processed
 	//#define _DEBUG_RX_STAGES_
 	
-	//uncomment the debug flag below to see the temp substrings
-	//#define _DEBUG_SHOW_TEMPSUBSTRINGS_
+	//uncomment the debug flag below to see the extracted substrings
+	//#define _DEBUG_SHOW_EXTRACTED_SUBSTRINGS_
 	
 	//uncomment the debug flag below to see other data as required
-	//#define _DEBUG_OUTPUT_CMDTYPE_
+	//#define _DEBUG_OUTPUT_COMMAND_ORIGIN_
+	//#define _DEBUG_OUTPUT_COMMAND_DESTINATION_
 	
 	
 	class RoverComm : public virtual RoverReset {
@@ -88,20 +89,28 @@
 		void appendToRxData(char);//append a char to the _rxDataString		
 		void setRxData(char *, byte);//(charArray, array size) set the _rxDataString with provided string. Mainly used for debugging.
 		char * getRxData();//returns _rxDataString
-		void clearRxData();//clear the stored data in _rxDataString	
-		void clearRxDataVariables();//clears the _rxData string and index counter
-		int getRxDataLength();//returns the length of the corresponding string
-		byte getDestinationCommType();//returns the RoverData's destination RoverComm Type
-		boolean validateData();//validate the data to see if the data is not empty, is in the correct format, and has a valid RoverComm type. Returns true if the data is valid, else returns false.
+		void clearRxData();//clear the stored data in _rxDataString		
+		int getRxDataLength();//returns the length of the corresponding string		
+		boolean parseAndValidateData();//parse and validate the data to see if the data is not empty, is in the correct format, and has a valid RoverComm type. Returns true if the data is valid, else returns false.
 		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	private:
 		
 		//SW Resetted
 			char _rxDataString[ROVER_DATA_BUFFER_SIZE];
-			byte _destinationCommType = ROVERCOMM_NONE;//holds the RoverComm Type where the data is meant to go to
 			byte _rxDataStringCharacterIndex;//tracks how many characters was received for array indexing
 		//Not SW Resetted
 			RoverData * _rxRoverDataPointer;
+			boolean validateThenSetOriginRoverCommType(char *);//(Rover Comm Type in the original form of a char array). Sets the origin Rover Comm Type.
+			boolean validateThenSetDestinationRoverCommType(char *);//(Rover Comm Type in the original form of a char array). Sets the destination Rover Comm Type.			
+			
 	};
 
 #endif 
+
+
+/*
+//#DELETE ME
+void clearRxDataVariables();//clears the _rxDataString and index counter
+byte getDestinationCommType();//returns the RoverData's destination RoverComm Type
+byte _destinationCommType = ROVERCOMM_NONE;//holds the RoverComm Type where the data is meant to go to
+*/
