@@ -1,0 +1,1594 @@
+
+
+Where I left off
+------------------------
+
+	
+	
+	
+=================1 weekend===================				
+
+
+	
+
+	
+	
+	
+---------------CODING---------------	
+
+
+
+
+LEFT OFF:
+	
+
+	I last left off Sunday night updating RoverComm::parseAndValidateData(). Also see #LEFT OFF HERE (in the document) in two places.
+
+
+	Summary: Finding duplicate code, so doing a code refactoring (to make it easier to read and maybe also save memory). 
+	
+	The last thing I did was I was editting RoverCommand.cpp to getMsgDestination and getMsgOrigin, in which that data was used in Command director and createDataFromQueue. I tested it and it worked half way (i.e. it grabbed the right origin and destination but didn't recognize the hi command, etc. for some reason. I didn't fix this problem yet. Still need to go back and fix why the hi and bye, etc. commands aren't working)
+	As I was digging through the code I found RoverComm already has getDestinationCommType but it's not used or implement. Then digging into it even some more I found RoverComm's validateData already extracts the destination as commandType. (used to validate it's a valid destination)
+	Also I found some duplicate code in RoverCommandProcessor and RoverComm's validate data
+		Refer "IN PROGRESS PRIOR TO 10/15/17" in this document.
+	Note: Do not delete anything yet. Comment everything you don't need out and move it to the bottom of the code. Save it as a template for algorithms. Mark it with a //#DELETE ME tag so you can find it easier
+
+
+			
+----------------------------------				
+#LEFT OFF HERE				
+----------------------------------
+
+			
+			In Rover_StateMachine_COMM:
+						
+[IN PROGRESS, in commandDirector, see "//FIX ME LATER NEXT WEEK". still need to write the new algorithm] Update it so you no longer use RoverCommandProcessor's parseCmd anymore
+						Then within commandDirector function it will use 
+							roverData->getCommandData
+							roverData->getCommandTag
+							roverData->getOriginCommType
+							roverData->getDestinationCommType							
+[NEED TO DO]							
+				Update it from validateData to parseAndValidateData
+				
+[NEED TO DO]
+		In RoverComm:
+				see if setCommandData requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
+					then go back through all code and make it consistent. use wingrep to see where RoverComm::setCommandData is used
+						
+[NEED TO DO]	
+				in CharArray.cpp
+				check to see if CharArray::stringSize requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
+					then go back through all code and make it consistent. use wingrep to see where CharArray::stringSize is used
+		
+				
+[NEED TO DO]				
+				In RoverCommand:
+					delete this object. it's now combined with RoverData
+			
+				
+[NEED TO DO]											
+				In Rover_StateMachine_COMM:
+				
+				Get the hi and bye command to work again. (check out the createDataFromQueue as well as the command director). I broke this part of the code before I started to refactor it. You may have to serial println, and debug it and see where it isn't working.				
+				Fix the data reroute using the new functions like getDestinationCommType() as well
+				
+
+[NEED TO DO]					
+	Note: Once all code is tested and works on Rover_StateMachine_COMM, then go back to RoverData, RoverComm, RoverCommand, and maybe even Rover_StateMachine_COMM and delete out any commented out code (i.e. tagged with //#DELETE ME)
+	Update any notes and references so you always have to send an origin as well and not just -. i.e. /4c5... instead of /-c5...
+
+	Go to :
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverCommand\delete me
+			and delete DELETEME_RoverCommand.cpp and DELETEME_RoverCommand.h
+		
+		
+[NEED TO DO]				
+		Test Codes:
+			Update any tester code that uses RoverComm, RoverData, RoverCommand, RoverCommandProcessor due to these fixes
+		Update the state machine notes at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Pseudocode
+			i.e. from validateData to parseAndValidateData, etc.
+	
+
+	
+	
+	[IN PROGRESS PRIOR TO 10/15/17]Need to parse where the message originated and where it's going to. And then use the origin and destination in commandDirector to set the queue of interest as well as where the rover command data should be stored in.
+		Note: It doesn't matter which serial channel the message came from physical as it could be rerouted. What matters is what's in the message itself.
+		Note: The origin of the messsage will change every time it passes through an Arduino. It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+	
+	Found an error. I think I have duplicate code
+		maybe remove RoverComm::getDestinationCommType? not used? double check with wingrep
+		
+
+	
+	
+	
+		
+	
+=================1 weekend===================				
+
+	
+
+---------------CODING---------------	
+
+
+		
+	finish createDataFromQueue and messages for it (or place holders)
+	the finish out the synchonization mode and move on to secure link
+	Note: pay attention to memory use!
+	
+	
+	
+	See below for	
+		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
+	
+	
+---------------TESTING---------------
+	
+	
+	Retest with more decimal precison.
+	Then plot and analyze the data.
+		NavigationTester_AUXI
+		NavigationTester_MAIN
+		NavigationTester_NAVI
+		
+	Retest RoverGPSTester and RoverIMUTester since I shurnk my buffer size from 128 to 100 to save RAM
+		
+ANALYZE DATA FOR NAVIGATION TESTER
+	Review the true bearing, distance, etc. calculation.
+	Maybe need to increase the decimal point from 4 to 5 for more accuracy?
+		
+	
+	
+
+---------------CODING---------------	
+
+	See below for	
+		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
+	
+	
+	
+	get ranges for light sensors and define parameters for meaning use for if conditionals
+	for light sensors, use a range of bright, medium, and dark
+			use https://learn.adafruit.com/photocells/using-a-photocell for a lux table reference	
+			
+			
+		
+
+		
+			
+	
+=================24 weekends===================			
+
+~6 weekends per an Arduino
+
+Test code as you go!!!
+
+
+
+PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER DOWN THE CODE A LOT (i.e. remove secured comms, etc.)
+
+
+
+
+Starting on Rover_StateMachine_COMM.ino at:
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Rover_StateMachine_COMM\Rover_StateMachine_COMM
+
+while referencing:
+	COMM State Machine_add_date_when_archive
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Pseudocode
+	RoverCommandDefs.h
+	RoverStatesAndModes.h
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverShared
+
+
+
+get basic state machine infrastructure up		
+	
+	
+	
+	
+	
+	
+	
+	getting all the state and mode transitions created so the framework is there for a particular "mode loop"
+	{
+			
+			
+				[WHERE LEFT OFF 0]
+				Note: The last thing I did before stopping was:
+							-Remember to uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ in RoverConfig. only MAIN is allowed to chat in the beginning and CMNC is shut off until the unit is sychronized. Then CMNC can send to COMM but wil lget no response until links are secured.
+							-When debugging, check the boolean bit flag as well as the bit flag set. As you might forgot to update both when copying and pasting and using templates.
+								-Also make sure not to confuse Status Flags vs. filter option flags
+							-getting the the system go message to work and switch from sync mode to securing link mode. You still need to go back and write all the other sync mode code.
+							-creating the framework for all commands in the commandDirector. And it's ordered by priority.
+							-created flags for all commands so the DATA_FILTER state can filter stuff in the future
+							-Note:
+								Could not create a roverCommand object for CMNC and MAIN. The program was running out of memory and couldn't afford another roverCommand object. (I tested this fact by not adding a second object, and adding it without even using it, and the program crashed). The program goes into error mode/state or just freezes when it crashes.
+								Could also not have txMsgBufferCMNC and txMsgBufferMAIN. There isn't enough memory for both.
+									Program size: 13,832 bytes (used 43% of a 32,256 byte maximum) (7.72 secs)
+									Minimum Memory Usage: 1169 bytes (57% of a 2048 byte maximum)
+							-Pick up from wthe work around for the last major issues I had due to memory, see "HIGHEST PRIORITY 1" and "HIGHEST PRIORITY 2"
+					
+					
+					
+					
+					
+					To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
+					Then send (using the PC, which is simulating MAIN's serial connection to the COMM, since the link isn't secure yet and no real communication should be coming from the PC when not in this debugging state)
+						/4c5--*002//hi
+						/4c5--*003//bye
+						/4c5--*005//Sys ready. no output will show in the command line. it's all behind the scenes.
+						/4c5--*006//Sys go. no output will show in the command line. it's all behind the scenes. You can monitor the states and modes though. And ocne in this state, hi, bye, etc. will be filtered out.
+						/4c5--*012//All HW reset. not yet implemented
+						/4c5--*014//COMM SW reset. not yet implemented
+						/4c5--*018//All SW reset. not yet implemented
+						/4c5--*026//COMM sleep request. not yet implemented
+						/4c5--*031//All sleep request. not yet implemented						
+						/4c5--*023//PIR Status. not yet implemented
+						/4c5--*031//All sleep request. not yet implemented						
+						/4c5--*041//Generic health error. not yet implemented
+						/4c5--*021//Break secure link. not yet implemented						
+						/4c5--*021//Establish secure link. temporary disabled since this command should be filtered out in the sync mode and not be available at that stage
+						/4c5--*(anything else)
+					to test (as long as the flags commandEnableOption_Hi and commandEnableOption_Bye are set true in the filter in runModeFunction_SYNCHRONIZATION()
+				[WHERE LEFT OFF 1 --- IN PROGRESS]now I have to write some of the functions
+					Update on commandDirector commands/functions
+					
+					
+HIGHEST PRIORITY 1->[NEED TO DO]Due to lack of memory, update documentation AND code to do the following:
+							Update COMM code first.
+								For commands, let it transmit right away in the process_data state (in command director).
+								For redirects, let it be transmitted right away in the dataDirector which is called in the DATA_FILTER state.
+								Use CREATE_DATA and TX_DATA states only for internally generated data.
+								Maybe use if statements with modes instead of commandEnableOption flags and then remove the data filter class all together.
+								MAybe use 1 byte variable to store all the errors, instead of having an error flag for each one.
+									Then design it to overwrite that variable based on priority. And one an error is cleared, if any lower priority errors exists, then it should flag that variable next.
+							Update documentation after proven that the code works.	
+HIGHEST PRIORITY 2->[NEED TO DO]Use command creator to create commands. (it will add the necessary headers of origin, destination, etc.
+						
+							
+							
+						
+						[NEED TO DO]Update commandDirector commands to something else if desired (i.e. not "esl" but some other string)
+							"esl"
+							"sysrdy"
+							"sysgo"
+							"hwrst"
+							"swrst"
+							etc. (many more not listed here)
+						[NEED TO DO]Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
+							[NEED TO DO]Update the DATA_FILTER state with command options:							
+									
+										[NEED TO DO]need to write the message going out to CMNC with the CMD_TAG_SECURE_LINK_REQUEST, see commandDirector for sysgo									
+									
+						[NEED TO DO]Also update //Flag(s) - Command Filter Options and setAllCommandsTo()
+						[NEED TO DO]Then update the PROCESS_DATA state for the SYNCHRONIZATION mode, with what happens once the commandDirector does it's tasks. (i.e. once a system ready or system go message has been received, then what is the next thing that should happen like main_msg_queue = SYSTEM_READY_STATUS, etc.)						
+						
+									[NEED TO DO]write the code/algorithm for all other commands in commandDirector
+									
+			left off at //LEFT OFF HERE...
+				[WHERE LEFT OFF 2 --- IN PROGRESS. Already done one loop/template for MAIN data to/from COMM, need to do the same for CMNC data to/from COMM] add in the rxData function... aka lay the groundwork for serial communications
+					[NEED TO DO]Finish writing the other code for PROCESS_DATA in runModeFunction_SYNCHRONIZATION
+					[NEED TO DO]I started SECURING_LINK for RX_COMMUNICATIONS in order to write rxData() from CMNC since SYNCHRONIZATION only has it for MAIN
+					[NEED TO DO]I just finished writing DATA_FILTER for runModeFunction_SECURING_LINK()
+					[NEED TO DO]So write READ_INPUTS for runModeFunction_SECURING_LINK() next until you go through all the states down the to TX_COMMUNICATIONS and send out any data from CMNC
+									[DONE]then go back and write the DATA_VALIDATION state in the SYNCHRONIZATION mode
+									[DONE]write the data filter for the data
+					[NEED TO DO] Write other message for createDataFromQueue()
+				[WHERE LEFT OFF 3]
+					[HOLD, actually write all of COMM first, to deal with any memory issues. you may have to change the state machines]Once the sync mode code is done for the COMM, write all other state machines for other Arduinos, and try to get it to sync up.
+					Then write the hardware reset code and try to get it to sync up after a hardware reset.
+					Then write the software reset code and try to get it to sync up after SW reset.
+					Then focus on other algorithms, states, and modes.
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+	then start adding the functions to do stuff (aka the business logic) next
+	then repeat for all other modes
+	get rovers to take commands
+	get the rover to control motors
+	then get the rover to follow navigation
+	add the health sensors later on
+
+
+
+Note: when doing rx data for other arduinos, you'll have to refactor it like you did for COMM
+	byte vs boolean status
+	splitting out rx data, validate data, data director, etc.
+	An option to disable/enable redirect (if no redirect, then only local command processing only for that channel)
+	creating a flag for each data channel for the dataWasFor (i.e. dataWasForCOMM), since the commands are split in between states now and global variable flags are needed to keep track in between the states
+	data director now passes back a boolean, which is the dataWasFor... variable
+	etc.
+
+
+plan to write code in four blocks
+	Led block
+	State block
+	Nav block
+	Obj avoid block			
+			
+			
+	
+put code to measure loop time, then use it as the message delay between a message and a redirect
+
+
+
+
+When debugging the state machines, make sure things that shouldn't be filtered out aren't, vice versa.
+Watch out for glitches with missed acknowledgements and one system going ahead or behind another.
+Watch for vicious loops, or messages overtaking all lower priority ones causes the lower priority stuff to never run.
+Check for things going to the wrong state (as you might have redesigned the order, etc.)
+Make sure I didn't forget to code any of the steps in the well planned state machine. A missed step could break the machine as it was well thought out.
+Shared names between command tags and states or modes could cause conflicts or confusion.
+
+Create all state machine frameworks
+Put in commands
+test a loopback
+then put other objects in
+
+
+
+	Start writing state machine classes for each of the 4 arduinos (about one weekend for each arduino)
+		Set up state machine code structure, then work on object avoidance, then directional sensor input (like gps, imu, encoder), then health sensors, then commands
+
+	[IN PROGRESS]RoverProgram_AUXI.ino 
+		RoverHeathAndStatus(takes in temp, voltage, photo, and current data and determines if the system needs to shut down or can continue) - Finite State Machine			
+	[IN PROGRESS]RoverProgram_MAIN.ino
+		RoverCaptain - Finite State Machine (considers and prioritizes input from the RoverNavigator and RoutePlanner, and RoverHeathAndStatus and decides which heading the rover should go and for how long, then it sends commands to RoverNavigator_NAVI)		
+	RoverProgram_NAVI.ino 		
+		RoverNavigator (takes in sensor data and plans a course to prevent a collision. Then navigates by sending actions to RoverDriver) - Finite State Machine
+			RoverDriver - State Design Pattern (controls the motor controller and gimbal) 
+		RoutePlanner (takes current position via gps data and compass heading and next waypoint via longitude and latitude and recommends heading and distance)
+			Waypoint
+	RoverProgram_COMM.ino
+		RoverCommunicator - Finite State Machine (transmits, processes, and receives messages commands. Also controls Arduino COMM's functionality)
+			RoverSecuredCommLink - State Machine (allows transmission and reception of messages after it verifies the connection is secure)			
+	All Arduinos:
+		Use the CommandCreator class to send commands messages from one Arduino to the next.
+			[only unit tested so far, will have to test more during integration]
+			[IN PROGRESS]Reference: Also see the spreadsheet "Command Creator..." at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+			
+	
+	
+Features:
+Return Home
+Breadcrumbs
+Mission Route Based On A Chain Of Waypoints
+Full Manual Drive	
+Manual Drive	with Avoidance Assistance
+Full Auto Drive
+RF Steath mode where the rover transmits nothing
+
+
+		
+	 
+Write state machine	
+come up with prioritization excel spreadsheet table to know what gets the most priority
+	voltage/current sensors (if over voltage or current, shut down)
+	-ultrasonic/ir (avoid obstacles while moving)
+	-gps for navigation
+	-laser
+	-led for indication
+	-etc (manual vs. auto control/override)
+-work on state machine for priority/arbitration
+-work on state machine for navigation	
+
+
+
+	
+	Arduino Generic:
+	-parse command data
+	-send arduino self generated data
+	-initialize/calibration complete class
+	
+	Arduino Specific:
+	-MAIN: monitor status
+	-NAVI: drive rover/navigate
+	-AUXI: control auxillaries
+	-COMM: sleep/pir/communicate/reset control (HW/SW command and control), controller hack proof validator
+		For controller hack proof validator, see "#Tamper Proof" below.
+
+		
+=================8 WEEKENDS===================			
+
+Test code and fix
+About 2 weekend each arduino
+
+	
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+
+	
+
+
+
+
+
+
+IF HAVE TIME
+===================
+test the eeprom and shifting serial reads (encryption) with the UNO
+
+#homing beacon
+build a small battery powered arduino/xbee
+it will have switches to control/send commands for
+	buffer channel select
+	mosfet control
+	gps coordinates of this homing beacon to go to
+	emergency stop
+	
+
+
+#Tamper Proof
+If have time and want to, write a key to the EEPROM in the arduino (using a separate sketch)
+Then on startup, you must send over Xbee that key to the rover before it will start accepting commands
+https://www.arduino.cc/en/Tutorial/EEPROMWrite
+
+
+
+SANDBOX ROVER CODE TEST
+try to figure out when when i do a getData() and it returns a string I can't concat to that string within the same class by using .concat. Only calling the original private string variable with .concat seemed to work
+see RoverComm for details
+make sure each of your classes only do one thing
+
+
+
+[arduino doesn't like delays to be called globally. so if you do a reset on a constructor created globally the code won't work. best not to use delays else if you must, abandon this whole reset thing in contructors.] maybe remove resets in the void setup function. instead do a self reset everytime the object is created (when the constructor is called)
+Reference: http://forum.arduino.cc/index.php?topic=46517.0
+	make sure resets are added in every constructor if you are going to do this.
+	
+	
+	
+	
+	
+	
+
+Maybe buy an Arduino 101 and swap our the COMM UNO and see if I can get the gyro to work.
+	https://www.youtube.com/watch?v=QOSEMUO1Qnk
+
+	
+	
+	
+[IF NEEDED/HAVE TIME]	
+write calibration program in qt
+     calibrates compass, ims, servos and creates the RoverCalibration.h that can be copied over
+
+
+	
+	
+	
+
+Note: Go ahead and write arduino code in regular C++ OOP (since you have limited memory and functionality on the Arduino) and then the ground software in Java with Design Patterns and Object Oriented Analysis and Design.
+
+
+
+Working on:
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\RoverGen2
+	open the .sln with visual studio community with visual micro extension
+and
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries
+	edit the .cpp and .h with notepad++ or visual studio community with visual micro extension
+
+
+
+in grad school or beyond, learn machine learning
+
+
+
+
+
+
+
+
+
+
+Aslo refer to:
+K:\Design Workspace\Arduino\Rover Mini Sketches\Studies\Done
+K:\Design Workspace\Arduino
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino
+
+
+
+
+
+
+	
+	
+	
+Rover Improvements
+Real time clock
+MPU+FPGA+MCU
+Better/easier IMU
+Wifi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======================
+COMPLETED
+=======================
+
+
+Note: See LaserControlTester.ino for how to use debug flags
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\LaserControlTester
+
+
+write more class testers to test functionality of the rover
+
+
+
+[done]go back and make all private variables start with an _
+[done]gpsDataParserPractice (used to test filtering, checksum, parsing, and validating algorithms. Though not kept up to date.)
+[done]	then migrate them over to the classes "RoverGpsSensor"
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverSensors
+
+
+
+
+
+test the new arduino led classes with new timers and counters on the arduino
+
+	[done, need to test on rover] PirSensorTester
+	[done, need to test on rover] UltrasonicSensorTester
+	[done, need to test on rover] IrDistanceSensor
+	[done, need to test on rover] WakeUpTester_COMM
+	[done, need to test on rover] WakeUpTester_MAIN
+	[done, need to test on rover] WakeUpTester_AUXI
+	done, need to test on rover] WakeUpTester_NAVI
+			[DONE] RoverSleeperClient
+			[DONE] RoverSleeperServer
+
+	[done, need to test]write a universal simulator/tester on a mega to test any megas or unos
+	
+	[done, need to test on rover]MotorAndServoTester_MAIN
+		with
+	[done, need to test on rover, need to calibrate and put in the initial calibration values]MotorAndServoTester_NAVI
+		[done]Wheel Encoder
+		[done]MotorPowerControl (Motor Fet Control, Motor Enable Status)				
+		[done] BufferSelect
+		[done] MotorController (for steering and acceleration)						
+		[done] MotorPowerControl	
+		[done] GimbalConroller (for pan and tilt)
+		References:
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_MtCtlr_And_Servo_Testerv5
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup
+
+
+		
+		
+	[done, need to test on rover]LaserControlTester [AUXI]
+		Reference:
+				K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_Laser_Testerv4
+	
+
+
+	[done, need to test on rover] CurrentSensorControlTester (Current Faults and Resets) [AUXI]
+			Reference:
+				K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_Curr_Snse_Resetv3
+		
+	[done, need to test on rover]HwResetTester (see how I did server and client for the commTester)
+		
+	[done, need to test on rover]			
+		LedTester (
+								[done, need to retest due to updates]write global delay counter (see Rover_Heart_LED_Testerv3.ino). pass this to the heart led
+								[done, need to retest due to updates]AnalogLed->HeartLed
+								UnderglowLeds->DigitalLed->Underglow
+								SideSignalLight(left, right)
+								BeaconAssembly->DigitalLed->Beacon[ir, blue]
+								TailLightAssembly->DigitalLed->Taillights
+								HeadlightAssembly->DigitalLed->(Headlight Left, Headlight Right, Signal Left, Signal Right, Fog Left, Fog Right)
+								
+						)
+					
+	
+	
+				
+		
+			
+		[done, need to test on rover] RoverAnalogSignalsTester (mux control, op amp output) : temp, voltage, light, current
+			Add objects to convert signals
+				[DONE]Current
+				[DONE]Voltage
+				[DONE]Photo
+					http://emant.com/316002.page
+					https://learn.adafruit.com/photocells/using-a-photocell
+					https://developer.mbed.org/users/4180_1/notebook/using-a-photocell-to-determine-light-levels/
+					https://www.arduino.cc/en/Tutorial/Genuino101CurieIMUOrientationVisualiser				
+					https://www.arduino.cc/en/Main/ArduinoBoard101
+				[DONE]Temp
+			
+			[DONE]Add a way to get more accurate ADC values
+			[DONE]if so, update analogsignals as well as irsensor, and anywhere else where ADC is called
+
+
+	
+	[done, need to test on rover] GpsTester
+		see these text files for sample gps data
+			arduino filtered gps position fixed
+			arduino filtered gps on startup
+	
+	
+	
+	
+
+	[done, need to test on rover] ImuTester
+		
+		See: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\Good Code Backup\Design Workspace Backup\Arduino 09-06-15v1\Rover Mini Sketches\Studies\Done\Rover_IMU_Testerv3
+			[DONE]have the rover use compass only for now
+			
+			[DONE]user timer functions with the imu code
+			[DONE]also get it to print compass heading
+			[DONE]format the print output			
+			[DONE]have it send back roll pitch and yaw serially for python visuals
+			[DONE] any IMU data to be rerouted from the AUXI to MAIN to COMM and over XBee
+			Note:
+			Will make the the Xbee transmit the IMU data in AHRS format where it can be listened by a secondary Xbee which filters out everything but the AHRS format and display the IMU visual on a PC/laptop with the running python code.
+			This will be independent of the main ground code.
+
+
+				[MAYBE DO LATER] need a way to calibrate as well
+				https://github.com/pololu/minimu-9-ahrs-arduino
+				https://www.raspberrypi.org/blog/real-time-orientation-display-with-the-minimu-9-v2/
+			[NAH, not needed right now]will use the imu for roll, pitch, and yaw only. no need to write code to use accelerometers.
+			[NAH, not needed right now]will send back roll, pitch, and yaw for visualization and/or detect compass heading.
+			
+
+		
+		
+		
+		[done, need to test on rover] RoverCommTester_COMM
+		[done, need to test on rover] RoverCommTester_MAIN
+		[done, need to test on rover] RoverCommTester_AUXI
+		[done, need to test on rover] RoverCommTester_NAVI
+
+			
+			
+		[done, need to test on rover] Write an uptime counter classes using example for the UNO COMM
+
+		
+		[done, maybe buggy, need to test]MQGasSensor	
+			Note: The output is still zero. Debug it later once plug the sensor in and measure and update the fixed resistor value.		
+			[do later after hook sensor to see if it's really an issue with the code or the simulation]debug why gas sensor is output 0's
+				see "DEBUG AND DELETE" lines
+			
+			
+			[DONE, set it to 3 seconds for now. change it to 3 minutes once done debugging by turning off the debug flag: _DEBUG_3SEC_WARM_UP_]Use RoverOnTime in order to preheat the gas sensor to 3 minutes before calibrating and using the reading values
+			[DONE] replace the calibration delays with timer and delay objects
+
+
+		
+	[DONE]Create CommandCreator classes
+		[IN PROGRESS]Reference: Also see the spreadsheet "Command Creator..." at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+			
+		
+	
+
+
+
+	[NAH, no rework. It's not a long term test but a sandbox-ish code]
+		gpsDataParserPractice to not use string class and also use the DataType class for conversion.
+		
+
+
+	
+		
+
+
+[DONE]
+	CommBroadcast_COMM
+	CommBroadcast_NAVI
+	CommBroadcast_AUXI
+	CommBroadcast_MAIN
+	Note: Designed to work when the Serial of the program will route internally. So if anything is going out to PC USB, it won't be routed.
+	Any .ino should have an option for internal routing for output as keyboard commands.
+	For classes debugging, to keep it simple, allow this to be used for PC USB only (for easier maintanence).
+	Note: Make sure to activate the internal Serial if that .ino didn't activate it before.
+	You can search for "Serial" to help highlight all Serial calls and make sure you created a broadcast internal routing for all PC USB Serials.
+	For COMM you don't need to do anything since PC USB is the same routing for internal routing.
+[DONE]
+	CommRollCall_COMM
+	CommRollCall_NAVI
+	CommRollCall_AUXI
+	CommRollCall_MAIN	
+	
+-------------------------------
+[DONE]Convert test code to broadcast compatible as needed
+	
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
+##NAVI and AUXI##
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial2.println(F("NAVI Awoken!"));//output to PC for debug
+#else
+	Serial.println(F("NAVI Awoken!"));//output to PC for debug
+#endif
+
+##MAIN##
+#ifdef _DEBUG_COMM_BROADCAST
+	Serial1.println(F("Reset Complete!"));
+#else
+	Serial.println(F("Reset Complete!"));
+#endif
+
+
+##COMM##
+No Change Needed
+
+-------------------------------
+
+
+
+
+
+
+
+
+[DONE, WORKS WITH BROADCAST] alternate ultrasonic to prevent interference
+			UltrasonicSensorTest
+
+			
+			
+-------------------------------
+[DONE] Re-convert test code to broadcast compatible as needed
+	
+In the .h or .ino
+//Uncomment to debug
+//#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
+
+
+In the .cpp or .ino
+##NAVI and AUXI##
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#endif
+
+##MAIN##
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#endif
+
+
+##COMM##
+//for COMM, either way it goes to the PC USB Serial
+
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ 
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#endif
+
+
+	
+-------------------------------
+
+
+[DONE]Read how to do state machines
+			
+			
+			
+[DONE] work on COMM State Machine
+			
+			
+			
+[DONE]work on NAVI State Machine
+See file: NAVI State Machine_add_date_when_archive
+See: ??LEFT OFF HERE (remember to use the *begin* flag at first time you're switching to a new mode)																									
+See file: Command Creator.. .xls
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+			
+
+	
+Note: Each type of arduino may need different states and modes.
+
+most likely, have each data share pushed automatically to the destination arduino (to minimize network traffic for requests)
+have a mode for each type of data share and rotate between the modes under normal circumstances
+Also the system won't pull fresh required data, since this will just slow the system down and it will not be fresh by the time it gathers everything anyways.
+	instead data will always be pushed to the destination and refreshed automatically. and when the destination needs to use data, it will use whatever data it has already stored/registered, even if it's slightly old.
+
+
+		
+			
+For command tags, see command creator excel in K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+
+Take a video as you talk through your code to see if it makes sense, as well as documenting it.
+
+
+			
+			
+Then go back and update RoverProgram_MAIN with changes from RoverProgram_AUXI (i.e. HOLD states, etc.)
+			
+
+			
+			
+#videos
+Save videos here:
+	P:\Code Overview Videos
+			
+			
+			
+			
+		
+	
+Paper design Object Avoidance Algorithm
+do NAVI obstacle avoidance algorithm
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+See powerpoint: Rover Navigation
+
+		
+Gather a list of what sensors detect first.
+Then on each manuever, what sensor is detected next, and determine the type of object is in front of the rover.
+
+			
+
+
+	
+Finish "Rover Navigation Pseudocode..."
+K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+
+
+	
+	
+	
+finish the math (on powerpoint)
+	figure out how to convert longitude and latitude to all seconds
+		3916.2242,N,07636.6542,W
+		gpgga was in decimal-decimal and you need to convert them to decimal degrees
+		careful to take the location and not the time value
+		https://community.oracle.com/thread/3619431
+		http://www.hiddenvision.co.uk/ez/?nmea_lat=3916.2242%2CN&nmea_lon=07636.6542%2CW
+		http://www.rapidtables.com/convert/number/degrees-minutes-seconds-to-degrees.htm
+		https://stackoverflow.com/questions/36254363/how-to-convert-latitude-and-longitude-of-nmea-format-data-to-decimal
+
+		double nmea_latitude;
+		double lattitude_whole;
+		double lattitude_fraction;
+		double lattitude_decimalDegrees;
+		lattitude_whole = floor(nmea_latitude/100)
+		lattitude_fraction = (nmea_latitude % 100) / 60
+		lattitude_decimalDegrees = lattitude_whole + lattitude_fraction
+		
+		
+		double nmea_longitude;
+		double longitude_whole;
+		double longitude_fraction;
+		double longitude_decimalDegrees;
+		longitude_whole = floor(nmea_longitude/100)
+		longitude_fraction = (nmea_longitude % 100) / 60
+		longitude_decimalDegrees = longitude_whole + longitude_fraction
+
+		
+		
+		
+	lat/long
+	"lat is flat"
+	lat gives you the angle from the equator where the equator is 0 degrees
+	the lat range is +90 to -90 deg or 90N to 0 to 90S
+	0 degrees longitude is the prime meridian
+	it goes 0 to 180 E and 0 to 180 W
+	https://www.youtube.com/watch?v=M2wL0lKF8ic
+	"signed decimal degrees without compass direction, where negative indicates west/south (e.g. 40.7486, -73.9864):"
+	http://www.movable-type.co.uk/scripts/latlong.html	
+	http://forum.arduino.cc/index.php?topic=45760.0
+	Example
+	http://www.igismap.com/haversine-formula-calculate-geographic-distance-earth/
+	
+	
+	
+	
+	
+	
+	include <math.h>
+	#define EARTHS_RADIUS_KM 6371//in KM, will need to use data type double, since it's a big number
+	#define EARTHS_RADIUS_M 6371000//will need to use data type double, since it's a big number
+	
+
+
+	double calculateDistance( double desired_latitudeDeg, double desired_longitudeDeg, double actual_latitudeDeg, double actual_longitudeDeg)
+	{
+	  
+	  
+	  //lat 1 - desired latitude  
+	  double desired_latitudeRad;
+	  
+	  //lat 2 - actual latitude
+	  double actual_latitudeRad;  
+	  
+	  //long 1 - desired longitude
+	  
+	  
+	  //long 2 - actual longitude 
+		
+	  double delta_latitudeRad;
+	  double delta_longitudeRad;
+	  
+	  double varA;
+	  double varC;
+	  double distance;
+	  
+	  
+	  desired_latitudeRad = (desired_latitudeDeg * M_PI) / 180;
+	  
+	  actual_latitudeRad = (actual_latitudeDeg * M_PI) / 180;
+	  
+	  delta_latitudeRad = actual_latitudeRad - desired_latitudeRad;
+	  
+	  delta_longitudeRad = ((actual_longitudeDeg - desired_longitudeDeg) * M_PI) / 180;
+	  
+	  varA = sin(delta_latitudeRad/2) * sin(delta_latitudeRad/2) + cos(desired_latitudeRad) * cos(actual_latitudeRad) * sin(delta_longitudeRad/2) * sin(delta_longitudeRad/2);
+	  
+	  varC = 2 * atan2( sqrt(varA), sqrt(1-varA) );
+	  
+	  distance = EARTHS_RADIUS_KM * varC;//in km
+	  
+	  return distance;
+
+	}		
+	
+----------------------
+
+
+	create rover navigation class
+	then see "HaversineDistanceFormulaTester" [ALREADY TESTED AND CHECK THE RESULTS OF THE FORMULA USING GOOGLE MAPS, IT WORKS!]
+		move this code into the navigation class as well
+	[nah, this should be ground code stuff]create a waypoint class
+		create add/delete waypoints method in the waypoint class
+		have the waypoint class call the rovernavigation class and feed it the next lat/long
+		when the true boolean has received, set the next waypoint
+		when all waypoints are done, output a done
+	
+		
+
+	
+		start lat/long math and create algorithm
+	https://sites.google.com/site/wayneholder/self-driving-rc-car/getting-from-point-a-to-point-b
+	http://www.movable-type.co.uk/scripts/latlong.html
+	http://diydrones.com/profiles/blogs/the-difference-between-heading
+	https://aviation.stackexchange.com/questions/8000/what-are-the-differences-between-bearing-vs-course-vs-direction-vs-heading-vs-tr
+	https://www.sunearthtools.com/tools/distance.php
+	https://www.youtube.com/watch?v=9nDkR-X9dqo
+	to calculate relative bearing
+	
+	
+	[NOT USED, used a different formula instead]
+			DX = PointB.x - PointA.x
+			DY = PointB.y - PointA.y
+			angle in radians = atan2(DY, DX)
+			angle in degrees = radians * (180 / Pi)
+			angle = angle < 0 ? angle + 360 : angle	
+		
+		research how to get bearing from lat/lon
+			see http://www.movable-type.co.uk/scripts/latlong.html
+			write a formula for it
+
+		add formula for the goal's bearing
+	
+	
+	
+
+
+	
+[NAH, use a different method]
+			if bearing > heading go one way, else go the other
+			but if delta(bearing and heading) is greater than 180 switch directions
+					
+							Heading in Degrees
+						D = destination
+						O = Origin
+
+
+						D < O and abs(D-O) > 180: turn right
+						D < O and abs(D-O) < 180: turn left
+						D > O and abs(D-O) > 180: turn left
+						D > O and abs(D-O) < 180: turn right
+						D = O: stop
+						D < O and abs(D-O) = 180: turn left or right
+						D > O and abs(D-O) = 180: turn left or right
+
+
+						
+						
+create a coordinates class object to hold generic lat/long
+	
+refactor code with coordinates class
+	
+	
+
+	
+	getRelativeBearing()
+	
+	
+	getCalculatedMotorSteering()
+
+
+
+	round the relative bearing (up or down depending on the value), then convert to int to drop the decimal places
+	if RB_LOWLIMIT < relative bearing < RB_HIGHLIMIT: go straight (where RB means relative bearing and the high and low limits create a window of tolerance)
+		where RB_LOWLIMIT can be -10
+		where RB_HIGHLIMIT can be 10
+	else if NEGANGLE_THRESHOLD <= relative bearing <= RB_LOWLIMIT
+		where NEGANGLE_THRESHOLD can be -90
+	else if relative bearing < NEGANGLE_THRESHOLD (implied: -180 < relative bearing)
+	else if RB_HIGHLIMIT <= relative bearing <= POSANGLE_THRESHOLD
+		where POSANGLE_THRESHOLD can be 90
+	else if relative bearing > POSANGLE_THRESHOLD (implied: relative bearing < 180)
+	if relative bearing = MAXANGLE_THRESHOLD turn full right (could be left or right, but chose right arbitrarily to be default)
+		where MAXANGLE_THRESHOLD should be 180, so it coveres 180 and -180 when abs() is used
+	
+	
+
+			get actual degrees from compass
+	calculate goal based on navigation bearing (from gps lat/lon)
+		i.e. compare the goal's with the compass bearing and control turning based on that
+	calculate correction_angle
+	
+	[NAH, DOING IT DIFFERENT. AND IT'S DIGITAL STEPS instead of scaling an analog range to make it simpler for now. can always improve it later)
+		correction_angle = map ( correction_angle, min_turn, max_turn, servo_min, servo_max)
+
+		
+	getCalculatedMotorSteering() with all the limits in the if/else statements
+
+				
+			control turning/driving based on the goal's bearing
+			in the future, compare the goal's with the compass bearing and control turning based on that
+			add a tolerance for bearing and distance. when reached the tolerance window, center and stop and output a true boolean for done
+				add a tolerance window for bearing, use to control turn or straight, when straight, keep driving till distance tolerance
+	
+	getCalculatedMotorThrottle	
+			add a tolerance window for distance, turn to control go or stop. when stop, it's done.
+					
+
+					
+			get the distance in meters (to match with the DST_TOLERANCE unit)
+			round the distance (up or down depending on the value), then convert to int to drop the decimal places
+			if distance <= DST_TOLERANCE, stop
+				Note: Remember distance is always positive
+				and this->_destinationReached = true		
+				where DST_TOLERANCE can be 3 meters
+			else if distance > DST_SLOWTHRESHOLD, go forward normal
+			else (distance < DST_SLOWTHRESHOLD), go forward slowly as the rover is near the destination
+
+	write test code to see if it works
+	check the results
+							
+	[it looks like the calibration offest is added to all set throttles and set steerings. can verify and test if needed in the future] double check the motor controller/servo code scales the ideal values after calibration							
+	
+	
+	Note: The COMMBroadcast works but it's really slow.
+Probably will not do ground code. Will just get the rover to navigate with preset points. Then move on to grad school, next gen design, etc.
+If anything write Java for Android Tablet to bluetooth, then go from Bluetooth to Arduino Mega ADK to Xbee. (it'll be more portable than a laptop)
+
+8/5/17
+Hardware hacked the IMU on the rover to fix signal integrity issues. Data hacked the compass heading to force the data close enough to the real heading.
+
+[DONE]Run the IMUTester code	
+[DONE]	Calibrate the compass on the rover
+	https://sites.google.com/site/wayneholder/self-driving-rc-car/calibrating-the-compass	
+
+
+[DONE]edit the heading code with the formula fix for the heading
+		
+		
+		
+
+	[DONE, need to test] write NavigationTester_MAIN (name had to shorten due to length limits)
+	to take heading data from AUXI and just send it over to NAVI
+		Make a copy of CommBroadcast_MAIN and edit it so it only redirects AUXI to NAVI
+	[DONE, need to test] write NavigationTester_AUXI:
+		to send heading data (the number only) to MAIN
+		Make a copy of IMUTester and edit it so it only outputs the number
+	[DONE, need to test] Edit RoverNavigationTester_NAVI to take acutal GPS data from the GPS unit
+					
+					have a fixed destination
+					print actual and desired lat/long
+					print actual heading
+					print direction of turn
+					create a test class with rovergps, navigation class
+		
+	[NAH, no time] simulate compass and gps data
+		
+		
+	[DONE]test the RoverNavigationTester code with the DEC-DEG lat/long values from the gps module
+	[DONE]hook up gps to an arduino
+	[NAH, good enough indoors]walk outside and see if it tells me the right bearing, rover turn action, and distance	
+	[DONE] Retest RoverGPSTester with actual GPS (due to recent changes)		
+	
+	
+	
+
+		[DONE]run RoverGPSTester on real GPS data to see if still have buffer overflow issue
+		
+			[DONE] RoverGpsSensor
+			Also do a "couple hours" sram test with the gps code
+			added some extra delay, but in general the gps program did not crash when used with PC, only sometimes with laptop. So it's not the rover hardware or software, it's the laptop, which is fine.
+
+			
+					[NEEDS REWORK]AnalogSignalsTester	
+			[DONE, need to test] need to fix the voltage to incorporate resistors and voltage dividers. also it needs to differentiate between 5V and 7V
+		
+		
+			
+		[DONE]capture the gas readings from AnalogSignalsTester after turning it on for over 3.26 mins.
+		
+		[DONE, UNIT TESTED. NOW TEST ON ROVER] MqGasSensor
+
+		plug in the gas sensor and see if the data works
+				if not, skip over it for now. there's other more important things above the rover you can work on. (just ignore the gas sensor for now and come back to it if you ever have time)
+		[NAH, NO TIME] gather the details of the other mq gas graphs and derive/verify their formula
+			watch https://www.youtube.com/watch?v=sBhEi4L91Sg
+			
+			
+	
+			[DONE]
+			CommTester_AUXI
+			CommTester_NAVI
+			CommTester_MAIN
+			CommTester_COMM		
+						
+						
+	
+	
+	[DONE, temp sensor/equation doesn't work as expected. oh well]Write a photo/temp calibration code to get the ranges and results from the formula and test for accuracy.
+
+		
+	[NAH]Test the photo/temp calibration code on the GPS Sensor Unit CCA unit I have off the rover	
+		
+						
+						
+						
+	
+	
+	analyze the analog signals data
+		[DONE, the units are in amps] what are the units of the current measurements?
+			The 5V, 3.3V and 8.4V look good.
+			Measured 4.45V for the 5V line, 8.61 on the 8.4V line, and 3.11V on the 3.3V line.
+		[DONE, in Kelvins] what are the units of the temperature measurements?
+		[DONE, in Lux] what are the units of the light measurements?
+		
+			
+			
+	
+	
+	[NAH, it didn't work]Fix temperature formula
+	https://playground.arduino.cc/ComponentLib/Thermistor2
+	https://learn.adafruit.com/thermistor/using-a-thermistor
+	
+	
+	[DONE, not sure if it works, but oh well move on. it detects 0ppm and does read old and new values. save time and focus on the other aspects of the rover] analyze the gas sensor data to see if it makes any sense
+	
+	[DONE, it's possible that Vcc or the analog read is a little off, causing a negative current, oh well]is the current negative because the motors are off and it's just a calibration issue?
+	
+	[NAH, NO TIME]test the results of the photo/temp calbration ranges with
+		CommBroadcast_COMM
+		CommBroadcast_NAVI
+		CommBroadcast_AUXI
+		CommBroadcast_MAIN
+								
+	
+	
+	AnalogSignalsTester
+	Note:
+	MeasuredVcc function isn't very accurate.
+	Fudged the thermistor equation. Didn't really get accurate results, so ignore it.
+		Changed TEMP_CONSTANT_R0 from 10000 to 5000 to get more realistic numbers. Could be due to paralell resistance.
+		The absolute temperature is off, but the vector/direction of the temperature is correct. Can be used to measure direction of temperature change.
+
+			Next time buy better sensors (not on ebay) and with datasheets that have usage and formulas.
+	
+
+	
+	
+
+	---------------------------
+
+	[DONE]take 7 samples, bubble sort them from 0 to 6. keep and average samples 2, 3, and 4
+			
+			Practice a bubble sort
+		https://en.wikipedia.org/wiki/Bubble_sort
+		http://www.cplusplus.com/forum/general/127295/
+		
+	
+		---------------------------
+		
+	[DONE]Use this for heading, lat, and long coordinates.
+		
+		
+
+	You may want to go back and fix Rover Navigation to average/filter out bad heading and GPS data as something you might get a jump in data.
+	Also you probably only want to check GPS/heading every once in a while because it can jump a lot and cause the rover to go all over the place.
+	Rely on encoders and turn timing more.
+	
+	Make take a few samples, sort the data, then get the median (the number in the middle of the sorted array)
+			https://mathbits.com/MathBits/CompSci/Arrays/Sorting.htm
+
+			
+			
+	---------------------------	
+			
+				
+
+	Go back and change all Serial.begin(9600); to 	Serial.begin(PC_USB_BAUD_RATE);
+	
+			
+	[not sure what this means, oh well] servo.write(correction_angle)						
+	
+	
+	
+	Maybe go back and use #define for Serial1, Serial2, and Serial3 instead of hardcoding them. Make sure to test one first to see if it works (and for all functions, not just Serial.begin)
+	
+	
+	Note: Try not to add any more functionality that will delay your project. Write a good enough project, take what you learned, and move on to school.
+
+	
+	
+	[DONE]Test
+		PrintSerialAlive
+			
+			
+
+
+	[DONE] LaserControlTester. Test this using COMM Broadcast
+							
+							
+	[DONE] NEED TO REPLACE MAIN and NAVI Arduino boards since I fried it by connecting them to a USB hub with an A/C Adapter with 12V instead of 5V.
+	
+	
+[DONE]Connect Xbees to the explorer as well. The explorers were confirmed fried, but the Xbees may (or may not) be still good.
+		[DONE, works]Both ID 0001 annd 0005 Xbees with the Explorer boards when they have come in the mail.	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+	[DONE, needs rework]MotorAndServoTester_MAIN
+	[DONE, needs rework]MotorAndServoTester_NAVI
+		[DONE, wasn't working]review rover encoder output when testing these
+		[DONE, works but when your turn it back on, the calibration is thrown off] test mosfet off
+	also run AnalogSignalsTester at the same time to capture the current readings		
+	try this code on an external test arduino
+	try outputting the encoder counts
+		then if it works, try outputting the counts when connected to the rover
+		then check algorithm
+	measure voltages and check wiring too if you must (though it both MAIN and NAVI have the issue, it's probably the code)
+	then re-run tests for:
+		MotorAndServoTester_MAIN
+		MotorAndServoTester_NAVI
+		
+	Try fixing the code using interrupt timers
+		https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
+				
+	
+	NEED TO DO:
+	[DONE, encoders didn't work on both NAVI and MAIN]Still need to read the encoder output and test it.	
+	[DONE]Still need to test the motor mosfet controller.
+	[DONE, need to analyzer]also run AnalogSignalsTester at the same time to capture the current readings
+	
+	
+		
+[DONE]FIX THE ENCODERS FOR MAIN AND NAVI
+	look at the code and any obvious issues
+		[DONE, fixed]found one part of the code that was left for debugging that should be uncommented out.
+		[DONE, fixed, using output compare interrupts to call the timer->Running() function so it occurs about every 1ms instead of when the loop() gets around to it]found problems with the timer code. it's slower than designed due to the unanticipated serial outputs
+			The following code may need to be modified if a new timer will be implemented:
+				[DONE]AnalogLedTester
+				[DONE]AnalogSignalsTester
+				[DONE]IMUTester
+				[DONE]MotorAndServoTester_MAIN
+				[DONE]MotorAndServoTester_NAVI
+				[DONE]NavigationTester_AUXI
+					Test with (no new changes on code(s) below though):
+						NavigationTester_MAIN
+						NavigationTester_NAVI
+				[DONE, not yet tested, but so wasn't any of this code yet. still in development]Rover_StateMachine_COMM
+			UpTimer is also effected, so besides AnalogSignalsTester, the following code also needs a similar solution using output compare timer interrupts.
+				[DONE, fixed and tested]UpTimeCounter
+			
+	
+	
+		
+FINISH REGRESSION TESTING
+	[DONE]NavigationTester_AUXI
+	[DONE]NavigationTester_MAIN
+	[DONE]	NavigationTester_NAVI
+	
+Retest due to encoder direction updates
+	[DONE]MotorAndServoTester_MAIN
+		Encoder Direction Works
+		Mid Right Motor Encoder at first didn't detect again. After jiggling wires on MAIN and the Digital CCA, it seems to work now.
+	[DONE]MotorAndServoTester_NAVI
+		Encoder Direction Works
+		
+	
+	
+	
+	[DONE] Need to go back and test everything after replacing it.
+	[DONE] See "Regression Testing ... txt": K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results
+
+
+
+ANALYZE DATA FOR ANALOG SIGNALS TESTER
+	[they didn't make great sense. probably won't use the data much. only the 7V current works okay when motors are forward]See if the currents make sense.
+	[DONE]Maybe do a gdiff on the different files to see if any changes are observed when motor is stopped, moving forward, backward, etc.
+	[there wasn't much drop, which makes sense since it's regulated. the 7V wasn't working though. This is a known issue.]Take a look at the voltages as well to look for any voltage drops.
+		Note: For the 7.2V sense it isn't giving correct results. I tried measuring the blue wire on AMUX CCA 1 J2-7 but I didn't measure anything. So perhaps the wire that's coming from the CURRENT CCA is loose or something. But it's not worth taking the rover apart.
+	
+	See: data to analyze part 1_09-04-17v1 and data to analyze part 2_09-04-17v1
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Test Results
+
+	[DONE]Convert Rover State Machine COMM to use the bitbooleanflags
+	[just moved strings used with strcmp to program memory. this reduced some ram use, about 4%. move on for now and redesign later if needed]Redesign the state machines due to memory limitations
+		[After converted boolean flags to byte flags, only 1% of memory was saved.]Note: With a quick test, 12% memory is saved when all the boolean flags for the filter were removed.
+		
+		
+	I just realized I should use command tags as the command and the data as the data. Sending command tags and command strings + data is redundant. It should just be command tags + data.
+	
+	Note: Command tags are commands, but they are enumarated to be more efficient and/or standardized. Also it allows for less characters needing to be sent with every command since all commands are limited to 3 characters.
+				i.e. Instead of writing out hi, it will be 002 to represent that message.
+				
+				
+	[FIXED] Found out that the RoverCommandCreator::createCmd  in CREATE_DATA forgot to add the * as part of the header
+	[FIXED] Fix RoverCommandCreator::createCmd to add the * (as part of the header format) in the command as well
+	[DONE]Relabel RoverCommandCreator to RoverCommandProcessor
+	
+	
+	
+	[DONE]Write methods for the RoverCommandProcessor class and the DataType class such that it can take in a rovercommand and break it up to Command Tag and Command Data
+	 
+	 [DONE]work on DataType::charsToByte
+	 [DONE]and work on RoverCommandProcessor::parseCmd
+	 
+	 
+	 [DONE]Then go back to Rover_StateMachine_COMM and update commandirector to use RoverCommandProcessor to parse out data and commandTag
+		Note: the first three characters of the receivedCommand should be parsed out into two pieces: command tags and the command data
+		[DONE]all strcmp should be comparing the cmd tags with the tags from RoverCommandDefs.h instead of sommands like hi, bye, sysgo, etc.
+		[DONE]maybe delete some of the prog mem arrays for cmd strings if no longer needed (to save memory)
+	
+	
+	
+		[DONE]Instead of sending /-c5--*hi, etc. it should be /-c5--*002hi
+		
+		
+				
+		Update all notes/references for sending /-c5--*002hithere in the rovercomm state machine as well as the where left off
+		
+			Is:
+				/-c500002nodata
+			Should be:
+				/-c5--*002hi
+			in order to match the format
+				/OcDLL*CCCC
+			
+			
+	
+		when have time wingrep /OcDLL*CCCC and update all references with CCCC should be tttdddd... where ttt is the 3 digit command tag, and dddd is the data
+			/OcDLL*tttdddd 
+			
+	
+			
+		NOTE:		
+			I need to fix my messages for createDataFromQueue or fix the way the commanddirector processes commands.
+				[NAH]right now it sends commands via the command tags and not the data. so either allow createDataFromQueue to also put in the commands under the data
+				[DONE, YES DO THIS]or more likely, fix commanddirector to read the tags and not the data string to determine commands. then have it read the data string if it's expected data with the commands
+				
+				
+			Updated ROVER_DATA_BUFFER_SIZE from 120 to 100
+			Updated UNIV_BUFFER_SIZE from 120 to 100
+					
+					
+			Moved _MAX_ROVER_COMMAND_DATA_LEN_ in RoverConfig to be under the #ifdef _ROVERDATA. You may have to #define _ROVERDATA in any code later if you build it and it doesn't work.
+			
+			
+			
+
+----------------------------------
+[DONE]
+----------------------------------
+			In RoverData:
+				rename _roverCommType to _roverDestinationCommType
+				create _roverOriginCommType
+				rename setCommType to setDestinationCommType
+				rename getCommType to getDestinationCommType			
+				create setOriginCommType
+				create getOriginCommType
+				delete setData, getData, _dataString, clearData
+				create
+						getCommandData()
+						setCommandData()
+						clearCommandData()
+						_commandData
+						getCommandTag()
+						setCommandTag()
+						clearCommandTag()
+						_commandTag
+				add _imuDataString[ROVER_IMU_DATA_BUFFER_SIZE]; (it's still required for IMU data)
+					and any functions needed to support it
+					i.e.
+						setData
+						getData
+					
+			
+			In RoverComm:
+				[DONE]delete RoverComm::clearRxDataVariables() and move it's algorithm into RoverComm::reset()
+				[DONE]go through and change any references to clearRxDataVariables(0 with reset()
+				[DONE]RoverData still needs char _imuDataString[ROVER_IMU_DATA_BUFFER_SIZE] which is separate from RoverComm's _rxDataString, such that the raw received string is stored separately from the validated IMU data (which is longer than the regular size of the command data, _commandData[_MAX_ROVER_COMMAND_DATA_LEN_].
+				[DONE]rename validateData to parseAndValidateData()
+					Note: it will check to see if it's IMU data or Rover Command data. If it's Rover Command data it will check the data framing as well as the origin and destination of the message. Once valid, it will save the data, the origin, and the destination into its RoverData object as well.)
+				[DONE]_destinationCommType should be removed
+				[DONE]RoverComm::getDestinationCommType should be removed (and RoverData->getDestinationCommType will take its place)
+				[DONE]The commandType extracted in RoverComm should be set to it's RoverData Object's _roverDestinationCommType using setDestinationCommType (once called setCommType)
+				[DONE]then also parse and validate the origin commtype as well
+					[DONE]once done, set it to the RoverData Object's _roverOriginCommType
+				[DONE]then have it also parse the commandTag and commandData as well and save it into RoverData				
+
+				
+			In RoverCommandProcessor:
+				[DONE]delete the parseCmd. It is now being implement in RoverComm's validate data
+				[DONE]Rename RoverCommandProcessor to RoverCommandCreator
+
+				
+				
+			
+			In Rover_StateMachine_COMM:
+			[DONE]update the commandDirection arguments
+				[DONE]i.e. WAS: void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte originRoverCommType, byte destinationRoverCommType)
+				[DONE]SHOULD BE: update it such that it takes in the correct parameters and not any unnessary ones. Many of this is already parsed stored when parseAndValidateData() was called in an earlier state
+					[DONE]pass it a rover data such as roverDataCh2_COMM
+					[DONE]Update such that commandDirector no longer calls roverCommand->getCommand()
+					[DONE]instead you can go straight to commandDirector and pass it the roverData object: roverDataCh2_COMM, etc.
+			[DONE]In the commandDirector, maybe create a different pointer for the RoverData (i.e. commandDataForMain and commandDataForCmnc) and have them point to 
+			[DONE]rid roverCommandData_MAIN and roverCommandData_CMNC and create 
+			[DONE]Update it so you no longer need roverCommand->parseRxdMessage(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
+			
+			
+
+
+			
+	
+-------------------State Machine for COMM
+
+[DONE] I got the whole sync mode loop in place.
+[DONE]Also any Tx code is supposed to be move out of commandDirector as it transmits data in a different state. Only flags (to send data or control outputs) should be changed and messages should be loaded into queues at this point.
+[DONE]system ready message(s) from MAIN
+[DONE]system go message(s) from MAIN
+[DONE]hw reset requests message(s) from MAIN
+[DONE]sw reset requests message(s) from MAIN
+[DONE]generic status error message(s) from MAIN (redirected from AUXI)
+[DONE]Add other commands in the framework for COMM in commandDirector
+[DONE] first, go through all other COMM code and add all the objects I will need to the state machine code and get them created.
+[DONE, i have 50% memory left]see how much memory I have left. if it's not an issue, continue, else you'll need to redesign and trim the fat
+[DONE]use command creator to create commands with headers
+	
+		
+	UPDATE: I just tested to see if two buffers will work and it won't. The memory usage went from 53% to 59% and the program crashed. So will have to redesign code.
+		[DONE, the functions can't be broken out due to memory limitations, redesign is needed]working on trying to break up the commandDirector so TX_COMMUNICATIONS and CREATE_DATA can handle it's own functions instead of all in commandDirector. but there may be a memory limitation where one buffer may have to be shared so create data and txdata may have to happen right away instead of being broken up.
+		[DONE] last thing i did was removed the received command, so i broke up the dependency between commandDirector and txData. Then I moved the txData function into TX_COMMUNICATIONS. this assumes there can be enough memory for two buffers. else if not, you'll have to move txdata back into commandDirector.
+		[DONE, OUT OF DATE]try to work on the hi command in command director as a template. the goal is to split up functions for CREATE_DATA and TX_COMMUNICATIONS if possible. you may have buffer limitations, and may have to share and redesign.
+		[OUT OF DATE]redesign code such that data is created and transmitted from commandDirector and not broken into different states
+			[OUT OF DATE]TX_COMMUNICATIONS should be deleted
+				[OUT OF DATE]data redirection should happen at the time of datafilter?
+			[OUT OF DATE]CREATE_DATA should be deleted
+				[OUT OF DATE]data should be created in real time (i.e. at READ_INPUTS or PROCESS_DATA??)
+		[OUT OF DATE]best to read through the whole state machine for COMM, redesign it, code it, test it. once good with memory limitations and all... then update the state machine templates for MAIN, AUXI, and NAVI
+			
+
+
+	[DONE, at least for the code that is ready now. else added placeholders. already completed for hi, bye, and invalid. now work on it for other commands]Finish with commandDirector() and splitting up functions and using the message queues. then make the string in CREATE_DATA and send it in TX_COMMUNICATION.									
+									
+									

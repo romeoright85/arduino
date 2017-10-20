@@ -169,9 +169,6 @@ char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between MAIN a
 char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
 
 
-RoverData * roverDataForMain;//pointer used access the RoverData which has the command data outgoing to MAIN
-RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
-
 
 /*
 //#DELETE ME
@@ -248,6 +245,12 @@ RoverData * roverDataCh2_COMM = new RoverData();
 RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 //Command Parsers
 RoverCommand * roverCommand = new RoverCommand();//This object is shared between MAIN and COMM since the Arduino doesn't have enough memory to support two of these objects
+//Rover Data Pointers for use with either internal processing or outgoing messages
+RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data outgoing to COMM
+RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
+RoverData * roverDataForMain;//pointer used access the RoverData which has the command data outgoing to MAIN
+
+
 
 
 
@@ -903,7 +906,7 @@ byte rxData(RoverComm * roverComm, byte roverCommType) {
 	byte dataStatus = DATA_STATUS_NOT_READY;
 
 	//Note: Make sure validateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
-	if (roverCommType == ROVERCOMM_CMNC)
+	if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)	
 	{
 		
 		if (_CMNC_SERIAL_.available() > 1)
@@ -982,7 +985,7 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 	 //else check to see if the data was for other cases
 	else if (redirectOption == DATA_REDIRECT_ENABLED)
 	{
-		if (roverCommType == ROVERCOMM_CMNC)
+		if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)	
 		{
 			//if the data is for CMNC, transmit the data out from COMM to CMNC
 			//Set redirect to CMNC flag to true			
@@ -1036,18 +1039,43 @@ void commandDirector(RoverData * roverDataPointer)
 	//Allow for all non-conflicting commands to run.
 	//Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 
+	
+	
+	
+	byte originRoverCommType;//holds the received data's origin
+	byte destinationRoverCommType;//holds the received data's destination
+	byte commandTag;//holds received data's commandtag
+
+	
+	//Get the received data's origin and destination
+	originRoverCommType = roverDataPointer->getOriginCommType();
+	destinationRoverCommType = roverDataPointer->getDestinationCommType();	
+		
+	//Get the command tag from the Rover Data Object
+	commandTag = roverDataPointer->getCommandTag();
+		
+	
+	//Setting the roverDataPointer in order to route where the rover command data will be routed to
+	//Clears/resets all data pointers before setting them.
+	clearRoverDataPointers();
+	//Sets the default such that the rover command data goes to the destination of the command. If needed, this can be overwritten by the command tag if/else statements
+	setRoverDataPointer(roverDataPointer, destinationRoverCommType);
+	//Note: Unless overwritten, most of the time the roverDataPointer should be going to COMM (else it would have been redirected already).
+	//Special cases for commandDirector (non-rerouting) would be when it redirects itself to the original sender (i.e. when the command is a request for data/status. i.e. PIR Status request)
+	
+	
+	
 
 //FIX ME LATER NEXT WEEK
 		/*
-		WRITE ME LATER
-		detect the destination of the rover command data.
-		If the destination is COMM, then just process the data 
-		Else if the destination was CMNC then set
-			roverDataForCMNC = roverDataPointer;
-		Else if destination was MAIN, AUXI, or NAVI then set
-			roverDataForMain = roverDataPointer;
-			
+	
+		LEFT OFF:
 		then update createDataFromQueue to grab the roverDataForMain->getCommandData() and roverDataForCMNC->getCommandData() to use that data when it's creating it's command	
+			make sure to check for if not null!!
+		also fix the code for redirect as well to use the roverdatapointer's ->getCommandData() command (unless the whole data is being sent as received)
+			see dataDirector()
+				update the code from "byte roverCommType = roverData->getCommType();//get the roverComm Destination" to the new functions it has
+			update redirectData as well
 		*/
 
 
@@ -1069,6 +1097,9 @@ void commandDirector(RoverData * roverDataPointer)
 	}//end else
 	//else do nothing
 */
+
+
+
 
 	//=====Non-Conflicting Functions					
 	//Run lower priority functions here. (i.e. system ready msgs)
@@ -1168,6 +1199,11 @@ void commandDirector(RoverData * roverDataPointer)
 	//This checks to see if the receivedCommand matches any of the known values. Else it's an invalid command
 	else if (commandTag == CMD_TAG_ESTABLISH_SECURE_LINK && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_))//FIX ME LATER, change the actual send command to compare later (instead of "esl" - establish secure link)
 	{
+	
+	
+//WRITE LATER
+		//maybe add a check here to check the command data for a string which is the "key code" or "rfid tag" used to establish secure link
+	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
 		currentMode = NORMAL_OPERATIONS;//Set mode to NORMAL_OPERATIONS *begin*
 		//set flag for secure link established
@@ -1213,7 +1249,8 @@ void commandDirector(RoverData * roverDataPointer)
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
 		//Note: The PIR status message will be created in the CREATE_DATA state
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (originRoverCommType == ROVERCOMM_CMNC)
+				
+		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)
 		{
 			cmnc_msg_queue = CMD_TAG_PIR_STATUS;			
 		}//end if
@@ -1221,7 +1258,10 @@ void commandDirector(RoverData * roverDataPointer)
 		{
 			main_msg_queue = CMD_TAG_PIR_STATUS;		
 		}//end else if	
-
+		//Clears/resets all data pointers before setting them.
+		clearRoverDataPointers();
+		//Sets the roverDataPointer to the origin
+		setRoverDataPointer(roverDataPointer, originRoverCommType);//override the default and send the response back to the requestor
 
 		
 	}//end else if			
@@ -1236,7 +1276,7 @@ void commandDirector(RoverData * roverDataPointer)
 	{
 	
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (originRoverCommType == ROVERCOMM_CMNC)
+		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;			
 		}//end if
@@ -1245,13 +1285,20 @@ void commandDirector(RoverData * roverDataPointer)
 			main_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;		
 		}//end else if		
 		
+		
+		//Clears/resets all data pointers before setting them.
+		clearRoverDataPointers();
+		//Sets the roverDataPointer to the origin
+		setRoverDataPointer(roverDataPointer, originRoverCommType);//override the default and send the response back to the requestor
+	
+				
 	}//end if
 	 //Bye Command - DEBUG
 	else if (commandTag == CMD_TAG_DEBUG_BYE_TEST_MSG && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
 	{
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (originRoverCommType == ROVERCOMM_CMNC)
+		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;			
 		}//end if
@@ -1260,6 +1307,10 @@ void commandDirector(RoverData * roverDataPointer)
 			main_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;		
 		}//end else if		
 
+		//Clears/resets all data pointers before setting them.
+		clearRoverDataPointers();
+		//Sets the roverDataPointer to the origin
+		setRoverDataPointer(roverDataPointer, originRoverCommType);//override the default and send the response back to the requestor
 
 	}//end else if
 	 //Invalid - DEBUG
@@ -1267,7 +1318,7 @@ void commandDirector(RoverData * roverDataPointer)
 	{
 	
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (originRoverCommType == ROVERCOMM_CMNC)
+		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)
 		{
 			cmnc_msg_queue = CMD_TAG_INVALID_CMD;			
 		}//end if
@@ -1275,7 +1326,13 @@ void commandDirector(RoverData * roverDataPointer)
 		{
 			main_msg_queue = CMD_TAG_INVALID_CMD;		
 		}//end else if	
-	}
+		
+		//Clears/resets all data pointers before setting them.
+		clearRoverDataPointers();
+		//Sets the roverDataPointer to the origin
+		setRoverDataPointer(roverDataPointer, originRoverCommType);//override the default and send the response back to the requestor
+
+	}//end else if
 	//else output nothing	
 		
 
@@ -1292,7 +1349,7 @@ void createDataFromQueue(byte roverCommDestination)
 	
 	
 	//Sets which queue the message should go to based on which queue it's processing right now.  Also selects the correct rover command data for that destination as well.
-	if (roverCommDestination == ROVERCOMM_CMNC)
+	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination == ROVERCOMM_PC_USB)
 	{
 		queueOfInterest = cmnc_msg_queue;
 		//#DELETE ME //roverCommandDataOfInterest = roverCommandData_CMNC;
@@ -1427,7 +1484,7 @@ void redirectData()
 
 		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
 		//Priority 1: MAIN (MAIN, AUXI, or NAVI) to CMNC
-		if (roverCommType == ROVERCOMM_CMNC)
+		if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
 		{
 			//if the data is for CMNC, transmit the data out to CMNC
 			txData(roverDataCh2_COMM->getData(), ROVERCOMM_CMNC);
@@ -2125,13 +2182,16 @@ void runModeFunction_default()
 
 
 void InterruptDispatch1() {
+
+//WRITE ME LATER!!
+
 	//pirSensor->isrUpdate();
-}
+}//emd of InterruptDispatch1()
 
 void InterruptDispatch2() {
 	//Have to keep the ISR short else the program won't work
 	sleeperCOMM->isrUpdate();//update the awake flag to reflect current status
-}
+}//end of InterruptDispatch2()
 
 
 
@@ -2139,8 +2199,32 @@ void InterruptDispatch2() {
 char * getMsgString(byte arrayIndex) {
 	memset(programMem2RAMBuffer, 0, sizeof(programMem2RAMBuffer));//clear char array buffer
 	return strcpy_P(programMem2RAMBuffer, (char*)pgm_read_word(&(msg_str_table[arrayIndex])));//copy the fixed string from flash into the char buffer
-}
+}//end of getMsgString()
 
 
 
+void clearRoverDataPointers()
+{
+	//Clears/resets all data pointers
+	roverDataForCOMM = NULL;
+	roverDataForCMNC = NULL;
+	roverDataForMain = NULL;
+}//end of clearRoverDataPointer()
 
+void setRoverDataPointer(RoverData * roverDataPointer, roverCommType)
+{
+	//This sets the roverDataPointer to the desired roverCommType.
+	//Note: This function can be called more than once to set more than one roverDataPointer to the same data (i.e. if the same data needs to be shared in multiple places)
+	if(roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
+	{
+		roverDataForCMNC = roverDataPointer;
+	}//end if
+	else if(roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
+	{
+		roverDataForMain = roverDataPointer;
+	}//end else if
+	else//the roverCommType should be for this local Arduino (i.e. ROVERCOMM_COMM)
+	{
+		roverDataForCOMM = roverDataPointer;
+	}//end else
+}//end of setRoverDataPointer()
