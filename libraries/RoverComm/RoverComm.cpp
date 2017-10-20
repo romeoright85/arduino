@@ -54,11 +54,10 @@ boolean RoverComm::parseAndValidateData()
 	char cmdDataDestinationRvrComm[BUFFER_SIZE_2];	
 	char cmdDataCommandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];
 	char cmdDataCommandTagCharArray[CMD_DATA_CMD_TAG_ARRAY_SIZE];
-	
-	
-	
-	
 	byte commandType;
+	
+	//Clears RoverData object
+	this->_rxRoverDataPointer->reset();//clears the origin and destination rover comm type, the rover command data, and rover command tag before starting anything else
 
 	#ifdef _DEBUG_OUTPUT_RXDATA_
 		Serial.println(F("Pre Trim Rx Data:"));//DEBUG
@@ -131,19 +130,11 @@ boolean RoverComm::parseAndValidateData()
 		#endif
 
 		//Reroute the IMU AHRS data to CMNC	
-		//set the destination RoverComm Type in the RoverData object
-		if( ! this->validateThenSetDestinationRoverCommType(ROVERCOMM_CMNC) )//if the validateThenSetDestinationRoverCommType returned false
-		{
-			//the destination rover comm type was invalid
-			this->_rxRoverDataPointer->reset();//clears the origin and destination rover comm type, the rover command data, and rover command tag		
-			this->reset();//clear RoverComm's _rxDataString and index before exiting this function
-			return false;//end the data validation if the RoverComm Type is invalid, no reason to move on. Returns false for invalid data.		
-		}//end if
-		
-		//Now that the destination RoverComm Type was set in the RoverData object
+		//set the destination RoverComm Type in the RoverData object		
+		this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_CMNC);		
 		//move on with setting the IMU data
 		this->_rxRoverDataPointer->setIMUData(this->_rxDataString, this->getRxDataLength());//save the raw data as the IMU data in the RoverData object
-		this->reset();//clear RoverComm's _rxDataString and index before exiting this function
+		//If the data is valid and true is being returned, then do not clear the data yet, as it might be used for redirection. Instead, data should be cleared before receiving new data (i.e. before rxData() is called)
 		return true;//Returns true for valid data.
 	}//end if
 	//==Process for the Rover Data Format==	
@@ -193,7 +184,7 @@ boolean RoverComm::parseAndValidateData()
 		//1a. Extract the command data from the _rxDataString
 		CharArray::substring(this->_rxDataString, CharArray::stringSize(this->_rxDataString, this->getRxDataLength()), 10, cmdDataCommandDataCharArray);//With No End Index, goes to the end of the array or to the terminating character (input char array, array size, start index, output char array). Note the array size you can use the stringSize() function as a helper. Note: Start index can be as small as 0.
 		//1b. Set the command data to the value of _commandData in the Rover Data object
-		this->setCommandData(cmdDataCommandDataCharArray, sizeof(cmdDataCommandDataCharArray)/sizeof(cmdDataCommandDataCharArray[0]));
+		this->_rxRoverDataPointer->setCommandData(cmdDataCommandDataCharArray, sizeof(cmdDataCommandDataCharArray)/sizeof(cmdDataCommandDataCharArray[0]));
 		
 		//2. Set the rover command tag
 		//2a. Extract the command tag from the _rxDataString
@@ -202,7 +193,7 @@ boolean RoverComm::parseAndValidateData()
 		//2b. Convert the command tag char array to a byte and use it to set the value of _commandTag in the Rover Data object
 		this->_rxRoverDataPointer->setCommandTag(DataType::charsToByte(cmdDataCommandTagCharArray));
 				
-		this->reset();//clear RoverComm's _rxDataString and index before exiting this function
+		//If the data is valid and true is being returned, then do not clear the data yet, as it might be used for redirection. Instead, data should be cleared before receiving new data (i.e. before rxData() is called)
 		return true;//Returns true for valid data.
 			
 	}//end else if
@@ -230,19 +221,19 @@ boolean RoverComm::validateThenSetOriginRoverCommType(char * roverCommTypeCharAr
 	switch(commandType)
 	{
 		case ROVERCOMM_CMNC:
-			this->_rxRoverDataPointer->validateThenSetOriginRoverCommType(ROVERCOMM_CMNC);			
+			this->_rxRoverDataPointer->setOriginCommType(ROVERCOMM_CMNC);			
 		break;
 		case ROVERCOMM_NAVI:
-			this->_rxRoverDataPointer->validateThenSetOriginRoverCommType(ROVERCOMM_NAVI);			
+			this->_rxRoverDataPointer->setOriginCommType(ROVERCOMM_NAVI);			
 		break;
 		case ROVERCOMM_AUXI:
-			this->_rxRoverDataPointer->validateThenSetOriginRoverCommType(ROVERCOMM_AUXI);			
+			this->_rxRoverDataPointer->setOriginCommType(ROVERCOMM_AUXI);			
 		break;
 		case ROVERCOMM_MAIN:
-			this->_rxRoverDataPointer->validateThenSetOriginRoverCommType(ROVERCOMM_MAIN);			
+			this->_rxRoverDataPointer->setOriginCommType(ROVERCOMM_MAIN);			
 		break ;
 		case ROVERCOMM_COMM:
-			this->_rxRoverDataPointer->validateThenSetOriginRoverCommType(ROVERCOMM_COMM);			
+			this->_rxRoverDataPointer->setOriginCommType(ROVERCOMM_COMM);			
 		break;
 		default:
 			//the RoverComm Type didn't match any of the results
@@ -260,19 +251,19 @@ boolean RoverComm::validateThenSetDestinationRoverCommType(char * roverCommTypeC
 	switch(commandType)
 	{
 		case ROVERCOMM_CMNC:
-			this->_rxRoverDataPointer->validateThenSetDestinationRoverCommType(ROVERCOMM_CMNC);			
+			this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_CMNC);			
 		break;
 		case ROVERCOMM_NAVI:
-			this->_rxRoverDataPointer->validateThenSetDestinationRoverCommType(ROVERCOMM_NAVI);			
+			this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_NAVI);			
 		break;
 		case ROVERCOMM_AUXI:
-			this->_rxRoverDataPointer->validateThenSetDestinationRoverCommType(ROVERCOMM_AUXI);			
+			this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_AUXI);			
 		break;
 		case ROVERCOMM_MAIN:
-			this->_rxRoverDataPointer->validateThenSetDestinationRoverCommType(ROVERCOMM_MAIN);			
+			this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_MAIN);			
 		break ;
 		case ROVERCOMM_COMM:
-			this->_rxRoverDataPointer->validateThenSetDestinationRoverCommType(ROVERCOMM_COMM);			
+			this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_COMM);			
 		break;
 		default:
 			//the RoverComm Type didn't match any of the results

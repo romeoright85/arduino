@@ -12,7 +12,6 @@ Currently the priority level is not being used to prioritize right now. It's jus
 
 //Rover_StateMachine_COMM
 
-//DEBUG
 
 
 /*
@@ -244,7 +243,7 @@ RoverComm * roverComm_Ch1 = new RoverComm(roverDataCh1_COMM);
 RoverData * roverDataCh2_COMM = new RoverData();
 RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 //Command Parsers
-RoverCommand * roverCommand = new RoverCommand();//This object is shared between MAIN and COMM since the Arduino doesn't have enough memory to support two of these objects
+//#DELETE ME//RoverCommand * roverCommand = new RoverCommand();//This object is shared between MAIN and COMM since the Arduino doesn't have enough memory to support two of these objects
 //Rover Data Pointers for use with either internal processing or outgoing messages
 RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data outgoing to COMM
 RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
@@ -258,8 +257,8 @@ RoverReset * resetArray[] = {
 	roverDataCh1_COMM,
 	roverComm_Ch1,
 	roverDataCh2_COMM,
-	roverComm_Ch2,
-	roverCommand
+	roverComm_Ch2
+	//#DELETE ME//roverCommand
 };//for pointers, pass them directly, for objects pass the address
 
 
@@ -905,7 +904,7 @@ byte rxData(RoverComm * roverComm, byte roverCommType) {
 	byte counter;
 	byte dataStatus = DATA_STATUS_NOT_READY;
 
-	//Note: Make sure validateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
+	//Note: Make sure parseAndValidateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
 	if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)	
 	{
 		
@@ -971,10 +970,11 @@ byte rxData(RoverComm * roverComm, byte roverCommType) {
 void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byte flagOfInterest)
 {
 	//Note: This function varies for different Arduinos
+			
 
 	BooleanBitFlags::clearFlagBit(flagSet, flagOfInterest);//initialize flag to false
 
-	byte roverCommType = roverData->getCommType();//get the roverComm Destination
+	byte roverCommType = roverData->getDestinationCommType();//get the roverComm Destination
 
 	if (roverCommType == ROVERCOMM_COMM)
 	{
@@ -990,7 +990,6 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 			//if the data is for CMNC, transmit the data out from COMM to CMNC
 			//Set redirect to CMNC flag to true			
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
-
 		}//end else if
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 		{
@@ -1060,23 +1059,12 @@ void commandDirector(RoverData * roverDataPointer)
 	clearRoverDataPointers();
 	//Sets the default such that the rover command data goes to the destination of the command. If needed, this can be overwritten by the command tag if/else statements
 	setRoverDataPointer(roverDataPointer, destinationRoverCommType);
-	//Note: Unless overwritten, most of the time the roverDataPointer should be going to COMM (else it would have been redirected already).
-	//Special cases for commandDirector (non-rerouting) would be when it redirects itself to the original sender (i.e. when the command is a request for data/status. i.e. PIR Status request)
+	//Note: The roverDataPointer should be going to COMM (else it would have been redirected already with dataDirector).
+	//However, it can be overwritten in the if/else conditions below based on the command tag for special cases like when it redirects itself to the original sender (i.e. when the command is a request for data/status. i.e. PIR Status request)
 	
 	
 	
 
-//FIX ME LATER NEXT WEEK
-		/*
-	
-		LEFT OFF:
-		then update createDataFromQueue to grab the roverDataForMain->getCommandData() and roverDataForCMNC->getCommandData() to use that data when it's creating it's command	
-			make sure to check for if not null!!
-		also fix the code for redirect as well to use the roverdatapointer's ->getCommandData() command (unless the whole data is being sent as received)
-			see dataDirector()
-				update the code from "byte roverCommType = roverData->getCommType();//get the roverComm Destination" to the new functions it has
-			update redirectData as well
-		*/
 
 
 
@@ -1338,27 +1326,44 @@ void commandDirector(RoverData * roverDataPointer)
 
 	return;
 }//end of commandDirector()
-void createDataFromQueue(byte roverCommDestination)
+void createDataFromQueueFor(byte roverCommDestination)
 {
 
 
 	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the createCmd with ROVERCOMM_COMM passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
 	
 	byte queueOfInterest;
-	char * roverCommandDataOfInterest;
+	char * commandDataOfInterest;//holds the rover's command data string
+	//#DELETE ME//char * roverCommandDataOfInterest;
 	
 	
-	//Sets which queue the message should go to based on which queue it's processing right now.  Also selects the correct rover command data for that destination as well.
-	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination == ROVERCOMM_PC_USB)
+	//Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
+	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination ==  ROVERCOMM_PC_USB)
 	{
 		queueOfInterest = cmnc_msg_queue;
+		if(roverDataForCMNC != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForCMNC->getCommandData();
+		}
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}
+		
 		//#DELETE ME //roverCommandDataOfInterest = roverCommandData_CMNC;
 //FIX ME LATER		
 	}//end if
 	else if (roverCommDestination == ROVERCOMM_MAIN)
 	{
 		queueOfInterest = main_msg_queue;		
-		
+		if(roverDataForMain != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForMain->getCommandData();
+		}
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}
 		//#DELETE ME //roverCommandDataOfInterest = roverCommandData_MAIN;
 //FIX ME LATER
 	}//end else if
@@ -1405,11 +1410,11 @@ void createDataFromQueue(byte roverCommDestination)
 		break;		
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, roverCommandDataOfInterest));			
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest));		
 		break;
 		case CMD_TAG_DEBUG_BYE_TEST_MSG:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, roverCommandDataOfInterest));
+			sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest));
 		break;	
 		case CMD_TAG_INVALID_CMD:
 			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)			
@@ -1438,7 +1443,7 @@ void createDataFromQueue(byte roverCommDestination)
 	
 	
 		
-}//end of createDataFromQueue()
+}//end of createDataFromQueueFor()
 void setAllCommandsTo(boolean choice)
 {
 	//Note: Right now this function doesn't discriminate where the commands are coming from. So if they're all set to true, in theory, for example CMNC can "inject" or "spoof" a command that looks like it's coming from somewhere else.
@@ -1465,9 +1470,12 @@ void setAllCommandsTo(boolean choice)
 void redirectData()
 {
 
+
+
 	/*
 	Note:
-	For program efficiency, instead of sending all redirect messages, it sends only one per channel
+	When redirectData() is called it will process and send data for both MAIN and then CMNC. redirectData() only has to be called once and it will redirect both data.
+	For program efficiency, instead of sending all redirect messages, it sends only one per channel.
 	This is because between each message transmission, there needs to be a delay (since the receiving code is designed only to receive so many messages at once.
 	And if there are a lot of redirects, it will be stuck in the TX_COMMUNICATIONS for a while.
 	*/
@@ -1475,37 +1483,37 @@ void redirectData()
 	byte roverCommType;
 
 
-	//Data from MAIN being redirected to CMNC
-	roverCommType = roverDataCh2_COMM->getCommType();//get the roverComm Destination for roverDataCh2_COMM
+	//1. Data from MAIN being redirected to CMNC
+	roverCommType = roverDataCh2_COMM->getDestinationCommType();//get the destination comm type for roverDataCh2_COMM
 
 	//Redirection from MAIN to CMNC
 	if (BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_))
 	{	
 
 		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
-		//Priority 1: MAIN (MAIN, AUXI, or NAVI) to CMNC
+		//Priority 1: From MAIN (MAIN, AUXI, or NAVI) to CMNC
 		if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
 		{
 			//if the data is for CMNC, transmit the data out to CMNC
-			txData(roverDataCh2_COMM->getData(), ROVERCOMM_CMNC);
+			txData(roverComm_Ch2->getRxData(), ROVERCOMM_CMNC);
 		}//end if
 		//Priority 2: No other cases
 		//else (place holder)
 			//Note: For the COMM there is only one other channel, so it always gets the priority
 	}//end if	
 	
-	//Data from CMNC being redirected to MAIN
-	roverCommType = roverDataCh1_COMM->getCommType();//get the roverComm Destination for roverDataCh1_COMM
+	//2. Data from CMNC being redirected to MAIN
+	roverCommType = roverDataCh1_COMM->getDestinationCommType();//get the destination comm type for roverDataCh1_COMM
 	
 	//Redirection from CMNC to MAIN, AUXI, or NAVI
 	if (BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, AUXI, or NAVI
 	{
 		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
-		//Priority 1: CMNC to MAIN, AUXI, or NAVI
+		//Priority 1: From CMNC to MAIN, AUXI, or NAVI
 		if ( roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_NAVI )
 		{
 			//if the data is for MAIN, AUXI, or NAVI, transmit the data out to MAIN
-			txData(roverDataCh1_COMM->getData(), ROVERCOMM_MAIN);
+			txData(roverComm_Ch1->getRxData(), ROVERCOMM_MAIN);
 		}//end if
 		//Priority 2: No other cases
 		//else (place holder)
@@ -1573,22 +1581,21 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 		//rxData() from MAIN
 		//1. Reset status flag
-		ch2Status = DATA_STATUS_NOT_READY;
-		//2. Clear data before getting new data				
-		roverDataCh2_COMM->clearData();
+		ch2Status = DATA_STATUS_NOT_READY;		
+		//2. Clear all Rx'ed data before getting new data				
+		roverComm_Ch2->clearRxData();		
 		//3. Receive data
-		ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
-		break;
+		ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function		break;
 	case DATA_VALIDATION:
 
 		//skip for CMNC
-
-		//validateData() from MAIN
+	
+		//parseAndValidateData() from MAIN
 		//Process/validate the data that was received
 		if (ch2Status == DATA_STATUS_READY)
 		{
 			//If the data is valid as well as parses it, set the status as such
-			if (roverComm_Ch2->validateData())
+			if (roverComm_Ch2->parseAndValidateData())
 			{
 				ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
 			}
@@ -1755,7 +1762,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		//Creates data for MAIN
 		if (main_msg_queue != CMD_TAG_NO_MSG)
 		{
-			createDataFromQueue(ROVERCOMM_MAIN);
+			createDataFromQueueFor(ROVERCOMM_MAIN);
 		}//end if
 		
 		
@@ -1772,12 +1779,13 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		//Skip creating data for CMNC
 
 		//Create data for MAIN			
-		//createDataFromQueue(ROVERCOMM_MAIN);
-		//createDataFromQueue(ROVERCOMM_CMNC);					
+		//createDataFromQueueFor(ROVERCOMM_MAIN);
+		//createDataFromQueueFor(ROVERCOMM_CMNC);					
 
 		break;
 	case TX_COMMUNICATIONS:
-				
+		//No redirection in the SYNCHRONIZATION mode
+	
 		//Sends data to MAIN
 		if(main_msg_queue != CMD_TAG_NO_MSG)
 		{
@@ -1790,7 +1798,11 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
 		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_);
 						
-						
+			
+
+		
+
+			
 		break;
 	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -1811,28 +1823,29 @@ void runModeFunction_SECURING_LINK(byte currentState)
 		//rxData() from CMNC
 		//1. Reset status flag
 		ch1Status = DATA_STATUS_NOT_READY;
-		//2. Clear data before getting new data				
-		roverDataCh1_COMM->clearData();
+		//2. Clear all Rx'ed data before getting new data				
+		roverComm_Ch1->clearRxData();
+
 		//3. Receive data
 		ch1Status = rxData(roverComm_Ch1, ROVERCOMM_CMNC);//Note: this is a local .ino function
 
 														  //rxData() from MAIN
 														  //1. Reset status flag
 		ch2Status = DATA_STATUS_NOT_READY;
-		//2. Clear data before getting new data				
-		roverDataCh2_COMM->clearData();
+		//2. Clear all Rx'ed data before getting new data				
+		roverComm_Ch2->clearRxData();
 		//3. Receive data
 		ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
 
 		break;
 	case DATA_VALIDATION:
 
-		//validateData() from CMNC
+		//parseAndValidateData() from CMNC
 		//Process/validate the data that was received
 		if (ch1Status == DATA_STATUS_READY)
 		{
 			//If the data is valid, set the status as such
-			if (roverComm_Ch1->validateData())
+			if (roverComm_Ch1->parseAndValidateData())
 			{
 				ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
 			}//end if
@@ -1845,12 +1858,12 @@ void runModeFunction_SECURING_LINK(byte currentState)
 		 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 
 
-		 //validateData() from MAIN
+		 //parseAndValidateData() from MAIN
 		 //Process/validate the data that was received
 		if (ch2Status == DATA_STATUS_READY)
 		{
 			//If the data is valid, set the status as such
-			if (roverComm_Ch2->validateData())
+			if (roverComm_Ch2->parseAndValidateData())
 			{
 				ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
 			}//end if
@@ -2211,7 +2224,7 @@ void clearRoverDataPointers()
 	roverDataForMain = NULL;
 }//end of clearRoverDataPointer()
 
-void setRoverDataPointer(RoverData * roverDataPointer, roverCommType)
+void setRoverDataPointer(RoverData * roverDataPointer, byte roverCommType)
 {
 	//This sets the roverDataPointer to the desired roverCommType.
 	//Note: This function can be called more than once to set more than one roverDataPointer to the same data (i.e. if the same data needs to be shared in multiple places)

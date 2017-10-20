@@ -58,16 +58,13 @@
 #define _ROVERDATA_H
 #define _ROVERCOMM_DEFINITIONS 
 #define _ROVERDATA
-
+#define _COMMAND_CREATION_DEFINITIONS	
 	
 	#include <Arduino.h>
 	#include <RoverDebug.h>
-	#include <RoverReset.h>
-	#ifndef _ROVERCOMM_DEFINITIONS	
-		#define _ROVERCOMM_DEFINITIONS	
-	#endif
+	#include <RoverReset.h>	
 	#include <RoverConfig.h>
-	#include <CharArray.h>
+	#include <CharArray.h>	
 	#include<RoverCommandDefs.h>
 	
 

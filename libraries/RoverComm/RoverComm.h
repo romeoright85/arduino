@@ -66,6 +66,7 @@
 	#include <RoverConfig.h>
 	#include <RoverData.h>
 	#include <CharArray.h>
+	#include <DataType.h>
 	
 	
 	//uncomment the debug flag below to print the received data string

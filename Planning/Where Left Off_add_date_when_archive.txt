@@ -27,7 +27,7 @@ LEFT OFF:
 
 	Summary: Finding duplicate code, so doing a code refactoring (to make it easier to read and maybe also save memory). 
 	
-	The last thing I did was I was editting RoverCommand.cpp to getMsgDestination and getMsgOrigin, in which that data was used in Command director and createDataFromQueue. I tested it and it worked half way (i.e. it grabbed the right origin and destination but didn't recognize the hi command, etc. for some reason. I didn't fix this problem yet. Still need to go back and fix why the hi and bye, etc. commands aren't working)
+	The last thing I did was I was editting RoverCommand.cpp to getMsgDestination and getMsgOrigin, in which that data was used in Command director and createDataFromQueueFor. I tested it and it worked half way (i.e. it grabbed the right origin and destination but didn't recognize the hi command, etc. for some reason. I didn't fix this problem yet. Still need to go back and fix why the hi and bye, etc. commands aren't working)
 	As I was digging through the code I found RoverComm already has getDestinationCommType but it's not used or implement. Then digging into it even some more I found RoverComm's validateData already extracts the destination as commandType. (used to validate it's a valid destination)
 	Also I found some duplicate code in RoverCommandProcessor and RoverComm's validate data
 		Refer "IN PROGRESS PRIOR TO 10/15/17" in this document.
@@ -39,18 +39,11 @@ LEFT OFF:
 #LEFT OFF HERE				
 ----------------------------------
 
+
+See //FIX ME LATER NEXT WEEK
 			
-			In Rover_StateMachine_COMM:
-						
-[IN PROGRESS, in commandDirector, see "//FIX ME LATER NEXT WEEK". still need to write the new algorithm] Update it so you no longer use RoverCommandProcessor's parseCmd anymore
-						Then within commandDirector function it will use 
-							roverData->getCommandData
-							roverData->getCommandTag
-							roverData->getOriginCommType
-							roverData->getDestinationCommType							
-[NEED TO DO]							
-				Update it from validateData to parseAndValidateData
-				
+			
+			
 [NEED TO DO]
 		In RoverComm:
 				see if setCommandData requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
@@ -61,18 +54,9 @@ LEFT OFF:
 				check to see if CharArray::stringSize requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
 					then go back through all code and make it consistent. use wingrep to see where CharArray::stringSize is used
 		
-				
-[NEED TO DO]				
-				In RoverCommand:
-					delete this object. it's now combined with RoverData
-			
-				
 [NEED TO DO]											
-				In Rover_StateMachine_COMM:
-				
-				Get the hi and bye command to work again. (check out the createDataFromQueue as well as the command director). I broke this part of the code before I started to refactor it. You may have to serial println, and debug it and see where it isn't working.				
-				Fix the data reroute using the new functions like getDestinationCommType() as well
-				
+				In Rover_StateMachine_COMM:							
+				Go through all code and see if I need to add the ROVERCOMM_PC_USB case for all places where it calls ROVERCOMM_CMNC (i.e. rxData and txData, etc.
 
 [NEED TO DO]					
 	Note: Once all code is tested and works on Rover_StateMachine_COMM, then go back to RoverData, RoverComm, RoverCommand, and maybe even Rover_StateMachine_COMM and delete out any commented out code (i.e. tagged with //#DELETE ME)
@@ -82,6 +66,11 @@ LEFT OFF:
 		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverCommand\delete me
 			and delete DELETEME_RoverCommand.cpp and DELETEME_RoverCommand.h
 		
+[NEED TO DO]				
+				In RoverCommand:
+					delete this object. it's now combined with RoverData
+
+					
 		
 [NEED TO DO]				
 		Test Codes:
@@ -113,7 +102,7 @@ LEFT OFF:
 
 
 		
-	finish createDataFromQueue and messages for it (or place holders)
+	finish createDataFromQueueFor and messages for it (or place holders)
 	the finish out the synchonization mode and move on to secure link
 	Note: pay attention to memory use!
 	
@@ -275,7 +264,7 @@ HIGHEST PRIORITY 2->[NEED TO DO]Use command creator to create commands. (it will
 					[NEED TO DO]So write READ_INPUTS for runModeFunction_SECURING_LINK() next until you go through all the states down the to TX_COMMUNICATIONS and send out any data from CMNC
 									[DONE]then go back and write the DATA_VALIDATION state in the SYNCHRONIZATION mode
 									[DONE]write the data filter for the data
-					[NEED TO DO] Write other message for createDataFromQueue()
+					[NEED TO DO] Write other message for createDataFromQueueFor()
 				[WHERE LEFT OFF 3]
 					[HOLD, actually write all of COMM first, to deal with any memory issues. you may have to change the state machines]Once the sync mode code is done for the COMM, write all other state machines for other Arduinos, and try to get it to sync up.
 					Then write the hardware reset code and try to get it to sync up after a hardware reset.
@@ -1483,8 +1472,8 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 	
 			
 		NOTE:		
-			I need to fix my messages for createDataFromQueue or fix the way the commanddirector processes commands.
-				[NAH]right now it sends commands via the command tags and not the data. so either allow createDataFromQueue to also put in the commands under the data
+			I need to fix my messages for createDataFromQueueFor or fix the way the commanddirector processes commands.
+				[NAH]right now it sends commands via the command tags and not the data. so either allow createDataFromQueueFor to also put in the commands under the data
 				[DONE, YES DO THIS]or more likely, fix commanddirector to read the tags and not the data string to determine commands. then have it read the data string if it's expected data with the commands
 				
 				
@@ -1555,12 +1544,31 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 			[DONE]In the commandDirector, maybe create a different pointer for the RoverData (i.e. commandDataForMain and commandDataForCmnc) and have them point to 
 			[DONE]rid roverCommandData_MAIN and roverCommandData_CMNC and create 
 			[DONE]Update it so you no longer need roverCommand->parseRxdMessage(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
-			
+			[DONE] Update it so you no longer use RoverCommandProcessor's parseCmd anymore
+						Then within commandDirector function it will use 
+							roverData->getCommandData
+							roverData->getCommandTag
+							roverData->getOriginCommType
+							roverData->getDestinationCommType							
+			[DONE] Update it from validateData to parseAndValidateData
 			
 
-
 			
-	
+			Memory Usage has seemed to be reduced by 3%. Great!
+				Compiling 'Rover_StateMachine_COMM' for 'Arduino/Genuino Uno'
+				Program size: 15,036 bytes (used 47% of a 32,256 byte maximum) (8.48 secs)
+				Minimum Memory Usage: 1031 bytes (50% of a 2048 byte maximum)
+			
+			In Rover_StateMachine_COMM:
+				
+				[DONE]Get the hi and bye command to work again. (check out the createDataFromQueueFor as well as the command director). I broke this part of the code before I started to refactor it. You may have to serial println, and debug it and see where it isn't working.				
+			
+			[DONE]Fix the data reroute using the new functions like getDestinationCommType() as well
+			[FIXED, found that when the data was valid in RoverComm::parseAndValidateData() that data should not be cleared yet since it might get redirected.]debug why redirect isn't working. somewhere the data is being cleared too early.
+				somewhere in parseandvalidatedata the data is being cleared. need to store the data somewhere else for redirection or move the redirection itself.
+				
+				
+				
 -------------------State Machine for COMM
 
 [DONE] I got the whole sync mode loop in place.
