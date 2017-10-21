@@ -292,7 +292,7 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 #else
 
 	char debugFixedData[] = "GPGGA,142103.400,3916.2242,N,07636.6542,W,1,3,3.90,183.6,M,-33.6,M,,*6B";
-	roverGps->setRxGPSData(debugFixedData, sizeof(debugFixedData) / sizeof(debugFixedData[0]));
+	roverGps->setRxGPSData(debugFixedData, sizeof(debugFixedData));
 
 	_SERIAL_DEBUG_CHANNEL_.print(F("Set to: "));//DEBUG
 	_SERIAL_DEBUG_CHANNEL_.println(roverGps->getRxGPSData());//DEBUG			

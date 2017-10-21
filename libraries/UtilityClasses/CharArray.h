@@ -15,8 +15,8 @@ class CharArray {
 	public:
 		CharArray();//constructor
 		~CharArray();//destructor
-		static int indexOf(char *, byte, char, byte);//Index Of - With start index provided (charArray, array size, char to find, start index), where array size is typically: sizeof(charArray) / sizeof(charArray[0])
-		static int indexOf(char *, byte, char);//Index Of - With no start index provided (charArray, array size, char to find), where array size is typically: sizeof(charArray) / sizeof(charArray[0])
+		static int indexOf(char *, byte, char, byte);//Index Of - With start index provided (charArray, array size, char to find, start index), where array size is typically: sizeof(charArray) if charArray is not a pointer, or sizeof(charArray) / sizeof(charArray[0]) if charArray is a pointer
+		static int indexOf(char *, byte, char);//Index Of - With no start index provided (charArray, array size, char to find), where array size is typically: sizeof(charArray) if charArray is not a pointer, or sizeof(charArray) / sizeof(charArray[0]) if charArray is a pointer
 				
 				
 		//Note: When using char array substrings, make sure the buffer size is 1 more bigger than the characters as you need room for the null terminating character

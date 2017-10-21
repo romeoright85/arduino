@@ -69,7 +69,7 @@ void BeaconLightAssembly::turnOn(byte beaconLightType1, byte beaconLightType2)
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOn(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -78,7 +78,7 @@ void BeaconLightAssembly::turnOn(byte beaconLightType1, byte beaconLightType2, b
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOn(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -87,7 +87,7 @@ void BeaconLightAssembly::turnOn(byte beaconLightType1, byte beaconLightType2, b
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOn(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -96,7 +96,7 @@ void BeaconLightAssembly::turnOn(byte beaconLightType1, byte beaconLightType2, b
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4, beaconLightType5 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOn(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -105,7 +105,7 @@ void BeaconLightAssembly::turnOn(byte beaconLightType1, byte beaconLightType2, b
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4, beaconLightType5, beaconLightType6 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOn(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -114,7 +114,7 @@ void BeaconLightAssembly::turnOn(byte beaconLightType1, byte beaconLightType2, b
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4, beaconLightType5, beaconLightType6, beaconLightType7 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOn(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -123,7 +123,7 @@ void BeaconLightAssembly::turnOn(byte beaconLightType1, byte beaconLightType2, b
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4, beaconLightType5, beaconLightType6, beaconLightType7, beaconLightType8 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOn(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -166,7 +166,7 @@ void BeaconLightAssembly::turnOff(byte beaconLightType1, byte beaconLightType2)
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOff(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -175,7 +175,7 @@ void BeaconLightAssembly::turnOff(byte beaconLightType1, byte beaconLightType2, 
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOff(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -184,7 +184,7 @@ void BeaconLightAssembly::turnOff(byte beaconLightType1, byte beaconLightType2, 
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOff(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -193,7 +193,7 @@ void BeaconLightAssembly::turnOff(byte beaconLightType1, byte beaconLightType2, 
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4, beaconLightType5 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOff(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -202,7 +202,7 @@ void BeaconLightAssembly::turnOff(byte beaconLightType1, byte beaconLightType2, 
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4, beaconLightType5, beaconLightType6 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOff(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -211,7 +211,7 @@ void BeaconLightAssembly::turnOff(byte beaconLightType1, byte beaconLightType2, 
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4, beaconLightType5, beaconLightType6, beaconLightType7 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOff(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}
@@ -220,7 +220,7 @@ void BeaconLightAssembly::turnOff(byte beaconLightType1, byte beaconLightType2, 
 {
 	byte beaconLightTypes[] = { beaconLightType1, beaconLightType2, beaconLightType3, beaconLightType4, beaconLightType5, beaconLightType6, beaconLightType7, beaconLightType8 };
 
-	for (byte i = 0; i <  sizeof(beaconLightTypes)/sizeof(beaconLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(beaconLightTypes); i++)
 	{
 		this->turnOff(beaconLightTypes[i]);//using delegation. Passing the beacon light type.
 	}

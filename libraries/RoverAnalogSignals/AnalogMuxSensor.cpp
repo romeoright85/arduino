@@ -10,7 +10,7 @@ AnalogMuxSensor::AnalogMuxSensor(byte amuxSel0Pin, byte amuxSel1Pin, byte amuxSe
 	this->_opAmpOutputPin = opampOutPin;
 
 	//copy the array passed from the function (where the size if fixed to 8 channels. Note you can't use sizeof() on an array passed. You either have to pass it as a separate variable or use a fixed size.
-	memcpy(this->_analogNames, analogNames, sizeof(this->_analogNames)/sizeof(this->_analogNames[0])); //memcpy(pointer to dest array, pointer to src array, size)
+	memcpy(this->_analogNames, analogNames, sizeof(this->_analogNames)); //memcpy(pointer to dest array, pointer to src array, size)
 
 	//configure the pins
 	pinMode(this->_AMUX_SEL_0_PIN, OUTPUT);
@@ -68,7 +68,7 @@ double AnalogMuxSensor::readVoltageValueOfAmuxChannel(byte aMuxChannel)
 }
 unsigned int AnalogMuxSensor::getRawADCValueOf(byte analogSignalName)
 {
-	for(byte i = 0; i< sizeof( this->_analogNames)/sizeof(this->_analogNames[0]); i++)
+	for(byte i = 0; i< sizeof( this->_analogNames ); i++)
 	{
 		if(this->_analogNames[i] == analogSignalName)
 		{
@@ -79,7 +79,7 @@ unsigned int AnalogMuxSensor::getRawADCValueOf(byte analogSignalName)
 }
 double AnalogMuxSensor::getVoltageValueOf(byte analogSignalName)
 {
-	for(byte i = 0; i< sizeof( this->_analogNames)/sizeof(this->_analogNames[0]); i++)
+	for(byte i = 0; i< sizeof( this->_analogNames ); i++)
 	{
 		if(this->_analogNames[i] == analogSignalName)
 		{
@@ -90,7 +90,7 @@ double AnalogMuxSensor::getVoltageValueOf(byte analogSignalName)
 }
 boolean AnalogMuxSensor::hasAnalogName(byte analogSignalName)
 {
-	for(byte i = 0; i< sizeof( this->_analogNames)/sizeof(this->_analogNames[0]); i++)
+	for(byte i = 0; i< sizeof( this->_analogNames ); i++)
 	{
 	if(this->_analogNames[i] == analogSignalName)
 		{

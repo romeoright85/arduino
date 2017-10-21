@@ -32,30 +32,30 @@ void loop() {
 	_PC_USB_SERIAL_.println(test1);
 
 
-	index = indexOf(test1, 4, 'l', sizeof(test1)/ sizeof(test1[0]));//array, start index, array size
+	index = indexOf(test1, 4, 'l', sizeof(test1));//array, start index, array size
 	_PC_USB_SERIAL_.println(index);
-	output = subCharArray(test1, index, sizeof(test1) / sizeof(test1[0]) - index);
+	output = subCharArray(test1, index, sizeof(test1) - index);
 	_PC_USB_SERIAL_.println(output);
-	output = subCharArray(test1, index, 10, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
+	output = subCharArray(test1, index, 10, sizeof(test1) - index);//end index is 5
 	_PC_USB_SERIAL_.println(output);
 
 
 
-	index = indexOf(test1, 'l', sizeof(test1) / sizeof(test1[0]));//array, start index, array size
+	index = indexOf(test1, 'l', sizeof(test1));//array, start index, array size
 	_PC_USB_SERIAL_.println(index);
 
-	output = subCharArray(test1, index, sizeof(test1) / sizeof(test1[0]) - index);
+	output = subCharArray(test1, index, sizeof(test1) - index);
 	_PC_USB_SERIAL_.println(output);
 
 	_PC_USB_SERIAL_.println("ok");
 
-	output = subCharArray(test1, index, 5, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
+	output = subCharArray(test1, index, 5, sizeof(test1) - index);//end index is 5
 	_PC_USB_SERIAL_.println(output);
-	output = subCharArray(test1, index, 6, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
+	output = subCharArray(test1, index, 6, sizeof(test1) - index);//end index is 5
 	_PC_USB_SERIAL_.println(output);
-	output = subCharArray(test1, index, 7, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
+	output = subCharArray(test1, index, 7, sizeof(test1) - index);//end index is 5
 	_PC_USB_SERIAL_.println(output);
-	output = subCharArray(test1, index, 8, sizeof(test1) / sizeof(test1[0]) - index);//end index is 5
+	output = subCharArray(test1, index, 8, sizeof(test1) - index);//end index is 5
 	_PC_USB_SERIAL_.println(output);
 
 

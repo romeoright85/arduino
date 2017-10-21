@@ -149,12 +149,12 @@ At POR (defaults):
 		INITIALIZATION
 			do nothing
 		SYNCHRONIZATION		
-			validateData() from MAIN
+			parseAndValidateData() from MAIN
 			Mode: SYNCHRONIZATION
 			set next state to DATA_FILTER
 			go to RUN_HOUSEKEEPING_TASKS			
 		NORMAL_OPERATIONS	
-			validateData() from MAIN
+			parseAndValidateData() from MAIN
 			Mode: NORMAL_OPERATIONS
 			set next state to DATA_FILTER
 			go to RUN_HOUSEKEEPING_TASKS			
@@ -165,7 +165,7 @@ At POR (defaults):
 		SW_RESETTING
 			do nothing	
 		SYSTEM_ERROR	
-			validateData() from MAIN
+			parseAndValidateData() from MAIN
 			Mode: SYSTEM_ERROR
 			set next state to DATA_FILTER
 			go to RUN_HOUSEKEEPING_TASKS			
@@ -825,7 +825,7 @@ Note: These states don't always have to go in order.
 		rxData()
 	DATA_VALIDATION
 		data parsing and validation
-		validateData()
+		parseAndValidateData()
 	DATA_FILTER
 		dataDirector()
 	READ_INPUTS

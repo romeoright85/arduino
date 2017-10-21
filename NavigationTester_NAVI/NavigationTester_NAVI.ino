@@ -492,7 +492,7 @@ double rxCompassData() {
 	}//end if
 	else//if no data found, copy in the default error data
 	{
-		strncpy(rxData, defaultData, sizeof(defaultData)/sizeof(defaultData[0]));
+		strncpy(rxData, defaultData, sizeof(defaultData));
 	}
 
 	CharArray::Trim(rxData);//truim any white spaces in the character array

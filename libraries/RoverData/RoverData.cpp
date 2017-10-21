@@ -50,7 +50,7 @@ char * RoverData::getCommandData()
 }//end of getCommandData()
 byte RoverData::getCommandDataLength()
 {
-	return CharArray::stringSize(this->_commandData,sizeof(this->_commandData)/sizeof(this->_commandData[0]));	
+	return CharArray::stringSize(this->_commandData,sizeof(this->_commandData));	
 }//end of getCommandDataLength()
 void RoverData::clearCommandData()
 {
@@ -82,59 +82,5 @@ char * RoverData::getIMUData()
 }//end of getIMUData()
 byte RoverData::getIMUDataLength()
 {
-	return CharArray::stringSize(this->_imuDataString,sizeof(this->_imuDataString)/sizeof(this->_imuDataString[0]));	
+	return CharArray::stringSize(this->_imuDataString,sizeof(this->_imuDataString));	
 }//end of getIMUDataLength()
-
-
-
-
-
-
-
-
-
-/*
-//#DELETE ME
-OLD CODE
-
-
-
-RoverData::RoverData()
-{	
-	//do nothing
-}
-RoverData::~RoverData()
-{
-	//do nothing
-}
-void RoverData::setData(char * dataString, byte arraySize)
-{		 
-	strncpy(this->_dataString, dataString, arraySize);
-}
-char * RoverData::getData()
-{	
-	return this->_dataString;
-}
-byte RoverData::getCommType()
-{	
-	return this->_roverCommType;
-}
-
-void RoverData::setCommType(byte roverCommType)
-{	
-	this->_roverCommType = roverCommType;
-}
-void RoverData::reset()
-{	
-	this->_roverCommType = ROVERCOMM_NONE;
-	this->clearData();
-}
-void RoverData::clearData()
-{		 
-	memset(this->_dataString,0,sizeof(this->_dataString));	
-}
-byte RoverData::getDataLength()
-{		 
-	return CharArray::stringSize(this->_dataString,sizeof(this->_dataString));	
-}
-*/

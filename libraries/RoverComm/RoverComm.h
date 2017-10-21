@@ -108,10 +108,3 @@
 
 #endif 
 
-
-/*
-//#DELETE ME
-void clearRxDataVariables();//clears the _rxDataString and index counter
-byte getDestinationCommType();//returns the RoverData's destination RoverComm Type
-byte _destinationCommType = ROVERCOMM_NONE;//holds the RoverComm Type where the data is meant to go to
-*/

@@ -22,9 +22,9 @@ void loop() {
 	char * output;
 	byte index = 0;
 
-	byte size = sizeof(test1) / sizeof(test1[0]);//size 12
+	byte size = sizeof(test1);//size 12
 	Serial.println(size);
-	index = substringFindIndex(test1, 4, 'l', sizeof(test1)/ sizeof(test1[0]));
+	index = substringFindIndex(test1, 4, 'l', sizeof(test1));
 	Serial.println(index);
 	size = size - index;
 	Serial.println(size);

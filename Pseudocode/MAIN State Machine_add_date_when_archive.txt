@@ -151,41 +151,41 @@ MAIN:
 				INITIALIZATION
 					do nothing
 				SYNCHRONIZATION		
-					validateData() from COMM
-					validateData() from AUXI
-					validateData() from NAVI
+					parseAndValidateData() from COMM
+					parseAndValidateData() from AUXI
+					parseAndValidateData() from NAVI
 					Mode: SYNCHRONIZATION
 					set next state to DATA_FILTER
 					go to RUN_HOUSEKEEPING_TASKS
 				NORMAL_OPERATIONS					
-					validateData() from COMM
-					validateData() from AUXI
-					validateData() from NAVI
+					parseAndValidateData() from COMM
+					parseAndValidateData() from AUXI
+					parseAndValidateData() from NAVI
 					Mode: SYNCHRONIZATION
 					set next state to DATA_FILTER
 					go to RUN_HOUSEKEEPING_TASKS
 				HW_RESETTING
 					do nothing					
 				SYSTEM_SLEEPING
-					validateData() from COMM
-					validateData() from AUXI
-					validateData() from NAVI
+					parseAndValidateData() from COMM
+					parseAndValidateData() from AUXI
+					parseAndValidateData() from NAVI
 					Mode: SYSTEM_SLEEPING
 					set next state to DATA_FILTER
 					go to RUN_HOUSEKEEPING_TASKS			
 				SYSTEM_WAKING
 					do nothing							
 				SW_RESETTING
-					validateData() from COMM
-					validateData() from AUXI
-					validateData() from NAVI
+					parseAndValidateData() from COMM
+					parseAndValidateData() from AUXI
+					parseAndValidateData() from NAVI
 					Mode: SW_RESETTING
 					set next state to DATA_FILTER
 					go to RUN_HOUSEKEEPING_TASKS								
 				SYSTEM_ERROR
-					validateData() from COMM
-					validateData() from AUXI
-					validateData() from NAVI
+					parseAndValidateData() from COMM
+					parseAndValidateData() from AUXI
+					parseAndValidateData() from NAVI
 					Mode: SYSTEM_ERROR
 					set next state to DATA_FILTER
 					go to RUN_HOUSEKEEPING_TASKS								
@@ -1079,7 +1079,7 @@ Note: These states don't always have to go in order.
 		rxData()
 	DATA_VALIDATION
 		data parsing and validation
-		validateData()
+		parseAndValidateData()
 	DATA_FILTER
 		dataDirector()
 	READ_INPUTS

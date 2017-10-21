@@ -53,11 +53,9 @@ Can send:
 #include <RoverStatesAndModes.h>
 #include <RoverCommandDefs.h>
 #include <RoverCommandCreator.h>
-//#DELETE ME #include <RoverCommandProcessor.h>
 #include <SoftwareSerial.h>
 #include <RoverData.h>
 #include <RoverComm.h> //calls RoverConfig.h
-//#DELETE ME //#include <RoverCommand.h>
 #include <SoftwareSerial.h>
 #include <HeartLed.h>
 #include <GlobalDelayTimer.h>
@@ -169,13 +167,6 @@ char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Messag
 
 
 
-/*
-//#DELETE ME
-char roverCommandData_MAIN[_MAX_ROVER_COMMAND_DATA_LEN_];//Buffer to use for Rover Command Data
-char roverCommandData_CMNC[_MAX_ROVER_COMMAND_DATA_LEN_];//Buffer to use for Rover Command Data
-*/
-
-
 
 //Fixed Message Strings (to store in flash)
 const static char msg_strg_0[] PROGMEM = "nodata";//getMsgString(0)
@@ -243,7 +234,6 @@ RoverComm * roverComm_Ch1 = new RoverComm(roverDataCh1_COMM);
 RoverData * roverDataCh2_COMM = new RoverData();
 RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 //Command Parsers
-//#DELETE ME//RoverCommand * roverCommand = new RoverCommand();//This object is shared between MAIN and COMM since the Arduino doesn't have enough memory to support two of these objects
 //Rover Data Pointers for use with either internal processing or outgoing messages
 RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data outgoing to COMM
 RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
@@ -258,7 +248,6 @@ RoverReset * resetArray[] = {
 	roverComm_Ch1,
 	roverDataCh2_COMM,
 	roverComm_Ch2
-	//#DELETE ME//roverCommand
 };//for pointers, pass them directly, for objects pass the address
 
 
@@ -1026,9 +1015,6 @@ void txData(char * txData, byte roverCommType)
 	}//end else
 }//end of txData()
 
-
-
-//#DELETE ME //void commandDirector(char * receivedCommand, byte receivedCommandArraySize, byte originRoverCommType, byte destinationRoverCommType)
 void commandDirector(RoverData * roverDataPointer)
 {
 
@@ -1067,24 +1053,6 @@ void commandDirector(RoverData * roverDataPointer)
 
 
 
-
-
-/*	
-//#DELETE ME
-
-	byte commandTag;//holds the commandtag that was sent with this rover command
-
-	//Extract the rover command tag and the rover command data and send it to the correct destination
-	if( destinationRoverCommType == ROVERCOMM_NAVI || destinationRoverCommType == ROVERCOMM_AUXI || destinationRoverCommType == ROVERCOMM_MAIN )//If the destination is either MAIN, NAVI, or AUXI, send it out through the MAIN channel
-	{
-		commandTag = RoverCommandCreator::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_MAIN);
-	}//end if
-	else if( destinationRoverCommType == ROVERCOMM_CMNC )//If the destination is CMNC, send it out through the CMNC channe;
-	{
-		commandTag = RoverCommandCreator::parseCmd(receivedCommand, receivedCommandArraySize, roverCommandData_CMNC);
-	}//end else
-	//else do nothing
-*/
 
 
 
@@ -1334,9 +1302,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 	
 	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string
-	//#DELETE ME//char * roverCommandDataOfInterest;
-	
-	
+		
 	//Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
 	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination ==  ROVERCOMM_PC_USB)
 	{
@@ -1344,13 +1310,12 @@ void createDataFromQueueFor(byte roverCommDestination)
 		if(roverDataForCMNC != NULL)//make sure the roverDataPointer is not NULL
 		{
 			commandDataOfInterest = roverDataForCMNC->getCommandData();
-		}
+		}//end if
 		else
 		{
 			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
-		}
+		}//end else		
 		
-		//#DELETE ME //roverCommandDataOfInterest = roverCommandData_CMNC;
 //FIX ME LATER		
 	}//end if
 	else if (roverCommDestination == ROVERCOMM_MAIN)
@@ -1359,12 +1324,11 @@ void createDataFromQueueFor(byte roverCommDestination)
 		if(roverDataForMain != NULL)//make sure the roverDataPointer is not NULL
 		{
 			commandDataOfInterest = roverDataForMain->getCommandData();
-		}
+		}//end if
 		else
 		{
 			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
-		}
-		//#DELETE ME //roverCommandDataOfInterest = roverCommandData_MAIN;
+		}//end else
 //FIX ME LATER
 	}//end else if
 	//else
@@ -1691,14 +1655,6 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
 		{
 		
-		/*
-		//#DELETE ME
-			//1. First send the RoverData to the roverCommand_MAIN's parser to get the command
-			roverCommand->parseRxdMessage(roverDataCh2_COMM->getData(), roverDataCh2_COMM->getDataLength());
-			
-			//2. Then run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)
-			commandDirector(roverCommand->getCommand(), roverCommand->getCommandLength(), roverCommand->getMsgOrigin(),roverCommand->getMsgDestination());
-		*/
 						
 		//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
 		commandDirector(roverDataCh2_COMM);

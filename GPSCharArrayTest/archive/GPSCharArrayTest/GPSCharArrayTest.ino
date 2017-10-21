@@ -16,85 +16,83 @@ void loop() {
 	char * output;
 
 	
-
-
 	Serial.println(gpsData);
 	
 	byte startIndex;
 	byte endIndex;
 
 	//1
-	endIndex = indexOf(gpsData, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size
+	endIndex = indexOf(gpsData, ',', sizeof(gpsData));//array, start index, array size
 	output = subCharArray(gpsData, startIndex, endIndex + 1);
 	Serial.println(output);
 	//2
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//3
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//4	
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//5
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//6
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//7
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//8
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//9
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//10
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//11
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//12
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//13
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//14
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 	//15
 	startIndex = endIndex + 1;
-	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData) / sizeof(gpsData[0]));//array, start index, array size	
+	endIndex = indexOf(gpsData, startIndex, ',', sizeof(gpsData));//array, start index, array size	
 	output = subCharArray(gpsData, startIndex, endIndex);
 	Serial.println(output);
 

@@ -73,8 +73,3 @@ private:
 
 #endif 
 
-
-/*
-//#DELETE ME
-static byte parseCmd(char *, byte, char *);//(input RoverCommand, array size, output-command data char array) Returns the commandTag.
-*/

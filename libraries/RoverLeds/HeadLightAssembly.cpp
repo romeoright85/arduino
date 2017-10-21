@@ -51,7 +51,7 @@ void HeadLightAssembly::turnOn(byte headLightType1, byte headLightType2)
 {
 	byte headLightTypes[] = { headLightType1, headLightType2 };
 
-	for (byte i = 0; i <  sizeof( headLightTypes)/sizeof(headLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof( headLightTypes ); i++)
 	{
 		this->turnOn(headLightTypes[i]);//using delegation. Passing the headlight type.
 	}
@@ -93,7 +93,7 @@ void HeadLightAssembly::turnOff(byte headLightType1, byte headLightType2)
 {
 	byte headLightTypes[] = { headLightType1, headLightType2 };
 
-	for (byte i = 0; i <  sizeof( headLightTypes)/sizeof(headLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof( headLightTypes ); i++)
 	{
 		this->turnOff(headLightTypes[i]);//using delegation. Passing the headlight type.
 	}

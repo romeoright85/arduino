@@ -115,25 +115,3 @@ return tempCharArray;
 
 
 	
-/*
-//#DELETE ME
-byte RoverCommandCreator::parseCmd(char * roverCommand, byte arraySize, char * commandData)
-{
-	
-	char commandTagCharArray[4];
-	byte commandTag;		
-	
-	//Extract the commandTag from the roverCommand
-	CharArray::substring(roverCommand, CharArray::stringSize(roverCommand, arraySize), 0, 3, commandTagCharArray);//grab the first 3 numbers and stop before the 4th number (element 3)
-
-	//Convert the commandTag char array to a byte
-	commandTag = DataType::charsToByte(commandTagCharArray);
-		
-	//Extract the commandData from the roverCommand
-	CharArray::substring(roverCommand, CharArray::stringSize(roverCommand, arraySize), 3, commandData);//With No End Index, goes to the end of the array or to the terminating character (input char array, array size, start index, output char array). Note the array size you can use the stringSize() function as a helper. Note: Start index can be as small as 0.
-			
-	return commandTag;
-}//end of charArrayToByte()
-
-*/
-	

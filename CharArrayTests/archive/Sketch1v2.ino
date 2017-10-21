@@ -26,12 +26,12 @@ void loop() {
 
 
 
-	output = substringFindIndex(test1, 4, 'l', sizeof(test1)/ sizeof(test1[0]));//array, start index, array size
+	output = substringFindIndex(test1, 4, 'l', sizeof(test1));//array, start index, array size
 	Serial.println(output);
-	output = substringFindIndex(test1, 3, 'l', sizeof(test1) / sizeof(test1[0]));//array, start index, array size
+	output = substringFindIndex(test1, 3, 'l', sizeof(test1));//array, start index, array size
 	Serial.println(output);
 	//No start index provided
-	output = substringFindIndex(test1, 'l', sizeof(test1) / sizeof(test1[0]));//array, start index, array size
+	output = substringFindIndex(test1, 'l', sizeof(test1));//array, start index, array size
 	Serial.println(output);
 
 

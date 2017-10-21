@@ -4,7 +4,7 @@
 
 //Note: The test cases varies for different Arduinos
 
-//Note: Can send this (about max size) to test: "/-c5--*002cmd2asdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
+//Note: Can send this (about max size) to test: "/1c5--*002cmd2asdfasdfgsdfgsdfgsfdgd12321123123153452364564564^"
 
 
 //Test cases for debugging
@@ -45,14 +45,14 @@ Note: You will get an "Invalid Cmd! =(" but that is expected and fine since "Hel
 //Test case 3a:
 /*
 	Send (i.e. with your keyboard and using a terminal window) over USB serial
-		/-c5--*002hi
+		/1c5--*002hi
 	to test the command interface for this Arduino
 */
 
 //Test case 3b:
 /*
 	Send (i.e. with your keyboard and using a terminal window) over USB serial
-		/-c5--*003bye
+		/1c5--*003bye
 	to test the command interface for this Arduino
 */
 

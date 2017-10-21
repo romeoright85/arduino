@@ -82,7 +82,7 @@ boolean RoverGpsSensor::processRxGPSData()
 	
 	
 
-	stringSize = CharArray::stringSize(this->_rxData, sizeof(this->_rxData)/sizeof(this->_rxData[0]));
+	stringSize = CharArray::stringSize(this->_rxData, sizeof(this->_rxData));
 
 
 	
@@ -335,8 +335,8 @@ char * RoverGpsSensor::getGoogleMapsCoordinates()
 	//Use the original string (i.e.  this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE] and not getGpsLatitude()) before it's converted to a double for latitude and longitude to prevent round off or conversion errors
 	
 	//Get the string sizes
-	int stringSizeLatitude = CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE], sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE])/sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE][0]));
-	int stringSizeLongitude = CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE], sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE])/sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE][0]));
+	int stringSizeLatitude = CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE], sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LATITUDE]));
+	int stringSizeLongitude = CharArray::stringSize(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE], sizeof(this->_gpsDataArray[GPS_GPGGA_INDEX_OF_LONGITUDE]));
 	
 	//Create temp/placeholder char array
 	char tempCharArray[GPS_DATA_CHAR_BUFFER_SIZE]; 

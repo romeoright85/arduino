@@ -1,649 +1,1087 @@
 
 ============COMM Template Below================
 
-//Rover_StateMachine_COMM
 
-//Configuration defines for #includes (must come before the #includes)
-#define _ROVER_STATES_AND_MODES
-#define _COMMAND_CREATION_DEFINITIONS
-#define _ARD_4_COMM_H //Must define this before calling RoverConfig.h (either directly or through another header file), define this flag to turn on COMM definitions
-
-//#includes
-#include <RoverStatesAndModes.h>
-#include <RoverCommandDefs.h>
-#include <RoverConfig.h>
-#include <SoftwareSerial.h>
+Note: Make sure for any serials, use a #define serial_type. So it can be replaced with PC USB's serial if needed.
+Note: For redirects, it assumes only one arduino will be redirected to another. If by chance, two source Arduinos are being redirected to the same destination Arduino, only one will get through and the other message will be dropped.
+	The prioritization will be giving to the hard coded order of the if/else statements.
+	This a a design weakness that may be able to be improved later.
+	For now keep it this way to reduce the complexity of the code and memory usage.
+	So right now each transmission cycle will send up to two messages. One for internal messages going out, and the other for external messages being redirected to another external destination.
+Note: For command tags, see command creator excel in K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+Note: Once the system goes into the state, SYSTEM_ERROR, it can only be fixed with a HW or SW reset.
+Note: Some of these defines share names between Arduinos, so make sure you use th RoverConfig to define which each definition should go to which Arduino type
 
 
 
-//============Debugging: Serial Channel Selection
-//Used to output debugging messages only when the _DEBUG_COMM_BROADCAST flag is defined
-//Uncomment the flag below in order to output debugging messages
-//#define _DEBUG_COMM_BROADCAST
+#define COMM_SYNC_TIMEOUT_VALUE ??
+#define SECURE_LINK_TIMEOUT_VALUE ??
+#define CONCURRENT_TRANSMISSION_DELAY		??//delay for about 1-5ms or so between potentially sending messages out again to the same arduino
+#define SW_RESET_RESEND_TIMEOUT_VALUE		??//time to wait for the COMM SW Reset Request from MAIN before restarting the All SW Reset , by sending the All SW Reset Request to MAIN again.
+#define SW_RESET_ERROR_TIMEOUT_VALUE ??//time to waiting and resend the All SW Reset (Re-)Requests to MAIN before COMM should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
+#define SLEEPING_ERROR_TIMEOUT_VALUE ??//time to waiting for a COMM Sleep Request from MAIN and keep resending a ALL_SLEEP_REQUEST to MAIN (since unlike SW requests, if MAIN is already asleep and you send it another request, there is no harm) before just COMM should just error out itself.
 
-//Flag Logic, no need to edit this below
-//Reference the "Where Left Off...txt" at: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Planning
-#ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ //for COMM, either way it goes to the PC USB Serial
-#else
-	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
-#endif
-//============End of Debugging: Serial Channel Selection
-
-
-//============Debugging: Print Mode and/or State
-//Uncomment the flag below in order to print the current state
-#define _DEBUG_PRINT_CURRENT_STATE
-//Uncomment the flag below in order to print the current mode
-#define _DEBUG_PRINT_CURRENT_MODE
-
-
-//Flag Logic, no need to edit this below
-#ifdef _DEBUG_PRINT_CURRENT_STATE
-	#define _PRINT_STATE_ _SERIAL_DEBUG_CHANNEL_.println
-#else
-	#define _PRINT_STATE_ void
-#endif
-
-#ifdef _DEBUG_PRINT_CURRENT_MODE
-	#define _PRINT_MODE_ _SERIAL_DEBUG_CHANNEL_.println
-#else
-	#define _PRINT_MODE_ void
-#endif
-//============End Debugging: Print Mode and/or State
-
-
-
-//============Global Declarations
-
-//=====Non-Reinitializing Variables (do not reinitialize these variables on software reset)
-
-//States
-byte currentState = RUN_HOUSEKEEPING_TASKS;
-byte nextState = RUN_HOUSEKEEPING_TASKS;
-byte queuedState = RUN_HOUSEKEEPING_TASKS;
-
-//Modes
-byte currentMode = POWER_ON_AND_HW_RESET;
-
-//Software Serial
-SoftwareSerial _MAIN_SWSERIAL_(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN);
-
-
-//=====End of: Non-Reinitializing Variables
-
-
-//=====Reinitializing Variables (reinitialize these variables on software reset)
-
-//Message Queues
-byte cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-
-//Flags - Error
-boolean invalid_state_or_mode_error = false;
-boolean sync_error = false;
-boolean secure_link_error = false;
-boolean sw_reset_error = false;
-boolean generic_health_error = false;
-boolean sleeping_error = false;
-//Flags - Message Controls
-boolean redirectToCMNC = false;
-boolean redirectToMAIN = false;
-//Flags - Status
-boolean main_system_ready = false;
-boolean communications_secure = false;//(used to keep track is the communications link is already secure or not, and is useful for things like when going to sleep and waking back up and needing to synchronize again without needing to resecure the link)
-boolean first_transmission = true;
-
-//Counters
-unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
-unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
-
-//=====End of: Reinitializing Variables
-
-//============End of Global Declarations
-
-
-
-
-
-
-
-void setup() {
-
-
-	//Serial Communications
-	//Setup the HW_UART for communications between COMM and CMNC/PC USB
-	_CMNC_SERIAL_.begin(CMNC_BAUD_RATE);
-	//Setup the SW_UART for communications between COMM and MAIN
-	_MAIN_SWSERIAL_.begin(MAIN_BAUD_RATE);
-
-	
-
-}//end of setup()
-
-
-void loop() {
-  
-
-
-
-
-	//State Machine
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			_PRINT_STATE_(F("STATE: RUN_HOUSEKEEPING_TASKS"));
-
-			switch (currentMode)
-			{
-				case POWER_ON_AND_HW_RESET:
-					runModeFunction_POWER_ON_AND_HW_RESET(currentState);
-					queuedState = RUN_HOUSEKEEPING_TASKS;//Set next aka queued state (since in RUN_HOUSEKEEPING_TASKS) to: RUN_HOUSEKEEPING_TASKS
-					currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*				
-					break;
-				case INITIALIZATION:
-					runModeFunction_INITIALIZATION(currentState);
-					queuedState = RX_COMMUNICATIONS;// Set next state to RX_COMMUNICATIONS
-					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
-					break;
-				case SYNCHRONIZATION:		
-					runModeFunction_SYNCHRONIZATION(currentState);
-					break;
-				case SECURING_LINK:		
-					runModeFunction_SECURING_LINK(currentState);
-					break;
-				case NORMAL_OPERATIONS:		
-					runModeFunction_NORMAL_OPERATIONS(currentState);
-					break;
-				case HW_RESETTING:		
-					runModeFunction_HW_RESETTING(currentState);
-					break;
-				case SYSTEM_SLEEPING:		
-					runModeFunction_SYSTEM_SLEEPING(currentState);
-					break;
-				case SYSTEM_WAKING:		
-					runModeFunction_SYSTEM_WAKING(currentState);
-					break;					
-				case SW_RESETTING:		
-					runModeFunction_SW_RESETTING(currentState);
-					break;
-				case SYSTEM_ERROR:		
-					runModeFunction_SYSTEM_ERROR(currentState);
-					break;												
-//ADD MORE MODES HERE					
-				default: //default mode
-					runModeFunction_default();//no state needed, all states do the same thing
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-				break;
-			}//end switch
-
-			//Advance to the queued (saved) state
-			nextState = queuedState;
-				//This happens only when in the RUN_HOUSEKEEPING_TASKS state.
-				//All other states will always go to the RUN_HOUSEKEEPING_TASKS as it's next state in order to run housekeeping tasks with every loop.
-			
-
-			break;
-		case RX_COMMUNICATIONS:
-				_PRINT_STATE_(F("STATE: RX_COMMUNICATIONS"));
-while (1);//DEBUG, LEFT OFF HERE
-					switch (currentMode)
-					{
-						case SYNCHRONIZATION:		
-							runModeFunction_SYNCHRONIZATION(currentState);
-							break;
-						case SECURING_LINK:		
-							runModeFunction_SECURING_LINK(currentState);
-							break;
-						case NORMAL_OPERATIONS:		
-							runModeFunction_NORMAL_OPERATIONS(currentState);
-							break;
-						case SYSTEM_SLEEPING:		
-							runModeFunction_SYSTEM_SLEEPING(currentState);
-							break;
-						case SW_RESETTING:		
-							runModeFunction_SW_RESETTING(currentState);
-							break;
-						case SYSTEM_ERROR:		
-							runModeFunction_SYSTEM_ERROR(currentState);
-							break;						
-		//ADD MORE MODES HERE					
-						default: //default mode
-							runModeFunction_default();//no state needed, all states do the same thing
-							queuedState = CONTROL_OUTPUTS;
-							currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-						break;
-					}//end switch			
-			break;
-
-//ADD MORE STATES CASES HERE				
-			
-			
-		default: //default state
-			_PRINT_STATE_(F("STATE: default"));
-
-			runModeFunction_default();//no state needed, all states do the same thing
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
-			queuedState = CONTROL_OUTPUTS;
-			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every state except RUN_HOUSEKEEPING_TASKS
-
-			break;
-	}//end switch
-
-
-	//Advance to the next state
-	currentState = nextState;//go to the next state
-  
-  
-}//end of loop()
-
-
-
-
-//============Function Definitions
-
-
-//====Misc Functions
-void runPORTasks()
-{
-	//run POR tasks
-//WRITE ME LATER	
-	
-}//runPORTasks()
-void initializeVariables()
-{
-	//(re)initialize most global variables (i.e. for software reset)
-
-	//Message Queues
-	cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-	main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-
-	//Flags - Error
-	invalid_state_or_mode_error = false;
-	sync_error = false;
-	secure_link_error = false;
-	sw_reset_error = false;
-	generic_health_error = false;
-	sleeping_error = false;
-	//Flags - Message Controls
-	redirectToCMNC = false;
-	redirectToMAIN = false;
-	//Flags - Status
-	main_system_ready = false;
-	communications_secure = false;//(used to keep track is the communications link is already secure or not, and is useful for things like when going to sleep and waking back up and needing to synchronize again without needing to resecure the link)
-	first_transmission = true;
-
-	//Counters
-	timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
+At POR (defaults):
+	Current State: RUN_HOUSEKEEPING_TASKS
+	Next State: RUN_HOUSEKEEPING_TASKS
+	Current Mode: POWER_ON_AND_HW_RESET *begin*
+	Next Mode: POWER_ON_AND_HW_RESET 
+	sync_error = false
+	invalid_state_or_mode_error = false
+	secure_link_error = false
+	sw_reset_error = false
+	generic_health_error = false
+	sleeping_error = false
+	cmnc_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+	main_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+	redirectToCMNC = false
+	redirectToMAIN = false
+	main_system_ready = false
+	communications_secure = false (used to keep track is the communications link is already secure or not, and is useful for things like when going to sleep and waking back up and needing to synchronize again without needing to resecure the link)
+	timeout_counter = 0 //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
 	transmission_delay_cnt = 0;//concurrent transmission delay counter
+	first_transmission = true
 	
-} //end of initializeVariables()
-void startBackgroundTasks()
-{
-	//start background tasks
-//WRITE ME LATER
-}//end of startBackgroundTasks()
-void runBackgroundTasks()
-{
-	//run background tasks
-//WRITE ME LATER
-}//end of runBackgroundTasks()
+	
+COMM:
+		Loop
+			RUN_HOUSEKEEPING_TASKS
+				POWER_ON_AND_HW_RESET
+					run POR tasks
+					Set mode to INITIALIZATION *begin*
+					Go to whatever the next state is
+						(still is Next State: RUN_HOUSEKEEPING_TASKS)
+				INITIALIZATION
+					run initialization tasks
+						initialize/reinitialize all variables
+					start background tasks
+					Set mode to SYNCHRONIZATION *begin*
+					//initialize/reset shared counter before use
+					timeout_counter = 0;
+					Set next state to RX_COMMUNICATIONS
+					Go to whatever the next state is
+						(now just set to RX_COMMUNICATIONS)
+				SYNCHRONIZATION
+					run background tasks
+					Go to whatever the next state is
+				SECURING_LINK						
+					run background tasks						
+					Go to whatever the next state is					
+				NORMAL_OPERATIONS						
+					run background tasks
+					Go to whatever the next state is							
+				HW_RESETTING
+					Note: though RUN_HOUSEKEEPING_TASKS is not required and can go straight to TX_COMMUNICATIONS, just doing so for consistency with other code.
+					run background tasks
+					Go to whatever the next state is		
+				SYSTEM_SLEEPING
+					Note: though RUN_HOUSEKEEPING_TASKS is not required and can go straight to TX_COMMUNICATIONS, just doing so for consistency with other code.
+					run background tasks
+					Go to whatever the next state is	
+				SYSTEM_WAKING
+					run background tasks
+					Go to whatever the next state is
+				SW_RESETTING
+					run background tasks
+					Go to whatever the next state is		
+				SYSTEM_ERROR
+					Mode: SYSTEM_ERROR
+					run background tasks
+					Go to whatever the next state is
+			RX_COMMUNICATIONS
+				POWER_ON_AND_HW_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION					
+					skip for CMNC
+					rxData() from MAIN
+					Mode: SYNCHRONIZATION
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS
+				SECURING_LINK						
+					rxData() from CMNC
+					rxData() from MAIN
+					Mode: SECURING_LINK
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS					
+				NORMAL_OPERATIONS						
+					rxData() from CMNC
+					rxData() from MAIN
+					Mode: NORMAL_OPERATIONS
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS							
+				HW_RESETTING
+					do nothing
+				SYSTEM_SLEEPING
+					skip for CMNC
+					rxData() from MAIN
+					Mode: SYSTEM_SLEEPING
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS					
+				SYSTEM_WAKING
+					do nothing
+				SW_RESETTING
+					rxData() from CMNC
+					rxData() from MAIN
+					Mode: SW_RESETTING
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS			
+				SYSTEM_ERROR
+					rxData() from CMNC
+					rxData() from MAIN
+					Mode: SYSTEM_ERROR
+					set next state to DATA_VALIDATION
+					go to RUN_HOUSEKEEPING_TASKS						
+			DATA_VALIDATION		
+				POWER_ON_AND_HW_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION		
+					skip for CMNC
+					parseAndValidateData() from MAIN
+					Mode: SYNCHRONIZATION
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS
+				SECURING_LINK						
+					parseAndValidateData() from CMNC
+					parseAndValidateData() from MAIN				
+					Mode: SECURING_LINK
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS						
+				NORMAL_OPERATIONS					
+					parseAndValidateData() from CMNC
+					parseAndValidateData() from MAIN				
+					Mode: NORMAL_OPERATIONS
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS		
+				HW_RESETTING
+					do nothing
+				SYSTEM_SLEEPING
+					skip for CMNC
+					parseAndValidateData() from MAIN
+					Mode: SYSTEM_SLEEPING
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS
+				SYSTEM_WAKING
+					do nothing
+				SW_RESETTING
+					parseAndValidateData() from CMNC
+					parseAndValidateData() from MAIN
+					Mode: SW_RESETTING
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS
+				SYSTEM_ERROR
+					parseAndValidateData() from MAIN	
+					parseAndValidateData() from CMNC
+					Mode: SYSTEM_ERROR
+					set next state to DATA_FILTER
+					go to RUN_HOUSEKEEPING_TASKS		
+			DATA_FILTER				
+				POWER_ON_AND_HW_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION					
+					skip for CMNC (since the link isn't secure yet)
+						Note: no reset (hw or sw) allowed from CMNC yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
+					filter and throw away all MAIN data except:
+						system ready message(s) from MAIN
+						system go message(s) from MAIN
+						hw reset requests message(s) from MAIN
+						sw reset requests message(s) from MAIN
+						generic status error message(s) from MAIN (redirected from AUXI)
+					no redirections from CMNC or MAIN
+					Mode: SYNCHRONIZATION
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS						
+				SECURING_LINK
+					filter and throw away all CMNC data except:
+						establish secure link message(s) from CMNC
+							Note: no reset (hw or sw) allowed from CMNC yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
+					filter and direct MAIN data
+						if redirection needed to CMNC:
+							redirectToCMNC = true		
+						end if
+					Mode: SECURING_LINK
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS						
+				NORMAL_OPERATIONS
+					filter and direct CMNC data
+						if redirection needed MAIN:
+							redirectToMAIN = true
+						end if
+					filter and direct MAIN data
+						if redirection needed CMNC:
+							redirectToCMNC = true
+						end if
+					Mode: NORMAL_OPERATIONS
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS						
+				HW_RESETTING
+					do nothing
+				SYSTEM_SLEEPING
+					no redirections from CMNC or MAIN
+					skip for CMNC
+					filter and throw away all MAIN data except:
+						hw reset requests message(s) from MAIN
+						sw reset requests message(s) from MAIN
+						generic status error message(s) from MAIN
+						comm sleep request message(s) from MAIN
+							DEBUG: If COMM misses the COMM sleep request message from, the code may go haywire. So if you have issues, you may want to have MAIN send it a few times before going to sleep.
+					Mode: SYSTEM_SLEEPING
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS	
+				SYSTEM_WAKING
+					do nothing
+				SW_RESETTING
+					filter and throw away all CMNC data except:
+						hw reset request message(s) from CMNC
+						All SW Reset (Re-)Request message(s) from CMNC
+							Note: Allow HW reset requests or All SW Reset (Re-)Request to override the sw reset process if needed
+					filter and throw away all MAIN data except:
+						hw reset request message(s) from MAIN/AUXI/NAVI
+						COMM SW Request Message(s) from MAIN (to SW reset the COMM)
+							Note: Allow HW reset requests or SW reset re-requests to override the sw reset process if needed							
+					Mode: SW_RESETTING
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS				
+				SYSTEM_ERROR
+					filter and throw away all MAIN data except:
+						any redirections
+							if redirection needed to CMNC:
+								redirectToCMNC = true
+							(to allow system data to be passed from MAIN/AUXI/NAVI to CMNC)
+						hw reset requests message(s) from MAIN
+						sw reset requests message(s) from MAIN
+						generic status error message(s) from MAIN
+					filter and direct CMNC data
+						filter and throw away all CMNC data except:
+							any redirections
+								if redirection needed to MAIN:
+									redirectToMAIN = true
+							hw reset request message(s) from CMNC
+							sw reset request message(s) from CMNC		
+							PIR status request message(s) from CMNC (used for debugging)
+						Allow all CMNC data to be redirected so MAIN/AUXI/NAVI can send requested data back. Each Arduino will filter out what it will allow in error mode.
+						Note: This will be a known vulnerability with the Rover. If it's in error mode, anything can be sent to it to do anything. Though each Arduino may block certain messages.)											
+					Mode: SYSTEM_ERROR
+					set next state to READ_INPUTS
+					go to RUN_HOUSEKEEPING_TASKS		
+			READ_INPUTS
+				POWER_ON_AND_HW_RESET
+					do nothing
+				INITIALIZATION
+					do nothing		
+				SYNCHRONIZATION
+					do nothing
+				SECURING_LINK
+					read PIR
+					Mode: SECURING_LINK
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS	
+				NORMAL_OPERATIONS
+					read PIR
+					Mode: NORMAL_OPERATIONS
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS	
+				HW_RESETTING
+					do nothing
+				SYSTEM_SLEEPING
+					do nothing							
+				SYSTEM_WAKING
+					do nothing
+				SW_RESETTING
+					do nothing								
+				SYSTEM_ERROR
+					read PIR (just in case the PIR data is requested by CMNC for debugging)		
+					Mode: SYSTEM_ERROR
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS					
+			PROCESS_DATA
+				POWER_ON_AND_HW_RESET
+					do nothing
+				INITIALIZATION
+					do nothing	
+				SYNCHRONIZATION
 
-//====End of: Misc Functions
+					Categorize all commands/data from all sources.					
+					Sort based on priority.
+					Allow for all non-conflicting commands to run.
+					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
+					
+
+										
+										
+					Skip for CMNC
+					Skips PIR status					
+					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+					Note: Either you should get no data, hw reset, sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
+
+						//Run lower priority functions here. (i.e. system ready msgs)
+					
+						//Remember, only  hw reset, sw reset, generic health status error, or system ready or system go message(s) can pass the data filter.
+						If !(system go msg received from MAIN aka can be system ready or no msg)
+							main_msg_queue = SYSTEM_READY_STATUS (tells MAIN it's ready to synchronize)
+						end if
+						Note: If system go or system ready msg has been received from MAIN, see "Command Options" below for more info.
+	
+						//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+							
+						
+						If no system go msg from MAIN received && main_system_ready == false (MAIN system not ready yet to set the main_system_ready flag and have not received a system go to switch states yet, then keep incrementing the timeout counter)
+							timeout_counter++
+						end if								
+						if timeout_counter >= COMM_SYNC_TIMEOUT_VALUE
+							Set mode to SYSTEM_ERROR *begin*
+							cmnc_msg_queue == SYNC_ERROR_STATUS
+							set sync_error = true
+							(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
+							//initialize/reset shared counter before use
+							timeout_counter = 0;
+						end if						
+
+					
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS								
+					Unless overridden,						
+						Mode: SYNCHRONIZATION
+					go to RUN_HOUSEKEEPING_TASKS
+				SECURING_LINK
+					Process PIR status
+
+					Categorize all commands/data from all sources.					
+					Sort based on priority.
+					Allow for all non-conflicting commands to run.
+					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.	
+				
+					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: Either you should get no data, generic health status errors, or secure link data. as everything else was filtered out
+					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						(the mode and next state may be overridden by MAIN data if required. i.e. error, etc. But under normal circumstances, it shouldn't.)
+						
+
+						//Run lower priority functions here.
+						
+						
+						//Keep requesting for a secure link from CMNC until one is received
+						If !(establish secure link msg received from CMNC)
+							cmnc_msg_queue = SECURE_LINK_REQUEST (tells CMNC it's ready for a secure link)
+						end if
+
+						
+						//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+						
+												
+						If no establish secure link message(s) from CMNC (keep incrementing the timeout counter)
+							timeout_counter++
+						end if							
+						if timeout_counter >= SECURE_LINK_TIMEOUT_VALUE
+							Set mode to SYSTEM_ERROR *begin*
+							cmnc_msg_queue == SECURE_LINK_ERROR_STATUS
+							set secure_link_error = true
+								(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
+							//initialize/reset shared counter before use
+							timeout_counter = 0;
+						end if
+					
+					Unless overridden,
+						Mode: SECURING_LINK
+					Unless overridden,						
+						set next state to CONTROL_OUTPUTS					
+					go to RUN_HOUSEKEEPING_TASKS
+				NORMAL_OPERATIONS		
+				
+					Categorize all commands/data from all sources.					
+					Sort based on priority.
+					Allow for all non-conflicting commands to run.
+					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
+					
+					Process PIR status							
+					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS					
+					Unless overridden,						
+						Mode: NORMAL_OPERATIONS
+					go to RUN_HOUSEKEEPING_TASKS					
+				HW_RESETTING
+					do nothing
+				SYSTEM_SLEEPING
+				
+					Categorize all commands/data from all sources.					
+					Sort based on priority.
+					Allow for all non-conflicting commands to run.
+					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
+				
+					Skip for CMNC
+						Improvement Idea: Maybe allow hw resets requests from CMNC later if want to. For now good enough.
+					Skips PIR status	
+			
+										
+					//Run lower priority functions here.
+	
+	
+	
+					//Regenerate the messages as needed			
+					//resend the sleep request a few times to MAIN (and status to CMNC again) just in case MAIN misses it (no hard if it was not missed as MAIN would have gone to sleep and would ahve ignored this message) or COMM had missed the COMM Sleep Request back from MAIN
+						main_msg_queue == ALL_SLEEP_REQUEST
+						cmnc_msg_queue == SYSTEM_IS_SLEEPING
+					If no COMM Sleep Request was received from MAIN (either because MAIN never got the ALL_SLEEP_REQUEST or because COMM missed the COMM Sleep Request back from MAIN and MAIN already went to sleep)
+						timeout_counter++
+					end if							
+					if timeout_counter >= SLEEPING_ERROR_TIMEOUT_VALUE
+						Set mode to SYSTEM_ERROR *begin*
+						cmnc_msg_queue == SLEEP_ERROR_STATUS
+						set sleeping_error = true
+							(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)
+						//initialize/reset shared counter before use
+						timeout_counter = 0;
+					end if
+		
 
 
-//====Mode Functions
+					//Run highest priority functions here. //this will override any lower priority messages (see below)
+			
+					//If COMM Sleep Request is received, process it here to override the timeout
+					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+					Note: Either you should get no data, hw reset, sw reset, generic health status errors, or COMM Sleep Request from MAIN. as everything else was filtered out.
+				
+						
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS								
+					Unless overridden,						
+						Mode: SYSTEM_SLEEPING
+					go to RUN_HOUSEKEEPING_TASKS
+				SYSTEM_WAKING
+					do nothing					
+				SW_RESETTING
 
-void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: POWER_ON_AND_HW_RESET"));
+					Categorize all commands/data from all sources.					
+					Sort based on priority.
+					Allow for all non-conflicting commands to run.
+					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
+				
+					Skips PIR status
+					
+					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: Either you should get no data or hw or All SW Reset (Re-)Request from CMNC. as everything else was filtered out
+						Note: If hw/sw reset requests from CMNC, see "Command Options" below for more info.						
+					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: Either you should get no data or hw request (it could come from MAIN, AUXI, or NAVI), or a COMM sw reset request (for all or COMM only) from MAIN. as everything else was filtered out
+						Note: If hw reset request or COMM sw reset request from MAIN, see "Command Options" below for more info.						
 
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			runPORTasks();
-			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-			//This code should never execute, if it does, there is a logical or programming error
-			runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch
-}//end of runStateFunction_POWER_ON_AND_HW_RESET
-void runModeFunction_INITIALIZATION(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: INITIALIZATION"));
+					
 
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-				//initialize / reinitialize all variables
-				initializeVariables();
-				//start background tasks
-				startBackgroundTasks();
+					//Run lower priority functions here.
+						
+							
+					//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+						
+					
+
+					//For SW_RESETTING, it uses a dual timeout design
+					Note: SW_RESET_ERROR_TIMEOUT_VALUE should be greater than SW_RESET_RESEND_TIMEOUT_VALUE
+					//increment the loop count while waiting for the COMM SW Reset Request
+					timeout_counter++;					
+					//if COMM has waited for a really long time, it should error out itself
+					if timeout_counter >= SW_RESET_ERROR_TIMEOUT_VALUE						
+						Set mode to SYSTEM_ERROR *begin*
+						cmnc_msg_queue == SW_RESET_ERROR
+						sw_reset_error = true
+							(Note: the sw_reset_error flag can only be cleared with a hw reset)
+						//initialize/reset shared counter before use
+						timeout_counter = 0;
+					//else if it just waited a little bit, it should try resending the ALL_SW_RESET_REQUEST to MAIN
+					else if timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE
+						main_msg_queue == ALL_SW_RESET_REQUEST //Resending this request to MAIN
+						cmnc_msg_queue == SW_IS_RESETTING //Resend this message to CMNC to show that it's attempting to SW reset the system again	
+						//Don't reset timeout_counter, keep counting and see if it will reach the SW_RESET_ERROR_TIMEOUT_VALUE
+					end if
+					
+	
+					Unless overridden,
+						set next state to CONTROL_OUTPUTS								
+					Unless overridden,						
+						Mode: SW_RESETTING
+					go to RUN_HOUSEKEEPING_TASKS			
+				SYSTEM_ERROR		
+					Process PIR status	
+					
+					Categorize all commands/data from all sources.					
+					Sort based on priority.
+					Allow for all non-conflicting commands to run.
+					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
+					
+					Improvement tip: Can add a timeout for being in SYSTEM_ERROR too long, and HW reset itself.
+					
+					//Run lower priority functions here. (i.e. error status)
+
+					Note: Any other messages created for CMNC has priority over error messages. Error messages are just for status, but any other messages may be used for debugging.						
+
+					//Recreate any error messages (but allow them to be overwritten by higher priority messages)
+					Improvement Tip: Maybe can send MAIN (and AUXI and NAVI. MAIN would need to copy and reroute these error messages) the error messages as well so it can react to it. But for now good enough.
+					if sync_error
+						(Note: the sync_error flag can only be cleared with a sw reset or hw reset)					
+						cmnc_msg_queue == SYNC_ERROR_STATUS
+					else if secure_link_error
+						(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
+						cmnc_msg_queue == SECURE_LINK_ERROR_STATUS
+					else if sleeping_error
+						(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)
+						cmnc_msg_queue == SLEEP_ERROR_STATUS					
+					else if sw_reset_error
+						cmnc_msg_queue == SW_RESET_ERROR
+						(Note: the sw_reset_error flag can only be cleared with a hw reset)
+						Troubleshooting tip, if it's a sw_reset_error, it will need a HW reset. But SYSTEM_ERROR will allow for both sw and hw resets because it's designed to handle any errors in general. So the user will have to know to send a HW reset in order to clear a SW reset error.
+					else if generic_health_error
+						cmnc_msg_queue = GENERIC_HEALTH_STATUS_ERROR
+						(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)
+					else
+						cmnc_msg_queue == GENERIC_SYSTEM_ERROR_STATUS
+					end if
+			
+					//Run highest priority functions here. //this will override any lower priority messages (i.e. error status)
+					
+					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: Should only be a HW or SW request, or generic health status errors. Anything else is filtered out or redirected.
+					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: Should only be a HW or SW requests or PIR status. Anything else is filtered out or redirected.						
+					Unless overridden,				
+						Mode: SYSTEM_ERROR	
+							(recreate the error msg. the error flags should still be set from before, i.e. sync_error, secure_link_error, etc.)						
+					Unless overridden,
+						Set next state to CONTROL_OUTPUTS
+					go to RUN_HOUSEKEEPING_TASKS							
+			CONTROL_OUTPUTS			
+				POWER_ON_AND_HW_RESET
+					do nothing
+				INITIALIZATION
+					do nothing		
+				SYNCHRONIZATION
+					Control Heart LED, heartbeat
+					Mode: SYNCHRONIZATION
+					set next state to CREATE_DATA
+					go to RUN_HOUSEKEEPING_TASKS						
+				SECURING_LINK
+					Control Heart LED, heartbeat
+					Mode: SECURING_LINK
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS						
+				NORMAL_OPERATIONS										
+					Control Heart LED, heartbeat
+					Mode: NORMAL_OPERATIONS					
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS						
+				HW_RESETTING
+					Control Heart LED, blink
+					HW Reset MAIN
+					HW Reset NAVI
+					HW Reset AUXI
+					Mode: HW_RESETTING					
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS	
+				SYSTEM_SLEEPING
+					Control Heart LED, blink
+					Mode: SYSTEM_SLEEPING					
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS						
+				SYSTEM_WAKING
+					Control Heart LED, blink
+					Wake up MAIN
+					Mode: SYSTEM_WAKING					
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS							
+				SW_RESETTING
+					Control Heart LED, blink
+					Mode: SW_RESETTING			
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS						
+				SYSTEM_ERROR					
+					Control Heart LED, solid
+					Mode: SYSTEM_ERROR					
+					set next state to CREATE_DATA					
+					go to RUN_HOUSEKEEPING_TASKS					
+			CREATE_DATA
+				POWER_ON_AND_HW_RESET
+					do nothing
+				INITIALIZATION
+					do nothing		
+				SYNCHRONIZATION		
+					if main_msg_queue == SYSTEM_READY_STATUS (the COMM, aka this arduino, is up and running, so let MAIN know)
+						create system ready msg for MAIN (tells MAIN it's ready to synchronize)				
+					Mode: SYNCHRONIZATION
+					set next state to TX_COMMUNICATIONS						
+					go to RUN_HOUSEKEEPING_TASKS						
+				SECURING_LINK	
+					if main_msg_queue != CMD_TAG_NO_MSG
+						create any msg(s) for MAIN, NAVI, AUXI (since they all go through MAIN) as needed based on main_msg_queue
+					end if
+					if cmnc_msg_queue == SECURE_LINK_REQUEST
+						create secure link request for CMNC (tells CMNC it's ready for a secure link)
+					Mode: SECURING_LINK
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS						
+				NORMAL_OPERATIONS		
+					if main_msg_queue != CMD_TAG_NO_MSG
+						create any msg(s) for MAIN, NAVI, AUXI (since they all go through MAIN) as needed based on main_msg_queue							
+					end if
+					if cmnc_msg_queue != CMD_TAG_NO_MSG
+						create any msg(s) for CMNC as needed based on cmnc_msg_queue
+					end if
+					Mode: NORMAL_OPERATIONS
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS						
+				HW_RESETTING
+					if main_msg_queue == COMM_HW_RESET_REQUEST
+						Create (for) MAIN, COMM hw reset request msg
+					if cmnc_msg_queue == HW_IS_RESETTING
+						Create CMNC hw resetting msg
+					Mode: HW_RESETTING						
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS	
+						Note: though RUN_HOUSEKEEPING_TASKS is not required and can go straight to TX_COMMUNICATIONS, just doing so for consistency with other code.
+				SYSTEM_SLEEPING
+					if main_msg_queue == ALL_SLEEP_REQUEST
+						Create (for) MAIN, COMM all sleep request msg
+					if cmnc_msg_queue == SYSTEM_IS_SLEEPING
+						Create CMNC system sleeping msg
+					Mode: SYSTEM_SLEEPING						
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS	
+						Note: though RUN_HOUSEKEEPING_TASKS is not required and can go straight to TX_COMMUNICATIONS, just doing so for consistency with other code.
+				SYSTEM_WAKING					
+					if cmnc_msg_queue == SYSTEM_IS_WAKING
+						Create CMNC system waking msg
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS	
+				SW_RESETTING
+					if main_msg_queue = ALL_SW_RESET_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop)
+						Create MAIN all sw reset request msg
+						TROUBLESHOOTING TIP: If MAIN misses this message or has issues, then main_msg_queue = ALL_SW_RESET_REQUEST should be set and sent again.
+					if cmnc_msg_queue == SW_IS_RESETTING (it may be cleared out to CMD_TAG_NO_MSG after the request has been sent)
+						Create CMNC sw resetting msg
+					set next state to TX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS	
+				SYSTEM_ERROR
+					if main_msg_queue != CMD_TAG_NO_MSG
+						create any msg(s) for MAIN, NAVI, AUXI (since they all go through MAIN) as needed based on main_msg_queue						
+					end if
+					if cmnc_msg_queue != CMD_TAG_NO_MSG
+						create any msg(s) for CMNC as needed based on cmnc_msg_queue
+						i.e. create error msg for CMNC about SYNC issues, secure link issues, generic health errors, SW reset errors, etc.
+					end if
+					Mode: SYSTEM_ERROR
+					set next state to TX_COMMUNICATIONS					
+					go to RUN_HOUSEKEEPING_TASKS					
+			TX_COMMUNICATIONS						
+				POWER_ON_AND_HW_RESET
+					do nothing
+				INITIALIZATION
+					do nothing
+				SYNCHRONIZATION		
+					skips for CMNC
+					if main_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to MAIN
+					end if
+					clear message queues and redirect flags
+						cmnc_msg_queue = CMD_TAG_NO_MSG
+						main_msg_queue = CMD_TAG_NO_MSG					
+						redirectToCMNC = false
+						redirectToMAIN = false
+					Mode: SYNCHRONIZATION
+					set next state to RX_COMMUNICATIONS											
+					go to RUN_HOUSEKEEPING_TASKS
+				SECURING_LINK
+					if first_transmission == true						
+						//send the first set of messages
+						if main_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to MAIN
+						end if					
+						if cmnc_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to CMNC
+						end if
+						//check to see if there are any second messages to send
+						if redirectToMAIN == true || redirectToCMNC == true
+							first_transmission = false //clear the flag
+							//reset the counter before use
+							transmission_delay_cnt = 0
+							Mode: SECURING_LINK
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						else//if there is no second transmission, move on
+							clear message queues and redirect flags
+								cmnc_msg_queue = CMD_TAG_NO_MSG
+								main_msg_queue = CMD_TAG_NO_MSG					
+								redirectToCMNC = false
+								redirectToMAIN = false							
+							Mode: SECURING_LINK
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS							
+						end if
+					else			
+						if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
+							//Send the second set of messages
+							if redirectToMAIN == true
+								Redirect external msg(s) to MAIN
+							end if				
+							if redirectToCMNC == true
+								Redirect external msg(s) to CMNC
+							end if					
+							clear message queues and redirect flags
+								cmnc_msg_queue = CMD_TAG_NO_MSG
+								main_msg_queue = CMD_TAG_NO_MSG					
+								redirectToCMNC = false
+								redirectToMAIN = false		
+							first_transmission = true //reset the flag
+							Mode: SECURING_LINK
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS	
+						else
+							transmission_delay_cnt++//increment the transmission delay counter
+							Mode: SECURING_LINK
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						end if
+					end if
+				NORMAL_OPERATIONS
+					if first_transmission == true						
+						//send the first set of messages
+						if main_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to MAIN
+						end if					
+						if cmnc_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to CMNC
+						end if
+						//check to see if there are any second messages to send
+						if redirectToMAIN == true || redirectToCMNC == true
+							first_transmission = false //clear the flag
+							//reset the counter before use
+							transmission_delay_cnt = 0
+							Mode: NORMAL_OPERATIONS
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						else//if there is no second transmission, move on
+							clear message queues and redirect flags
+								cmnc_msg_queue = CMD_TAG_NO_MSG
+								main_msg_queue = CMD_TAG_NO_MSG					
+								redirectToCMNC = false
+								redirectToMAIN = false							
+							Mode: NORMAL_OPERATIONS
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS							
+						end if
+					else			
+						if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
+							//Send the second set of messages
+							if redirectToMAIN == true
+								Redirect external msg(s) to MAIN
+							end if				
+							if redirectToCMNC == true
+								Redirect external msg(s) to CMNC
+							end if					
+							clear message queues and redirect flags
+								cmnc_msg_queue = CMD_TAG_NO_MSG
+								main_msg_queue = CMD_TAG_NO_MSG					
+								redirectToCMNC = false
+								redirectToMAIN = false		
+							first_transmission = true //reset the flag
+							Mode: NORMAL_OPERATIONS
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS	
+						else
+							transmission_delay_cnt++//increment the transmission delay counter
+							Mode: NORMAL_OPERATIONS
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						end if
+					end if
+				HW_RESETTING
+					Note: No redirection during hw resets
+					if main_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to MAIN (i.e. COMM HW Reset Requests to let MAIN know to reset the COMM)
+					end if
+					if cmnc_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to CMNC
+					end if
+					//do not clear message queues. Keep sending the hw reset requests/status. This is because you already did a HW reset on MAIN, AUXI, and NAVI, so you don't want to go through the loop and keep hw resetting those Arduinos. You jsut want to sit and wait here until MAIN will hw reset you (the COMM)
+					can clear the redirect flags
+						redirectToCMNC = false
+						redirectToMAIN = false		
+					Mode: HW_RESETTING
+					set next state to TX_COMMUNICATIONS					
+						Note: Stay in the TX_COMMUNICATIONS state and keep sending hw resetting status to CMNC and hw reset request to MAIN until MAIN hw resets CMNC and puts it in POWER_ON_AND_HW_RESET mode at POR
+					go to RUN_HOUSEKEEPING_TASKS				
+				SYSTEM_SLEEPING
+					Note: No redirection during system sleeping
+					if main_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to MAIN
+					end if
+					if cmnc_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to CMNC
+					end if
+					clear message queues and redirect flags
+						cmnc_msg_queue = CMD_TAG_NO_MSG
+						main_msg_queue = CMD_TAG_NO_MSG					
+						redirectToCMNC = false
+						redirectToMAIN = false
+						Note: When in SYSTEM_SLEEPING mode, it will regenerate the message every loop. (though inefficient, it allows for easier following of the code through the stages. Can change this to make it more efficient, later if needed)
+					Mode: SYSTEM_SLEEPING
+					set next state to RX_COMMUNICATIONS					
+					go to RUN_HOUSEKEEPING_TASKS			
+				SYSTEM_WAKING
+					Note: No redirection during system waking
+					skip for MAIN
+					if cmnc_msg_queue == SYSTEM_IS_WAKING
+						Sends interally generated msg(s) to CMNC
+					end if
+					clear message queues and redirect flags
+						cmnc_msg_queue = CMD_TAG_NO_MSG
+						main_msg_queue = CMD_TAG_NO_MSG					
+						redirectToCMNC = false
+						redirectToMAIN = false
+					Mode: SYNCHRONIZATION *begin*
+						DEBUG TIP: If for some reason MAIN didn't wake up properly, COMM will already be in SYNCHRONIZATION. If it can't synchronize, SYNCHRONIZATION will time out as normal and go into SYSTEM_ERROR with sync_error = true.
+					set next state to RX_COMMUNICATIONS					
+					go to RUN_HOUSEKEEPING_TASKS				
+				SW_RESETTING
+					Note: No redirection during sw resets
+					if main_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to MAIN
+					end if
+					if cmnc_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to CMNC
+					end if
+					clear message queues and redirect flags
+						cmnc_msg_queue = CMD_TAG_NO_MSG
+						main_msg_queue = CMD_TAG_NO_MSG					
+						redirectToCMNC = false
+						redirectToMAIN = false
+						TROUBLESHOOTING TIP: Make sure the queues are cleared out so it doesn't keep getting stuck in loop. (i..e keeps resetting itself)
+					Mode: SW_RESETTING
+					set next state to RX_COMMUNICATIONS					
+					go to RUN_HOUSEKEEPING_TASKS										
+				SYSTEM_ERROR	
+					//regardless of the link being secure, when it's in error, it will just send error messages since it needs a command to reset itself anyways
+					if first_transmission == true						
+						//send the first set of messages
+						if main_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to MAIN
+						end if					
+						if cmnc_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to CMNC
+						end if
+						//check to see if there are any second messages to send
+						if redirectToMAIN == true || redirectToCMNC == true
+							first_transmission = false //clear the flag
+							//reset the counter before use
+							transmission_delay_cnt = 0
+							Mode: SYSTEM_ERROR
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						else//if there is no second transmission, move on
+							clear message queues and redirect flags
+								cmnc_msg_queue = CMD_TAG_NO_MSG
+								main_msg_queue = CMD_TAG_NO_MSG					
+								redirectToCMNC = false
+								redirectToMAIN = false						
+							Mode: SYSTEM_ERROR
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS							
+						end if
+					else			
+						if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
+							//Send the second set of messages
+							if redirectToMAIN == true
+								Redirect external msg(s) to MAIN
+							end if				
+							if redirectToCMNC == true
+								Redirect external msg(s) to CMNC
+							end if					
+							clear message queues and redirect flags
+								cmnc_msg_queue = CMD_TAG_NO_MSG
+								main_msg_queue = CMD_TAG_NO_MSG					
+								redirectToCMNC = false
+								redirectToMAIN = false		
+							first_transmission = true //reset the flag
+							Mode: SYSTEM_ERROR
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS	
+						else
+							transmission_delay_cnt++//increment the transmission delay counter
+							Mode: SYSTEM_ERROR
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						end if
+					end if
+			DEFAULT:
+				Set mode to SYSTEM_ERROR *begin*
+				cmnc_msg_queue == invalid_state_or_mode_error_STATUS
+				set invalid_state_or_mode_error = true
+						(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
 				//initialize/reset shared counter before use
 				timeout_counter = 0;
-				break;
-			default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-				//This code should never execute, if it does, there is a logical or programming error
-				runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch
-}//end of runModeFunction_INITIALIZATION
-void runModeFunction_SYNCHRONIZATION(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: SYNCHRONIZATION"));
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			//WRITE ME LATER
-			break;
-		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;
-		case DATA_VALIDATION:
-			//WRITE ME LATER
-			break;
-		case DATA_FILTER:
-			//WRITE ME LATER
-			break;
-		case PROCESS_DATA:
-			//WRITE ME LATER
-			break;
-		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
-			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
-			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;					
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-				//This code should never execute, if it does, there is a logical or programming error
-				runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch	
-}//end of runModeFunction_SYNCHRONIZATION()
-void runModeFunction_SECURING_LINK(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: SECURING_LINK"));
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			//WRITE ME LATER
-			break;
-		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;
-		case DATA_VALIDATION:
-			//WRITE ME LATER
-			break;
-		case DATA_FILTER:
-			//WRITE ME LATER
-			break;
-		case READ_INPUTS:
-			//WRITE ME LATER
-			break;
-		case PROCESS_DATA:
-			//WRITE ME LATER
-			break;
-		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
-			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
-			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;					
-			default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-				//This code should never execute, if it does, there is a logical or programming error
-				runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch	
-}//end of runModeFunction_SECURING_LINK()
-void runModeFunction_NORMAL_OPERATIONS(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: NORMAL_OPERATIONS"));
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			//WRITE ME LATER
-			break;
-		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;
-		case DATA_VALIDATION:
-			//WRITE ME LATER
-			break;
-		case DATA_FILTER:
-			//WRITE ME LATER
-			break;
-		case READ_INPUTS:
-			//WRITE ME LATER
-			break;
-		case PROCESS_DATA:
-			//WRITE ME LATER
-			break;
-		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
-			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
-			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;					
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-				//This code should never execute, if it does, there is a logical or programming error
-				runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch		
-}//end of runModeFunction_NORMAL_OPERATIONS()
-void runModeFunction_HW_RESETTING(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: HW_RESETTING"));
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			//WRITE ME LATER
-			break;
-		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;
-		case DATA_VALIDATION:
-			//WRITE ME LATER
-			break;
-		case DATA_FILTER:
-			//WRITE ME LATER
-			break;
-		case READ_INPUTS:
-			//WRITE ME LATER
-			break;
-		case PROCESS_DATA:
-			//WRITE ME LATER
-			break;
-		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
-			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
-			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;					
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-				//This code should never execute, if it does, there is a logical or programming error
-				runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch	
-}//end of runModeFunction_HW_RESETTING()
-void runModeFunction_SYSTEM_SLEEPING(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: SYSTEM_SLEEPING"));
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			//WRITE ME LATER
-			break;
-		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;
-		case DATA_VALIDATION:
-			//WRITE ME LATER
-			break;
-		case DATA_FILTER:
-			//WRITE ME LATER
-			break;
-		case READ_INPUTS:
-			//WRITE ME LATER
-			break;
-		case PROCESS_DATA:
-			//WRITE ME LATER
-			break;
-		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
-			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
-			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;					
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-				//This code should never execute, if it does, there is a logical or programming error
-				runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch	
-}//end of runModeFunction_SYSTEM_SLEEPING()
-void runModeFunction_SYSTEM_WAKING(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: SYSTEM_WAKING"));
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			//WRITE ME LATER
-			break;
-		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;
-		case DATA_VALIDATION:
-			//WRITE ME LATER
-			break;
-		case DATA_FILTER:
-			//WRITE ME LATER
-			break;
-		case READ_INPUTS:
-			//WRITE ME LATER
-			break;
-		case PROCESS_DATA:
-			//WRITE ME LATER
-			break;
-		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
-			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
-			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;					
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-				//This code should never execute, if it does, there is a logical or programming error
-				runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch	
-}//end of runModeFunction_SYSTEM_WAKING()
-void runModeFunction_SW_RESETTING(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: SW_RESETTING"));
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			//WRITE ME LATER
-			break;
-		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;
-		case DATA_VALIDATION:
-			//WRITE ME LATER
-			break;
-		case DATA_FILTER:
-			//WRITE ME LATER
-			break;
-		case READ_INPUTS:
-			//WRITE ME LATER
-			break;
-		case PROCESS_DATA:
-			//WRITE ME LATER
-			break;
-		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
-			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
-			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;					
-		default: //default state
-				//This code should never execute, if it does, there is a logical or programming error
-				runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch	
-}//end of runModeFunction_SW_RESETTING()
-void runModeFunction_SYSTEM_ERROR(byte currentState)
-{
-	_PRINT_MODE_(F("MODE: SYSTEM_ERROR"));
-	switch (currentState)
-	{
-		case RUN_HOUSEKEEPING_TASKS:
-			//WRITE ME LATER
-			break;
-		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;
-		case DATA_VALIDATION:
-			//WRITE ME LATER
-			break;
-		case DATA_FILTER:
-			//WRITE ME LATER
-			break;
-		case READ_INPUTS:
-			//WRITE ME LATER
-			break;
-		case PROCESS_DATA:
-			//WRITE ME LATER
-			break;
-		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
-			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
-			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
-			break;					
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-				//This code should never execute, if it does, there is a logical or programming error
-				runModeFunction_default();//no state needed, all states do the same thing
-			break;
-	}//end switch	
-}//end of runModeFunction_SYSTEM_ERROR()
-void runModeFunction_default()
-{
-	_PRINT_MODE_(F("MODE: default"));
-	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
-	//No switch case needed for the states, all states do the same thing
-	cmnc_msg_queue = CMD_TAG_INVALID_STATE_ERROR_STATUS;
-	invalid_state_or_mode_error = true;//Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset
-	//initialize/reset shared counter before use
-	timeout_counter = 0;	
-}//end of runStateFunction_default
- 
- //====End of: Mode Functions
-//============End of Function Definitions
+				Set next state to CONTROL_OUTPUTS								
+				go to RUN_HOUSEKEEPING_TASKS
+				
+				
+			
+State Matrix Design = States vs. Modes			
+==================
+States
+==================
+Note: These states don't always have to go in order.
+	RUN_HOUSEKEEPING_TASKS
+		runs in parallel with every loop
+	RX_COMMUNICATIONS
+		rxData()
+	DATA_VALIDATION
+		data parsing and validation
+		parseAndValidateData()
+	DATA_FILTER
+		dataDirector()
+	READ_INPUTS
+	PROCESS_DATA
+		commandDirector()
+	CONTROL_OUTPUTS			
+	CREATE_DATA
+	TX_COMMUNICATIONS		
+==================
+Modes
+==================
+
+Note: These states don't always have to go in order.
+Note: *begin* means this is one of the starting points for this mode
+
+POWER_ON_AND_HW_RESET
+INITIALIZATION
+SYNCHRONIZATION					
+SECURING_LINK						
+NORMAL_OPERATIONS						
+HW_RESETTING
+SYSTEM_SLEEPING
+SYSTEM_WAKING
+SW_RESETTING
+SYSTEM_ERROR
+DEFAULT
+
+		
+==================
+Command Options (i.e. used in the PROCESS_DATA state. Typically from the NORMAL_OPERATIONS mode, but not always)
+==================	
+Note: Since the message queues (i.e. cmnc_msg_queue, etc.) are shared between external arduinos and this internal arduino, there could be data overwrites and lost. If this is an issue, you may have to redesign.
+	Also since it only reads data once, you might miss data as well.
+	You can't do a queue emptied status since the way the roverComm object is written, it takes in only one string and saves that for processing.
+	Also the way it's currently designed, it will read up the the ROVER_COMM_SENTENCE_LENGTH, so if you send commands back to back, you may get two messages merged together and only one processed.
+	You would have to have a delay and/or send end lines between the two messages.
+	Messages can come from CMNC to COMM or MAIN to COMM
+	Messages can come from CMNC to MAIN or COMM (internal) to MAIN
+	Best to just keep resending messages until you get an acknowledgement for anything that is important.
+	Will have to just take the risk and add delay between possible multiple message sends to the same arduinos
+	And if more than one wants to write to the same queue (and it's not a redirect) will need to prioritize and drop the other. At the end of the day, only one command can be run at a time on the other end (the receiving Arduino) anyways. If anything, you can have it wait for a status and keep resending the message if it's that important.
+	Categorize all commands/data from all sources.
+	Allow for all non-conflicting commands to run.
+	Sort based on priority.
+	Then only run the highest priority for COMM.
+	Note: If these messages don't work, the other (but less desirable option) is have all commands/requests/data sent to MAIN and it will arbitrate everything.
+					
+Note: With external commands, you only want to do all hw or all sw request (and not individual hw/sw requests). Else the system won't be in sync anymore. So hw/sw requests must be synced and have controlled points of entry.
+	But interally, it may call individual commands as required.
+Note: With external commands, you only want to do all sleep requests (and not individual sleep requests). Else the system won't be in sync anymore. So sleep requests must be synced and have controlled points of entry.
+	But internally, it may call individual commands as required.
+
+--------------	
 
 
+
+Non-Conflicting Functions (i.e. it doesn't override the message queues or change states or modes)
+	MAIN System Ready (from MAIN)
+		main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
+		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
+		timeout_counter = 0 (for future use)
+		
+Conflicting Functions Ordered By Priority
+	Note: Don't forget to look at Non-Conflicting Functions as well.
+	Most of the time (but not always), these commands will be ran from NORMAL_OPERATIONS mode under the PROCESS_DATA state. The next state is CONTROL_OUTPUTS, unless overwritten.
+	
+		All HW Reset Request
+			Note: When a HW reset is requested, it first goes through COMM, which resets everything and sends MAIN a "COMM_HW_RESET_REQUEST" message telling MAIN to HW reset COMM since COMM can't reset itself.
+			Mode: HW_RESETTING *begin*
+			main_msg_queue = COMM_HW_RESET_REQUEST					
+			cmnc_msg_queue = HW_IS_RESETTING			
+		COMM SW Reset Request (usually from MAIN)
+			Mode: INITIALIZATION *begin*			
+			Next State: RUN_HOUSEKEEPING_TASKS
+		All SW Reset Request
+			main_msg_queue = ALL_SW_RESET_REQUEST
+			cmnc_msg_queue = SW_IS_RESETTING			
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+			Mode: SW_RESETTING *begin*				
+		Generic Health Error
+			Set mode to SYSTEM_ERROR *begin*
+			cmnc_msg_queue = GENERIC_HEALTH_STATUS_ERROR
+			set generic_health_error = true
+			(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+		System Go (from MAIN)
+			if main_system_ready = false //if for some reason the system ready message was no received before the system go message, go ahead and make it true as any system go must also mean system ready. this doesn't really matter, but just doing it for consistency since the flags are global.
+				main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
+			end if
+			if communications_secure = false //it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it justs needs to sync up again
+				Mode: SECURING_LINK *begin*				
+				cmnc_msg_queue = SECURE_LINK_REQUEST (tells CMNC it's ready for a secure link)
+			else //the link is already secure from earlier
+				Mode: NORMAL_OPERATIONS *begin*
+				cmnc_msg_queue = SYSTEM_READY_STATUS (tells CMNC the system is ready)
+			end if			
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+		Break Secure Link
+			communications_secure = false			
+			Mode: SECURING_LINK *begin* //Starting over with having to securing link again
+			//initialize/reset shared counter before use
+			timeout_counter = 0;			
+		Establish Secure Link
+			communications_secure = true
+			Mode: NORMAL_OPERATIONS *begin*
+			timeout_counter = 0 (clear for future use)
+			cmnc_msg_queue = ESTABLISH_SECURE_LINK (tells CMNC link is now secured)
+		COMM Sleep Request (usually from MAIN)
+			//Pre-sleep tasks - Setting up wake tasks before going to sleep
+			timeout_counter = 0;//clear counter for future use
+			Mode: SYSTEM_WAKING *begin* //setup this mode ahead of time before going to sleep		
+			cmnc_msg_queue = SYSTEM_IS_WAKING			
+			Run other pre-sleep tasks. (i.e. end software serial, as needed)
+			Put COMM to sleep
+				Don't switch states yet. Go to sleep in the current PROCESS_DATA state.
+			The Xbee/Serial will wake up the sleep.
+			Run wake up tasks. (i.e. begin SW serial as needed, etc.)
+			Then it will go to RUN_HOUSEKEEPING_TASKS, while in SYSTEM_WAKING
+				Then it will go to the next state, which will default to CONTROL_OUTPUTS		
+		All Sleep Request
+			Mode: SYSTEM_SLEEPING *begin*
+			main_msg_queue = ALL_SLEEP_REQUEST
+			cmnc_msg_queue = SYSTEM_IS_SLEEPING
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+		PIR Status
+			cmnc_msg_queue or main_msg_queue (based on the requester) = PIR_STATUS
+			Note: The PIR status message will be created in the CREATE_DATA state
+		Received Error Messages
+			//For now just forward it to CMNC, keeping the original destination
+			cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS
+			
+			//All errors from main, navi, auxi should be redirected to COMM, and COMM will redirect it to CMNC
+			//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
+		Improvement Tip: COMM can go into error mode if it gets an error message from NAVI, AUXI, or MAIN
+
+		Redirect any system errors from MAIN/NAVI/AUXI to CMNC for manual human in the loop disposition (i.e. hw or sw reset)		
+		
+		
+				
+			
+IMPROVEMENT TIP: Maybe add system hold and system standby states later if have time.			
 

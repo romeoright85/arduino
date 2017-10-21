@@ -35,7 +35,7 @@
 			double getVoltageValueOf(byte);//returns the voltage value (in Volts, with a range of 0-5V) by Analog Signal Name (Analog Signal Name)
 			boolean hasAnalogName(byte);//returns true if it has the desired Analog Signal Name(Analog Signal Name)
 
-		private:
+		//private:
 			//SW Resetted
 			byte _AMUX_SEL_0_PIN;
 			byte _AMUX_SEL_1_PIN;

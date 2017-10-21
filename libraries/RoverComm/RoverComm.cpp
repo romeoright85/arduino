@@ -38,9 +38,7 @@ int RoverComm::getRxDataLength()
 void RoverComm::reset()
 {
 		this->_rxDataStringCharacterIndex = 0;
-		this->clearRxData();
-		////#DELETE ME
-		//this->_destinationCommType = ROVERCOMM_NONE;		
+		this->clearRxData();		
 }
 
 
@@ -184,7 +182,7 @@ boolean RoverComm::parseAndValidateData()
 		//1a. Extract the command data from the _rxDataString
 		CharArray::substring(this->_rxDataString, CharArray::stringSize(this->_rxDataString, this->getRxDataLength()), 10, cmdDataCommandDataCharArray);//With No End Index, goes to the end of the array or to the terminating character (input char array, array size, start index, output char array). Note the array size you can use the stringSize() function as a helper. Note: Start index can be as small as 0.
 		//1b. Set the command data to the value of _commandData in the Rover Data object
-		this->_rxRoverDataPointer->setCommandData(cmdDataCommandDataCharArray, sizeof(cmdDataCommandDataCharArray)/sizeof(cmdDataCommandDataCharArray[0]));
+		this->_rxRoverDataPointer->setCommandData(cmdDataCommandDataCharArray, sizeof(cmdDataCommandDataCharArray));
 		
 		//2. Set the rover command tag
 		//2a. Extract the command tag from the _rxDataString
@@ -274,23 +272,3 @@ boolean RoverComm::validateThenSetDestinationRoverCommType(char * roverCommTypeC
 	
 	return true;	
 }
-		
-		
-		
-		
-/*		
-//#DELETE ME	
-byte RoverComm::getDestinationCommType()
-{
-	return _destinationCommType;
-
-}
-void RoverComm::clearRxDataVariables()
-{
-	
-	this->_rxDataStringCharacterIndex = 0;
-	this->clearRxData();
-
-}
-*/
-

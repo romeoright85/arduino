@@ -31,7 +31,7 @@ void loop() {
 	_PC_USB_SERIAL_.println(test1);
 
 
-	index = indexOf(test1, 1, 'a', sizeof(test1) / sizeof(test1[0]));//array, start index, array size
+	index = indexOf(test1, 1, 'a', sizeof(test1));//array, start index, array size
 	_PC_USB_SERIAL_.println(index);
 	output = subCharArray(test1, index, index+2);
 	_PC_USB_SERIAL_.println(output);

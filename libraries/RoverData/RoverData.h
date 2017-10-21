@@ -106,32 +106,4 @@
 		char _imuDataString[ROVER_IMU_DATA_BUFFER_SIZE];//holds the IMU data string		
 	};	
 	
-#endif 
-
-
-
-/*
-//#DELETE ME
-
-OLD CODE
-	class RoverData : public virtual RoverReset {
-	public:
-		RoverData();//constructor
-		~RoverData();//destructor
-		
-		byte getCommType();//returns the destination RoverComm Type
-		void setCommType(byte);//set the destination RoverComm type
-		
-		void setData(char *, byte);//save the data string in _dataString (charArray, array size)		
-		void clearData();//clear the stored data in _dataString
-		char * getData();//retrieve the _dataString
-		byte getDataLength();//retrieve the _dataString length
-		
-		virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)		
-	private:		
-		char _dataString[ROVER_DATA_BUFFER_SIZE];//holds the data string
-		byte _roverCommType;
-	};
-
-	
-*/
+#endif

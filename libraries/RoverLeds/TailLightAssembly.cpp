@@ -48,7 +48,7 @@ void TailLightAssembly::turnOn(byte taillightLightType1, byte taillightLightType
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2 };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOn(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}
@@ -57,7 +57,7 @@ void TailLightAssembly::turnOn(byte taillightLightType1, byte taillightLightType
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2, taillightLightType3 };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOn(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}
@@ -66,7 +66,7 @@ void TailLightAssembly::turnOn(byte taillightLightType1, byte taillightLightType
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2, taillightLightType3, taillightLightType4  };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOn(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}
@@ -75,7 +75,7 @@ void TailLightAssembly::turnOn(byte taillightLightType1, byte taillightLightType
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2, taillightLightType3, taillightLightType4, taillightLightType5  };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOn(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}
@@ -84,7 +84,7 @@ void TailLightAssembly::turnOn(byte taillightLightType1, byte taillightLightType
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2, taillightLightType3, taillightLightType4, taillightLightType5, taillightLightType6 };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOn(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}
@@ -121,7 +121,7 @@ void TailLightAssembly::turnOff(byte taillightLightType1, byte taillightLightTyp
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2 };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOff(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}
@@ -130,7 +130,7 @@ void TailLightAssembly::turnOff(byte taillightLightType1, byte taillightLightTyp
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2, taillightLightType3 };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOff(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}
@@ -139,7 +139,7 @@ void TailLightAssembly::turnOff(byte taillightLightType1, byte taillightLightTyp
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2, taillightLightType3, taillightLightType4  };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOff(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}
@@ -148,7 +148,7 @@ void TailLightAssembly::turnOff(byte taillightLightType1, byte taillightLightTyp
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2, taillightLightType3, taillightLightType4, taillightLightType5  };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOff(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}
@@ -157,7 +157,7 @@ void TailLightAssembly::turnOff(byte taillightLightType1, byte taillightLightTyp
 {
 	byte tailLightTypes[] = { taillightLightType1, taillightLightType2, taillightLightType3, taillightLightType4, taillightLightType5, taillightLightType6 };
 
-	for (byte i = 0; i <  sizeof(tailLightTypes)/sizeof(tailLightTypes[0]); i++)
+	for (byte i = 0; i <  sizeof(tailLightTypes); i++)
 	{
 		this->turnOff(tailLightTypes[i]);//using delegation. Passing the tail light type.
 	}

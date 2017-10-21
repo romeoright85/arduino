@@ -10,17 +10,12 @@ Where I left off
 
 
 	
-
-	
 	
 	
 ---------------CODING---------------	
 
 
-
-
-LEFT OFF:
-	
+LAST THING DONE: (see #LEFT OFF HERE below)
 
 	I last left off Sunday night updating RoverComm::parseAndValidateData(). Also see #LEFT OFF HERE (in the document) in two places.
 
@@ -40,60 +35,26 @@ LEFT OFF:
 ----------------------------------
 
 
-See //FIX ME LATER NEXT WEEK
-			
-			
-			
-[NEED TO DO]
-		In RoverComm:
-				see if setCommandData requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
-					then go back through all code and make it consistent. use wingrep to see where RoverComm::setCommandData is used
-						
-[NEED TO DO]	
-				in CharArray.cpp
-				check to see if CharArray::stringSize requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
-					then go back through all code and make it consistent. use wingrep to see where CharArray::stringSize is used
+
+[NEED TO DO]		
+	Update MqGasSensor.cpp to use flash memory for fixed strings
+	
 		
-[NEED TO DO]											
-				In Rover_StateMachine_COMM:							
-				Go through all code and see if I need to add the ROVERCOMM_PC_USB case for all places where it calls ROVERCOMM_CMNC (i.e. rxData and txData, etc.
-
-[NEED TO DO]					
-	Note: Once all code is tested and works on Rover_StateMachine_COMM, then go back to RoverData, RoverComm, RoverCommand, and maybe even Rover_StateMachine_COMM and delete out any commented out code (i.e. tagged with //#DELETE ME)
-	Update any notes and references so you always have to send an origin as well and not just -. i.e. /4c5... instead of /-c5...
-
-	Go to :
-		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverCommand\delete me
-			and delete DELETEME_RoverCommand.cpp and DELETEME_RoverCommand.h
-		
-[NEED TO DO]				
-				In RoverCommand:
-					delete this object. it's now combined with RoverData
-
-					
 		
 [NEED TO DO]				
 		Test Codes:
-			Update any tester code that uses RoverComm, RoverData, RoverCommand, RoverCommandProcessor due to these fixes
-		Update the state machine notes at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Pseudocode
-			i.e. from validateData to parseAndValidateData, etc.
-	
+			
+			Fix CommTester_AUXI, CommTester_COMM, CommTester_MAIN, CommTester_NAVI to use parseAndValidateData() instead of validateData() and any new code changes that broke this code now. Use Rover_StateMachine_COMM as a reference.
+				
 
 	
-	
-	[IN PROGRESS PRIOR TO 10/15/17]Need to parse where the message originated and where it's going to. And then use the origin and destination in commandDirector to set the queue of interest as well as where the rover command data should be stored in.
-		Note: It doesn't matter which serial channel the message came from physical as it could be rerouted. What matters is what's in the message itself.
-		Note: The origin of the messsage will change every time it passes through an Arduino. It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
-	
-	Found an error. I think I have duplicate code
-		maybe remove RoverComm::getDestinationCommType? not used? double check with wingrep
-		
-
-	
-	
-	
-		
-	
+[NEED TO DO]											
+				In Rover_StateMachine_COMM:							
+				Go through all code and see if I need to add the ROVERCOMM_PC_USB case for all places where it calls ROVERCOMM_CMNC (i.e. rxData and txData, etc.)
+				
+				
+				
+				
 =================1 weekend===================				
 
 	
@@ -1567,8 +1528,58 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 			[FIXED, found that when the data was valid in RoverComm::parseAndValidateData() that data should not be cleared yet since it might get redirected.]debug why redirect isn't working. somewhere the data is being cleared too early.
 				somewhere in parseandvalidatedata the data is being cleared. need to store the data somewhere else for redirection or move the redirection itself.
 				
+			[DONE]Go to :
+			K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverCommand\delete me
+				and delete DELETEME_RoverCommand.cpp and DELETEME_RoverCommand.h
+	
+					
+				in CharArray.cpp
+				[DONE]	check to see if CharArray::stringSize requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
+					[DONE]	then go back through all code and make it consistent. use wingrep to see where CharArray::stringSize is used
+	
+						
+					
+		[DONE]
+				In RoverData:
+						see if setCommandData requires just sizeof(array) or sizeof(array)/sizeof(array[0]).
+							then go back through all code and make it consistent. use wingrep to see where RoverData::setCommandData is used
+						
+					Results:
+						#sizeof()
+						sizeof(charArray) or sizeof(charArray)/sizeof(charArray[0]) yields the same thing for regular variables (non pointers) but for objects you have to divide by the element. And for char pointers, you have to pass the length in directly. You can't get the size of a char pointer.
+						Reference: https://stackoverflow.com/questions/399003/is-the-sizeofsome-pointer-always-equal-to-four
+						Size of (object) pointers are always two bytes.
+						Reference: https://stackoverflow.com/questions/15774534/c-how-to-get-the-length-of-a-pointer-array
+						"If the char * is 0 - terminated, you can use strlen. (but strlen doesn't count the \0 so you have to add 1). Otherwise, there is no way to determine that information."
+						Reference: https://stackoverflow.com/questions/21022644/how-to-get-the-real-and-total-length-of-char-char-array
+
+
+			[DONE] Note: Once all code is tested and works on Rover_StateMachine_COMM, then go back to RoverData, RoverComm, RoverCommand, and maybe even Rover_StateMachine_COMM and delete out any commented out code (i.e. tagged with //#DELETE ME)
+
+			[DONE]				
+							In RoverCommand:
+								delete this object. it's now combined with RoverData
+
+
+				[IDONE]Need to parse where the message originated and where it's going to. And then use the origin and destination in commandDirector to set the queue of interest as well as where the rover command data should be stored in.
+		Note: It doesn't matter which serial channel the message came from physical as it could be rerouted. What matters is what's in the message itself.
+		Note: The origin of the messsage will change every time it passes through an Arduino. It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+	
+	Found an error. I think I have duplicate code
+		maybe remove RoverComm::getDestinationCommType? not used? double check with wingrep
+	
+	Test Codes:
+			[DONE]Update any tester code that uses RoverComm, RoverData, RoverCommand, RoverCommandProcessor due to these fixes
+	
+	[DONE]					
+	Update any notes and references so you always have to send an origin as well and not just -. i.e. /4c5... instead of /-c5...
+
+	
+	[DONE] Update the state machine notes at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Pseudocode
+				i.e. from validateData to parseAndValidateData, etc.
 				
 				
+	
 -------------------State Machine for COMM
 
 [DONE] I got the whole sync mode loop in place.
