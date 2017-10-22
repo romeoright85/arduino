@@ -171,7 +171,7 @@ char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Messag
 //Fixed Message Strings (to store in flash)
 const static char msg_strg_0[] PROGMEM = "nodata";//getMsgString(0)
 const static char msg_strg_1[] PROGMEM = "invlcmd";//getMsgString(1)
-//Note: Make sure to update  the cmd_str_table[] array
+//Note: Make sure to update  the msg_str_table[] array
 
 //Table of Fixed Commaned Strings (array of strings stored in flash)
 const char* const msg_str_table[] PROGMEM = {

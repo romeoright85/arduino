@@ -36,9 +36,6 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 
 
 
-[NEED TO DO]		
-	Update MqGasSensor.cpp to use flash memory for fixed strings
-	
 		
 		
 [NEED TO DO]				
@@ -54,11 +51,6 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 				
 				
 				
-				
-=================1 weekend===================				
-
-	
-
 ---------------CODING---------------	
 
 
@@ -67,7 +59,12 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 	the finish out the synchonization mode and move on to secure link
 	Note: pay attention to memory use!
 	
+				
+=================1 weekend===================				
+
 	
+
+---------------CODING---------------	
 	
 	See below for	
 		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
@@ -1578,7 +1575,21 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 	[DONE] Update the state machine notes at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Pseudocode
 				i.e. from validateData to parseAndValidateData, etc.
 				
-				
+			
+	[DONE]		
+		Update MqGasSensor.cpp to use flash memory for fixed strings
+
+
+	Before Program Memory String Use:
+		Compiling 'AnalogSignalsTester' for 'Arduino/Genuino Mega w/ ATmega2560 (Mega 2560)'
+		Program size: 22,454 bytes (used 9% of a 253,952 byte maximum) (4.63 secs)
+		Minimum Memory Usage: 1210 bytes (15% of a 8192 byte maximum)
+
+	After Program Memory String Use:
+		Compiling 'AnalogSignalsTester' for 'Arduino/Genuino Mega w/ ATmega2560 (Mega 2560)'
+		Program size: 22,480 bytes (used 9% of a 253,952 byte maximum) (4.59 secs)
+		Minimum Memory Usage: 1078 bytes (13% of a 8192 byte maximum)
+			
 	
 -------------------State Machine for COMM
 

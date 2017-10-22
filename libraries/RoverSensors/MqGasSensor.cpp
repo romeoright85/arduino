@@ -16,45 +16,45 @@ MqGasSensor::MqGasSensor(byte mqGasSensorType, byte analogSignalName, double mqG
 			//Flammable Gas & Smoke Sensor		
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_X] = MQ2_X_PT;
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_Y] = MQ2_Y_PT;
-			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ2_SLOPE;			
-			strncpy(this->_mqGasSensorName, "Flammable Gas & Smoke", sizeof("Flammable Gas & Smoke"));
-			strncpy(this->_mqGasSensorUnit, "ppm", sizeof("ppm"));//taken from the "Concentration" row of the datasheet
+			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ2_SLOPE;						
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorName, MQ_SENSOR_MQ2_NAME);
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorUnit, MQ_SENSOR_MQ2_UNIT);			
 			this->_mqGasSensorR0CleanAirFactor = MQ2_RO_CLEAN_AIR_FACTOR;			
 		break;
 		case GAS_SENSOR_TYPE_MQ3:
 			//Alcohol Gas Sensor
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_X] = MQ3_X_PT;
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_Y] = MQ3_Y_PT;
-			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ3_SLOPE;						
-			strncpy(this->_mqGasSensorName, "Alcohol", sizeof("Alcohol"));
-			strncpy(this->_mqGasSensorUnit, "mg/l", sizeof("mg/l"));//taken from the "Concentration" row of the datasheet		
+			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ3_SLOPE;			
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorName, MQ_SENSOR_MQ3_NAME);
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorUnit, MQ_SENSOR_MQ3_UNIT);			
 			this->_mqGasSensorR0CleanAirFactor = MQ3_RO_CLEAN_AIR_FACTOR;			
 		break;
 		case GAS_SENSOR_TYPE_MQ4:
 			//Methane Gas Sensor
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_X] = MQ4_X_PT;
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_Y] = MQ4_Y_PT;
-			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ4_SLOPE;						
-			strncpy(this->_mqGasSensorName, "Methane", sizeof("Methane"));
-			strncpy(this->_mqGasSensorUnit, "ppm", sizeof("ppm"));//taken from the "Concentration" row of the datasheet					
+			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ4_SLOPE;			
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorName, MQ_SENSOR_MQ4_NAME);
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorUnit, MQ_SENSOR_MQ4_UNIT);			
 			this->_mqGasSensorR0CleanAirFactor = MQ4_RO_CLEAN_AIR_FACTOR;
 		break;
 		case GAS_SENSOR_TYPE_MQ6:
 			//LPG / Isobutane / Propane Gas Sensor
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_X] = MQ6_X_PT;
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_Y] = MQ6_Y_PT;
-			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ6_SLOPE;			
-			strncpy(this->_mqGasSensorName, "LPG / Isobutane / Propane", sizeof("LPG / Isobutane / Propane"));
-			strncpy(this->_mqGasSensorUnit, "ppm", sizeof("ppm"));//taken from the "Concentration" row of the datasheet			
+			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ6_SLOPE;
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorName, MQ_SENSOR_MQ6_NAME);
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorUnit, MQ_SENSOR_MQ6_UNIT);
 			this->_mqGasSensorR0CleanAirFactor = MQ6_RO_CLEAN_AIR_FACTOR;
 		break;
 		case GAS_SENSOR_TYPE_MQ7:
 			//Carbon Monoxide Gas Sensor
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_X] = MQ7_X_PT;
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_Y] = MQ7_Y_PT;
-			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ7_SLOPE;			
-			strncpy(this->_mqGasSensorName, "Carbon Monoxide", sizeof("Carbon Monoxide"));
-			strncpy(this->_mqGasSensorUnit, "ppm", sizeof("ppm"));//taken from the "Concentration" row of the datasheet						
+			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ7_SLOPE;
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorName, MQ_SENSOR_MQ7_NAME);
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorUnit, MQ_SENSOR_MQ7_UNIT);
 			this->_mqGasSensorR0CleanAirFactor = MQ7_RO_CLEAN_AIR_FACTOR;
 		break;
 		case GAS_SENSOR_TYPE_MQ9:
@@ -62,8 +62,8 @@ MqGasSensor::MqGasSensor(byte mqGasSensorType, byte analogSignalName, double mqG
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_X] = MQ9_X_PT;
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_Y] = MQ9_Y_PT;
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = MQ9_SLOPE;			
-			strncpy(this->_mqGasSensorName, "Carbon Monoxide & Flammable Gas", sizeof("Carbon Monoxide & Flammable Gas"));
-			strncpy(this->_mqGasSensorUnit, "ppm", sizeof("ppm") );//taken from the "Concentration" row of the datasheet	
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorName, MQ_SENSOR_MQ9_NAME);
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorUnit, MQ_SENSOR_MQ9_UNIT);			
 			this->_mqGasSensorR0CleanAirFactor = MQ9_RO_CLEAN_AIR_FACTOR;
 		break;
 		default:
@@ -71,8 +71,8 @@ MqGasSensor::MqGasSensor(byte mqGasSensorType, byte analogSignalName, double mqG
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_X] = 0.0;
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_Y] = 0.0;
 			this->_mqGasSensorDataCurve[GAS_SENSOR_CURVE_SLOPE] = 0.0;			
-			strncpy(this->_mqGasSensorName, "Invalid", sizeof("Invalid"));
-			strncpy(this->_mqGasSensorUnit, "Error", sizeof("Error"));//taken from the "Concentration" row of the datasheet								
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorName, MQ_SENSOR_NULL_NAME);
+			this->copyStringFlash2CharBuffer(this->_mqGasSensorUnit, MQ_SENSOR_NULL_UNIT);			
 			this->_mqGasSensorR0CleanAirFactor = 0.0;
 		break;		
 	}
@@ -214,6 +214,8 @@ byte MqGasSensor::getMqGasSensorUnitLength()
 {
 	return CharArray::stringSize(this->_mqGasSensorUnit,sizeof(this->_mqGasSensorUnit));
 }
-
-
+char * MqGasSensor::copyStringFlash2CharBuffer(char * charBuffer, byte arrayIndex) {
+	memset(charBuffer, 0, sizeof(charBuffer));//clear char array buffer
+	return strcpy_P(charBuffer, (char*)pgm_read_word(&(mq_gas_string_table[arrayIndex])));//copy the fixed string from flash into the char buffer
+}//end of copyStringFlash2CharBuffer()
 

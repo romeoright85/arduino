@@ -1,5 +1,4 @@
 //Used for AUXI - 2
-
 #include <RoverAnalogSignals.h> //calls MqGasSensor.h
 #include <UpTime.h>
 #include <GlobalDelayTimer.h>
@@ -12,6 +11,7 @@
 #define _OUTPUT_MUX3_
 #define _OUTPUT_MUX4_
 #define _DEBUG_3SEC_WARM_UP_ //do a 3 second warmup instead of a 3 minute warmup for software debugging only
+#define _DEBUG_PRINT_GAS_SENSOR_NAME //to print the gas sensor name
 
 //Uncomment to debug
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
@@ -64,6 +64,10 @@ void setup() {
 	Serial2.begin(MAIN_BAUD_RATE);
 	delay(100);//allow some time for the serial port to begin
 
+	#ifdef _DEBUG_PRINT_GAS_SENSOR_NAME
+		Serial.print(F("Gas Sensor: "));
+		Serial.println(analogSignals->getMqGasSensorName(mqGasSensor));//DEBUG and delete
+	#endif
 	_SERIAL_DEBUG_CHANNEL_.println(F("Gas Sensor Warming Up And Calibrating - Wait ~3:26"));
 
 
@@ -93,13 +97,14 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 
 void loop() {
 
-	
+
+
 	//wait for warm up of the MQ gas sensor, the calibrate once
 	if (!analogSignals->gasSensorIsCalibrated())
 	{
 		#ifdef _DEBUG_3SEC_WARM_UP_
 			//Wait for a >= 3 minute second warm up
-			//Note: Calibration takes about 20 secs (due to the parallel processing code)
+			//Note: Calibration takes about 20 secs (due to the parallel processing code)			
 			analogSignals->calibrateGasSensor(mqGasSensor, roverUptime->getSeconds(), counterGasCal);//DEBUG, speed it up to 3 seconds. But the code will think the seconds are minutes as the function is expecting minutes as the input
 		#else
 			//Wait for a >= 3 minute warm up
@@ -128,8 +133,7 @@ void loop() {
 	_SERIAL_DEBUG_CHANNEL_.print(F("VOLTAGE_7D2_ACTUAL: "));
 	_SERIAL_DEBUG_CHANNEL_.println(val_Dbl);
 
-
-
+	
 	//Ch 1
 	val = analogSignals->getRawADCValueOf(CURRENT_7D2_PRESW25A);
 	_SERIAL_DEBUG_CHANNEL_.print(F("CURRENT_7D2_PRESW25A_RAW: "));

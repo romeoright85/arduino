@@ -35,7 +35,7 @@
 		#define _GPS_SERIAL_ Serial3
 	#endif	
 	
-		
+			
 	#ifdef _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ //used to test all Serial algorithms by using just the local USB Serial interface	
 		#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
 		#define PC_USB_BAUD_RATE	9600 //used for outputting from UNO, Mega Arduinos to the PC via USB
@@ -85,7 +85,32 @@
 		#define MQ_SENSOR_NAME_BUFFER_SIZE 50
 		#define MQ_SENSOR_UNIT_BUFFER_SIZE 15
 
+		
+		//MQ Gas Sensor Flash String Names
+		//Null
+		#define MQ_SENSOR_NULL_NAME		0
+		#define MQ_SENSOR_NULL_UNIT		1
+		//MQ2
+		#define MQ_SENSOR_MQ2_NAME		2
+		#define MQ_SENSOR_MQ2_UNIT		3
+		//MQ3
+		#define MQ_SENSOR_MQ3_NAME		4
+		#define MQ_SENSOR_MQ3_UNIT		5
+		//MQ4
+		#define MQ_SENSOR_MQ4_NAME		6
+		#define MQ_SENSOR_MQ4_UNIT		7
+		//MQ6
+		#define MQ_SENSOR_MQ6_NAME		8
+		#define MQ_SENSOR_MQ6_UNIT		9
+		//MQ7
+		#define MQ_SENSOR_MQ7_NAME		10
+		#define MQ_SENSOR_MQ7_UNIT		11
+		//MQ9
+		#define MQ_SENSOR_MQ9_NAME		12
+		#define MQ_SENSOR_MQ9_UNIT		13
 	#endif	
+	
+	
 
 	//definition for Rover Data
 	#ifdef _ROVERDATA

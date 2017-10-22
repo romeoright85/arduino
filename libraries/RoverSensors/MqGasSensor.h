@@ -11,6 +11,7 @@
 
 
 
+
 /*
 References:
 
@@ -43,10 +44,53 @@ Configure (define) flags before calling #include <RoverConfig.h>
 #define _MQ_GAS_SENSOR_DEFINITIONS
 #define _MQ_GAS_SENSOR_CALIBRATIONS
 
-
 #include <RoverConfig.h>
 #include <RoverCalibration.h>
 
+
+//Fixed Strings (to store in flash)
+//Null
+const static char mq_gas_string_0[] PROGMEM = "Invalid";//copyStringFlash2CharBuffer(0)
+const static char mq_gas_string_1[] PROGMEM = "Error";//copyStringFlash2CharBuffer(1)
+//MQ2
+const static char mq_gas_string_2[] PROGMEM = "Flammable Gas & Smoke";//copyStringFlash2CharBuffer(2)
+const static char mq_gas_string_3[] PROGMEM = "ppm";//taken from the "Concentration" row of the datasheet, copyStringFlash2CharBuffer(3)
+//MQ3
+const static char mq_gas_string_4[] PROGMEM = "Alcohol";//copyStringFlash2CharBuffer(4)
+const static char mq_gas_string_5[] PROGMEM = "mg/l";//taken from the "Concentration" row of the datasheet, copyStringFlash2CharBuffer(5)
+//MQ4
+const static char mq_gas_string_6[] PROGMEM = "Methane";//copyStringFlash2CharBuffer(6)
+const static char mq_gas_string_7[] PROGMEM = "ppm";//taken from the "Concentration" row of the datasheet, copyStringFlash2CharBuffer(7)
+//MQ6
+const static char mq_gas_string_8[] PROGMEM = "LPG / Isobutane / Propane";//copyStringFlash2CharBuffer(8)
+const static char mq_gas_string_9[] PROGMEM = "ppm";//taken from the "Concentration" row of the datasheet, copyStringFlash2CharBuffer(9)
+//MQ7
+const static char mq_gas_string_10[] PROGMEM = "Carbon Monoxide";//copyStringFlash2CharBuffer(10)
+const static char mq_gas_string_11[] PROGMEM = "ppm";//taken from the "Concentration" row of the datasheet, copyStringFlash2CharBuffer(11)
+//MQ9
+const static char mq_gas_string_12[] PROGMEM = "Carbon Monoxide & Flammable Gas";//copyStringFlash2CharBuffer(12)
+const static char mq_gas_string_13[] PROGMEM = "ppm";//taken from the "Concentration" row of the datasheet, copyStringFlash2CharBuffer(13)
+
+
+//Note: Make sure to update  the mq_gas_string_table[] array
+
+//Table of Fixed Strings (array of strings stored in flash)
+const char* const mq_gas_string_table[] PROGMEM = {
+	mq_gas_string_0,
+	mq_gas_string_1,
+	mq_gas_string_2,
+	mq_gas_string_3,
+	mq_gas_string_4,
+	mq_gas_string_5,
+	mq_gas_string_6,
+	mq_gas_string_7,
+	mq_gas_string_8,
+	mq_gas_string_9,
+	mq_gas_string_10,
+	mq_gas_string_11,
+	mq_gas_string_12,
+	mq_gas_string_13
+};	
 
 class MqGasSensor : public virtual RoverReset {
 public:
@@ -88,6 +132,9 @@ private:
 	double _mqGasSensorFixedResistorValue;
 	byte _analogSignalName;//holds the analog signal name of the particular instance of this gas sensor, used to find the corresponding channel through the muxes
 	
+	
+	char * copyStringFlash2CharBuffer(char *, byte);//gets the string from flash memory and puts it into the local char buffer
+	
 	//SW Resettable	
 	float _mqGasSensorR0;//the calibrated resistance (control variable). Initialize to 10 kohms but will be overwritten with calibration. (got the value from http://sandboxelectronics.com/?p=165)
 	float _mqGasSensorRsR0Ratio;//the calculated ratio of Rs vs. R0
@@ -95,7 +142,7 @@ private:
 	float _calibrationSum;//used for sensor calibration. It's the number of samples that have been taken.
 	byte _readRuns;//used for sensor read. It's  the accumulated/sum value use for averaging.
 	float _readSum;//used for sensor read. It's the number of samples that have been taken.
-	
+
 	
 };
 

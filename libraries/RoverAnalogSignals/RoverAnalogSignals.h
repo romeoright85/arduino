@@ -40,7 +40,7 @@
 	//#define _DEBUG_GAS_SENSOR_MATH_STEPS_
 	//#define __DEBUG_CALC_RES_	
 	//#define _DEBUG_MEASURED_VOLTAGE_
-	#define _DEBUG_7D2V_SCALING_FACTOR_
+	//#define _DEBUG_7D2V_SCALING_FACTOR_
 
 	//turn on the analog names in RoverConfig.h
 	#define _ROVERANALOGNAMES
