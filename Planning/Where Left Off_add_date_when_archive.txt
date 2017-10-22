@@ -52,6 +52,12 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 ---------------CODING---------------	
 
 
+	Retest redirect to see if it works for Rover_StateMachine_COMM
+	
+	Then update "HIGHEST PRIORITY 1" below to remove/skip any outdated suggestions due to memory issues, if it was already fixed with past fixed.
+	
+	
+	
 
 		
 	finish createDataFromQueueFor and messages for it (or place holders)
@@ -60,9 +66,10 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 	
 	
 	
-	
-	See below for	
+	Then See below for	
 		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
+	
+	
 	
 	
 ---------------TESTING---------------
@@ -137,7 +144,7 @@ get basic state machine infrastructure up
 	{
 			
 			
-				[WHERE LEFT OFF 0]
+				[WHERE LEFT OFF 0] With Rover_StateMachine_COMM
 				Note: The last thing I did before stopping was:
 							-Remember to uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ in RoverConfig. only MAIN is allowed to chat in the beginning and CMNC is shut off until the unit is sychronized. Then CMNC can send to COMM but wil lget no response until links are secured.
 							-When debugging, check the boolean bit flag as well as the bit flag set. As you might forgot to update both when copying and pasting and using templates.
@@ -178,27 +185,20 @@ get basic state machine infrastructure up
 					Update on commandDirector commands/functions
 					
 					
+					
+					
+					
+					
 HIGHEST PRIORITY 1->[NEED TO DO]Due to lack of memory, update documentation AND code to do the following:
 							Update COMM code first.
 								For commands, let it transmit right away in the process_data state (in command director).
 								For redirects, let it be transmitted right away in the dataDirector which is called in the DATA_FILTER state.
 								Use CREATE_DATA and TX_DATA states only for internally generated data.
 								Maybe use if statements with modes instead of commandEnableOption flags and then remove the data filter class all together.
-								MAybe use 1 byte variable to store all the errors, instead of having an error flag for each one.
+								Maybe use 1 byte variable to store all the errors, instead of having an error flag for each one.
 									Then design it to overwrite that variable based on priority. And one an error is cleared, if any lower priority errors exists, then it should flag that variable next.
 							Update documentation after proven that the code works.	
-HIGHEST PRIORITY 2->[NEED TO DO]Use command creator to create commands. (it will add the necessary headers of origin, destination, etc.
-						
-							
-							
-						
-						[NEED TO DO]Update commandDirector commands to something else if desired (i.e. not "esl" but some other string)
-							"esl"
-							"sysrdy"
-							"sysgo"
-							"hwrst"
-							"swrst"
-							etc. (many more not listed here)
+
 						[NEED TO DO]Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
 							[NEED TO DO]Update the DATA_FILTER state with command options:							
 									
@@ -1598,7 +1598,18 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 	Note: Do not delete anything yet. Comment everything you don't need out and move it to the bottom of the code. Save it as a template for algorithms. Mark it with a //#DELETE ME tag so you can find it easier
 
 
-			
+							[DONE]Use command creator to create commands. (it will add the necessary headers of origin, destination, etc.
+						
+							
+							
+						
+						[DONE]Update commandDirector commands to something else if desired (i.e. not "esl" but some other string)
+							"esl"
+							"sysrdy"
+							"sysgo"
+							"hwrst"
+							"swrst"
+							etc. (many more not listed here)		
 			
 			
 -------------------State Machine for COMM
