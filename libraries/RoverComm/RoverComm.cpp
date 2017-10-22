@@ -218,6 +218,9 @@ boolean RoverComm::validateThenSetOriginRoverCommType(char * roverCommTypeCharAr
 	//check RoverComm type validity and then store the RoverComm Type in the RoverData object
 	switch(commandType)
 	{
+		case ROVERCOMM_NONE:
+			this->_rxRoverDataPointer->setOriginCommType(ROVERCOMM_NONE);			
+		break;
 		case ROVERCOMM_CMNC:
 			this->_rxRoverDataPointer->setOriginCommType(ROVERCOMM_CMNC);			
 		break;
@@ -232,6 +235,9 @@ boolean RoverComm::validateThenSetOriginRoverCommType(char * roverCommTypeCharAr
 		break ;
 		case ROVERCOMM_COMM:
 			this->_rxRoverDataPointer->setOriginCommType(ROVERCOMM_COMM);			
+		break;
+		case ROVERCOMM_PC_USB:
+			this->_rxRoverDataPointer->setOriginCommType(ROVERCOMM_PC_USB);			
 		break;
 		default:
 			//the RoverComm Type didn't match any of the results
@@ -248,6 +254,9 @@ boolean RoverComm::validateThenSetDestinationRoverCommType(char * roverCommTypeC
 	//check RoverComm type validity and then store the RoverComm Type in the RoverData object
 	switch(commandType)
 	{
+		case ROVERCOMM_NONE:
+			this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_NONE);			
+		break;		
 		case ROVERCOMM_CMNC:
 			this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_CMNC);			
 		break;
@@ -262,6 +271,9 @@ boolean RoverComm::validateThenSetDestinationRoverCommType(char * roverCommTypeC
 		break ;
 		case ROVERCOMM_COMM:
 			this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_COMM);			
+		break;
+			case ROVERCOMM_PC_USB:
+			this->_rxRoverDataPointer->setDestinationCommType(ROVERCOMM_PC_USB);			
 		break;
 		default:
 			//the RoverComm Type didn't match any of the results

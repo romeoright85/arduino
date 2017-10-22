@@ -38,13 +38,13 @@ Can send:
 #define _ROVER_STATES_AND_MODES
 #endif
 #ifndef _COMMAND_CREATION_DEFINITIONS
-#define _COMMAND_CREATION_DEFINITIONS
+#define _COMMAND_CREATION_DEFINITIONS //for RoverCommandDefs.h
 #endif
 #ifndef _ARD_4_COMM_H
 #define _ARD_4_COMM_H //Must define this before calling RoverConfig.h (either directly or through another header file), define this flag to turn on COMM definitions
 #endif
 #ifndef _COMM_BIT_FLAGS_
-#define _COMM_BIT_FLAGS_
+#define _COMM_BIT_FLAGS_ //For RoverBitFlags.h
 #endif
 
 
@@ -56,7 +56,6 @@ Can send:
 #include <SoftwareSerial.h>
 #include <RoverData.h>
 #include <RoverComm.h> //calls RoverConfig.h
-#include <SoftwareSerial.h>
 #include <HeartLed.h>
 #include <GlobalDelayTimer.h>
 #include <DelayCounter.h>
@@ -139,8 +138,7 @@ RoverHwReset * naviHwResetter = new RoverHwReset(NAVI_HW_RESET_CTRL_PIN);
 RoverHwReset * auxiHwResetter = new RoverHwReset(AUXI_HW_RESET_CTRL_PIN);
 RoverHwReset * mainHwResetter = new RoverHwReset(MAIN_HW_RESET_CTRL_PIN);
 //------------------From WakeUpTester_COMM
-char rxCharData;//DEBUG LATER, Was "rxData", but had a name conflict
-				//Controls the self wakeup of COMM
+//Controls the self wakeup of COMM
 RoverSleeperServer * sleeperCOMM = new RoverSleeperServer(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch2);//COMM Wakeup Pin Control
 RoverSleeperClient * sleeperMAIN = new RoverSleeperClient(MAIN_WAKEUP_CTRL_PIN);
 
@@ -161,37 +159,12 @@ RoverSleeperClient * sleeperMAIN = new RoverSleeperClient(MAIN_WAKEUP_CTRL_PIN);
 //Message Queues
 byte cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-									  //Message Char Array
-char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between MAIN and CMNC
-char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
-
-
-
-
-//Fixed Message Strings (to store in flash)
-const static char msg_strg_0[] PROGMEM = "nodata";//getMsgString(0)
-const static char msg_strg_1[] PROGMEM = "invlcmd";//getMsgString(1)
-//Note: Make sure to update  the msg_str_table[] array
-
-//Table of Fixed Commaned Strings (array of strings stored in flash)
-const char* const msg_str_table[] PROGMEM = {
-	msg_strg_0,
-	msg_strg_1
-};
-
-
-
-
-
-
-
-
-
 
 //Flag(s) - Rover Data Channels Status
 byte ch1Status = DATA_STATUS_NOT_READY;//for PC USB/CNMC
 byte ch2Status = DATA_STATUS_NOT_READY;//for MAIN
-									   //Flag(s) - Error
+
+//Flag(s) - Error
 byte flagSet_Error = _BTFG_NONE_;
 //Flag(s) - Message Controls
 byte flagSet_MessageControl = _BTFG_NONE_;
@@ -210,20 +183,64 @@ unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
 
 
 
+
+//Note: Make sure to add any new objects created to this array
+RoverReset * resetArray[] = {
+	heartLedCounter,
+	heartLed,
+	mainTimer,
+	pirSensor,
+	naviHwResetter,
+	auxiHwResetter,
+	mainHwResetter,
+	sleeperCOMM,
+	sleeperMAIN,
+	roverDataCh1_COMM,
+	roverComm_Ch1,
+	roverDataCh2_COMM,
+	roverComm_Ch2
+};//for pointers, pass them directly, for objects pass the address
+
+
+
+//Command Parsers
+//Rover Data Pointers for use with either internal processing or outgoing messages
+RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data outgoing to COMM
+RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
+RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data outgoing to MAIN
+
+
+
+
+//=====End of: SW Resettable Variables
+
+
+
+
 //=====Non-SW Resettable Variables (do not reinitialize these variables on software reset)
-
-//States
-byte currentState = RUN_HOUSEKEEPING_TASKS;
-byte nextState = RUN_HOUSEKEEPING_TASKS;
-byte queuedState = RUN_HOUSEKEEPING_TASKS;
-
-//Modes
-byte currentMode = POWER_ON_AND_HW_RESET;
 
 //Software Serial
 #ifndef _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ //where this debug flag is controlled in RoverConfig.h
 SoftwareSerial _MAIN_SWSERIAL_(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN);
 #endif
+
+//Message Char Array
+char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between MAIN and CMNC
+char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
+
+
+//Fixed Message Strings (to store in flash)
+const static char msg_strg_0[] PROGMEM = "nodata";//getMsgString(0)
+const static char msg_strg_1[] PROGMEM = "invlcmd";//getMsgString(1)
+//Note: Make sure to update  the msg_str_table[] array
+
+//Table of Fixed Commaned Strings (array of strings stored in flash)
+const char* const msg_str_table[] PROGMEM = {
+	msg_strg_0,
+	msg_strg_1
+};
+
+
 
 //Rover Data and COMMs
 //RoverData pointers and RoverComms
@@ -233,31 +250,25 @@ RoverComm * roverComm_Ch1 = new RoverComm(roverDataCh1_COMM);
 //Ch2 is between COMM and MAIN
 RoverData * roverDataCh2_COMM = new RoverData();
 RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
-//Command Parsers
-//Rover Data Pointers for use with either internal processing or outgoing messages
-RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data outgoing to COMM
-RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
-RoverData * roverDataForMain;//pointer used access the RoverData which has the command data outgoing to MAIN
+
+
+
+//States //(these states will not be re-initalized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
+byte currentState = RUN_HOUSEKEEPING_TASKS;
+byte nextState = RUN_HOUSEKEEPING_TASKS;
+byte queuedState = RUN_HOUSEKEEPING_TASKS;
+
+//Modes //(this mode will not be re-initalized in initializeVariables() as they're set by the state machine when being SW resetted)
+byte currentMode = POWER_ON_AND_HW_RESET;
 
 
 
 
 
-RoverReset * resetArray[] = {
-	roverDataCh1_COMM,
-	roverComm_Ch1,
-	roverDataCh2_COMM,
-	roverComm_Ch2
-};//for pointers, pass them directly, for objects pass the address
+//=====End of: Non-SW Resettable Variables
 
 
-  //=====End of: Non-SW Resettable Variables
-
-
-
-  //=====End of: SW Resettable Variables
-
-  //============End of Global Declarations
+//============End of Global Declarations
 
 
 
@@ -270,8 +281,8 @@ void setup() {
 		if (!resetArray[i] == NULL)//if the object isn't null
 		{
 			resetArray[i]->reset();//reset the object	
-		}
-	}
+		}//end if
+	}//end for
 
 
 	//Serial Communications
@@ -853,12 +864,9 @@ void initializeVariables()
 	//Message Queues
 	cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 	main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-									 //Flag(s) - Rover Data Channels Status
+	//Flag(s) - Rover Data Channels Status
 	ch1Status = DATA_STATUS_NOT_READY;
 	ch2Status = DATA_STATUS_NOT_READY;
-
-
-
 
 	//Flag(s) - Error
 	flagSet_Error = _BTFG_NONE_;
@@ -866,8 +874,8 @@ void initializeVariables()
 	flagSet_MessageControl = _BTFG_NONE_;
 	//Flag(s) - System Status
 	flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
-													 //Flag(s) - Command Filter Options
-													 //Command Filter Options: Set 1
+	 //Flag(s) - Command Filter Options
+	 //Command Filter Options: Set 1
 	commandFilterOptionsSet1 = _BTFG_NONE_;
 	commandFilterOptionsSet2 = _BTFG_NONE_;
 
@@ -876,6 +884,25 @@ void initializeVariables()
 	timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
 	transmission_delay_cnt = 0;//concurrent transmission delay counter
 
+	
+	
+
+
+
+	//resetting all objects in this sketch
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		if (!resetArray[i] == NULL)//if the object isn't null
+		{
+			resetArray[i]->reset();//reset the object	
+		}//end if
+	}//end for
+	
+	clearRoverDataPointers();
+	
+	
+	
+	
 } //end of initializeVariables()
 void startBackgroundTasks()
 {
@@ -978,13 +1005,13 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 		{
 			//if the data is for CMNC, transmit the data out from COMM to CMNC
 			//Set redirect to CMNC flag to true			
-			BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 		}//end else if
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 		{
 			//if the data is for either NAVI, AUXI, or MAIN, transmit the data out from COMM to MAIN since COMM only can talk to MAIN and not NAVI or AUXI (and MAIN will process it accordingly or reroute it if needed)
 			//Set redirect to MAIN flag to true			
-			BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_);
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 
 		}//end else if
 		 //else the command type is ROVERCOMM_NONE
@@ -1046,7 +1073,7 @@ void commandDirector(RoverData * roverDataPointer)
 	//Sets the default such that the rover command data goes to the destination of the command. If needed, this can be overwritten by the command tag if/else statements
 	setRoverDataPointer(roverDataPointer, destinationRoverCommType);
 	//Note: The roverDataPointer should be going to COMM (else it would have been redirected already with dataDirector).
-	//However, it can be overwritten in the if/else conditions below based on the command tag for special cases like when it redirects itself to the original sender (i.e. when the command is a request for data/status. i.e. PIR Status request)
+	//However, it can be overwritten in the if/else conditions below based on the command tag for special cases like when it redirects itself to the original sender (i.e. when the command is a request for data/status, like with PIR Status request)
 	
 	
 	
@@ -1087,6 +1114,7 @@ void commandDirector(RoverData * roverDataPointer)
 	{
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*	
+	
 	}//end else if
 	//ALL SW Request
 	else if (commandTag == CMD_TAG_ALL_SW_RESET_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_))//FIX ME LATER, change the actual send command to compare later
@@ -1298,7 +1326,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 {
 
 
-	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the createCmd with ROVERCOMM_COMM passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
 	
 	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string
@@ -1315,21 +1343,18 @@ void createDataFromQueueFor(byte roverCommDestination)
 		{
 			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
 		}//end else		
-		
-//FIX ME LATER		
 	}//end if
 	else if (roverCommDestination == ROVERCOMM_MAIN)
 	{
 		queueOfInterest = main_msg_queue;		
-		if(roverDataForMain != NULL)//make sure the roverDataPointer is not NULL
+		if(roverDataForMAIN != NULL)//make sure the roverDataPointer is not NULL
 		{
-			commandDataOfInterest = roverDataForMain->getCommandData();
+			commandDataOfInterest = roverDataForMAIN->getCommandData();
 		}//end if
 		else
 		{
 			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
 		}//end else
-//FIX ME LATER
 	}//end else if
 	//else
 		//do nothing
@@ -1451,7 +1476,7 @@ void redirectData()
 	roverCommType = roverDataCh2_COMM->getDestinationCommType();//get the destination comm type for roverDataCh2_COMM
 
 	//Redirection from MAIN to CMNC
-	if (BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_))
+	if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_))
 	{	
 
 		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
@@ -1470,7 +1495,7 @@ void redirectData()
 	roverCommType = roverDataCh1_COMM->getDestinationCommType();//get the destination comm type for roverDataCh1_COMM
 	
 	//Redirection from CMNC to MAIN, AUXI, or NAVI
-	if (BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, AUXI, or NAVI
+	if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, AUXI, or NAVI
 	{
 		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
 		//Priority 1: From CMNC to MAIN, AUXI, or NAVI
@@ -1579,8 +1604,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 		//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_);
+		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 
 
 
@@ -1751,8 +1776,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		//clears message queue(s) and redirect flags		
 		cmnc_msg_queue = CMD_TAG_NO_MSG;
 		main_msg_queue = CMD_TAG_NO_MSG;
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_);
+		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 						
 			
 
@@ -1840,8 +1865,8 @@ void runModeFunction_SECURING_LINK(byte currentState)
 		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 		//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_CMNC_);
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_REDIRECT_TO_MAIN_);
+		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 
 		//Transmit data and/or execute command
 		//For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
@@ -2177,7 +2202,7 @@ void clearRoverDataPointers()
 	//Clears/resets all data pointers
 	roverDataForCOMM = NULL;
 	roverDataForCMNC = NULL;
-	roverDataForMain = NULL;
+	roverDataForMAIN = NULL;
 }//end of clearRoverDataPointer()
 
 void setRoverDataPointer(RoverData * roverDataPointer, byte roverCommType)
@@ -2190,7 +2215,7 @@ void setRoverDataPointer(RoverData * roverDataPointer, byte roverCommType)
 	}//end if
 	else if(roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_MAIN)
 	{
-		roverDataForMain = roverDataPointer;
+		roverDataForMAIN = roverDataPointer;
 	}//end else if
 	else//the roverCommType should be for this local Arduino (i.e. ROVERCOMM_COMM)
 	{

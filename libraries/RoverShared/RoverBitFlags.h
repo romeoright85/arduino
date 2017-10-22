@@ -22,10 +22,9 @@
 		#define _BTFG_DATA_WAS_FOR_COMM_CH1_					0x04
 		#define _BTFG_DATA_WAS_FOR_COMM_CH2_				0x08
 		//System Status: flagSet_SystemStatus
-		#define _BTFG_REDIRECT_TO_CMNC_								0x01
-		#define _BTFG_MAIN_SYSTEM_READY_								0x02
-		#define _BTFG_COMMUNICATIONS_SECURE_						0x04
-		#define _BTFG_FIRST_TRANSMISSION_								0x08
+		#define _BTFG_MAIN_SYSTEM_READY_								0x01
+		#define _BTFG_COMMUNICATIONS_SECURE_						0x02
+		#define _BTFG_FIRST_TRANSMISSION_								0x04
 		//---------------------------------------------------
 		
 		
@@ -63,7 +62,29 @@
 	#endif
 	
 	#ifdef _AUXI_BIT_FLAGS_
+
+	//---------------------------------------------------	
+		//Status Flag(s)
+		//---------------------------------------------------
+		//Universal
 		#define _BTFG_NONE_													0x00
+		//Message Controls: flagSet_MessageControl
+		#define _BTFG_REDIRECT_TO_PC_USB_								0x01
+		#define _BTFG_REDIRECT_TO_MAIN_									0x02		
+		#define _BTFG_DATA_WAS_FOR_AUXI_CH1_					0x04
+		#define _BTFG_DATA_WAS_FOR_AUXI_CH2_				0x08
+		//---------------------------------------------------
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	#endif
 	
 	#ifdef _MAIN_BIT_FLAGS_

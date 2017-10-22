@@ -63,7 +63,7 @@
 	//Matching the Arduino numbering with the Microcontroller labels
 	#define ARDUINO_NAVI		1
 	#define ARDUINO_AUXI		2
-	#define ARDUINO_MAIN	3
+	#define ARDUINO_MAIN		3
 	#define ARDUINO_COMM	4
 	
 
