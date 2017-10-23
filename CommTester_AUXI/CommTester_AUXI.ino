@@ -1,5 +1,8 @@
 //Used for AUXI - 2
 
+//Note: Normally AUXI would not have redirection since it at the end of the network branch. Only MAIN and COMM should be redirecting things. But go ahead and implement it in this tester code for testing purposes only.
+
+
 //Note: The test cases varies for different Arduinos
 
 //To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
@@ -40,6 +43,33 @@ to test the command interface for this Arduino
 Send (i.e. with your keyboard and using a terminal window) over USB serial
 /6c3--*003bye
 to test the command interface for this Arduino
+
+*/
+
+
+
+
+//Test case 4a:
+/*
+Send (i.e. with your keyboard and using a terminal window) over USB serial
+/6c401*FromPCUSBtoMAIN
+to test the redirection interface for this Arduino
+You can turn on this flag (_DEBUG_REDIRECTION_NOTICE) below to verify it's redirecting.
+//Note: Normally AUXI would not have redirection since it at the end of the network branch. Only MAIN and COMM should be redirecting things. But go ahead and implement it in this tester code for testing purposes only.
+//Note: Since when the _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is turned on, all channels are being simulated with PC_USB, there may be some blank data sent or a slight delay (or you might have to send it more than once), but that's okay. As long as it works.
+*/
+
+
+
+
+//Test case 4b:
+/*
+Send (i.e. with your keyboard and using a terminal window) over USB serial
+/2c601*FromNAVItoPCUSB
+to test the redirection interface for this Arduino
+You can turn on this flag (_DEBUG_REDIRECTION_NOTICE) below to verify it's redirecting.
+//Note: Normally AUXI would not have redirection since it at the end of the network branch. Only MAIN and COMM should be redirecting things. But go ahead and implement it in this tester code for testing purposes only.
+//Note: Since when the _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is turned on, all channels are being simulated with PC_USB, there may be some blank data sent or a slight delay (or you might have to send it more than once), but that's okay. As long as it works.
 */
 
 
@@ -79,7 +109,12 @@ to test the command interface for this Arduino
 #endif
 //============End of Debugging: Serial Channel Selection
 
+//============Debugging: Redirection
+//Uncomment below to output a notice when a message is being redirected
+//#define _DEBUG_REDIRECTION_NOTICE
+//============End Debugging: Redirection
 
+						  
 //============Global Declarations
 
 
@@ -219,7 +254,7 @@ void loop() {
 	//Clear all Rx'ed data before getting new data				
 	roverComm_Ch2->clearRxData();
 	//Receive data
-	ch2Status = rxData(roverComm_Ch2, ROVERCOMM_AUXI);
+	ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);
 	//Parse and validate data
 	if (ch2Status == DATA_STATUS_READY)
 	{
@@ -731,11 +766,13 @@ void redirectData()
 																//Redirection from MAIN to PC_USB
 	if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_PC_USB_))
 	{
-
 		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
 		//Priority 1: From MAIN (MAIN, COMM, or NAVI) to PC_USB
 		if (roverCommType == ROVERCOMM_PC_USB)
 		{
+			#ifdef _DEBUG_REDIRECTION_NOTICE
+				Serial.println(F("Redirect2PC_USB"));
+			#endif
 			//if the data is for PC_USB, transmit the data out to PC_USB
 			txData(roverComm_Ch2->getRxData(), ROVERCOMM_PC_USB);
 		}//end if
@@ -754,6 +791,9 @@ void redirectData()
 		//Priority 1: From PC_USB to MAIN, COMM, or NAVI
 		if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_CMNC)
 		{
+			#ifdef _DEBUG_REDIRECTION_NOTICE
+				Serial.println(F("Redirect2MAIN"));
+			#endif
 			//if the data is for MAIN, COMM, or NAVI, transmit the data out to MAIN
 			txData(roverComm_Ch1->getRxData(), ROVERCOMM_MAIN);
 		}//end if

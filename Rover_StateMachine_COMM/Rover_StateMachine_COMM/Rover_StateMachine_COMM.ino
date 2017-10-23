@@ -932,7 +932,7 @@ byte rxData(RoverComm * roverComm, byte roverCommType) {
 	byte dataStatus = DATA_STATUS_NOT_READY;
 
 	//Note: Make sure parseAndValidateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
-	if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
+	if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
 
 		if (_CMNC_SERIAL_.available() > 1)
@@ -1012,7 +1012,7 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 	 //else check to see if the data was for other cases
 	else if (redirectOption == DATA_REDIRECT_ENABLED)
 	{
-		if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
+		if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 		{
 			//if the data is for CMNC, transmit the data out from COMM to CMNC
 			//Set redirect to CMNC flag to true			
@@ -1035,7 +1035,7 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 void txData(char * txData, byte roverCommType)
 {
 	//Note: This function varies for different Arduinos
-	if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
+	if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
 		//transmit the data to CMNC or through the USB of this Arduino (i.e. for debug) [in this case, it means the same thing]
 		_CMNC_SERIAL_.println(txData);
@@ -1244,7 +1244,7 @@ void commandDirector(RoverData * roverDataPointer)
 		//Note: The PIR status message will be created in the CREATE_DATA state
 		//Based on which Arduino sent the command, that same Arduino will get a response
 
-		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)
+		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 		{
 			cmnc_msg_queue = CMD_TAG_PIR_STATUS;
 		}//end if
@@ -1270,7 +1270,7 @@ void commandDirector(RoverData * roverDataPointer)
 	{
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)
+		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
 		}//end if
@@ -1292,7 +1292,7 @@ void commandDirector(RoverData * roverDataPointer)
 	{
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)
+		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
 		}//end if
@@ -1312,7 +1312,7 @@ void commandDirector(RoverData * roverDataPointer)
 	{
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
-		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)
+		if (originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 		{
 			cmnc_msg_queue = CMD_TAG_INVALID_CMD;
 		}//end if
@@ -1342,7 +1342,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 	char * commandDataOfInterest;//holds the rover's command data string
 
 								 //Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
-	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination == ROVERCOMM_PC_USB)
+	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
 		queueOfInterest = cmnc_msg_queue;
 		if (roverDataForCMNC != NULL)//make sure the roverDataPointer is not NULL
@@ -1500,7 +1500,7 @@ void redirectData()
 
 		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
 		//Priority 1: From MAIN (MAIN, AUXI, or NAVI) to CMNC
-		if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
+		if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 		{
 			//if the data is for CMNC, transmit the data out to CMNC
 			txData(roverComm_Ch2->getRxData(), ROVERCOMM_CMNC);
@@ -2246,7 +2246,7 @@ void setRoverDataPointer(RoverData * roverDataPointer, byte roverCommType)
 {
 	//This sets the roverDataPointer to the desired roverCommType.
 	//Note: This function can be called more than once to set more than one roverDataPointer to the same data (i.e. if the same data needs to be shared in multiple places)
-	if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)
+	if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
 		roverDataForCMNC = roverDataPointer;
 	}//end if
