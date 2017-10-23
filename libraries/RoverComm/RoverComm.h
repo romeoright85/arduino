@@ -91,6 +91,7 @@
 	public:
 		RoverComm(RoverData *);//constructor (RoverData Pointer)
 		~RoverComm();//destructor				
+		RoverData * getRoverDataObject();//returns the RoverData Object associated with this instance of the RoverComm
 		void appendToRxData(char);//append a char to the _rxDataString		
 		void setRxData(char *, byte);//(charArray, array size) set the _rxDataString with provided string. Mainly used for debugging.
 		char * getRxData();//returns _rxDataString

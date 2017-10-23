@@ -9,6 +9,10 @@ RoverComm::~RoverComm()
 {
 	//do nothing
 }
+RoverData * RoverComm::getRoverDataObject()
+{
+	return this->_rxRoverDataPointer;
+}//end getRoverDataObject()
 void RoverComm::appendToRxData(char dataIn)
 {
 	

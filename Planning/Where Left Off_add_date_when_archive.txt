@@ -21,6 +21,10 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 #LEFT OFF HERE				
 ----------------------------------
 
+
+[DONE]Add ability for reflections for Rover_StateMachine_COMM since it's not that much more code and allows debug pinging.
+Add ability for reflections for CommTester_AUXI since it's not that much more code and allows debug pinging.
+
 		Test Codes:			
 			
 			Fix the following code to use parseAndValidateData() instead of validateData() and any new code changes that broke this code now. Use Rover_StateMachine_COMM as a reference.
@@ -116,7 +120,6 @@ get basic state machine infrastructure up
 							-When debugging, check the boolean bit flag as well as the bit flag set. As you might forgot to update both when copying and pasting and using templates.
 								-Also make sure not to confuse Status Flags vs. filter option flags
 							-getting the the system go message to work and switch from sync mode to securing link mode. You still need to go back and write all the other sync mode code.
-							-Remember, "reflected" redirections are not allowed per the current design. i.e. You can't receive data from COMM coming from MAIN and redirect it to NAVI, as it should have never been sent to COMM in the first place.
 							-creating the framework for all commands in the commandDirector. And it's ordered by priority.
 							-created flags for all commands so the DATA_FILTER state can filter stuff in the future
 							-Note:
@@ -1579,7 +1582,7 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 			
 	[DONE] Retest redirect to see if it works for Rover_StateMachine_COMM
 		Note: Uncomment _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE to test redirection with /2c1--*hithere
-		Note: "Reflected" redirections are not allowed per the current design. i.e. You can't receive data from COMM coming from MAIN and redirect it to NAVI, as it should have never been sent to COMM in the first place.
+
 		
 		
 				In Rover_StateMachine_COMM:							

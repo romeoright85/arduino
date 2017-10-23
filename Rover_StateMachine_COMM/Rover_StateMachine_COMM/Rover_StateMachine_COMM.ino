@@ -28,7 +28,9 @@ and 5 is to COMM (and not a redirection to another unit)
 Can send:
 /2c1--*hithere
 to test redirection from NAVI (MAIN) to CMNC through COMM
-Note: "Reflected" redirections are not allowed per the current design. i.e. You can't receive data from COMM coming from MAIN and redirect it to NAVI, as it should have never been sent to COMM in the first place.
+and
+/4c4--*hithere
+to test redirection from MAIN to MAIN (loopback) through COMM
 */
 
 //To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
@@ -118,7 +120,8 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 						  //============Debugging: Allow Redirect During Synchronization Mode
 						  //Uncomment to allow Ch2 (MAIN and COMM) to have redirection when in synchronization mode
 //#define _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
-//Note: "Reflected" redirections are not allowed per the current design.i.e.You can't receive data from COMM coming from MAIN and redirect it to NAVI, as it should have never been sent to COMM in the first place.
+//Uncomment to output notice when redirection is occuring
+//#define _DEBUG_REDIRECTION_NOTICE
 						  //============End Debugging: Allow Redirect During Synchronization Mode
 
 
@@ -1466,73 +1469,53 @@ void setAllCommandsTo(boolean choice)
 	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);//DEBUG
 
 }//end of setAllCommands()
-void redirectData()
+void redirectData(RoverComm * roverComm)
 {
 	
 
 
 	/*
-	
 	Notes:
-
-	This redirection currently doesn't allow "reflected" re-directions.
-	i.e. Redirections coming from MAIN won't get redirected back out through MAIN to go to NAVI or AUXI according to this design.
-	It is hoped that MAIN won't send information to COMM if it needed to go to NAVI in the first place.
-	This is to cut down on unnecessary network traffic.
-
-
-	When redirectData() is called it will process and send data for both MAIN and then CMNC. redirectData() only has to be called once and it will redirect both data.
 	For program efficiency, instead of sending all redirect messages, it sends only one per channel.
 	This is because between each message transmission, there needs to be a delay (since the receiving code is designed only to receive so many messages at once.
 	And if there are a lot of redirects, it will be stuck in the TX_COMMUNICATIONS for a while.
 	*/
-
+	RoverData * roverData;
 	byte roverCommType;
 
+	//Get the roverData object from the RoverComm Object
+	roverData = roverComm->getRoverDataObject();
 
-	//1. Data from MAIN being redirected to CMNC
-	roverCommType = roverDataCh2_COMM->getDestinationCommType();//get the destination comm type for roverDataCh2_COMM
-
+	//Get destination from either MAIN's or CMNC's Rover Data
+	roverCommType = roverData->getDestinationCommType();//get the destination comm type for the roverData
 	
-	//Redirection from MAIN to CMNC	
-	if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_))
+	
+	//If the destination is from: 1) MAIN (or AUXI, or NAVI) to CMNC/PC_USB or 2) CMNC to CMNC/PC_USB (loopback)
+	if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
-
-		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
-		//Priority 1: From MAIN (MAIN, AUXI, or NAVI) to CMNC
-		if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
+		//And if redirection to CMNC/PC_USB is allowed
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_))
 		{
-			//if the data is for CMNC, transmit the data out to CMNC
-			txData(roverComm_Ch2->getRxData(), ROVERCOMM_CMNC);
-		}//end if
-		 //Priority 2: No other cases
-		 //else (place holder)
-		 //Note: For the COMM there is only one other channel, so it always gets the priority
+			#ifdef _DEBUG_REDIRECTION_NOTICE
+				Serial.println(F("Redirect2CMNC/PC_USB"));
+			#endif
+			//Then transmit the data out to CMNC/PC_USB
+			txData(roverComm->getRxData(), ROVERCOMM_CMNC);
+		}//end if		 
 	}//end if	
-
-	 //2. Data from CMNC being redirected to MAIN
-	roverCommType = roverDataCh1_COMM->getDestinationCommType();//get the destination comm type for roverDataCh1_COMM
-
-																//Redirection from CMNC to MAIN, AUXI, or NAVI
-	if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, AUXI, or NAVI
+	//Else if the destination is from: 1) CMNC to MAIN (or AUXI, or NAVI) or 2) MAIN (or AUXI, or NAVI) to MAIN (or AUXI, or NAVI) (loopback)
+	else if (roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_NAVI)
 	{
-
-		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
-		//Priority 1: From CMNC to MAIN, AUXI, or NAVI
-		if (roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_AUXI || roverCommType == ROVERCOMM_NAVI)
+		//And if redirection to MAIN (or AUXI, or NAVI) is allowed
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, AUXI, or NAVI
 		{
-
-			//if the data is for MAIN, AUXI, or NAVI, transmit the data out to MAIN
-			txData(roverComm_Ch1->getRxData(), ROVERCOMM_MAIN);
-
-		}//end if
-		 //Priority 2: No other cases
-		 //else (place holder)
-		 //Note: For the COMM there is only one other channel, so it always gets the priority
-	}//end if	
-
-
-	 //else do nothing
+			#ifdef _DEBUG_REDIRECTION_NOTICE
+				Serial.println(F("Redirect2MAIN"));
+			#endif
+			//Then transmit the data out to MAIN
+			txData(roverComm->getRxData(), ROVERCOMM_MAIN);
+		}//end if		 
+	}//end if		
 
 }//End of redirectData()
 
@@ -1802,12 +1785,12 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 
-#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
-		 //Allow redirections for debugging purposes
-		redirectData();//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
-#else
-		 //No redirection in the SYNCHRONIZATION mode				
-#endif
+	#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
+			 //Allow redirections for debugging purposes
+			redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+	#else
+			 //No redirection in the SYNCHRONIZATION mode				
+	#endif
 
 
 
@@ -1970,7 +1953,8 @@ void runModeFunction_SECURING_LINK(byte currentState)
 	case TX_COMMUNICATIONS:
 		//WRITE ME LATER
 
-		redirectData();//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+		redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+		redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
 
 
 
@@ -2016,7 +2000,12 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 		//WRITE ME LATER
 
 
-		redirectData();//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+		redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+		redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+
+
+
+
 
 
 
