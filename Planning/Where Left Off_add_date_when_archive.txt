@@ -1,5 +1,3 @@
-
-
 Where I left off
 ------------------------
 
@@ -24,10 +22,18 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 ----------------------------------
 
 
-		Test Codes:
+
+	
+[NEED TO DO]											
+				In Rover_StateMachine_COMM:							
+				Go through all code and see if I need to add the ROVERCOMM_PC_USB case for all places where it calls ROVERCOMM_CMNC (i.e. rxData and txData, etc.)
+				
+							
+
+		Test Codes:			
 			
 			Fix
-				[DONE]CommTester_AUXI
+				[NEED TO TEST REDIRECT, EVERYTHING ELSE WAS DONE AND TESTED... i.e. imu, commands]CommTester_AUXI
 				[NEED TO DO NEXT]	CommTester_NAVI
 				[NEED TO DO]			CommTester_COMM
 				[NEED TO DO]			CommTester_MAIN				
@@ -35,12 +41,6 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 				
 
 	
-[NEED TO DO]											
-				In Rover_StateMachine_COMM:							
-				Go through all code and see if I need to add the ROVERCOMM_PC_USB case for all places where it calls ROVERCOMM_CMNC (i.e. rxData and txData, etc.)
-				
-				
-				
 				
 				
 				
@@ -52,23 +52,20 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 ---------------CODING---------------	
 
 
-	Retest redirect to see if it works for Rover_StateMachine_COMM
-	
-	Then update "HIGHEST PRIORITY 1" below to remove/skip any outdated suggestions due to memory issues, if it was already fixed with past fixed.
-	
-	
-	
 
-		
-	finish createDataFromQueueFor and messages for it (or place holders)
-	the finish out the synchonization mode and move on to secure link
-	Note: pay attention to memory use!
-	
 	
 	
 	Then See below for	
-		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
+		"START HERE"
+		
 	
+	
+	Also:
+	
+	get ranges for light sensors and define parameters for meaning use for if conditionals
+	for light sensors, use a range of bright, medium, and dark
+			use https://learn.adafruit.com/photocells/using-a-photocell for a lux table reference	
+			
 	
 	
 	
@@ -89,21 +86,6 @@ ANALYZE DATA FOR NAVIGATION TESTER
 		
 	
 	
-
----------------CODING---------------	
-
-	See below for	
-		HIGHEST PRIORITY 1 and HIGHEST PRIORITY 2
-	
-	
-	
-	get ranges for light sensors and define parameters for meaning use for if conditionals
-	for light sensors, use a range of bright, medium, and dark
-			use https://learn.adafruit.com/photocells/using-a-photocell for a lux table reference	
-			
-			
-		
-
 		
 			
 	
@@ -150,6 +132,7 @@ get basic state machine infrastructure up
 							-When debugging, check the boolean bit flag as well as the bit flag set. As you might forgot to update both when copying and pasting and using templates.
 								-Also make sure not to confuse Status Flags vs. filter option flags
 							-getting the the system go message to work and switch from sync mode to securing link mode. You still need to go back and write all the other sync mode code.
+							-Remember, "reflected" redirections are not allowed per the current design. i.e. You can't receive data from COMM coming from MAIN and redirect it to NAVI, as it should have never been sent to COMM in the first place.
 							-creating the framework for all commands in the commandDirector. And it's ordered by priority.
 							-created flags for all commands so the DATA_FILTER state can filter stuff in the future
 							-Note:
@@ -157,7 +140,7 @@ get basic state machine infrastructure up
 								Could also not have txMsgBufferCMNC and txMsgBufferMAIN. There isn't enough memory for both.
 									Program size: 13,832 bytes (used 43% of a 32,256 byte maximum) (7.72 secs)
 									Minimum Memory Usage: 1169 bytes (57% of a 2048 byte maximum)
-							-Pick up from wthe work around for the last major issues I had due to memory, see "HIGHEST PRIORITY 1" and "HIGHEST PRIORITY 2"
+							
 					
 					
 					
@@ -181,25 +164,24 @@ get basic state machine infrastructure up
 						/4c5--*021//Establish secure link. temporary disabled since this command should be filtered out in the sync mode and not be available at that stage
 						/4c5--*(anything else)
 					to test (as long as the flags commandEnableOption_Hi and commandEnableOption_Bye are set true in the filter in runModeFunction_SYNCHRONIZATION()
-				[WHERE LEFT OFF 1 --- IN PROGRESS]now I have to write some of the functions
+					
+					
+					
+					
+[WHERE LEFT OFF 1 --- IN PROGRESS]
+
+
+
+START HERE->finish createDataFromQueueFor and messages for it (or place holders)
+	the finish out the synchonization mode and move on to secure link
+	Note: pay attention to memory use!
+
+	
+	
+	now I have to write some of the functions
 					Update on commandDirector commands/functions
 					
-					
-					
-					
-					
-					
-HIGHEST PRIORITY 1->[NEED TO DO]Due to lack of memory, update documentation AND code to do the following:
-							Update COMM code first.
-								For commands, let it transmit right away in the process_data state (in command director).
-								For redirects, let it be transmitted right away in the dataDirector which is called in the DATA_FILTER state.
-								Use CREATE_DATA and TX_DATA states only for internally generated data.
-								Maybe use if statements with modes instead of commandEnableOption flags and then remove the data filter class all together.
-								Maybe use 1 byte variable to store all the errors, instead of having an error flag for each one.
-									Then design it to overwrite that variable based on priority. And one an error is cleared, if any lower priority errors exists, then it should flag that variable next.
-							Update documentation after proven that the code works.	
-
-						[NEED TO DO]Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
+					[NEED TO DO]Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
 							[NEED TO DO]Update the DATA_FILTER state with command options:							
 									
 										[NEED TO DO]need to write the message going out to CMNC with the CMD_TAG_SECURE_LINK_REQUEST, see commandDirector for sysgo									
@@ -1611,7 +1593,15 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 							"swrst"
 							etc. (many more not listed here)		
 			
-			
+	[DONE] Retest redirect to see if it works for Rover_StateMachine_COMM
+		Note: Uncomment _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE to test redirection with /2c1--*hithere
+		Note: "Reflected" redirections are not allowed per the current design. i.e. You can't receive data from COMM coming from MAIN and redirect it to NAVI, as it should have never been sent to COMM in the first place.
+		
+		
+		
+		
+
+		
 -------------------State Machine for COMM
 
 [DONE] I got the whole sync mode loop in place.
@@ -1641,5 +1631,16 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 
 
 	[DONE, at least for the code that is ready now. else added placeholders. already completed for hi, bye, and invalid. now work on it for other commands]Finish with commandDirector() and splitting up functions and using the message queues. then make the string in CREATE_DATA and send it in TX_COMMUNICATION.									
-									
-									
+				
+
+[DONE]Due to lack of memory, update documentation AND code to do the following:
+							Update COMM code first.
+								[FIXED, NO LONGER A PROBLEM]For commands, let it transmit right away in the process_data state (in command director).
+								[FIXED, NO LONGER A PROBLEM]For redirects, let it be transmitted right away in the dataDirector which is called in the DATA_FILTER state.
+								[FIXED, NO LONGER A PROBLEM]Use CREATE_DATA and TX_DATA states only for internally generated data.
+								[FIXED, NO LONGER A PROBLEM]Maybe use if statements with modes instead of commandEnableOption flags and then remove the data filter class all together.
+								[FIXED, NO LONGER A PROBLEM]Maybe use 1 byte variable to store all the errors, instead of having an error flag for each one.
+									[FIXED, NO LONGER A PROBLEM]Then design it to overwrite that variable based on priority. And one an error is cleared, if any lower priority errors exists, then it should flag that variable next.
+							[FIXED, NO LONGER A PROBLEM]Update documentation after proven that the code works.	
+				
+	[DONE] Then update the priority list to remove/skip any outdated suggestions due to memory issues, if it was already fixed with past fixed.									
