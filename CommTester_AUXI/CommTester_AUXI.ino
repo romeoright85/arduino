@@ -1,4 +1,4 @@
-//Used for AUXI - 2
+//Used for AUXI - 3
 
 //Note: Normally AUXI would not have redirection since it at the end of the network branch. Only MAIN and COMM should be redirecting things. But go ahead and implement it in this tester code for testing purposes only.
 
@@ -66,6 +66,17 @@ You can turn on this flag (_DEBUG_REDIRECTION_NOTICE) below to verify it's redir
 /*
 Send (i.e. with your keyboard and using a terminal window) over USB serial
 /2c601*FromNAVItoPCUSB
+to test the redirection interface for this Arduino
+You can turn on this flag (_DEBUG_REDIRECTION_NOTICE) below to verify it's redirecting.
+//Note: Normally AUXI would not have redirection since it at the end of the network branch. Only MAIN and COMM should be redirecting things. But go ahead and implement it in this tester code for testing purposes only.
+//Note: Since when the _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is turned on, all channels are being simulated with PC_USB, there may be some blank data sent or a slight delay (or you might have to send it more than once), but that's okay. As long as it works.
+
+
+
+//Test case 4c:
+/*
+Send (i.e. with your keyboard and using a terminal window) over USB serial
+/4c401*FromMAINtoMAIN
 to test the redirection interface for this Arduino
 You can turn on this flag (_DEBUG_REDIRECTION_NOTICE) below to verify it's redirecting.
 //Note: Normally AUXI would not have redirection since it at the end of the network branch. Only MAIN and COMM should be redirecting things. But go ahead and implement it in this tester code for testing purposes only.
@@ -302,6 +313,9 @@ void loop() {
 	}//end else
 #endif
 
+	//Clear redirect flags before processing the data with dataDirector (a bit redundant since it will be cleared later, but better safe than sorry)
+	BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_PC_USB_);
+	BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 
 
 	 //2. Processes data
@@ -365,8 +379,9 @@ void loop() {
 	}//end if
 
 
-	 //Redirects all data
-	redirectData();
+	 //Redirects data
+	redirectData(roverComm_Ch1);//to PC_USB
+	redirectData(roverComm_Ch2);//to MAIN (or COMM, CMNC, NAVI)
 
 
 
@@ -545,14 +560,8 @@ void commandDirector(RoverData * roverDataPointer)
 	//Run highest priority functions here. //this will override any lower priority messages
 
 
-
-
-
-
-
 	if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG)
 	{
-
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
 		if (originRoverCommType == ROVERCOMM_PC_USB)
@@ -746,66 +755,55 @@ void txData(char * txData, byte roverCommType)
 
 
 
-void redirectData()
+void redirectData(RoverComm * roverComm)
 {
 
 
 
 	/*
 	Note:
-	When redirectData() is called it will process and send data for both MAIN and then PC_USB. redirectData() only has to be called once and it will redirect both data.
 	For program efficiency, instead of sending all redirect messages, it sends only one per channel.
+	This is because between each message transmission, there needs to be a delay (since the receiving code is designed only to receive so many messages at once.
 	*/
 
+	RoverData * roverData;
 	byte roverCommType;
 
+	
+	//Get the roverData object from the RoverComm Object
+	roverData = roverComm->getRoverDataObject();
 
-	//1. Data from MAIN being redirected to PC_USB
-	roverCommType = roverDataCh2_COMM->getDestinationCommType();//get the destination comm type for roverDataCh2_COMM
-
-																//Redirection from MAIN to PC_USB
-	if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_PC_USB_))
+	//Get destination from either MAIN's or PC_USB's Rover Data
+	roverCommType = roverData->getDestinationCommType();//get the destination comm type for the roverData
+	
+	
+	//If the destination is from: 1) MAIN (or COMM, CMNC, NAVI) to PC_USB or 2) PC_USB to PC_USB (loopback)
+	if (roverCommType == ROVERCOMM_PC_USB)
 	{
-		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
-		//Priority 1: From MAIN (MAIN, COMM, or NAVI) to PC_USB
-		if (roverCommType == ROVERCOMM_PC_USB)
+		//And if redirection to PC_USB is allowed
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_PC_USB_))
 		{
 			#ifdef _DEBUG_REDIRECTION_NOTICE
 				Serial.println(F("Redirect2PC_USB"));
 			#endif
-			//if the data is for PC_USB, transmit the data out to PC_USB
-			txData(roverComm_Ch2->getRxData(), ROVERCOMM_PC_USB);
-		}//end if
-		 //Priority 2: No other cases
-		 //else (place holder)
-		 //Note: For the AUXI there is only one other channel, so it always gets the priority
+			//Then transmit the data out to PC_USB
+			txData(roverComm->getRxData(), ROVERCOMM_PC_USB);
+		}//end if		 
 	}//end if	
-
-	 //2. Data from PC_USB being redirected to MAIN
-	roverCommType = roverDataCh1_COMM->getDestinationCommType();//get the destination comm type for roverDataCh1_COMM
-
-																//Redirection from PC_USB to MAIN, COMM, or NAVI
-	if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, AUXI, or NAVI
+	//Else if the destination is from: 1) PC_USB to MAIN (or COMM, CMNC, NAVI) or 2) MAIN (or COMM, CMNC, NAVI) to MAIN (or COMM, CMNC, NAVI) (loopback)
+	else if (roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_CMNC)
 	{
-		//Priority of the redirect is given by the order of the if/else statement.  All other redirect messages going to the same destination will get dropped/lost.
-		//Priority 1: From PC_USB to MAIN, COMM, or NAVI
-		if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_CMNC)
+		//And if redirection to MAIN (or COMM, CMNC, NAVI) is allowed
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, AUXI, or NAVI
 		{
 			#ifdef _DEBUG_REDIRECTION_NOTICE
 				Serial.println(F("Redirect2MAIN"));
 			#endif
-			//if the data is for MAIN, COMM, or NAVI, transmit the data out to MAIN
-			txData(roverComm_Ch1->getRxData(), ROVERCOMM_MAIN);
-		}//end if
-		 //Priority 2: No other cases
-		 //else (place holder)
-		 //Note: For the AUXI there is only one other channel, so it always gets the priority
-
-	}//end if	
-
-
-	 //else do nothing
-
+			//Then transmit the data out to MAIN
+			txData(roverComm->getRxData(), ROVERCOMM_MAIN);
+		}//end if		 
+	}//end if		
+	
 }//End of redirectData()
 
 

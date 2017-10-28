@@ -58,7 +58,22 @@
 	#endif
 	
 	#ifdef _NAVI_BIT_FLAGS_
+				
+	//---------------------------------------------------	
+		//Status Flag(s)
+		//---------------------------------------------------
+		//Universal
 		#define _BTFG_NONE_													0x00
+		//Message Controls: flagSet_MessageControl
+		#define _BTFG_REDIRECT_TO_PC_USB_								0x01
+		#define _BTFG_REDIRECT_TO_MAIN_									0x02		
+		#define _BTFG_DATA_WAS_FOR_NAVI_CH1_					0x04
+		#define _BTFG_DATA_WAS_FOR_NAVI_CH2_				0x08
+		//---------------------------------------------------
+		
+		
+		
+		
 	#endif
 	
 	#ifdef _AUXI_BIT_FLAGS_
@@ -74,15 +89,7 @@
 		#define _BTFG_DATA_WAS_FOR_AUXI_CH1_					0x04
 		#define _BTFG_DATA_WAS_FOR_AUXI_CH2_				0x08
 		//---------------------------------------------------
-		
-		
-		
-		
-		
-		
-		
-		
-		
+	
 		
 		
 	#endif

@@ -275,7 +275,7 @@
 		#define WHITE_TAILLIGHT			5	
 	#endif
 		
-	//definitions for RoverComm 
+	//definitions for RoverComm (Comm Types)
 	#ifdef _ROVERCOMM_DEFINITIONS
 		//RoverCommTypes (which rover communication source/destination)
 		#define ROVER_COMM_SENTENCE_LENGTH		75//should match the same size as GPS_SENTENCE_LENGTH

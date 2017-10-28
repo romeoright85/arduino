@@ -14,24 +14,26 @@ Where I left off
 
 
 LAST THING DONE: (see #LEFT OFF HERE below)
-	Updated CommTester_AUXI due to the new code changes i.e. parseAndValidateData() vs. validateData(), etc. I also tested it. It works.
+	Updated CommTester_AUXI due to the new code changes i.e. parseAndValidateData() vs. validateData(), etc. as well as give it the ability to redirect data and do loopbacks. I also tested it. It works.
 	
 	
-----------------------------------				
+
 #LEFT OFF HERE				
-----------------------------------
-
-
-[DONE]Add ability for reflections for Rover_StateMachine_COMM since it's not that much more code and allows debug pinging.
-Add ability for reflections for CommTester_AUXI since it's not that much more code and allows debug pinging.
 
 		Test Codes:			
 			
 			Fix the following code to use parseAndValidateData() instead of validateData() and any new code changes that broke this code now. Use Rover_StateMachine_COMM as a reference.
 				[DONE]CommTester_AUXI
-				[NEED TO DO NEXT, use CommTester_AUXI as a template]	CommTester_NAVI
-				[NEED TO DO, use CommTester_AUXI as a template]			CommTester_COMM
-				[NEED TO DO, use CommTester_AUXI as a template]			CommTester_MAIN				
+				[DONE]	CommTester_NAVI
+				[NEED TO DO NEXT, have not started yet. use CommTester_AUXI as a template]			CommTester_COMM
+				[NEED TO DO, have not started yet. use CommTester_AUXI as a template]			CommTester_MAIN				
+
+
+
+
+
+
+
 				
 =================1 weekend===================				
 
@@ -1590,6 +1592,11 @@ ANALYZE DATA FOR ANALOG SIGNALS TESTER
 				
 		
 		
+		[DONE]Add ability for reflections for Rover_StateMachine_COMM since it's not that much more code and allows debug pinging.
+		[DONE]Add ability for reflections for CommTester_AUXI since it's not that much more code and allows debug pinging.
+
+
+
 
 		
 -------------------State Machine for COMM
