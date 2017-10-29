@@ -25,10 +25,9 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 			Fix the following code to use parseAndValidateData() instead of validateData() and any new code changes that broke this code now. Use Rover_StateMachine_COMM as a reference.
 				[DONE]CommTester_AUXI
 				[DONE]	CommTester_NAVI
-				[NEED TO DO NEXT, have not started yet. use CommTester_AUXI as a template]			CommTester_COMM
-				[NEED TO DO, have not started yet. use CommTester_AUXI as a template]			CommTester_MAIN				
-
-
+				[DONE]	CommTester_COMM
+				[DONE] CommTester_MAIN				
+				[NEED TO DO] Update RoverCOMM State Machine such that PC_USB is received, but when commands are sent to PC_USB, it's treated as a different "virtual" unit than the COMM so commands going to PC_USB aren't processed as local commands.
 
 
 

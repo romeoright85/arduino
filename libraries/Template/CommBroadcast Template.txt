@@ -12,6 +12,7 @@ In the .cpp or .ino
 #endif
 
 ##MAIN##
+//If it is decided CommBroadcast_MAIN isn't being loaded on MAIN, then instead of going to COMM, direct any MAIN, AUXI, or NAVI data out to the PC USB of MAIN
 #ifdef _DEBUG_COMM_BROADCAST
 	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_
 #else
@@ -25,5 +26,5 @@ In the .cpp or .ino
 #ifdef _DEBUG_COMM_BROADCAST
 	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ 
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+	#define _SERIAL_DEBUG_CHANNEL_ _CMNC_SERIAL_
 #endif

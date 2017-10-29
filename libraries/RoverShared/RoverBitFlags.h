@@ -95,6 +95,21 @@
 	#endif
 	
 	#ifdef _MAIN_BIT_FLAGS_
+			//---------------------------------------------------	
+		//Status Flag(s)
+		//---------------------------------------------------
+		//Universal
 		#define _BTFG_NONE_													0x00
+		//Message Controls: flagSet_MessageControl
+		#define _BTFG_REDIRECT_TO_PC_USB_								0x01
+		#define _BTFG_REDIRECT_TO_COMM_									0x02		
+		#define _BTFG_REDIRECT_TO_NAVI_									0x04
+		#define _BTFG_REDIRECT_TO_AUXI_								0x08	
+		#define _BTFG_DATA_WAS_FOR_MAIN_CH1_					0x10
+		#define _BTFG_DATA_WAS_FOR_MAIN_CH2_				0x20
+		#define _BTFG_DATA_WAS_FOR_MAIN_CH3_				0x40
+		#define _BTFG_DATA_WAS_FOR_MAIN_CH4_				0x80
+		//---------------------------------------------------
+	
 	#endif
 	

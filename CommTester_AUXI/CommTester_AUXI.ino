@@ -25,9 +25,9 @@ Also uncomment the _DEBUG_OUTPUT_RXDATA_ in RoverComm.h to see the received stri
 //#define _DEBUG_ROVER_TEST_CASE_
 /*
 Uncomment the line above to test the Rover formatted data
-Debug data: /6c301*HelloMAINtoAUXI
+Debug data: /6c301*HelloPCUSBtoAUXI
 Also uncomment flag(s) in RoverComm.h to see the received string, etc.
-Note: You will get an "/3c400*004invlcmd" but that is expected and fine since "/6c301*HelloMAINtoAUXI" isn't a registered command. But this test the routing of the data is correct.
+Note: You will get an "/3c400*004invlcmd" but that is expected and fine since "/6c301*HelloPCUSBtoAUXI" isn't a registered command. But this test the routing of the data is correct.
 */
 
 
@@ -138,7 +138,7 @@ byte main_msg_queue = CMD_TAG_NO_MSG;
 
 
 //Message Char Array
-char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between MAIN and CMNC
+char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between PC_USB and MAIN
 char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
 
 
@@ -173,8 +173,8 @@ RoverData * roverDataCh2_COMM = new RoverData();
 RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 //Command Parsers
 //Rover Data Pointers for use with either internal processing or outgoing messages
-RoverData * roverDataForAUXI;//pointer used access the RoverData which has the command data outgoing to COMM
-RoverData * roverDataForPC_USB;//pointer used access the RoverData which has the command data outgoing to CMNC
+RoverData * roverDataForAUXI;//pointer used access the RoverData which has the command data incoming to AUXI
+RoverData * roverDataForPC_USB;//pointer used access the RoverData which has the command data outgoing to PC_USB
 RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data outgoing to MAIN
 
 							 //Flag(s) - Message Controls
@@ -300,7 +300,7 @@ void loop() {
 	}//end else
 #endif
 #ifdef _DEBUG_ROVER_TEST_CASE_		
-	roverComm_Ch1->setRxData("/4c301*HelloMAINtoAUXI", sizeof("/4c301*HelloMAINtoAUXI"));
+	roverComm_Ch1->setRxData("/6c301*HelloPCUSBtoAUXI", sizeof("/6c301*HelloPCUSBtoAUXI"));
 	//If the data is valid as well as parses it, set the status as such
 	if (roverComm_Ch1->parseAndValidateData())
 	{
@@ -345,7 +345,7 @@ void loop() {
 		//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
 		dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_AUXI_CH2_);
 		//Note: this is a local .ino function
-		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_AUXI_CH2_))//If there was data from the PC_USB (Ch1), and it was for AUXI
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_AUXI_CH2_))//If there was data from the MAIN (Ch2), and it was for AUXI
 		{
 			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
 			commandDirector(roverDataCh2_COMM);
@@ -506,7 +506,7 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 		}//end else if		
 		else if (roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_CMNC)
 		{
-			//if the data is for either NAVI, COMM, or MAIN, transmit the data out from AUXI to MAIN since AUXI only can talk to MAIN and not NAVI or COMM (and MAIN will process it accordingly or reroute it if needed)
+			//if the data is for either MAIN (or COMM, CMNC, NAVI) transmit the data out from AUXI to MAIN since AUXI only can talk to MAIN and not NAVI or COMM (and MAIN will process it accordingly or reroute it if needed)
 			//Set redirect to MAIN flag to true			
 			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 		}//end else if
@@ -790,11 +790,11 @@ void redirectData(RoverComm * roverComm)
 			txData(roverComm->getRxData(), ROVERCOMM_PC_USB);
 		}//end if		 
 	}//end if	
-	//Else if the destination is from: 1) PC_USB to MAIN (or COMM, CMNC, NAVI) or 2) MAIN (or COMM, CMNC, NAVI) to MAIN (or COMM, CMNC, NAVI) (loopback)
+	//Else if the destination is from: 1) NAVI, COMM, CMNC, MAIN to NAVI, COMM, CMNC, MAIN (except for to itself) or 2) NAVI, COMM, CMNC, MAIN to NAVI, COMM, CMNC, MAIN (to itself) (loopback)
 	else if (roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_CMNC)
 	{
 		//And if redirection to MAIN (or COMM, CMNC, NAVI) is allowed
-		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, AUXI, or NAVI
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_))//Checks to see if redirection is allowed to MAIN, COMM, CMNC, or NAVI
 		{
 			#ifdef _DEBUG_REDIRECTION_NOTICE
 				Serial.println(F("Redirect2MAIN"));

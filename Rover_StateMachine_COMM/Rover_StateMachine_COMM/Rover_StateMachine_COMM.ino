@@ -91,7 +91,7 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 #ifdef _DEBUG_COMM_BROADCAST
 #define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ //for COMM, either way it goes to the PC USB Serial
 #else
-#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#define _SERIAL_DEBUG_CHANNEL_ _CMNC_SERIAL_
 #endif
 						  //============End of Debugging: Serial Channel Selection
 
@@ -196,7 +196,7 @@ unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
 
 										//Command Parsers
 										//Rover Data Pointers for use with either internal processing or outgoing messages
-RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data outgoing to COMM
+RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data incoming to COMM
 RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
 RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data outgoing to MAIN
 
