@@ -1038,7 +1038,7 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 void txData(char * txData, byte roverCommType)
 {
 	//Note: This function varies for different Arduinos
-	if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
+	if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
 		//transmit the data to CMNC or through the USB of this Arduino (i.e. for debug) [in this case, it means the same thing]
 		_CMNC_SERIAL_.println(txData);
