@@ -11,11 +11,10 @@ RoverCommandCreator::~RoverCommandCreator()
 void RoverCommandCreator::reset()
 {
 }//end of reset()
-char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, char * commandString)
+void RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, char * commandString, char * outputCharArray)
 {
-
 	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the createCmd with ROVERCOMM_COMM passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
-	
+	//Note: You may have issues as declaring a char array locally in a function and returning the pointer to it may not alway work. The char array may dissapear anytime when the function ends, where as the pointer may still be active after that.
 	char inputCharArray[ROVER_COMM_SENTENCE_LENGTH] = "";	
 	char priorityLevelCharArray[4] = "";//size for since it's three characters and 1 null terminator
 	byte charIndex;
@@ -63,16 +62,17 @@ char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priori
 	//Add the null terminating character (just in case if there isn't already one)
 	strcat(inputCharArray, '\0');
 		
-	return inputCharArray;//DEBUG
+	strncpy(outputCharArray, inputCharArray, sizeof(inputCharArray)/sizeof(inputCharArray[0]));	
 	
 }//end of createCmd() without commandTag
-char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, byte commandTag, char * commandString)
+void RoverCommandCreator::createCmd(byte origin, byte destination, byte priorityLevel, byte commandTag, char * commandString, char * outputCharArray)
 {
 	
 	//Using delegation and function overloading
 	
+	
+	//This data will be treated as the "commandString" and will be appended to the end of the string created by the delegated command.
 	char inputCharArray[ROVER_COMM_SENTENCE_LENGTH] = "";
-		
 	//Concantenate Strings		
 	//Adding the command tag
 	strcat(inputCharArray, RoverCommandCreator::byteToCharArrayWithLeadingZeros(commandTag));
@@ -81,9 +81,7 @@ char * RoverCommandCreator::createCmd(byte origin, byte destination, byte priori
 	//Add the null terminating character (just in case if there isn't already one)
 	strcat(inputCharArray, '\0');
 	
-	
-	return createCmd(origin, destination, priorityLevel, inputCharArray);//DEBUG	
-	
+	createCmd(origin, destination, priorityLevel, inputCharArray, outputCharArray);	
 	
 }//end of createCmd() with commandTag
 char * RoverCommandCreator::byteToCharArrayWithLeadingZeros(byte input)

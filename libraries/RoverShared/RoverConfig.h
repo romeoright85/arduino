@@ -55,7 +55,7 @@
 	#endif	
 
 	//Buffer Sizes
-	#define UNIV_BUFFER_SIZE 100//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
+	#define UNIV_BUFFER_SIZE 75//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
 	#define _MAX_PROGMEM_BUFF_STR_LEN_ 15//Buffer Size to use for Command and Message Strings in flash, this should be the max string length allowed for any of the string in the cmd_str_table[] array. Note: Allow the last element of the array to hold the null character. So you will always have n-1 elements for the actual message.
 
 	
@@ -115,7 +115,7 @@
 	//definition for Rover Data
 	#ifdef _ROVERDATA
 		//Char Array Sizes				
-		#define ROVER_DATA_BUFFER_SIZE		100				
+		#define ROVER_DATA_BUFFER_SIZE		75				
 		#define ROVER_IMU_DATA_BUFFER_SIZE		30
 		//Rover Data Status
 		#define DATA_STATUS_NOT_READY	0

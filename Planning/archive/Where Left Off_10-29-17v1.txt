@@ -133,36 +133,15 @@ get basic state machine infrastructure up
 
 
 START HERE->finish createDataFromQueueFor and messages for it (or place holders)
-	Note: Changed UNIV_BUFFER_SIZE from 120 down to 80 (GPS data may be 71 wide) to make sure there is enough memory. Can increase it slightly later as needed. Also changed ROVER_DATA_BUFFER_SIZE from 100 to 80 as well.
-	Note: Added two transmit char buffers and the memory usage went up from 51% (with 100 size univ buffer) to 54% (with 80 sized univ buffer).
-	
-	
 	the finish out the synchonization mode and move on to secure link
 	Note: pay attention to memory use!
-	
+
 	
 	
 	now I have to write some of the functions
 					Update on commandDirector commands/functions
-					[JUST FINISHED LAST, DONE] rewrite RoverCommandCreator::createCmd so it is passed a char array and returns void instead of creating a char array locally and returning a pointer to it since local array is destroyed and the pointer may remain.
-						Note: You may have to unflag _DEBUG_TURN_OFF_ALL_DATA_FILTERS to test this part of the code.
-						
-						
-					[NEED TO DO NEXT]Go back and update all code that uses RoverCommandCreator::createCmd. Do a wingrep. This is due to the changes. It now needs a output char array of size ROVER_COMM_SENTENCE_LENGTH passed to it. And it returns void. Also test both delagated methods.
-					
-						RoverCommandProcessorTester
-						CommTester_MAIN
-						CommTester_COMM
-						CommTester_NAVI
-						CommTester_AUXI
-					
-					
-					
 					
 					[NEED TO DO]Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
-					
-					
-					
 							[NEED TO DO]Update the DATA_FILTER state with command options:							
 									
 										[NEED TO DO]need to write the message going out to CMNC with the CMD_TAG_SECURE_LINK_REQUEST, see commandDirector for sysgo									

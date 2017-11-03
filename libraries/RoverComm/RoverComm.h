@@ -85,7 +85,7 @@
 	//uncomment the debug flag below to see other data as required
 	//#define _DEBUG_OUTPUT_COMMAND_ORIGIN_
 	//#define _DEBUG_OUTPUT_COMMAND_DESTINATION_
-	
+	//#define _DEBUG_OUTPUT_COMMAND_TAG_
 	
 	class RoverComm : public virtual RoverReset {
 	public:

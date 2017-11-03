@@ -194,7 +194,12 @@ boolean RoverComm::parseAndValidateData()
 		
 		//2b. Convert the command tag char array to a byte and use it to set the value of _commandTag in the Rover Data object
 		this->_rxRoverDataPointer->setCommandTag(DataType::charsToByte(cmdDataCommandTagCharArray));
-				
+		
+		#ifdef _DEBUG_OUTPUT_COMMAND_TAG_
+			Serial.print(F("Cmd Tag: "));//DEBUG
+			Serial.println(this->_rxRoverDataPointer->getCommandTag());//DEBUG
+		#endif	
+		
 		//If the data is valid and true is being returned, then do not clear the data yet, as it might be used for redirection. Instead, data should be cleared before receiving new data (i.e. before rxData() is called)
 		return true;//Returns true for valid data.
 			
