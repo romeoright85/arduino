@@ -138,7 +138,8 @@ byte main_msg_queue = CMD_TAG_NO_MSG;
 
 
 //Message Char Array
-char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between PC_USB and MAIN
+char txMsgBuffer_PC_USB[UNIV_BUFFER_SIZE];//transmit buffer for PC_USB
+char txMsgBuffer_MAIN[UNIV_BUFFER_SIZE];//transmit buffer for MAIN (NAVI, COMM, CMNC)
 char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
 
 
@@ -367,7 +368,7 @@ void loop() {
 	if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
 	{
 		createDataFromQueueFor(ROVERCOMM_PC_USB);
-		txData(txMsgBufferShared, ROVERCOMM_PC_USB);
+		txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 	}//end if
 
 
@@ -375,7 +376,7 @@ void loop() {
 	if (main_msg_queue != CMD_TAG_NO_MSG)
 	{
 		createDataFromQueueFor(ROVERCOMM_MAIN);
-		txData(txMsgBufferShared, ROVERCOMM_MAIN);
+		txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
 	}//end if
 
 
@@ -670,7 +671,8 @@ void createDataFromQueueFor(byte roverCommDestination)
 
 	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string
-
+	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command
+	
 								 //Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
 	if (roverCommDestination == ROVERCOMM_PC_USB)
 	{
@@ -706,15 +708,15 @@ void createDataFromQueueFor(byte roverCommDestination)
 
 	case CMD_TAG_DEBUG_HI_TEST_MSG:
 		//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-		sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_AUXI, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest));
+		RoverCommandCreator::createCmd(ROVERCOMM_AUXI, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);
 		break;
 	case CMD_TAG_DEBUG_BYE_TEST_MSG:
 		//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
-		sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_AUXI, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest));
+		RoverCommandCreator::createCmd(ROVERCOMM_AUXI, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest, createdCommand);
 		break;
 	case CMD_TAG_INVALID_CMD:
 		//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)			
-		sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_AUXI, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1)));
+		RoverCommandCreator::createCmd(ROVERCOMM_AUXI, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1), createdCommand);
 		break;
 
 	default:
@@ -722,6 +724,18 @@ void createDataFromQueueFor(byte roverCommDestination)
 		break;
 	}//end switch
 
+	
+	if (roverCommDestination == ROVERCOMM_PC_USB)
+	{
+		sprintf(txMsgBuffer_PC_USB, createdCommand);
+	}//end if
+	else if (roverCommDestination == ROVERCOMM_MAIN)
+	{
+		sprintf(txMsgBuffer_MAIN, createdCommand);
+	}//end else if
+	//else	
+
+	 
 
 }//end of createDataFromQueueFor()
 

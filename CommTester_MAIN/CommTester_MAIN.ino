@@ -142,7 +142,6 @@ char txMsgBuffer_PC_USB[UNIV_BUFFER_SIZE];//transmit buffer for PC_USB
 char txMsgBuffer_COMM[UNIV_BUFFER_SIZE];//transmit buffer for COMM (CMNC)
 char txMsgBuffer_NAVI[UNIV_BUFFER_SIZE];//transmit buffer for NAVI
 char txMsgBuffer_AUXI[UNIV_BUFFER_SIZE];//transmit buffer for AUXI
-
 char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
 
 

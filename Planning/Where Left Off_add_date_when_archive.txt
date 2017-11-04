@@ -144,24 +144,7 @@ START HERE->finish createDataFromQueueFor and messages for it (or place holders)
 	
 	now I have to write some of the functions
 					Update on commandDirector commands/functions
-					[DONE] rewrite RoverCommandCreator::createCmd so it is passed a char array and returns void instead of creating a char array locally and returning a pointer to it since local array is destroyed and the pointer may remain.
-						Note: You may have to unflag _DEBUG_TURN_OFF_ALL_DATA_FILTERS to test this part of the code.
-					[DONE] Fix all code that uses RoverCommandCreator::byteToCharArrayWithLeadingZeros. It has the same problem of passing back a pointer to a locally created array that may not be around anymore.	
-						
-					[NEED TO DO NEXT]Go back and update all code that uses RoverCommandCreator::createCmd. Do a wingrep. This is due to the changes. It now needs a output char array of size ROVER_COMM_SENTENCE_LENGTH passed to it. And it returns void. Also test both delagated methods.
-					
-						[DONE, RoverCommandCreator] renamed to RoverCommandProcessorTester
-						[DONE] CommTester_MAIN
-						Compiling 'CommTester_MAIN' for 'Arduino/Genuino Mega w/ ATmega2560 (Mega 2560)'
-						Program size: 10,818 bytes (used 4% of a 253,952 byte maximum) (2.98 secs)
-						Minimum Memory Usage: 805 bytes (10% of a 8192 byte maximum)
 
-
-
-						CommTester_COMM
-						CommTester_NAVI
-						CommTester_AUXI
-					
 					
 					
 					
@@ -1603,6 +1586,19 @@ Test Codes:
 				[DONE] CommTester_MAIN				
 				[NOT NEEDED] Update RoverCOMM State Machine such that PC_USB is received, but when commands are sent to PC_USB, it's treated as a different "virtual" unit than the COMM so commands going to PC_USB aren't processed as local commands.
 
+				
+									[DONE] rewrite RoverCommandCreator::createCmd so it is passed a char array and returns void instead of creating a char array locally and returning a pointer to it since local array is destroyed and the pointer may remain.
+						Note: You may have to unflag _DEBUG_TURN_OFF_ALL_DATA_FILTERS to test this part of the code.
+					[DONE] Fix all code that uses RoverCommandCreator::byteToCharArrayWithLeadingZeros. It has the same problem of passing back a pointer to a locally created array that may not be around anymore.	
+						
+					[DONE]Go back and update all code that uses RoverCommandCreator::createCmd. Do a wingrep. This is due to the changes. It now needs a output char array of size ROVER_COMM_SENTENCE_LENGTH passed to it. And it returns void. Also test both delagated methods.
+					
+						[DONE] RoverCommandProcessorTester (renamed to RoverCommandCreator)
+						[DONE] CommTester_MAIN
+						[DONE]CommTester_COMM
+						[DONE]CommTester_NAVI
+						[DONE]CommTester_AUXI
+					
 
 		
 -------------------State Machine for COMM
