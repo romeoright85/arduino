@@ -138,7 +138,11 @@ byte auxi_msg_queue = CMD_TAG_NO_MSG;
 
 
 //Message Char Array
-char txMsgBufferShared[UNIV_BUFFER_SIZE];//transmit buffer shared between PC_USB, COMM (CMNC), NAVI, and AUXI
+char txMsgBuffer_PC_USB[UNIV_BUFFER_SIZE];//transmit buffer for PC_USB
+char txMsgBuffer_COMM[UNIV_BUFFER_SIZE];//transmit buffer for COMM (CMNC)
+char txMsgBuffer_NAVI[UNIV_BUFFER_SIZE];//transmit buffer for NAVI
+char txMsgBuffer_AUXI[UNIV_BUFFER_SIZE];//transmit buffer for AUXI
+
 char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
 
 
@@ -469,7 +473,7 @@ void loop() {
 	if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
 	{
 		createDataFromQueueFor(ROVERCOMM_PC_USB);
-		txData(txMsgBufferShared, ROVERCOMM_PC_USB);
+		txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 	}//end if
 
 
@@ -477,7 +481,7 @@ void loop() {
 	if (comm_msg_queue != CMD_TAG_NO_MSG)
 	{
 		createDataFromQueueFor(ROVERCOMM_COMM);
-		txData(txMsgBufferShared, ROVERCOMM_COMM);
+		txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
 	}//end if
 
 
@@ -485,7 +489,7 @@ void loop() {
 	if (navi_msg_queue != CMD_TAG_NO_MSG)
 	{
 		createDataFromQueueFor(ROVERCOMM_NAVI);
-		txData(txMsgBufferShared, ROVERCOMM_NAVI);
+		txData(txMsgBuffer_NAVI, ROVERCOMM_NAVI);
 	}//end if
 
 
@@ -494,7 +498,7 @@ void loop() {
 	if (auxi_msg_queue != CMD_TAG_NO_MSG)
 	{
 		createDataFromQueueFor(ROVERCOMM_AUXI);
-		txData(txMsgBufferShared, ROVERCOMM_AUXI);
+		txData(txMsgBuffer_AUXI, ROVERCOMM_AUXI);
 	}//end if
 	
 	
@@ -887,6 +891,112 @@ void setRoverDataPointer(RoverData * roverDataPointer, byte roverCommType)
 
 void createDataFromQueueFor(byte roverCommDestination)
 {
+	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+
+	byte queueOfInterest;
+	char * commandDataOfInterest;//holds the rover's command data string
+	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command
+	//Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
+	if (roverCommDestination == ROVERCOMM_PC_USB)
+	{
+		queueOfInterest = pc_usb_msg_queue;
+		if (roverDataForPC_USB != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForPC_USB->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else		
+	}//end if
+	else if (roverCommDestination == ROVERCOMM_COMM)
+	{
+		queueOfInterest = comm_msg_queue;
+		if (roverDataForCOMM != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForCOMM->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else
+	}//end else if
+	else if (roverCommDestination == ROVERCOMM_NAVI)
+	{
+		queueOfInterest = navi_msg_queue;
+		if (roverDataForNAVI != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForNAVI->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else
+	}//end else if
+	else if (roverCommDestination == ROVERCOMM_AUXI)
+	{
+		queueOfInterest = auxi_msg_queue;
+		if (roverDataForAUXI != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForAUXI->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else
+	}//end else if
+	 //else
+	 //do nothing
+
+	
+	
+	//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
+	switch (queueOfInterest)
+	{
+
+
+		case CMD_TAG_DEBUG_HI_TEST_MSG:
+			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
+			RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);			
+			break;
+		case CMD_TAG_DEBUG_BYE_TEST_MSG:
+			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
+			RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest, createdCommand);
+			break;
+		case CMD_TAG_INVALID_CMD:
+			//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)			
+			RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1), createdCommand);			
+			break;
+		default:
+			//do nothing
+			break;
+	}//end switch
+	
+	
+	if (roverCommDestination == ROVERCOMM_PC_USB)
+	{
+		sprintf(txMsgBuffer_PC_USB, createdCommand);
+	}//end if
+	else if (roverCommDestination == ROVERCOMM_COMM || roverCommDestination == ROVERCOMM_CMNC)
+	{
+		sprintf(txMsgBuffer_COMM, createdCommand);
+	}//end else if
+	else if (roverCommDestination == ROVERCOMM_NAVI)
+	{
+		sprintf(txMsgBuffer_NAVI, createdCommand);
+	}//end else if	
+	else if (roverCommDestination == ROVERCOMM_AUXI)
+	{
+		sprintf(txMsgBuffer_AUXI, createdCommand);
+	}//end else if		
+	 //else
+
+}//end of createDataFromQueueFor()
+
+
+/*
+void createDataFromQueueFor(byte roverCommDestination)
+{
 
 
 	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
@@ -954,13 +1064,16 @@ void createDataFromQueueFor(byte roverCommDestination)
 	case CMD_TAG_DEBUG_HI_TEST_MSG:
 		//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
 		sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest));
+		sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest));
 		break;
 	case CMD_TAG_DEBUG_BYE_TEST_MSG:
 		//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
 		sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest));
+		sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest));
 		break;
 	case CMD_TAG_INVALID_CMD:
 		//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)			
+		sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1)));
 		sprintf(txMsgBufferShared, RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1)));
 		break;
 
@@ -973,7 +1086,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 }//end of createDataFromQueueFor()
 
 
-
+*/
 
 
 void txData(char * txData, byte roverCommType)

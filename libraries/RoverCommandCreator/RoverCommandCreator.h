@@ -66,7 +66,7 @@ public:
 	
 	static void createCmd(byte, byte, byte, char *, char *);//(origin, destination, priority level, command - if a tag used then it must be appended manually, output char array) Note: The output char array should be of size ROVER_COMM_SENTENCE_LENGTH.
 	static void createCmd(byte, byte, byte, byte, char *, char *);//(origin, destination, priority level, command tag, command, output char array) Note: The output char array should be of size ROVER_COMM_SENTENCE_LENGTH.
-	static char * byteToCharArrayWithLeadingZeros(byte);//(input byte) returns char array, with a range of 0 to 255 (with leading zeros)
+	static void byteToCharArrayWithLeadingZeros(byte, char *);//(input byte, output char array) The output char array has a range of 0 to 255 (with leading zeros)
 	
 		
 	

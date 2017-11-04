@@ -73,9 +73,11 @@ void RoverCommandCreator::createCmd(byte origin, byte destination, byte priority
 	
 	//This data will be treated as the "commandString" and will be appended to the end of the string created by the delegated command.
 	char inputCharArray[ROVER_COMM_SENTENCE_LENGTH] = "";
+	char cmdTagCharArray[4];//for 3 digit character but string null character
 	//Concantenate Strings		
 	//Adding the command tag
-	strcat(inputCharArray, RoverCommandCreator::byteToCharArrayWithLeadingZeros(commandTag));
+	RoverCommandCreator::byteToCharArrayWithLeadingZeros(commandTag, cmdTagCharArray);
+	strcat(inputCharArray, cmdTagCharArray);
 	//Adding the commandString
 	strcat(inputCharArray, commandString);
 	//Add the null terminating character (just in case if there isn't already one)
@@ -84,7 +86,7 @@ void RoverCommandCreator::createCmd(byte origin, byte destination, byte priority
 	createCmd(origin, destination, priorityLevel, inputCharArray, outputCharArray);	
 	
 }//end of createCmd() with commandTag
-char * RoverCommandCreator::byteToCharArrayWithLeadingZeros(byte input)
+void RoverCommandCreator::byteToCharArrayWithLeadingZeros(byte input, char * outputCharArray)
 {
 	
 	char tempCharArray[4];//for 3 digit character but string null character
@@ -107,7 +109,7 @@ char * RoverCommandCreator::byteToCharArrayWithLeadingZeros(byte input)
 		sprintf(tempCharArray, "00%u\0", input);	
 	}
 	
-return tempCharArray;
+	strncpy(outputCharArray, tempCharArray, sizeof(tempCharArray)/sizeof(tempCharArray[0]));	
 	
 }//end of byteToCharArrayWithLeadingZeros()
 
