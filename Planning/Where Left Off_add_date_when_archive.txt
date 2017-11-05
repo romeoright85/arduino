@@ -135,7 +135,7 @@ get basic state machine infrastructure up
 
 
 	
-LEFT OFF HERE, START HERE->the finish out the synchonization mode (just finished PROCESS DATA state, now work on CONTROL_OUTPUTS state)
+LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: the finish out the synchonization mode (just finished PROCESS DATA state, now work on CONTROL_OUTPUTS state)
 	[NEED TO DO]and move on to system error
 	[NEED TO DO]then work on secure link
 	

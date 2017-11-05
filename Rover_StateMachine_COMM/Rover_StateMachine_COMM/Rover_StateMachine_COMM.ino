@@ -1773,6 +1773,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		}//end if	
 		break;
 	case CONTROL_OUTPUTS:
+		//LAST LEFT OFF HERE
 		//WRITE ME LATER
 
 		/*
