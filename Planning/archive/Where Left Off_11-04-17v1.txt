@@ -132,15 +132,12 @@ get basic state machine infrastructure up
 
 
 
-
-
-	
-LEFT OFF HERE, START HERE->the finish out the synchonization mode (just finished PROCESS DATA state, now work on CONTROL_OUTPUTS state)
-	[NEED TO DO]and move on to system error
-	[NEED TO DO]then work on secure link
+LEFT OFF HERE, START HERE->finish createDataFromQueueFor and messages for it (or place holders)
+	Note: Changed UNIV_BUFFER_SIZE from 120 down to 80 (GPS data may be 71 wide) to make sure there is enough memory. Can increase it slightly later as needed. Also changed ROVER_DATA_BUFFER_SIZE from 100 to 80 as well.
+	Note: Added two transmit char buffers and the memory usage went up from 51% (with 100 size univ buffer) to 54% (with 80 sized univ buffer).
 	
 	
-	
+	the finish out the synchonization mode and move on to secure link
 	Note: pay attention to memory use!
 	
 	
@@ -1647,8 +1644,4 @@ Test Codes:
 				
 	[DONE] Then update the priority list to remove/skip any outdated suggestions due to memory issues, if it was already fixed with past fixed.									
 	
-	
-	[DONE]finish createDataFromQueueFor and messages for it (or place holders)
-	Note: Changed UNIV_BUFFER_SIZE from 120 down to 80 (GPS data may be 71 wide) to make sure there is enough memory. Can increase it slightly later as needed. Also changed ROVER_DATA_BUFFER_SIZE from 100 to 80 as well.
-	Note: Added two transmit char buffers and the memory usage went up from 51% (with 100 size univ buffer) to 54% (with 80 sized univ buffer).
 	

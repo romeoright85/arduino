@@ -123,6 +123,7 @@ At POR (defaults):
 		INITIALIZATION
 			run background tasks (i.e. counters for LED patterns control)
 				initialize/reinitialize all variables
+				i.e. clear system go flag
 			start background tasks
 			//Prior to synchronization tasks
 			//These values are already set from INITIALIZATION:
@@ -454,7 +455,7 @@ At POR (defaults):
 
 			//Run lower priority functions here. (i.e. system ready msgs)
 			
-			If !(system go msg received from MAIN aka can be system ready or no msg)
+			If !(system go msg received, check system go flag from MAIN aka can be system ready or no msg)
 				main_pri_msg_queue = SYSTEM_READY_STATUS (tells MAIN it's ready to synchronize)
 			end if
 			Note: If system go or system ready msg has been received from MAIN, see "Command Options" below for more info.
@@ -1102,11 +1103,13 @@ Conflicting Functions Ordered By Priority
 		blue_beacon_lights_enable = LIGHTS_HEALTH_ERROR
 		ir_beacon_lights_enable = LIGHTS_HEALTH_ERROR							
 	System Go (from MAIN)
+		set system go flag
 		Mode: NORMAL_OPERATIONS *begin*		
 		//initialize/reset shared counter before use
 		timeout_counter = 0;		
 	NAVI Sleep Request (usually from MAIN)			
 		//save the motor, gimbal buffer states before shutting them off to go to sleep
+		clear system go flag
 		prev_motor_turn_value = motor_turn_value
 		motor_turn_value = TURN_NONE
 		prev_motor_speed_value = motor_speed_value

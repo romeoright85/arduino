@@ -10,8 +10,8 @@ Note: Some of these defines share names between Arduinos, so make sure you use t
 
 
 
-#define COMM_SYNC_TIMEOUT_VALUE ??
-#define SECURE_LINK_TIMEOUT_VALUE ??
+#define COMM_SYNC_TIMEOUT_VALUE 50//arbitrariliy chosen value for now
+#define SECURE_LINK_TIMEOUT_VALUE 50//arbitrariliy chosen value for now
 #define CONCURRENT_TRANSMISSION_DELAY		??//delay for about 1-5ms or so between potentially sending messages out again to the same arduino
 #define SW_RESET_RESEND_TIMEOUT_VALUE		??//time to wait for the COMM SW Reset Request from MAIN before restarting the All SW Reset , by sending the All SW Reset Request to MAIN again.
 #define SW_RESET_ERROR_TIMEOUT_VALUE ??//time to waiting and resend the All SW Reset (Re-)Requests to MAIN before COMM should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
@@ -50,6 +50,7 @@ COMM:
 				INITIALIZATION
 					run initialization tasks
 						initialize/reinitialize all variables
+						i.e. clear system go flag
 					start background tasks
 					Set mode to SYNCHRONIZATION *begin*
 					//initialize/reset shared counter before use
@@ -318,7 +319,7 @@ COMM:
 						//Run lower priority functions here. (i.e. system ready msgs)
 					
 						//Remember, only  hw reset, sw reset, generic health status error, or system ready or system go message(s) can pass the data filter.
-						If !(system go msg received from MAIN aka can be system ready or no msg)
+						If !(system go msg received, check system go flag from MAIN aka can be system ready or no msg)
 							main_msg_queue = SYSTEM_READY_STATUS (tells MAIN it's ready to synchronize)
 						end if
 						Note: If system go or system ready msg has been received from MAIN, see "Command Options" below for more info.
@@ -1023,6 +1024,7 @@ Conflicting Functions Ordered By Priority
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 		System Go (from MAIN)
+			set system go flag
 			if main_system_ready = false //if for some reason the system ready message was no received before the system go message, go ahead and make it true as any system go must also mean system ready. this doesn't really matter, but just doing it for consistency since the flags are global.
 				main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
 			end if
@@ -1048,6 +1050,7 @@ Conflicting Functions Ordered By Priority
 		COMM Sleep Request (usually from MAIN)
 			//Pre-sleep tasks - Setting up wake tasks before going to sleep
 			timeout_counter = 0;//clear counter for future use
+			clear system go flag
 			Mode: SYSTEM_WAKING *begin* //setup this mode ahead of time before going to sleep		
 			cmnc_msg_queue = SYSTEM_IS_WAKING			
 			Run other pre-sleep tasks. (i.e. end software serial, as needed)

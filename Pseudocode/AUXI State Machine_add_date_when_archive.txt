@@ -91,6 +91,7 @@ At POR (defaults):
 		INITIALIZATION
 			run initialization tasks
 				initialize/reinitialize all variables
+				i.e. clear system go flag
 			start background tasks
 			//Note: Lasers are turned off in the variable initial declarations above
 			Set mode to SYNCHRONIZATION *begin*
@@ -345,7 +346,7 @@ At POR (defaults):
 
 			//Run lower priority functions here. (i.e. system ready msgs)
 			
-			If !(system go msg received from MAIN aka can be system ready or no msg)
+			If !(system go msg received, check system go flag from MAIN aka can be system ready or no msg)
 				main_pri_msg_queue = SYSTEM_READY_STATUS (tells MAIN it's ready to synchronize)
 			end if
 			Note: If system go or system ready msg has been received from MAIN, see "Command Options" below for more info.
@@ -880,11 +881,13 @@ Conflicting Functions Ordered By Priority
 			Set enable_right_laser = false
 			Mode: SW_RESETTING *begin*		
 		System Go (from MAIN)
+			set system go flag
 			Mode: NORMAL_OPERATIONS *begin*		
 			//initialize/reset shared counter before use
 			timeout_counter = 0;	
 		AUXI Sleep Request (usually from MAIN)
 			//save the state of the laser enables before shutting them off to go to sleep
+			clear system go flag
 			left_laser_prev_state = enable_left_laser
 			right_laser_prev_state = enable_right_laser
 			//set to turn off the laser when sleeping
