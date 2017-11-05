@@ -15,14 +15,36 @@ Currently the priority level is not being used to prioritize right now. It's jus
 
 
 /*
+--------------------------------
+Regular Operation
+--------------------------------
+1) MAIN sends COMM System Ready
+/4c5--*005
+2)  MAIN sends COMM System Go
+/4c5--*006 (you might have to send it twice as the serial communication is a little glitchy)
+3)
+etc.
+WRITE ME LATER
+
+
+--------------------------------
+Debug Operation
+--------------------------------
+//To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
+//To test code while in SYNCHRONIZATION mode, make sure to uncomment _DEBUG_TURN_OFF_ALL_DATA_FILTERS
+//To test code and allow redirection in SYNCHRONIZATION, uncomment _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE and _DEBUG_REDIRECTION_NOTICE
+
+
 To test locally with only one Arduino (best to test the UNO to make sure it can handle the memory needs for the COMM), first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
 Can send:
 Hi Command
 /4c5--*002<any data up to 14 chars>
 /4c5--*002hiworld
+Note: For this example you should get /5c400*002hiworld since now the message is coming from COMM and going to MAIN.
 Bye Commands
 /4c5--*003<any data up to 14 chars>
 /4c5--*003bye
+Note: For this example you should get /5c400*003bye since now the message is coming from COMM and going to MAIN.
 Where 4 is coming from MAIN (so it can echo back with a response when using the Hi or Bye commands)
 and 5 is to COMM (and not a redirection to another unit)
 Can send:
@@ -33,7 +55,6 @@ and
 to test redirection from MAIN to MAIN (loopback) through COMM
 */
 
-//To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
 
 
 //Note: To test with USB Serial for all Serial channels, go to RoverConfig and uncomment the flag _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ as long as _BTFG_COMMAND_ENABLE_OPTION_HI_ and _BTFG_COMMAND_ENABLE_OPTION_BYE_ are set true in the filter in runModeFunction_SYNCHRONIZATION()
@@ -51,8 +72,9 @@ to test redirection from MAIN to MAIN (loopback) through COMM
 #ifndef _COMM_BIT_FLAGS_
 #define _COMM_BIT_FLAGS_ //For RoverBitFlags.h
 #endif
-
-
+#ifndef _COMM_STATE_MACHINE_VARIABLES_
+#define _COMM_STATE_MACHINE_VARIABLES_ //For RoverConfig.h
+#endif
 
 //#includes
 #include <RoverStatesAndModes.h>
@@ -119,14 +141,23 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 
 						  //============Debugging: Allow Redirect During Synchronization Mode
 						  //Uncomment to allow Ch2 (MAIN and COMM) to have redirection when in synchronization mode
-//#define _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
+#define _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
 //Uncomment to output notice when redirection is occuring
 //#define _DEBUG_REDIRECTION_NOTICE
 						  //============End Debugging: Allow Redirect During Synchronization Mode
 //============Debugging: All Data Filtering Off
 //Uncomment in order to allow all data to pass (turn off all data filters) for debugging)
-//#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
+#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
 //============End Debugging: All Data Filtering Off
+//============Debugging: Turn off System Ready Status During Synchronization Mode
+//Uncomment in order to allow other data to be in the main_msg_queue instead of just System Status
+//#define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS
+//============End Debugging: All Data Filtering Off
+//============Debugging: Print timeout counter value
+//Uncomment in order to print timeout counter value
+#define _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+//============End Debugging: Print timeout counter value
+
 
 
 
@@ -183,9 +214,10 @@ byte flagSet_Error = _BTFG_NONE_;
 byte flagSet_MessageControl = _BTFG_NONE_;
 //Flag(s) - System Status
 byte flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
-													  //Flag(s) - Command Filter Options
-													  //Command Filter Options: Set 1
+//Flag(s) - Command Filter Options
+//Command Filter Options: Set 1
 byte commandFilterOptionsSet1 = _BTFG_NONE_;
+//Command Filter Options: Set 2
 byte commandFilterOptionsSet2 = _BTFG_NONE_;
 
 //Counters
@@ -341,6 +373,7 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 
 
 void loop() {
+
 
 
 	//State Machine
@@ -872,15 +905,6 @@ void initializeVariables()
 
 
 
-
-
-
-
-
-
-
-
-
 	//Message Queues
 	cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 	main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
@@ -888,16 +912,19 @@ void initializeVariables()
 	ch1Status = DATA_STATUS_NOT_READY;
 	ch2Status = DATA_STATUS_NOT_READY;
 
+	
+	
 	//Flag(s) - Error
-	flagSet_Error = _BTFG_NONE_;
+	flagSet_Error = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
 	//Flag(s) - Message Controls
-	flagSet_MessageControl = _BTFG_NONE_;
+	flagSet_MessageControl = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
 	//Flag(s) - System Status
 	flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
-													 //Flag(s) - Command Filter Options
-													 //Command Filter Options: Set 1
-	commandFilterOptionsSet1 = _BTFG_NONE_;
-	commandFilterOptionsSet2 = _BTFG_NONE_;
+	//Flag(s) - Command Filter Options
+	//Command Filter Options: Set 1
+	commandFilterOptionsSet1 = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
+	//Command Filter Options: Set 2
+	commandFilterOptionsSet2 = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
 
 
 	//Counters
@@ -1153,6 +1180,10 @@ void commandDirector(RoverData * roverDataPointer)
 	else if (commandTag == CMD_TAG_SYSTEM_GO_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_))//FIX ME LATER, change the actual send command to compare later
 	{
 
+		//Set the system go flag
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_);
+	
+	
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		//if for some reason the system ready message was no received before the system go message, go ahead and make it true as any system go must also mean system ready. this doesn't really matter, but just doing it for consistency since the flags are global.
 		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_))
@@ -1211,6 +1242,8 @@ void commandDirector(RoverData * roverDataPointer)
 	{
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft			
 		//Pre-sleep tasks - Setting up wake tasks before going to sleep
+		//Clear the system go flag
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_);
 		currentMode = SYSTEM_WAKING;//Set mode to SYSTEM_WAKING *begin*
 		cmnc_msg_queue = CMD_TAG_SYSTEM_IS_WAKING;
 		timeout_counter = 0; //reset for future use				
@@ -1264,7 +1297,6 @@ void commandDirector(RoverData * roverDataPointer)
 	else if (commandTag == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_))//FIX ME LATER, change the actual send command to compare later
 	{
 		cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//When COMM receives and error, always send it out to the CMNC so the base station knows there's an error	
-main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//DEBUG and delete
 	}//end else if					
 	 //Hi Command - DEBUG
 	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_))
@@ -1448,6 +1480,29 @@ void createDataFromQueueFor(byte roverCommDestination)
 
 
 }//end of createDataFromQueueFor()
+void setAllErrorFlagsTo(boolean choice)
+{
+	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_INVALID_STATE_OR_MODE_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_SYNC_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_SECURE_LINK_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_SW_RESET_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_GENERIC_HEALTH_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_SLEEPING_ERROR_, choice);
+}//end of setAllErrorFlagsTo()
+void setAllMessageControlFlagsTo(boolean choice)
+{
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_, choice);
+}//end of setAllMessageControlFlagsTo()
+void setAllSystemStatusFlagsTo(boolean choice)
+{
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_COMMUNICATIONS_SECURE_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_, choice);
+}//end of setAllSystemStatusFlagsTo()
 void setAllCommandFiltersTo(boolean choice)
 {
 	//Note: Right now this function doesn't discriminate where the commands are coming from. So if they're all set to true, in theory, for example CMNC can "inject" or "spoof" a command that looks like it's coming from somewhere else.
@@ -1663,23 +1718,17 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
 
 
-																												 //TEMP DEBUG CODE
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_);//DEBUG
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_);////DEBUG, FOR DEBUGGING, can disable this to see that the filter works
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID_);//DEBUG
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_);//DEBUG
-																													//END OF TEMP DEBUG CODE
-
-
 		}//end if
 		 //else the data was invalid or not ready, so do nothing
 
 
 		break;
 	case PROCESS_DATA:
-		//WRITE ME LATER
-
-
+	
+		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+			Serial.println(timeout_counter);
+		#endif
+		
 		//Skip Process of PIR status
 		//Skip Process CMNC command/data
 		//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
@@ -1687,56 +1736,41 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		//Remember, only  hw reset, sw reset, generic health status error, or system ready or system go message(s) can pass the data filter.
 
 
-		
+
+		//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+		//Note: If system go or system ready msg has been received from MAIN, see the commandDirector for more info.
+
 
 		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
 		{
-
-
 			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
 			commandDirector(roverDataCh2_COMM);
-
-
-
 		}//end if
 		
-
-		 //WRITE ME LATER
-		 //FINISH ME
-
-		 /*
-
-
-
-		 If !(system go msg received from MAIN aka can be system ready or no msg)
-		 main_msg_queue = SYSTEM_READY_STATUS (tells MAIN it's ready to synchronize)
-		 end if
-		 Note: If system go or system ready msg has been received from MAIN, see "Command Options" below for more info.
-
-		 //Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
-
-
-		 If no system go msg from MAIN received && main_system_ready == false (MAIN system not ready yet to set the main_system_ready flag and have not received a system go to switch states yet, then keep incrementing the timeout counter)
-		 timeout_counter++
-		 end if
-		 if timeout_counter >= COMM_SYNC_TIMEOUT_VALUE
-		 Set mode to SYSTEM_ERROR *begin*
-		 cmnc_msg_queue == SYNC_ERROR_STATUS
-		 set sync_error = true
-		 (Note: the sync_error flag can only be cleared with a sw reset or hw reset)
-		 //initialize/reset shared counter before use
-		 timeout_counter = 0;
-		 end if
-
-
-
-		 */
-
-
-
-
-
-
+		
+		
+		//If System Go (from MAIN to COMM) was not received (Note: Messages received could still have been sys ready or no message at all)
+		if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_))
+		{
+			#ifndef _DEBUG_TURN_OFF_SYSTEM_READY_STATUS		 
+				main_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;//tells MAIN it's ready to synchronize
+			#endif
+			//If no system go msg from MAIN received && main_system_ready == false (MAIN system not ready yet to set the main_system_ready flag and have not received a system go to switch states yet, then keep incrementing the timeout counter)
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_))
+			{
+				timeout_counter++;
+			}//end if
+		}//end if		
+		if(timeout_counter >= COMM_SYNC_TIMEOUT_VALUE)
+		{
+			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+			cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
+			//set sync_error = true
+			BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SYNC_ERROR_);			
+			//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
+			//initialize/reset shared counter before use
+			 timeout_counter = 0;	
+		}//end if	
 		break;
 	case CONTROL_OUTPUTS:
 		//WRITE ME LATER
@@ -1942,6 +1976,10 @@ void runModeFunction_SECURING_LINK(byte currentState)
 
 		break;
 	case PROCESS_DATA:
+		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+			Serial.println(timeout_counter);
+		#endif
+		
 		//WRITE ME LATER
 		break;
 	case CONTROL_OUTPUTS:
@@ -1988,6 +2026,9 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 		//WRITE ME LATER
 		break;
 	case PROCESS_DATA:
+		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+			Serial.println(timeout_counter);
+		#endif
 		//WRITE ME LATER
 		break;
 	case CONTROL_OUTPUTS:
@@ -2060,6 +2101,9 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 		//WRITE ME LATER
 		break;
 	case PROCESS_DATA:
+		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+			Serial.println(timeout_counter);
+		#endif
 		//WRITE ME LATER
 		break;
 	case CONTROL_OUTPUTS:
@@ -2086,6 +2130,9 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 		runBackgroundTasks();
 		break;
 	case PROCESS_DATA:
+		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+			Serial.println(timeout_counter);
+		#endif
 		//WRITE ME LATER
 		break;
 	case CONTROL_OUTPUTS:
@@ -2121,6 +2168,9 @@ void runModeFunction_SW_RESETTING(byte currentState)
 		//WRITE ME LATER
 		break;
 	case PROCESS_DATA:
+		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+			Serial.println(timeout_counter);
+		#endif
 		//WRITE ME LATER
 		break;
 	case CONTROL_OUTPUTS:
@@ -2159,6 +2209,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 		//WRITE ME LATER
 		break;
 	case PROCESS_DATA:
+		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+			Serial.println(timeout_counter);
+		#endif
 		//WRITE ME LATER
 		break;
 	case CONTROL_OUTPUTS:
