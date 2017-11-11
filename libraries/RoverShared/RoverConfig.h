@@ -35,7 +35,8 @@
 		#define _GPS_SERIAL_ Serial3
 	#endif	
 	
-			
+
+	
 	#ifdef _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ //used to test all Serial algorithms by using just the local USB Serial interface	
 		#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
 		#define PC_USB_BAUD_RATE	9600 //used for outputting from UNO, Mega Arduinos to the PC via USB
@@ -141,6 +142,12 @@
 		
 	#endif	
 		
+	#ifdef _ANALOG_LED_BRIGHTNESS_SCALES_
+		#define _ONE_THIRD_BRIGHTNESS_ 85 // 255 / 3 * 1 = 85
+		#define _TWO_THIRDS_BRIGHTNESS_ 170 // 255 / 3 * 2 = 170
+		#define _THREE_THIRDS_BRIGHTNESS_ 85 // 255 / 3 * 3 = 255
+	#endif
+	
 		
 	//definition for RoverNavigation
 	#ifdef _ROVERNAVIGATIONDEFINITIONS

@@ -35,7 +35,7 @@
 		 //---------------------------------------------------	
 		 //Command Filter Option Flag(s)
 		 //---------------------------------------------------
-		 //Command Filter Options: Set 1: commandFilterOptionsSet1
+		 //Command Filter Options: Set 1: Used in commandFilterOptionsSet1_MAIN and commandFilterOptionsSet1_CMNC
 		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_							0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_					0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_				0x04
@@ -44,7 +44,7 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_									0x20
 		#define _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_						0x40
 		#define _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_				0x80
-		//Command Filter Options: Set 2: commandFilterOptionsSet2
+		//Command Filter Options: Set 2: Used in commandFilterOptionsSet2_MAIN, and commandFilterOptionsSet1_CMNC
 		#define _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_					0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_						0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_									0x04

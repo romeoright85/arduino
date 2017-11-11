@@ -135,10 +135,8 @@ get basic state machine infrastructure up
 
 
 	
-LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: the finish out the synchonization mode (just finished PROCESS DATA state, now work on CONTROL_OUTPUTS state)
+LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished SYNCHRONIZATION, now work on SECURING_LINK state. Start with runModeFunction_SECURING_LINK at READ_INPUTS.
 	[NEED TO DO]and move on to system error
-	[NEED TO DO]then work on secure link
-	
 	
 	
 	Note: pay attention to memory use!
@@ -146,19 +144,8 @@ LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: the finish out the synchoniz
 	
 	
 	now I have to write some of the functions
-					Update on commandDirector commands/functions
-
-					
-					
-					
-					[NEED TO DO]Start with what is allowed/not filtered out in the SYNCHRONIZATION mode for the DATA_FILTER state, see runModeFunction_SYNCHRONIZATION
-					
-					
-					
-							[NEED TO DO]Update the DATA_FILTER state with command options:							
 									
-										[NEED TO DO]need to write the message going out to CMNC with the CMD_TAG_SECURE_LINK_REQUEST, see commandDirector for sysgo									
-									
+						[NEED TO DO]need to write the message going out to CMNC with the CMD_TAG_SECURE_LINK_REQUEST, see commandDirector for sysgo									
 						[NEED TO DO]Also update //Flag(s) - Command Filter Options and setAllCommandsTo()
 						[NEED TO DO]Then update the PROCESS_DATA state for the SYNCHRONIZATION mode, with what happens once the commandDirector does it's tasks. (i.e. once a system ready or system go message has been received, then what is the next thing that should happen like main_msg_queue = SYSTEM_READY_STATUS, etc.)						
 						
@@ -1652,3 +1639,4 @@ Test Codes:
 	Note: Changed UNIV_BUFFER_SIZE from 120 down to 80 (GPS data may be 71 wide) to make sure there is enough memory. Can increase it slightly later as needed. Also changed ROVER_DATA_BUFFER_SIZE from 100 to 80 as well.
 	Note: Added two transmit char buffers and the memory usage went up from 51% (with 100 size univ buffer) to 54% (with 80 sized univ buffer).
 	
+[DONE]work on command director to deal with MAIN and CMNC data filter flag sets

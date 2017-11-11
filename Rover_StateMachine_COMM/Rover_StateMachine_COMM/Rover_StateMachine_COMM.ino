@@ -75,6 +75,10 @@ to test redirection from MAIN to MAIN (loopback) through COMM
 #ifndef _COMM_STATE_MACHINE_VARIABLES_
 #define _COMM_STATE_MACHINE_VARIABLES_ //For RoverConfig.h
 #endif
+#ifndef _ANALOG_LED_BRIGHTNESS_SCALES_
+#define _ANALOG_LED_BRIGHTNESS_SCALES_ //For RoverConfig.h
+#endif
+
 
 //#includes
 #include <RoverStatesAndModes.h>
@@ -151,11 +155,15 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 //============End Debugging: All Data Filtering Off
 //============Debugging: Turn off System Ready Status During Synchronization Mode
 //Uncomment in order to allow other data to be in the main_msg_queue instead of just System Status
-//#define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS
+#define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS
 //============End Debugging: All Data Filtering Off
 //============Debugging: Print timeout counter value
 //Uncomment in order to print timeout counter value
-#define _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+//#define _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+//============End Debugging: Print timeout counter value
+//============Debugging: Disable Comm Sync Timeout
+//Uncomment in order to print timeout counter value
+#define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT
 //============End Debugging: Print timeout counter value
 
 
@@ -170,10 +178,6 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 						  //ADD ANY OBJECTS TO THE RESET ARRAY
 						  //ADD ANY SW RESETTABLE VARIABLES INTO THE initializeVariables function
 
-						  //------------------From AnalogLedTester
-DelayCounter * heartLedCounter = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods, though can pass anything here as the heart led will automatically set it to the number of short delay periods (that is also passed to it as DELAY_10_PERIODS) anyways.
-HeartLed * heartLed = new HeartLed(HEART_LED_PIN, heartLedCounter, DELAY_10_PERIODS, DELAY_80_PERIODS);
-GlobalDelayTimer * mainTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, heartLedCounter);
 //------------------From PirSensorTest
 PirSensor * pirSensor = new PirSensor(PIR_PIN, &InterruptDispatch1);//Note: This is my custom function and not attachInterrupt (though it calls it)
 volatile boolean motionDetected;
@@ -214,11 +218,15 @@ byte flagSet_Error = _BTFG_NONE_;
 byte flagSet_MessageControl = _BTFG_NONE_;
 //Flag(s) - System Status
 byte flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
-//Flag(s) - Command Filter Options
-//Command Filter Options: Set 1
-byte commandFilterOptionsSet1 = _BTFG_NONE_;
-//Command Filter Options: Set 2
-byte commandFilterOptionsSet2 = _BTFG_NONE_;
+//Flag(s) - Command Filter Options - MAIN and CMNC each have their own set since they have separate data filters
+//Command Filter Options for CMNC: Set 1
+byte commandFilterOptionsSet1_CMNC = _BTFG_NONE_;
+//Command Filter Options for CMNC: Set 2
+byte commandFilterOptionsSet2_CMNC = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 1
+byte commandFilterOptionsSet1_MAIN = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 2
+byte commandFilterOptionsSet2_MAIN = _BTFG_NONE_;
 
 //Counters
 unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
@@ -235,6 +243,10 @@ RoverData * roverDataForCOMM;//pointer used access the RoverData which has the c
 RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
 RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data outgoing to MAIN
 
+//------------------From AnalogLedTester
+DelayCounter * heartLedCounter = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods, though can pass anything here as the heart led will automatically set it to the number of short delay periods (that is also passed to it as DELAY_10_PERIODS) anyways.
+HeartLed * heartLed = new HeartLed(HEART_LED_PIN, heartLedCounter, DELAY_10_PERIODS, DELAY_80_PERIODS);
+GlobalDelayTimer * heartLedTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, heartLedCounter);
 
 
 
@@ -305,7 +317,7 @@ byte currentMode = POWER_ON_AND_HW_RESET;
 RoverReset * resetArray[] = {
 	heartLedCounter,
 	heartLed,
-	mainTimer,
+	heartLedTimer,
 	pirSensor,
 	naviHwResetter,
 	auxiHwResetter,
@@ -365,9 +377,10 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 	//Timer(s)
 
 	//ADD TIMERS
-	mainTimer->Running();
+	heartLedTimer->Running();
 
 }
+
 
 
 
@@ -375,508 +388,509 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 void loop() {
 
 
+	
 
 	//State Machine
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		_PRINT_STATE_(F("STATE: RUN_HOUSEKEEPING_TASKS"));
+		case RUN_HOUSEKEEPING_TASKS:
+			_PRINT_STATE_(F("STATE: RUN_HOUSEKEEPING_TASKS"));
 
-		switch (currentMode)
-		{
-		case POWER_ON_AND_HW_RESET:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = RUN_HOUSEKEEPING_TASKS;//Set next aka queued state (since in RUN_HOUSEKEEPING_TASKS) to: RUN_HOUSEKEEPING_TASKS
-			currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*				
-			runModeFunction_POWER_ON_AND_HW_RESET(currentState);
+			switch (currentMode)
+			{
+				case POWER_ON_AND_HW_RESET:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = RUN_HOUSEKEEPING_TASKS;//Set next aka queued state (since in RUN_HOUSEKEEPING_TASKS) to: RUN_HOUSEKEEPING_TASKS
+					currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*				
+					runModeFunction_POWER_ON_AND_HW_RESET(currentState);
+					break;
+				case INITIALIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = RX_COMMUNICATIONS;// Set next state to RX_COMMUNICATIONS
+					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
+					runModeFunction_INITIALIZATION(currentState);
+					break;
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Keep the queuedState the same (unchanged)
+					//Keep the currentMode the same (unchanged)				
+					runModeFunction_SYNCHRONIZATION(currentState);
+					break;
+				case SECURING_LINK:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Keep the queuedState the same (unchanged)
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Keep the queuedState the same (unchanged)
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case HW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Keep the queuedState the same (unchanged)
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_HW_RESETTING(currentState);
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Keep the queuedState the same (unchanged)
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SYSTEM_WAKING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Keep the queuedState the same (unchanged)
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_WAKING(currentState);
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Keep the queuedState the same (unchanged)
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SW_RESETTING(currentState);
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Keep the queuedState the same (unchanged)
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing					
+					break;
+			}//end switch
+			 //Advance to the queued (saved) state
+			nextState = queuedState;//Setting the Queued State as the Next State while in RUN_HOUSEKEEPING_TASKS state. And then when this state ends, outside the switch case for states, the Next State will change into the Current State.
+									//This happens only when in the RUN_HOUSEKEEPING_TASKS state.
+									//All other states will always go to the RUN_HOUSEKEEPING_TASKS as it's next state in order to run housekeeping tasks with every loop.
 			break;
-		case INITIALIZATION:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = RX_COMMUNICATIONS;// Set next state to RX_COMMUNICATIONS
-			currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
-			runModeFunction_INITIALIZATION(currentState);
+		case RX_COMMUNICATIONS:
+			_PRINT_STATE_(F("STATE: RX_COMMUNICATIONS"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
+					break;
+				case SECURING_LINK:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SW_RESETTING(currentState);
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
+			}//end switch			
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
-		case SYNCHRONIZATION:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			//Keep the queuedState the same (unchanged)
-			//Keep the currentMode the same (unchanged)				
-			runModeFunction_SYNCHRONIZATION(currentState);
+		case DATA_VALIDATION:
+			_PRINT_STATE_(F("STATE: DATA_VALIDATION"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
+					queuedState = DATA_FILTER;
+					//Keep the currentMode the same (unchanged)						
+					runModeFunction_SYNCHRONIZATION(currentState);
+					break;
+				case SECURING_LINK:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = DATA_FILTER;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
+					queuedState = DATA_FILTER;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = DATA_FILTER;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
+					queuedState = DATA_FILTER;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = DATA_FILTER;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
-		case SECURING_LINK:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			//Keep the queuedState the same (unchanged)
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_SECURING_LINK(currentState);
+		case DATA_FILTER:
+			_PRINT_STATE_(F("STATE: DATA_FILTER"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = PROCESS_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
+					break;
+				case SECURING_LINK:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = READ_INPUTS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = READ_INPUTS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = PROCESS_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = PROCESS_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = READ_INPUTS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
-		case NORMAL_OPERATIONS:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			//Keep the queuedState the same (unchanged)
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_NORMAL_OPERATIONS(currentState);
+		case READ_INPUTS:
+			_PRINT_STATE_(F("STATE: READ_INPUTS"));
+			switch (currentMode)
+			{
+				case SECURING_LINK:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = PROCESS_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = PROCESS_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = PROCESS_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state		
 			break;
-		case HW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			//Keep the queuedState the same (unchanged)
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_HW_RESETTING(currentState);
+		case PROCESS_DATA:
+			_PRINT_STATE_(F("STATE: PROCESS_DATA"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SYNCHRONIZATION;//Default Next Mode. This may be overriden by the runModeFunction...()
+					runModeFunction_SYNCHRONIZATION(currentState);
+					break;
+				case SECURING_LINK:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SECURING_LINK;//Default Next Mode. This may be overriden by the runModeFunction...()
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = NORMAL_OPERATIONS;//Default Next Mode. This may be overriden by the runModeFunction...()
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SYSTEM_SLEEPING;//Default Next Mode. This may be overriden by the runModeFunction...()
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SW_RESETTING;//Default Next Mode. This may be overriden by the runModeFunction...()
+					runModeFunction_SW_RESETTING(currentState);
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					currentMode = SYSTEM_ERROR;//Default Next Mode. This may be overriden by the runModeFunction...()
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
-		case SYSTEM_SLEEPING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			//Keep the queuedState the same (unchanged)
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_SYSTEM_SLEEPING(currentState);
+		case CONTROL_OUTPUTS:
+			_PRINT_STATE_(F("STATE: CONTROL_OUTPUTS"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CREATE_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
+					break;
+				case SECURING_LINK:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CREATE_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CREATE_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case HW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CREATE_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_HW_RESETTING(currentState);
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CREATE_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SYSTEM_WAKING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CREATE_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CREATE_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CREATE_DATA;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
-		case SYSTEM_WAKING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			//Keep the queuedState the same (unchanged)
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_SYSTEM_WAKING(currentState);
+		case CREATE_DATA:
+			_PRINT_STATE_(F("STATE: CREATE_DATA"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
+					break;
+				case SECURING_LINK:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case HW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_HW_RESETTING(currentState);
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SYSTEM_WAKING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
-		case SW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			//Keep the queuedState the same (unchanged)
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_SW_RESETTING(currentState);
+		case TX_COMMUNICATIONS:
+			_PRINT_STATE_(F("STATE: TX_COMMUNICATIONS"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = RX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
+					break;
+				case SECURING_LINK:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					//FIX ME LATER					
+					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
+													//Keep the currentMode the same (unchanged)	
+					runModeFunction_SECURING_LINK(currentState);
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					//FIX ME LATER					
+					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
+													//Keep the currentMode the same (unchanged)	
+					runModeFunction_NORMAL_OPERATIONS(currentState);
+					break;
+				case HW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_HW_RESETTING(currentState);
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = RX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_SLEEPING(currentState);
+					break;
+				case SYSTEM_WAKING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = RX_COMMUNICATIONS;
+					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*		
+					runModeFunction_SYSTEM_WAKING(currentState);
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = RX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SW_RESETTING(currentState);
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					//FIX ME LATER					
+					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
+													//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYSTEM_ERROR(currentState);
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					runModeFunction_default();//no state needed, all states do the same thing
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			break;
-		case SYSTEM_ERROR:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			//Keep the queuedState the same (unchanged)
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_SYSTEM_ERROR(currentState);
-			break;
-		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+		default: //default state
+			_PRINT_STATE_(F("STATE: default"));
+			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes							
 			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-			runModeFunction_default();//no state needed, all states do the same thing					
-			break;
-		}//end switch
-		 //Advance to the queued (saved) state
-		nextState = queuedState;//Setting the Queued State as the Next State while in RUN_HOUSEKEEPING_TASKS state. And then when this state ends, outside the switch case for states, the Next State will change into the Current State.
-								//This happens only when in the RUN_HOUSEKEEPING_TASKS state.
-								//All other states will always go to the RUN_HOUSEKEEPING_TASKS as it's next state in order to run housekeeping tasks with every loop.
-		break;
-	case RX_COMMUNICATIONS:
-		_PRINT_STATE_(F("STATE: RX_COMMUNICATIONS"));
-		switch (currentMode)
-		{
-		case SYNCHRONIZATION:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = DATA_VALIDATION;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYNCHRONIZATION(currentState);
-			break;
-		case SECURING_LINK:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = DATA_VALIDATION;
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_SECURING_LINK(currentState);
-			break;
-		case NORMAL_OPERATIONS:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = DATA_VALIDATION;
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_NORMAL_OPERATIONS(currentState);
-			break;
-		case SYSTEM_SLEEPING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = DATA_VALIDATION;
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_SYSTEM_SLEEPING(currentState);
-			break;
-		case SW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = DATA_VALIDATION;
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_SW_RESETTING(currentState);
-			break;
-		case SYSTEM_ERROR:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = DATA_VALIDATION;
-			//Keep the currentMode the same (unchanged)
-			runModeFunction_SYSTEM_ERROR(currentState);
-			break;
-		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
-		}//end switch			
-		nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-		break;
-	case DATA_VALIDATION:
-		_PRINT_STATE_(F("STATE: DATA_VALIDATION"));
-		switch (currentMode)
-		{
-		case SYNCHRONIZATION:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
-			queuedState = DATA_FILTER;
-			//Keep the currentMode the same (unchanged)						
-			runModeFunction_SYNCHRONIZATION(currentState);
-			break;
-		case SECURING_LINK:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = DATA_FILTER;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SECURING_LINK(currentState);
-			break;
-		case NORMAL_OPERATIONS:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
-			queuedState = DATA_FILTER;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_NORMAL_OPERATIONS(currentState);
-			break;
-		case SYSTEM_SLEEPING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = DATA_FILTER;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_SLEEPING(currentState);
-			break;
-		case SW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
-			queuedState = DATA_FILTER;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SW_RESETTING(currentState);
-			break;
-		case SYSTEM_ERROR:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = DATA_FILTER;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_ERROR(currentState);
-			break;
-		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-			runModeFunction_default();//no state needed, all states do the same thing
-			break;
-		}//end switch	
-		nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-		break;
-	case DATA_FILTER:
-		_PRINT_STATE_(F("STATE: DATA_FILTER"));
-		switch (currentMode)
-		{
-		case SYNCHRONIZATION:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-			queuedState = PROCESS_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYNCHRONIZATION(currentState);
-			break;
-		case SECURING_LINK:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = READ_INPUTS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SECURING_LINK(currentState);
-			break;
-		case NORMAL_OPERATIONS:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = READ_INPUTS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_NORMAL_OPERATIONS(currentState);
-			break;
-		case SYSTEM_SLEEPING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = PROCESS_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_SLEEPING(currentState);
-			break;
-		case SW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = PROCESS_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SW_RESETTING(currentState);
-			break;
-		case SYSTEM_ERROR:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = READ_INPUTS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_ERROR(currentState);
-			break;
-		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-			runModeFunction_default();//no state needed, all states do the same thing
-			break;
-		}//end switch	
-		nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-		break;
-	case READ_INPUTS:
-		_PRINT_STATE_(F("STATE: READ_INPUTS"));
-		switch (currentMode)
-		{
-		case SECURING_LINK:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = PROCESS_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SECURING_LINK(currentState);
-			break;
-		case NORMAL_OPERATIONS:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = PROCESS_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_NORMAL_OPERATIONS(currentState);
-			break;
-		case SYSTEM_ERROR:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = PROCESS_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_ERROR(currentState);
-			break;
-		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-			runModeFunction_default();//no state needed, all states do the same thing
-			break;
-		}//end switch	
-		nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state		
-		break;
-	case PROCESS_DATA:
-		_PRINT_STATE_(F("STATE: PROCESS_DATA"));
-		switch (currentMode)
-		{
-		case SYNCHRONIZATION:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-			currentMode = SYNCHRONIZATION;//Default Next Mode. This may be overriden by the runModeFunction...()
-			runModeFunction_SYNCHRONIZATION(currentState);
-			break;
-		case SECURING_LINK:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-			currentMode = SECURING_LINK;//Default Next Mode. This may be overriden by the runModeFunction...()
-			runModeFunction_SECURING_LINK(currentState);
-			break;
-		case NORMAL_OPERATIONS:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-			currentMode = NORMAL_OPERATIONS;//Default Next Mode. This may be overriden by the runModeFunction...()
-			runModeFunction_NORMAL_OPERATIONS(currentState);
-			break;
-		case SYSTEM_SLEEPING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-			queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-			currentMode = SYSTEM_SLEEPING;//Default Next Mode. This may be overriden by the runModeFunction...()
-			runModeFunction_SYSTEM_SLEEPING(currentState);
-			break;
-		case SW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-			currentMode = SW_RESETTING;//Default Next Mode. This may be overriden by the runModeFunction...()
-			runModeFunction_SW_RESETTING(currentState);
-			break;
-		case SYSTEM_ERROR:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-			currentMode = SYSTEM_ERROR;//Default Next Mode. This may be overriden by the runModeFunction...()
-			runModeFunction_SYSTEM_ERROR(currentState);
-			break;
-		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-			runModeFunction_default();//no state needed, all states do the same thing
-			break;
-		}//end switch	
-		nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-		break;
-	case CONTROL_OUTPUTS:
-		_PRINT_STATE_(F("STATE: CONTROL_OUTPUTS"));
-		switch (currentMode)
-		{
-		case SYNCHRONIZATION:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CREATE_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYNCHRONIZATION(currentState);
-			break;
-		case SECURING_LINK:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CREATE_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SECURING_LINK(currentState);
-			break;
-		case NORMAL_OPERATIONS:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CREATE_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_NORMAL_OPERATIONS(currentState);
-			break;
-		case HW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CREATE_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_HW_RESETTING(currentState);
-			break;
-		case SYSTEM_SLEEPING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CREATE_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_SLEEPING(currentState);
-			break;
-		case SYSTEM_WAKING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CREATE_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_SLEEPING(currentState);
-			break;
-		case SW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CREATE_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SW_RESETTING(currentState);
-			break;
-		case SYSTEM_ERROR:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CREATE_DATA;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_ERROR(currentState);
-			break;
-		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-			runModeFunction_default();//no state needed, all states do the same thing
-			break;
-		}//end switch	
-		nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-		break;
-	case CREATE_DATA:
-		_PRINT_STATE_(F("STATE: CREATE_DATA"));
-		switch (currentMode)
-		{
-		case SYNCHRONIZATION:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = TX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYNCHRONIZATION(currentState);
-			break;
-		case SECURING_LINK:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = TX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SECURING_LINK(currentState);
-			break;
-		case NORMAL_OPERATIONS:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = TX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_NORMAL_OPERATIONS(currentState);
-			break;
-		case HW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = TX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_HW_RESETTING(currentState);
-			break;
-		case SYSTEM_SLEEPING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = TX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_SLEEPING(currentState);
-			break;
-		case SYSTEM_WAKING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = TX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_SLEEPING(currentState);
-			break;
-		case SW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = TX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SW_RESETTING(currentState);
-			break;
-		case SYSTEM_ERROR:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = TX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_ERROR(currentState);
-			break;
-		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-			runModeFunction_default();//no state needed, all states do the same thing
-			break;
-		}//end switch	
-		nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-		break;
-	case TX_COMMUNICATIONS:
-		_PRINT_STATE_(F("STATE: TX_COMMUNICATIONS"));
-		switch (currentMode)
-		{
-		case SYNCHRONIZATION:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = RX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYNCHRONIZATION(currentState);
-			break;
-		case SECURING_LINK:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			//FIX ME LATER					
-			queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
-											//Keep the currentMode the same (unchanged)	
-			runModeFunction_SECURING_LINK(currentState);
-			break;
-		case NORMAL_OPERATIONS:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			//FIX ME LATER					
-			queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
-											//Keep the currentMode the same (unchanged)	
-			runModeFunction_NORMAL_OPERATIONS(currentState);
-			break;
-		case HW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = TX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_HW_RESETTING(currentState);
-			break;
-		case SYSTEM_SLEEPING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = RX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_SLEEPING(currentState);
-			break;
-		case SYSTEM_WAKING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = RX_COMMUNICATIONS;
-			currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*		
-			runModeFunction_SYSTEM_WAKING(currentState);
-			break;
-		case SW_RESETTING:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = RX_COMMUNICATIONS;
-			//Keep the currentMode the same (unchanged)	
-			runModeFunction_SW_RESETTING(currentState);
-			break;
-		case SYSTEM_ERROR:
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			//FIX ME LATER					
-			queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
-											//Keep the currentMode the same (unchanged)	
-			runModeFunction_SYSTEM_ERROR(currentState);
-			break;
-		default: //default mode
-				 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-			runModeFunction_default();//no state needed, all states do the same thing
-			break;
-		}//end switch	
-		nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-		break;
-	default: //default state
-		_PRINT_STATE_(F("STATE: default"));
-		//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes							
-		queuedState = CONTROL_OUTPUTS;
-		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
-		nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
 	}//end switch
 
 
@@ -921,11 +935,15 @@ void initializeVariables()
 	//Flag(s) - System Status
 	flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
 	//Flag(s) - Command Filter Options
-	//Command Filter Options: Set 1
-	commandFilterOptionsSet1 = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
-	//Command Filter Options: Set 2
-	commandFilterOptionsSet2 = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
-
+	//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
+	//Command Filter Options for CMNC: Set 1
+	commandFilterOptionsSet1_CMNC = _BTFG_NONE_;
+	//Command Filter Options for CMNC: Set 2
+	commandFilterOptionsSet2_CMNC = _BTFG_NONE_;
+	//Command Filter Options for MAIN: Set 1
+	commandFilterOptionsSet1_MAIN = _BTFG_NONE_;
+	//Command Filter Options for MAIN: Set 2
+	commandFilterOptionsSet2_MAIN = _BTFG_NONE_;
 
 	//Counters
 	timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
@@ -958,8 +976,7 @@ void startBackgroundTasks()
 }//end of startBackgroundTasks()
 void runBackgroundTasks()
 {
-	//run background tasks
-	//WRITE ME LATER
+	//run background tasks	
 }//end of runBackgroundTasks()
 byte rxData(RoverComm * roverComm, byte roverCommType) {
 
@@ -1087,7 +1104,7 @@ void txData(char * txData, byte roverCommType)
 	}//end else
 }//end of txData()
 
-void commandDirector(RoverData * roverDataPointer)
+void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
 
 	//Note: This function varies for different Arduinos
@@ -1098,7 +1115,8 @@ void commandDirector(RoverData * roverDataPointer)
 
 	
 	#ifdef _DEBUG_TURN_OFF_ALL_DATA_FILTERS
-		setAllCommandFiltersTo(true);
+		setAllCommandFiltersTo(true, ROVERCOMM_CMNC);//for CMNC
+		setAllCommandFiltersTo(true, ROVERCOMM_MAIN);//for MAIN
 	#endif
 
 	byte originRoverCommType;//holds the received data's origin
@@ -1125,23 +1143,33 @@ void commandDirector(RoverData * roverDataPointer)
 
 	//=====Non-Conflicting Functions					
 	//Run lower priority functions here. (i.e. system ready msgs)
-
-	//Main System Ready
-	if (commandTag == CMD_TAG_SYSTEM_READY_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))
+	//Example: If it's Main System Ready, and either it's from MAIN and the MAIN data filter for System Ready is set or it's from CMNC and the CMNc data filter for System Ready is set
+	//Main System Ready 
+	if (commandTag == CMD_TAG_SYSTEM_READY_STATUS &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))
+			)
+		)
 	{
 
 		//so it can stop checking for this message since the MAIN system is known to be ready
 		//Set MAIN System Ready flag to true		
 		BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_);
 		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code		
-		timeout_counter = 0;//reset counter (for future use)
+		timeout_counter = 0;//reset counter (for future use)		
 	}//end if
 
 
 	 //=====Conflicting Functions Ordered By Priority
 	 //Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 	 //All HW Reset Request
-	if (commandTag == CMD_TAG_ALL_HW_RESET_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_))
+	else if (commandTag == CMD_TAG_ALL_HW_RESET_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_))
+			)
+		)	 
 	{
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = HW_RESETTING;//Set mode to HW_RESETTING *begin*				
@@ -1149,14 +1177,24 @@ void commandDirector(RoverData * roverDataPointer)
 		main_msg_queue = CMD_TAG_HW_IS_RESETTING;
 	}//end else if
 	 //COMM SW Request
-	else if (commandTag == CMD_TAG_COMM_SW_RESET_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_))
+	else if (commandTag == CMD_TAG_COMM_SW_RESET_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_))
+			)
+		)	 	 
 	{
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*	
 
 	}//end else if
 	 //ALL SW Request
-	else if (commandTag == CMD_TAG_ALL_SW_RESET_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_ALL_SW_RESET_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_))
+			)
+		)		 
 	{
 
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
@@ -1166,7 +1204,12 @@ void commandDirector(RoverData * roverDataPointer)
 		timeout_counter = 0;//reset counter (for future use)
 	}//end else if
 	 //Generic Health Error
-	else if (commandTag == CMD_TAG_GENERIC_HEALTH_STATUS_ERROR && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_GENERIC_HEALTH_STATUS_ERROR &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_))
+			)
+		)		 
 	{
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*				
@@ -1177,12 +1220,16 @@ void commandDirector(RoverData * roverDataPointer)
 		timeout_counter = 0;//reset counter (for future use)
 	}//end else if	
 	 //System Go (from MAIN)
-	else if (commandTag == CMD_TAG_SYSTEM_GO_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_SYSTEM_GO_STATUS &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_))
+			)
+		)	
 	{
 
 		//Set the system go flag
 		BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_);
-	
 	
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		//if for some reason the system ready message was no received before the system go message, go ahead and make it true as any system go must also mean system ready. this doesn't really matter, but just doing it for consistency since the flags are global.
@@ -1210,7 +1257,12 @@ void commandDirector(RoverData * roverDataPointer)
 
 	}//end else if
 	 //Break Secure Link
-	else if (commandTag == CMD_TAG_BREAK_SECURE_LINK && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_BREAK_SECURE_LINK &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_))
+			)
+		)	
 	{
 
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
@@ -1223,7 +1275,12 @@ void commandDirector(RoverData * roverDataPointer)
 	}//end else if		
 	 //Establish Secure Link
 	 //This checks to see if the receivedCommand matches any of the known values. Else it's an invalid command
-	else if (commandTag == CMD_TAG_ESTABLISH_SECURE_LINK && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_))//FIX ME LATER, change the actual send command to compare later (instead of "esl" - establish secure link)
+	else if (commandTag == CMD_TAG_ESTABLISH_SECURE_LINK &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_))
+			)
+		)		 
 	{
 
 
@@ -1238,7 +1295,12 @@ void commandDirector(RoverData * roverDataPointer)
 		cmnc_msg_queue = CMD_TAG_ESTABLISH_SECURE_LINK;//tells CMNC link is now secured
 	}//end else if
 	 //COMM Sleep Request (usually from MAIN)
-	else if (commandTag == CMD_TAG_COMM_SLEEP_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_COMM_SLEEP_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_))
+			)
+		)		 
 	{
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft			
 		//Pre-sleep tasks - Setting up wake tasks before going to sleep
@@ -1247,21 +1309,26 @@ void commandDirector(RoverData * roverDataPointer)
 		currentMode = SYSTEM_WAKING;//Set mode to SYSTEM_WAKING *begin*
 		cmnc_msg_queue = CMD_TAG_SYSTEM_IS_WAKING;
 		timeout_counter = 0; //reset for future use				
-							 //Run other pre-sleep tasks. (i.e. end software serial, as needed)		
-							 //WRITE LATER!!!!
-							 /*
-							 End software serial??
-							 Put COMM to sleep
-							 Don't switch states yet. Go to sleep in the current PROCESS_DATA state.
-							 The Xbee/Serial will wake up the sleep.
-							 Run wake up tasks. (i.e. begin SW serial as needed, etc.)
-							 Then it will go to RUN_HOUSEKEEPING_TASKS, while in SYSTEM_WAKING
-							 Then it will go to the next state, which will default to CONTROL_OUTPUTS
-							 */
+		 //Run other pre-sleep tasks. (i.e. end software serial, as needed)		
+		 //WRITE LATER!!!!
+		 /*
+		 End software serial??
+		 Put COMM to sleep
+		 Don't switch states yet. Go to sleep in the current PROCESS_DATA state.
+		 The Xbee/Serial will wake up the sleep.
+		 Run wake up tasks. (i.e. begin SW serial as needed, etc.)
+		 Then it will go to RUN_HOUSEKEEPING_TASKS, while in SYSTEM_WAKING
+		 Then it will go to the next state, which will default to CONTROL_OUTPUTS
+		 */
 
 	}//end else if		
 	 //All Sleep Request
-	else if (commandTag == CMD_TAG_ALL_SLEEP_REQUEST && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_ALL_SLEEP_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_))
+			)
+		)			 
 	{
 
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
@@ -1271,7 +1338,12 @@ void commandDirector(RoverData * roverDataPointer)
 		timeout_counter = 0; //reset for future use				
 	}//end else if			
 	 //PIR Status
-	else if (commandTag == CMD_TAG_PIR_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_PIR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_))
+			)
+		)		 
 	{
 
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
@@ -1294,12 +1366,22 @@ void commandDirector(RoverData * roverDataPointer)
 
 	}//end else if			
 	 //Received Error Messages
-	else if (commandTag == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_))//FIX ME LATER, change the actual send command to compare later
+	else if (commandTag == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_))
+			)
+		)		 	 
 	{
 		cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//When COMM receives and error, always send it out to the CMNC so the base station knows there's an error	
 	}//end else if					
 	 //Hi Command - DEBUG
-	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_))
+	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HI_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HI_))
+			)
+		)		 	 
 	{
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
@@ -1321,7 +1403,12 @@ void commandDirector(RoverData * roverDataPointer)
 
 	}//end if
 	 //Bye Command - DEBUG
-	else if (commandTag == CMD_TAG_DEBUG_BYE_TEST_MSG && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
+	else if (commandTag == CMD_TAG_DEBUG_BYE_TEST_MSG &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_BYE_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
+			)
+		)		
 	{
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
@@ -1341,7 +1428,10 @@ void commandDirector(RoverData * roverDataPointer)
 
 	}//end else if
 	 //Invalid - DEBUG
-	else if (BooleanBitFlags::flagIsSet(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))
+	else if (
+			(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_INVALID_) )
+			|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))
+		)		
 	{
 
 		//Based on which Arduino sent the command, that same Arduino will get a response
@@ -1503,28 +1593,49 @@ void setAllSystemStatusFlagsTo(boolean choice)
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_COMMUNICATIONS_SECURE_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_, choice);
 }//end of setAllSystemStatusFlagsTo()
-void setAllCommandFiltersTo(boolean choice)
+void setAllCommandFiltersTo(boolean choice, byte roverComm)
 {
 	//Note: Right now this function doesn't discriminate where the commands are coming from. So if they're all set to true, in theory, for example CMNC can "inject" or "spoof" a command that looks like it's coming from somewhere else.
 	//This is a bug that can be fixed later if needed. Keeping it simple for now.
 
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_, choice);
+	if(roverComm == ROVERCOMM_CMNC)
+	{
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_, choice);
 
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_, choice);
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);//DEBUG
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);//DEBUG
-	BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);//DEBUG
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);//DEBUG
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);//DEBUG
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);//DEBUG
+	}
+	else if(roverComm == ROVERCOMM_MAIN)
+	{
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_, choice);
 
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);//DEBUG
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);//DEBUG
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);//DEBUG
+	}
 }//end of setAllCommands()
 void redirectData(RoverComm * roverComm)
 {
@@ -1588,13 +1699,14 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		runPORTasks();
-		break;
-	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+		case RUN_HOUSEKEEPING_TASKS:
+			runPORTasks();
+			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch
 }//end of runStateFunction_POWER_ON_AND_HW_RESET
 void runModeFunction_INITIALIZATION(byte currentState)
@@ -1603,18 +1715,19 @@ void runModeFunction_INITIALIZATION(byte currentState)
 
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		//initialize / reinitialize all variables
-		initializeVariables();
-		//start background tasks
-		startBackgroundTasks();
-		//initialize/reset shared counter before use
-		timeout_counter = 0;
-		break;
-	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		case RUN_HOUSEKEEPING_TASKS:
+			//initialize / reinitialize all variables
+			initializeVariables();
+			//start background tasks
+			startBackgroundTasks();
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch
 }//end of runModeFunction_INITIALIZATION
 void runModeFunction_SYNCHRONIZATION(byte currentState)
@@ -1622,227 +1735,198 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 	_PRINT_MODE_(F("MODE: SYNCHRONIZATION"));
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		runBackgroundTasks();
-		break;
-	case RX_COMMUNICATIONS:
+		case RUN_HOUSEKEEPING_TASKS:
+			runBackgroundTasks();
+			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+			break;
+		case RX_COMMUNICATIONS:
 
-		//skip for CMNC
+			//skip for CMNC
 
-		//rxData() from MAIN
-		//1. Reset status flag
-		ch2Status = DATA_STATUS_NOT_READY;
-		//2. Clear all Rx'ed data before getting new data				
-		roverComm_Ch2->clearRxData();
-		//3. Receive data
-		ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function		break;
-	case DATA_VALIDATION:
+			//rxData() from MAIN
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function		break;
+		case DATA_VALIDATION:
 
-		//skip for CMNC
+			//skip for CMNC
 
-		//parseAndValidateData() from MAIN
-		//Process/validate the data that was received
-		if (ch2Status == DATA_STATUS_READY)
-		{
-			//If the data is valid as well as parses it, set the status as such
-			if (roverComm_Ch2->parseAndValidateData())
+			//parseAndValidateData() from MAIN
+			//Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
 			{
-				ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				//If the data is valid as well as parses it, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}
+				//Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}
 			}
-			//Else the data is invalid, so set the status as such
-			else
-			{
-				ch2Status = DATA_STATUS_INVALID;
-			}
-		}
-		//Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+			//Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 
-		break;
-	case DATA_FILTER:
+			break;
+		case DATA_FILTER:
 
 
-		//Reset/clear flags (no data for COMM)
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
-		//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
-		//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+			//Reset/clear flags (no data for COMM)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 
-
-
-		//Transmit data and/or execute command(s)
-
-		//Skip for CMNC (since the link isn't secure yet)
-		//Note: no reset (hw or sw) allowed from CMNC yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
-		//no redirections from CMNC
-
-
-		//For data from MAIN, transmit the data to it's proper destination if it was meant
-		//For another Arduino or take any actions if the data was meant for this unit, COMM
-
-
-		if (ch2Status == DATA_STATUS_VALID)
-		{
-			//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-
-
-			#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
-						//Allow redirections for debugging purposes
-						dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set data was for COMM flag to true if it was for this Arduino
-			#else
-						//Set no redirections from MAIN	
-						dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set data was for COMM flag to true if it was for this Arduino
-			#endif
-																														  //Note: this is a local .ino function
-
-																														  /*
-																														  Set filter to throw away all MAIN data except:
-																														  system ready message(s) from MAIN
-																														  system go message(s) from MAIN
-																														  hw reset requests message(s) from MAIN
-																														  sw reset requests message(s) from MAIN
-																														  generic status error message(s) from MAIN (redirected from AUXI)
-																														  */
-
-																														  //Set Command Filter Options
-																														  //First initialize all command choices to false
-			setAllCommandFiltersTo(false);
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_CMNC);//for CMNC
+			setAllCommandFiltersTo(false, ROVERCOMM_MAIN);//for MAIN
 			//Then enable the allowed commands:
-
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
-
-
-		}//end if
-		 //else the data was invalid or not ready, so do nothing
+			//For CMNC
+				//leave false
+			//For MAIN
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
 
 
-		break;
-	case PROCESS_DATA:
-	
-		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
-			Serial.println(timeout_counter);
-		#endif
-		
-		//Skip Process of PIR status
-		//Skip Process CMNC command/data
-		//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-		//Note: Either you should get no data, hw reset, sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
-		//Remember, only  hw reset, sw reset, generic health status error, or system ready or system go message(s) can pass the data filter.
+			//Transmit data and/or execute command(s)
+
+			//Skip for CMNC (since the link isn't secure yet)
+			//Note: no reset (hw or sw) allowed from CMNC yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
+			//no redirections from CMNC
 
 
+			//For data from MAIN, transmit the data to it's proper destination if it was meant
+			//For another Arduino or take any actions if the data was meant for this unit, COMM
 
-		//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
-		//Note: If system go or system ready msg has been received from MAIN, see the commandDirector for more info.
 
-
-		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
-		{
-			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
-			commandDirector(roverDataCh2_COMM);
-		}//end if
-		
-		
-		
-		//If System Go (from MAIN to COMM) was not received (Note: Messages received could still have been sys ready or no message at all)
-		if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_))
-		{
-			#ifndef _DEBUG_TURN_OFF_SYSTEM_READY_STATUS		 
-				main_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;//tells MAIN it's ready to synchronize
-			#endif
-			//If no system go msg from MAIN received && main_system_ready == false (MAIN system not ready yet to set the main_system_ready flag and have not received a system go to switch states yet, then keep incrementing the timeout counter)
-			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_))
+			if (ch2Status == DATA_STATUS_VALID)
 			{
-				timeout_counter++;
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+
+
+				#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
+							//Allow redirections for debugging purposes
+							dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set set the "data was for COMM flag" to true if it was for this Arduino
+				#else
+							//Set no redirections from MAIN	
+							dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set set the "data was for COMM flag" to true if it was for this Arduino
+				#endif
+				//Note: this is a local .ino function
+
+				/*
+				Set filter to throw away all MAIN data except:
+				system ready message(s) from MAIN
+				system go message(s) from MAIN
+				hw reset requests message(s) from MAIN
+				sw reset requests message(s) from MAIN
+				generic status error message(s) from MAIN (redirected from AUXI)
+				*/
+
+
+
 			}//end if
-		}//end if		
-		if(timeout_counter >= COMM_SYNC_TIMEOUT_VALUE)
-		{
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-			cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
-			//set sync_error = true
-			BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SYNC_ERROR_);			
-			//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
-			//initialize/reset shared counter before use
-			 timeout_counter = 0;	
-		}//end if	
-		break;
-	case CONTROL_OUTPUTS:
-		//LAST LEFT OFF HERE
-		//WRITE ME LATER
-
-		/*
-		Control Heart LED, heartbeat
-		Mode: SYNCHRONIZATION
-		set next state to CREATE_DATA
-		go to RUN_HOUSEKEEPING_TASKS
-		*/
+			 //else the data was invalid or not ready, so do nothing
 
 
-		break;
-	case CREATE_DATA:
-		//WRITE ME LATER
-
-		//Creates data for MAIN
-		if (main_msg_queue != CMD_TAG_NO_MSG)
-		{
-			createDataFromQueueFor(ROVERCOMM_MAIN);
-		}//end if
-		 /*
-		 if main_msg_queue == SYSTEM_READY_STATUS (the COMM, aka this arduino, is up and running, so let MAIN know)
-		 create system ready msg for MAIN (tells MAIN it's ready to synchronize)
-		 Mode: SYNCHRONIZATION
-		 set next state to TX_COMMUNICATIONS
-		 go to RUN_HOUSEKEEPING_TASKS
-		 */
-
-
-		 //Skip creating data for CMNC
-
-		 //Create data for MAIN			
-		 //createDataFromQueueFor(ROVERCOMM_MAIN);
-		 //createDataFromQueueFor(ROVERCOMM_CMNC);					
-
-		break;
-	case TX_COMMUNICATIONS:
-
-		//Sends data to MAIN
-		if (main_msg_queue != CMD_TAG_NO_MSG)
-		{
-			txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
-		}//end if
+			break;
+		case PROCESS_DATA:
+		
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			
+			//Skip Process of PIR status
+			//Skip Process CMNC command/data
+			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+			//Note: Either you should get no data, hw reset, sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
+			//Remember, only  hw reset, sw reset, generic health status error, or system ready or system go message(s) can pass the data filter.
 
 
 
-	#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
-			 //Allow redirections for debugging purposes
-			redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
-	#else
-			 //No redirection in the SYNCHRONIZATION mode				
-	#endif
+			//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+			//Note: If system go or system ready msg has been received from MAIN, see the commandDirector for more info.
 
 
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh2_COMM, ROVERCOMM_MAIN);
+			}//end if
+			
+			
+			
+			//If System Go (from MAIN to COMM) was not received (Note: Messages received could still have been sys ready or no message at all)
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_))
+			{
+				#ifndef _DEBUG_TURN_OFF_SYSTEM_READY_STATUS //normally the main_msg_queue will send the CMD_TAG_SYSTEM_READY_STATUS. Can disable it for debugging purposes
+					main_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;//tells MAIN it's ready to synchronize, it should be normally on. only turn off when in debugging to reduce clutter
+				#endif
+				//If no system go msg from MAIN received && main_system_ready == false (MAIN system not ready yet to set the main_system_ready flag and have not received a system go to switch states yet, then keep incrementing the timeout counter)
+				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_))
+				{
+					timeout_counter++;
+				}//end if
+			}//end if		
+			#ifndef _DEBUG_DISABLE_COMM_SYNC_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes
+				if(timeout_counter >= COMM_SYNC_TIMEOUT_VALUE)
+				{
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
+					//set sync_error = true
+					BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SYNC_ERROR_);			
+					//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
+					//initialize/reset shared counter before use
+					timeout_counter = 0;	
+				}//end if	
+			#endif
+			break;
+		case CONTROL_OUTPUTS:
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
 
-		 //clears message queue(s) and redirect flags		
-		cmnc_msg_queue = CMD_TAG_NO_MSG;
-		main_msg_queue = CMD_TAG_NO_MSG;
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
-
-
-
-
-
-		break;
-	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if
+			 //Skip creating data for CMNC
+			break;
+		case TX_COMMUNICATIONS:
+			//Sends data to MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+			}//end if
+			#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
+				 //Allow redirections for debugging purposes
+				redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+			#else
+				 //No redirection in the SYNCHRONIZATION mode				
+			#endif			
+			//clears message queue(s) and redirect flags		
+			cmnc_msg_queue = CMD_TAG_NO_MSG;
+			main_msg_queue = CMD_TAG_NO_MSG;
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+			
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch	
 }//end of runModeFunction_SYNCHRONIZATION()
 void runModeFunction_SECURING_LINK(byte currentState)
@@ -1850,160 +1934,154 @@ void runModeFunction_SECURING_LINK(byte currentState)
 	_PRINT_MODE_(F("MODE: SECURING_LINK"));
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		runBackgroundTasks();
-		break;
-	case RX_COMMUNICATIONS:
+		case RUN_HOUSEKEEPING_TASKS:
+			runBackgroundTasks();
+			heartLed->ledSetLevel(_TWO_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
+			break;
+		case RX_COMMUNICATIONS:
 
-		//rxData() from CMNC
-		//1. Reset status flag
-		ch1Status = DATA_STATUS_NOT_READY;
-		//2. Clear all Rx'ed data before getting new data				
-		roverComm_Ch1->clearRxData();
+			//rxData() from CMNC
+			//1. Reset status flag
+			ch1Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch1->clearRxData();
+			//3. Receive data
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_CMNC);//Note: this is a local .ino function
 
-		//3. Receive data
-		ch1Status = rxData(roverComm_Ch1, ROVERCOMM_CMNC);//Note: this is a local .ino function
+			//rxData() from MAIN
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
 
-														  //rxData() from MAIN
-														  //1. Reset status flag
-		ch2Status = DATA_STATUS_NOT_READY;
-		//2. Clear all Rx'ed data before getting new data				
-		roverComm_Ch2->clearRxData();
-		//3. Receive data
-		ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+			break;
+		case DATA_VALIDATION:
 
-		break;
-	case DATA_VALIDATION:
-
-		//parseAndValidateData() from CMNC
-		//Process/validate the data that was received
-		if (ch1Status == DATA_STATUS_READY)
-		{
-			//If the data is valid, set the status as such
-			if (roverComm_Ch1->parseAndValidateData())
+			//parseAndValidateData() from CMNC
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
 			{
-				ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
 			}//end if
-			 //Else the data is invalid, so set the status as such
-			else
-			{
-				ch1Status = DATA_STATUS_INVALID;
-			}//end else
-		}//end if
-		 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 
 
-		 //parseAndValidateData() from MAIN
-		 //Process/validate the data that was received
-		if (ch2Status == DATA_STATUS_READY)
-		{
-			//If the data is valid, set the status as such
-			if (roverComm_Ch2->parseAndValidateData())
+			 //parseAndValidateData() from MAIN
+			 //Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
 			{
-				ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
 			}//end if
-			 //Else the data is invalid, so set the status as such
-			else
-			{
-				ch2Status = DATA_STATUS_INVALID;
-			}//end else
-		}//end if
-		 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 
 
 
-		break;
-	case DATA_FILTER:
+			break;
+		case DATA_FILTER:
 
-		//Reset/clear flags (no data for COMM)
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
-		//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
-//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
-		BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+			//Reset/clear flags (no data for COMM)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 
-		//Transmit data and/or execute command
-		//For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
-		//or take any actions if the data was meant for this unit, COMM
-		if (ch2Status == DATA_STATUS_VALID)
-		{
-			//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-			//Set no redirections from MAIN	
-			//Note: this is a local .ino function
-
-			dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set data was for COMM flag to true if it was for this Arduino
-
-																														  /*
-																														  Set filter to throw away all CMNC data except:
-																														  establish secure link message(s) from CMNC
-																														  Note: no reset (hw or sw) allowed from CMNC yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
-																														  */
-
-																														  //Set Command Filter Options
-																														  //First initialize all command choices to false
-			setAllCommandFiltersTo(false);
+			
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_CMNC);//for CMNC
+			setAllCommandFiltersTo(false, ROVERCOMM_MAIN);//for MAIN
 			//Then enable the allowed commands:
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_);
+			//For CMNC
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_);
+			//For MAIN
+			//	No filter on MAIN data. (Allow all data from MAIN)
+			//No commands from MAIN are filtered, so set all to true.
+			setAllCommandFiltersTo(true, ROVERCOMM_MAIN);
 
-		}//end if
+			
+			
+			//Transmit data and/or execute command
+			//For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, COMM
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Set no redirections from MAIN	
+				//Note: this is a local .ino function
 
+				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
 
+				/*
+				Set filter to throw away all CMNC data except:
+				establish secure link message(s) from CMNC
+				Note: no reset (hw or sw) allowed from CMNC yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
+				*/
 
-		 //For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
-		 //or take any actions if the data was meant for this unit, COMM		
-		if (ch2Status == DATA_STATUS_VALID)
-		{
-			//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-			//Set no redirections from MAIN	
-			//Note: this is a local .ino function
-			dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set data was for COMM flag to true if it was for this Arduino
+			}//end if
 
+			//For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, COMM		
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Set no redirections from MAIN	
+				//Note: this is a local .ino function
+				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
 
-																														  /*
-																														  No filter on MAIN data. (Allow all data from MAIN)
-																														  */
+			}//end if
+			//else the data was invalid or not ready, so do nothing				
+			
+			break;
+		case READ_INPUTS:
+//LEFT OFF HERE
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
 
-																														  //Set Command Filter Options
-																														  //No commands from MAIN are filtered, so set all to true.
-			setAllCommandFiltersTo(true);
+			redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+			redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
 
-		}//end if
-		 //else the data was invalid or not ready, so do nothing						
-		break;
-	case READ_INPUTS:
-		//WRITE ME LATER
-		//LEFT OFF HERE
-
-		break;
-	case PROCESS_DATA:
-		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
-			Serial.println(timeout_counter);
-		#endif
-		
-		//WRITE ME LATER
-		break;
-	case CONTROL_OUTPUTS:
-		//WRITE ME LATER
-		break;
-	case CREATE_DATA:
-		//WRITE ME LATER
-		break;
-	case TX_COMMUNICATIONS:
-		//WRITE ME LATER
-
-		redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
-		redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
-
-
-
-
-
-		break;
-	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch	
 }//end of runModeFunction_SECURING_LINK()
 void runModeFunction_NORMAL_OPERATIONS(byte currentState)
@@ -2011,54 +2089,46 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 	_PRINT_MODE_(F("MODE: NORMAL_OPERATIONS"));
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		runBackgroundTasks();
-		break;
-	case RX_COMMUNICATIONS:
-		//WRITE ME LATER
-		break;
-	case DATA_VALIDATION:
-		//WRITE ME LATER
-		break;
-	case DATA_FILTER:
-		//WRITE ME LATER
-		break;
-	case READ_INPUTS:
-		//WRITE ME LATER
-		break;
-	case PROCESS_DATA:
-		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
-			Serial.println(timeout_counter);
-		#endif
-		//WRITE ME LATER
-		break;
-	case CONTROL_OUTPUTS:
-		//WRITE ME LATER
-		break;
-	case CREATE_DATA:
-		//WRITE ME LATER
-		break;
-	case TX_COMMUNICATIONS:
-		//WRITE ME LATER
+		case RUN_HOUSEKEEPING_TASKS:
+			runBackgroundTasks();
+			heartLed->breathing();//run the heart led in breathing mode
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case READ_INPUTS:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
 
 
-		redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
-		redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+			redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+			redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
 
-
-
-
-
-
-
-
-
-
-		break;
-	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch		
 }//end of runModeFunction_NORMAL_OPERATIONS()
 void runModeFunction_HW_RESETTING(byte currentState)
@@ -2066,22 +2136,23 @@ void runModeFunction_HW_RESETTING(byte currentState)
 	_PRINT_MODE_(F("MODE: HW_RESETTING"));
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		runBackgroundTasks();
-		break;
-	case CONTROL_OUTPUTS:
-		//WRITE ME LATER
-		break;
-	case CREATE_DATA:
-		//WRITE ME LATER
-		break;
-	case TX_COMMUNICATIONS:
-		//WRITE ME LATER
-		break;
-	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+		case RUN_HOUSEKEEPING_TASKS:
+			runBackgroundTasks();
+			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch	
 }//end of runModeFunction_HW_RESETTING()
 void runModeFunction_SYSTEM_SLEEPING(byte currentState)
@@ -2089,37 +2160,38 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 	_PRINT_MODE_(F("MODE: SYSTEM_SLEEPING"));
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		runBackgroundTasks();
-		break;
-	case RX_COMMUNICATIONS:
-		//WRITE ME LATER
-		break;
-	case DATA_VALIDATION:
-		//WRITE ME LATER
-		break;
-	case DATA_FILTER:
-		//WRITE ME LATER
-		break;
-	case PROCESS_DATA:
-		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
-			Serial.println(timeout_counter);
-		#endif
-		//WRITE ME LATER
-		break;
-	case CONTROL_OUTPUTS:
-		//WRITE ME LATER
-		break;
-	case CREATE_DATA:
-		//WRITE ME LATER
-		break;
-	case TX_COMMUNICATIONS:
-		//WRITE ME LATER
-		break;
-	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+		case RUN_HOUSEKEEPING_TASKS:
+			runBackgroundTasks();
+			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch	
 }//end of runModeFunction_SYSTEM_SLEEPING()
 void runModeFunction_SYSTEM_WAKING(byte currentState)
@@ -2127,28 +2199,29 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 	_PRINT_MODE_(F("MODE: SYSTEM_WAKING"));
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		runBackgroundTasks();
-		break;
-	case PROCESS_DATA:
-		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
-			Serial.println(timeout_counter);
-		#endif
-		//WRITE ME LATER
-		break;
-	case CONTROL_OUTPUTS:
-		//WRITE ME LATER
-		break;
-	case CREATE_DATA:
-		//WRITE ME LATER
-		break;
-	case TX_COMMUNICATIONS:
-		//WRITE ME LATER
-		break;
-	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+		case RUN_HOUSEKEEPING_TASKS:
+			runBackgroundTasks();
+			heartLed->ledSetLevel(_TWO_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
+			break;
+		case PROCESS_DATA:
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch	
 }//end of runModeFunction_SYSTEM_WAKING()
 void runModeFunction_SW_RESETTING(byte currentState)
@@ -2156,37 +2229,38 @@ void runModeFunction_SW_RESETTING(byte currentState)
 	_PRINT_MODE_(F("MODE: SW_RESETTING"));
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		runBackgroundTasks();
-		break;
-	case RX_COMMUNICATIONS:
-		//WRITE ME LATER
-		break;
-	case DATA_VALIDATION:
-		//WRITE ME LATER
-		break;
-	case DATA_FILTER:
-		//WRITE ME LATER
-		break;
-	case PROCESS_DATA:
-		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
-			Serial.println(timeout_counter);
-		#endif
-		//WRITE ME LATER
-		break;
-	case CONTROL_OUTPUTS:
-		//WRITE ME LATER
-		break;
-	case CREATE_DATA:
-		//WRITE ME LATER
-		break;
-	case TX_COMMUNICATIONS:
-		//WRITE ME LATER
-		break;
-	default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+		case RUN_HOUSEKEEPING_TASKS:
+			runBackgroundTasks();
+			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		default: //default state
+				 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch	
 }//end of runModeFunction_SW_RESETTING()
 void runModeFunction_SYSTEM_ERROR(byte currentState)
@@ -2194,40 +2268,41 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 	_PRINT_MODE_(F("MODE: SYSTEM_ERROR"));
 	switch (currentState)
 	{
-	case RUN_HOUSEKEEPING_TASKS:
-		runBackgroundTasks();
-		break;
-	case RX_COMMUNICATIONS:
-		//WRITE ME LATER
-		break;
-	case DATA_VALIDATION:
-		//WRITE ME LATER
-		break;
-	case DATA_FILTER:
-		//WRITE ME LATER
-		break;
-	case READ_INPUTS:
-		//WRITE ME LATER
-		break;
-	case PROCESS_DATA:
-		#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
-			Serial.println(timeout_counter);
-		#endif
-		//WRITE ME LATER
-		break;
-	case CONTROL_OUTPUTS:
-		//WRITE ME LATER
-		break;
-	case CREATE_DATA:
-		//WRITE ME LATER
-		break;
-	case TX_COMMUNICATIONS:
-		//WRITE ME LATER
-		break;
-	default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
-			 //This code should never execute, if it does, there is a logical or programming error
-		runModeFunction_default();//no state needed, all states do the same thing
-		break;
+		case RUN_HOUSEKEEPING_TASKS:
+			runBackgroundTasks();
+			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
+			break;
+		case RX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		case DATA_VALIDATION:
+			//WRITE ME LATER
+			break;
+		case DATA_FILTER:
+			//WRITE ME LATER
+			break;
+		case READ_INPUTS:
+			//WRITE ME LATER
+			break;
+		case PROCESS_DATA:
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			//WRITE ME LATER
+			break;
+		case CONTROL_OUTPUTS:
+			//WRITE ME LATER
+			break;
+		case CREATE_DATA:
+			//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS:
+			//WRITE ME LATER
+			break;
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+				 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
 	}//end switch	
 }//end of runModeFunction_SYSTEM_ERROR()
 void runModeFunction_default()
@@ -2236,7 +2311,8 @@ void runModeFunction_default()
 	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
 												  //No switch case needed for the states, all states do the same thing
 	cmnc_msg_queue = CMD_TAG_INVALID_STATE_ERROR_STATUS;
-
+	
+	heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 
 	//Set Invalid State Error Flag
 	//Note: The Invalid State Error Flag cann only be cleared with a sw reset or hw reset
