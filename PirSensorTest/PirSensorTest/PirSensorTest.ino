@@ -6,7 +6,6 @@ void InterruptDispatch1();
 
 //Global Variables
 PirSensor * pirSensor = new PirSensor(PIR_PIN, &InterruptDispatch1);//Note: This is my custom function and not attachInterrupt (though it calls it)
-volatile boolean motionDetected;
 
 
 RoverReset * resetArray[] = { 

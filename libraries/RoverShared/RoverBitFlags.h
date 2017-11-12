@@ -26,6 +26,7 @@
 		#define _BTFG_MAIN_SYSTEM_GO_								0x02
 		#define _BTFG_COMMUNICATIONS_SECURE_						0x04
 		#define _BTFG_FIRST_TRANSMISSION_								0x08
+		#define _BTFG_PIR_MOTION_DETECTED_								0x10
 		//---------------------------------------------------
 		
 		

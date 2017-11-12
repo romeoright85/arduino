@@ -102,8 +102,8 @@ to test redirection from MAIN to MAIN (loopback) through COMM
 
 
 //============Function Prototypes
-void InterruptDispatch1();//For PirSensorTest
-void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "InterruptDispatch1", but had a name conflict
+void InterruptDispatch_PIRSensor();//For PirSensorTest
+void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 						  //============End of Function Prototypes
 
 
@@ -165,6 +165,10 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 //Uncomment in order to print timeout counter value
 #define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT
 //============End Debugging: Print timeout counter value
+//============Debugging: Disable Secure Link Timeout
+//Uncomment in order to print timeout counter value
+#define _DEBUG_DISABLE_SECURE_LINK_TIMEOUT
+//============End Debugging: Print timeout counter value
 
 
 
@@ -178,16 +182,14 @@ void InterruptDispatch2();//For WakeUpTester_COMM, //DEBUG LATER, Was "Interrupt
 						  //ADD ANY OBJECTS TO THE RESET ARRAY
 						  //ADD ANY SW RESETTABLE VARIABLES INTO THE initializeVariables function
 
-//------------------From PirSensorTest
-PirSensor * pirSensor = new PirSensor(PIR_PIN, &InterruptDispatch1);//Note: This is my custom function and not attachInterrupt (though it calls it)
-volatile boolean motionDetected;
+
 //------------------From RoverHwResetTester_COMM
 RoverHwReset * naviHwResetter = new RoverHwReset(NAVI_HW_RESET_CTRL_PIN);
 RoverHwReset * auxiHwResetter = new RoverHwReset(AUXI_HW_RESET_CTRL_PIN);
 RoverHwReset * mainHwResetter = new RoverHwReset(MAIN_HW_RESET_CTRL_PIN);
 //------------------From WakeUpTester_COMM
 //Controls the self wakeup of COMM
-RoverSleeperServer * sleeperCOMM = new RoverSleeperServer(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch2);//COMM Wakeup Pin Control
+RoverSleeperServer * sleeperCOMM = new RoverSleeperServer(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch_WakeUpArduino);//COMM Wakeup Pin Control
 RoverSleeperClient * sleeperMAIN = new RoverSleeperClient(MAIN_WAKEUP_CTRL_PIN);
 
 
@@ -233,7 +235,8 @@ unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MA
 unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
 
 
-
+//------------------From PirSensorTest
+PirSensor * pirSensor = new PirSensor(PIR_PIN, &InterruptDispatch_PIRSensor);//Note: This is my custom function and not attachInterrupt (though it calls it)
 
 
 
@@ -933,7 +936,7 @@ void initializeVariables()
 	//Flag(s) - Message Controls
 	flagSet_MessageControl = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
 	//Flag(s) - System Status
-	flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
+	flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset. This assumes all other flags are default low as well.
 	//Flag(s) - Command Filter Options
 	//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
 	//Command Filter Options for CMNC: Set 1
@@ -1701,7 +1704,7 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS:
 			runPORTasks();
-			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -1722,7 +1725,7 @@ void runModeFunction_INITIALIZATION(byte currentState)
 			startBackgroundTasks();
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
-			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -1737,7 +1740,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS:
 			runBackgroundTasks();
-			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		case RX_COMMUNICATIONS:
 
@@ -1852,9 +1855,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Note: Either you should get no data, hw reset, sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
 			//Remember, only  hw reset, sw reset, generic health status error, or system ready or system go message(s) can pass the data filter.
 
-
-
-			//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+			
 			//Note: If system go or system ready msg has been received from MAIN, see the commandDirector for more info.
 
 
@@ -1865,6 +1866,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			}//end if
 			
 			
+			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 			
 			//If System Go (from MAIN to COMM) was not received (Note: Messages received could still have been sys ready or no message at all)
 			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_))
@@ -1895,8 +1897,6 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			break;
 		case CREATE_DATA:
-			//WRITE ME LATER
-
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
@@ -1936,7 +1936,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS:
 			runBackgroundTasks();
-			heartLed->ledSetLevel(_TWO_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
+			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		case RX_COMMUNICATIONS:
 
@@ -2055,29 +2055,169 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			
 			break;
 		case READ_INPUTS:
-//LEFT OFF HERE
-			//WRITE ME LATER
+			if(pirSensor->monitorMotion())//if the PIR detected motion
+			{
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
+			}//end if
+			//Clear the PIR Sensor
+			pirSensor->reset();//reset the pir sensor once samples are processed
 			break;
 		case PROCESS_DATA:
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
+//left off here			
+			//Process PIR status
+			//PLACEHOLDER: Maybe add in later to send PIR status to MAIN if needed.
+			//For now do nothing.			
+			//Clear PIR Status Flag
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_PIR_MOTION_DETECTED_);
+			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+			//Note: Either you should get no data, generic health status errors, or secure link data. as everything else was filtered out
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh1_COMM, ROVERCOMM_CMNC);
+			}//end if
 			
-			//WRITE ME LATER
+			
+			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+			//(the mode and next state may be overridden by MAIN data if required. i.e. error, etc. But under normal circumstances, it shouldn't.)
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh2_COMM, ROVERCOMM_MAIN);
+			}//end if
+						
+			
+			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)		
+			
+			//Keep requesting for a secure link from CMNC until one is received
+			if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_COMMUNICATIONS_SECURE_))//it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it justs needs to sync up again
+			{
+				cmnc_msg_queue = CMD_TAG_SECURE_LINK_REQUEST;//tells CMNC it's ready for a secure link
+				timeout_counter++;
+				
+			}//end if
+			#ifndef _DEBUG_DISABLE_SECURE_LINK_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes				
+				if(timeout_counter >= SECURE_LINK_TIMEOUT_VALUE)
+				{
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					cmnc_msg_queue == CMD_TAG_SECURE_LINK_ERROR_STATUS;
+					//set secure_link_error = true
+					BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SECURE_LINK_ERROR_);			
+					//(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
+					//initialize/reset shared counter before use
+					timeout_counter = 0;	
+				}//end if
+			#endif			
 			break;
 		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			break;
 		case CREATE_DATA:
-			//WRITE ME LATER
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if
+			 //Creates data for CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_CMNC);
+			}//end if
 			break;
 		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
+			//Interweave primary transmissions and redirection, to allow the receiving end have time to process each incoming data
+	
 
+//LEFT OFF HERE
+	/*			
+			
+					if first_transmission == true						
+						//send the first set of messages
+						if main_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to MAIN
+						end if					
+						if cmnc_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to CMNC
+						end if
+						//check to see if there are any second messages to send
+						if redirectToMAIN == true || redirectToCMNC == true
+							first_transmission = false //clear the flag
+							//reset the counter before use
+							transmission_delay_cnt = 0
+							Mode: SECURING_LINK
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						else//if there is no second transmission, move on
+							clear message queues and redirect flags
+								cmnc_msg_queue = CMD_TAG_NO_MSG
+								main_msg_queue = CMD_TAG_NO_MSG					
+								redirectToCMNC = false
+								redirectToMAIN = false							
+							Mode: SECURING_LINK
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS							
+						end if
+					else			
+						if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
+							//Send the second set of messages
+							if redirectToMAIN == true
+								Redirect external msg(s) to MAIN
+							end if				
+							if redirectToCMNC == true
+								Redirect external msg(s) to CMNC
+							end if					
+							clear message queues and redirect flags
+								cmnc_msg_queue = CMD_TAG_NO_MSG
+								main_msg_queue = CMD_TAG_NO_MSG					
+								redirectToCMNC = false
+								redirectToMAIN = false		
+							first_transmission = true //reset the flag
+							Mode: SECURING_LINK
+							set next state to RX_COMMUNICATIONS
+							go to RUN_HOUSEKEEPING_TASKS	
+						else
+							transmission_delay_cnt++//increment the transmission delay counter
+							Mode: SECURING_LINK
+							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+							go to RUN_HOUSEKEEPING_TASKS	
+						end if
+					end if
+*/
+					
+/*			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			//Sends data to CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_CMNC, ROVERCOMM_CMNC);
+			}//end if
+			//Sends data to MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+			}//end if			
 			redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
-			redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
-
+			redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)			
+			//clears message queue(s) and redirect flags		
+			cmnc_msg_queue = CMD_TAG_NO_MSG;
+			main_msg_queue = CMD_TAG_NO_MSG;
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 			break;
+			
+*/			
+			
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
@@ -2109,7 +2249,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
-			//WRITE ME LATER
+			//WRITE ME LATER	
 			break;
 		case CONTROL_OUTPUTS:
 			//WRITE ME LATER
@@ -2331,17 +2471,14 @@ void runModeFunction_default()
 
 
 
-void InterruptDispatch1() {
+void InterruptDispatch_PIRSensor() {
+	pirSensor->isrUpdate();
+}//emd of InterruptDispatch_PIRSensor()
 
-	//WRITE ME LATER!!
-
-	//pirSensor->isrUpdate();
-}//emd of InterruptDispatch1()
-
-void InterruptDispatch2() {
+void InterruptDispatch_WakeUpArduino() {
 	//Have to keep the ISR short else the program won't work
 	sleeperCOMM->isrUpdate();//update the awake flag to reflect current status
-}//end of InterruptDispatch2()
+}//end of InterruptDispatch_WakeUpArduino()
 
 
 
