@@ -88,19 +88,9 @@ get basic state machine infrastructure up
 			
 			
 				[WHERE LEFT OFF 0] With Rover_StateMachine_COMM
-				Note: The last thing I did before stopping was:
 							-Remember to uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ in RoverConfig. only MAIN is allowed to chat in the beginning and CMNC is shut off until the unit is sychronized. Then CMNC can send to COMM but wil lget no response until links are secured.
 							-When debugging, check the boolean bit flag as well as the bit flag set. As you might forgot to update both when copying and pasting and using templates.
 								-Also make sure not to confuse Status Flags vs. filter option flags
-							-getting the the system go message to work and switch from sync mode to securing link mode. You still need to go back and write all the other sync mode code.
-							-creating the framework for all commands in the commandDirector. And it's ordered by priority.
-							-created flags for all commands so the DATA_FILTER state can filter stuff in the future
-							-Note:
-								Could not create a roverCommand object for CMNC and MAIN. The program was running out of memory and couldn't afford another roverCommand object. (I tested this fact by not adding a second object, and adding it without even using it, and the program crashed). The program goes into error mode/state or just freezes when it crashes.
-								Could also not have txMsgBufferCMNC and txMsgBufferMAIN. There isn't enough memory for both.
-									Program size: 13,832 bytes (used 43% of a 32,256 byte maximum) (7.72 secs)
-									Minimum Memory Usage: 1169 bytes (57% of a 2048 byte maximum)
-							
 					
 					
 					
@@ -135,7 +125,7 @@ get basic state machine infrastructure up
 
 
 	
-LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished SYNCHRONIZATION, now work on SECURING_LINK state. Start with runModeFunction_SECURING_LINK at READ_INPUTS.
+LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished SYNCHRONIZATION, now work on SECURING_LINK state. Start with runModeFunction_SECURING_LINK at TX_COMMUNICATIONS.
 	[NEED TO DO]and move on to system error
 	
 	
@@ -169,9 +159,14 @@ LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished SYNCHRONIZATIO
 
 
 
-
-
-
+-11/19
+Rover_StateMachine_COMM (in progress)
+11/19-12/16
+Rover_StateMachine_MAIN (get the complex communications going)
+12/17-12/31
+Rover_StateMachine_NAVI (get the rover rolling)
+1/1-1/28
+Rover_StateMachine_AUXI (then get the leds and sensors working)
 
 
 
@@ -180,32 +175,6 @@ LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished SYNCHRONIZATIO
 
 
 	
-
-	then start adding the functions to do stuff (aka the business logic) next
-	then repeat for all other modes
-	get rovers to take commands
-	get the rover to control motors
-	then get the rover to follow navigation
-	add the health sensors later on
-
-
-
-Note: when doing rx data for other arduinos, you'll have to refactor it like you did for COMM
-	byte vs boolean status
-	splitting out rx data, validate data, data director, etc.
-	An option to disable/enable redirect (if no redirect, then only local command processing only for that channel)
-	creating a flag for each data channel for the dataWasFor (i.e. dataWasForCOMM), since the commands are split in between states now and global variable flags are needed to keep track in between the states
-	data director now passes back a boolean, which is the dataWasFor... variable
-	etc.
-
-
-plan to write code in four blocks
-	Led block
-	State block
-	Nav block
-	Obj avoid block			
-			
-			
 	
 put code to measure loop time, then use it as the message delay between a message and a redirect
 
@@ -223,54 +192,6 @@ Create all state machine frameworks
 Put in commands
 test a loopback
 then put other objects in
-
-
-
-	Start writing state machine classes for each of the 4 arduinos (about one weekend for each arduino)
-		Set up state machine code structure, then work on object avoidance, then directional sensor input (like gps, imu, encoder), then health sensors, then commands
-
-	[IN PROGRESS]RoverProgram_AUXI.ino 
-		RoverHeathAndStatus(takes in temp, voltage, photo, and current data and determines if the system needs to shut down or can continue) - Finite State Machine			
-	[IN PROGRESS]RoverProgram_MAIN.ino
-		RoverCaptain - Finite State Machine (considers and prioritizes input from the RoverNavigator and RoutePlanner, and RoverHeathAndStatus and decides which heading the rover should go and for how long, then it sends commands to RoverNavigator_NAVI)		
-	RoverProgram_NAVI.ino 		
-		RoverNavigator (takes in sensor data and plans a course to prevent a collision. Then navigates by sending actions to RoverDriver) - Finite State Machine
-			RoverDriver - State Design Pattern (controls the motor controller and gimbal) 
-		RoutePlanner (takes current position via gps data and compass heading and next waypoint via longitude and latitude and recommends heading and distance)
-			Waypoint
-	RoverProgram_COMM.ino
-		RoverCommunicator - Finite State Machine (transmits, processes, and receives messages commands. Also controls Arduino COMM's functionality)
-			RoverSecuredCommLink - State Machine (allows transmission and reception of messages after it verifies the connection is secure)			
-	All Arduinos:
-		Use the CommandCreator class to send commands messages from one Arduino to the next.
-			[only unit tested so far, will have to test more during integration]
-			[IN PROGRESS]Reference: Also see the spreadsheet "Command Creator..." at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
-			
-	
-	
-Features:
-Return Home
-Breadcrumbs
-Mission Route Based On A Chain Of Waypoints
-Full Manual Drive	
-Manual Drive	with Avoidance Assistance
-Full Auto Drive
-RF Steath mode where the rover transmits nothing
-
-
-		
-	 
-Write state machine	
-come up with prioritization excel spreadsheet table to know what gets the most priority
-	voltage/current sensors (if over voltage or current, shut down)
-	-ultrasonic/ir (avoid obstacles while moving)
-	-gps for navigation
-	-laser
-	-led for indication
-	-etc (manual vs. auto control/override)
--work on state machine for priority/arbitration
--work on state machine for navigation	
-
 
 
 	
@@ -1590,6 +1511,82 @@ Test Codes:
 						[DONE]CommTester_AUXI
 					
 
+					
+					
+[OLD PLAN, NO LONGER USED]
+	then start adding the functions to do stuff (aka the business logic) next
+	then repeat for all other modes
+	get rovers to take commands
+	get the rover to control motors
+	then get the rover to follow navigation
+	add the health sensors later on
+
+
+
+Note: when doing rx data for other arduinos, you'll have to refactor it like you did for COMM
+	byte vs boolean status
+	splitting out rx data, validate data, data director, etc.
+	An option to disable/enable redirect (if no redirect, then only local command processing only for that channel)
+	creating a flag for each data channel for the dataWasFor (i.e. dataWasForCOMM), since the commands are split in between states now and global variable flags are needed to keep track in between the states
+	data director now passes back a boolean, which is the dataWasFor... variable
+	etc.
+
+
+plan to write code in four blocks
+	Led block
+	State block
+	Nav block
+	Obj avoid block			
+			
+			
+
+	Start writing state machine classes for each of the 4 arduinos (about one weekend for each arduino)
+		Set up state machine code structure, then work on object avoidance, then directional sensor input (like gps, imu, encoder), then health sensors, then commands
+
+	[IN PROGRESS]RoverProgram_AUXI.ino 
+		RoverHeathAndStatus(takes in temp, voltage, photo, and current data and determines if the system needs to shut down or can continue) - Finite State Machine			
+	[IN PROGRESS]RoverProgram_MAIN.ino
+		RoverCaptain - Finite State Machine (considers and prioritizes input from the RoverNavigator and RoutePlanner, and RoverHeathAndStatus and decides which heading the rover should go and for how long, then it sends commands to RoverNavigator_NAVI)		
+	RoverProgram_NAVI.ino 		
+		RoverNavigator (takes in sensor data and plans a course to prevent a collision. Then navigates by sending actions to RoverDriver) - Finite State Machine
+			RoverDriver - State Design Pattern (controls the motor controller and gimbal) 
+		RoutePlanner (takes current position via gps data and compass heading and next waypoint via longitude and latitude and recommends heading and distance)
+			Waypoint
+	RoverProgram_COMM.ino
+		RoverCommunicator - Finite State Machine (transmits, processes, and receives messages commands. Also controls Arduino COMM's functionality)
+			RoverSecuredCommLink - State Machine (allows transmission and reception of messages after it verifies the connection is secure)			
+	All Arduinos:
+		Use the CommandCreator class to send commands messages from one Arduino to the next.
+			[only unit tested so far, will have to test more during integration]
+			[IN PROGRESS]Reference: Also see the spreadsheet "Command Creator..." at K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+			
+	
+	
+Features:
+Return Home
+Breadcrumbs
+Mission Route Based On A Chain Of Waypoints
+Full Manual Drive	
+Manual Drive	with Avoidance Assistance
+Full Auto Drive
+RF Steath mode where the rover transmits nothing
+
+
+		
+	 
+Write state machine	
+come up with prioritization excel spreadsheet table to know what gets the most priority
+	voltage/current sensors (if over voltage or current, shut down)
+	-ultrasonic/ir (avoid obstacles while moving)
+	-gps for navigation
+	-laser
+	-led for indication
+	-etc (manual vs. auto control/override)
+-work on state machine for priority/arbitration
+-work on state machine for navigation	
+
+
+
 		
 -------------------State Machine for COMM
 
@@ -1640,3 +1637,16 @@ Test Codes:
 	Note: Added two transmit char buffers and the memory usage went up from 51% (with 100 size univ buffer) to 54% (with 80 sized univ buffer).
 	
 [DONE]work on command director to deal with MAIN and CMNC data filter flag sets
+
+
+Note: The last thing I did before stopping was:						
+							[DONE]-getting the the system go message to work and switch from sync mode to securing link mode. You still need to go back and write all the other sync mode code.
+							[DONE]-creating the framework for all commands in the commandDirector. And it's ordered by priority.
+							[DONE]-created flags for all commands so the DATA_FILTER state can filter stuff in the future
+							-Note:
+								Could not create a roverCommand object for CMNC and MAIN. The program was running out of memory and couldn't afford another roverCommand object. (I tested this fact by not adding a second object, and adding it without even using it, and the program crashed). The program goes into error mode/state or just freezes when it crashes.
+								Could also not have txMsgBufferCMNC and txMsgBufferMAIN. There isn't enough memory for both.
+									Program size: 13,832 bytes (used 43% of a 32,256 byte maximum) (7.72 secs)
+									Minimum Memory Usage: 1169 bytes (57% of a 2048 byte maximum)
+							
+				

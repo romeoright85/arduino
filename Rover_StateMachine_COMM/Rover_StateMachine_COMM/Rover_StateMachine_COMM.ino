@@ -468,10 +468,11 @@ void loop() {
 					runModeFunction_default();//no state needed, all states do the same thing					
 					break;
 			}//end switch
+			
 			 //Advance to the queued (saved) state
 			nextState = queuedState;//Setting the Queued State as the Next State while in RUN_HOUSEKEEPING_TASKS state. And then when this state ends, outside the switch case for states, the Next State will change into the Current State.
-									//This happens only when in the RUN_HOUSEKEEPING_TASKS state.
-									//All other states will always go to the RUN_HOUSEKEEPING_TASKS as it's next state in order to run housekeeping tasks with every loop.
+			//This happens only when in the RUN_HOUSEKEEPING_TASKS state.
+			//All other states will always go to the RUN_HOUSEKEEPING_TASKS as it's next state in order to run housekeeping tasks with every loop.
 			break;
 		case RX_COMMUNICATIONS:
 			_PRINT_STATE_(F("STATE: RX_COMMUNICATIONS"));
@@ -836,7 +837,7 @@ void loop() {
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					//FIX ME LATER					
 					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
-													//Keep the currentMode the same (unchanged)	
+					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SECURING_LINK(currentState);
 					break;
 				case NORMAL_OPERATIONS:
@@ -884,7 +885,9 @@ void loop() {
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
+			
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
+			
 			break;
 		default: //default state
 			_PRINT_STATE_(F("STATE: default"));
@@ -2066,7 +2069,6 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
-//left off here			
 			//Process PIR status
 			//PLACEHOLDER: Maybe add in later to send PIR status to MAIN if needed.
 			//For now do nothing.			
@@ -2130,94 +2132,61 @@ void runModeFunction_SECURING_LINK(byte currentState)
 		case TX_COMMUNICATIONS:
 			//Interweave primary transmissions and redirection, to allow the receiving end have time to process each incoming data
 	
-
-//LEFT OFF HERE
-	/*			
+			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
+			{							
+				//1. Sends data to CMNC
+				if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_CMNC, ROVERCOMM_CMNC);
+				}//end if
+				//2. Sends data to MAIN
+				if (main_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+				}//end if				
+				//3. Check to see if there are any second messages to send
+				if (
+					BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_)
+					|| BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_)
+					)		
+				{
+					BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_);//clear the flag
+					//reset the counter before use
+					transmission_delay_cnt = 0;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
+				}//end if
+				else//there is no second transmission, move on
+				{
+					//clears message queue(s) and redirect flags		
+					cmnc_msg_queue = CMD_TAG_NO_MSG;
+					main_msg_queue = CMD_TAG_NO_MSG;
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+				}//end else
+			}//end if	
+			else//this is not the first transmission
+			{
 			
-					if first_transmission == true						
-						//send the first set of messages
-						if main_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to MAIN
-						end if					
-						if cmnc_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to CMNC
-						end if
-						//check to see if there are any second messages to send
-						if redirectToMAIN == true || redirectToCMNC == true
-							first_transmission = false //clear the flag
-							//reset the counter before use
-							transmission_delay_cnt = 0
-							Mode: SECURING_LINK
-							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
-							go to RUN_HOUSEKEEPING_TASKS	
-						else//if there is no second transmission, move on
-							clear message queues and redirect flags
-								cmnc_msg_queue = CMD_TAG_NO_MSG
-								main_msg_queue = CMD_TAG_NO_MSG					
-								redirectToCMNC = false
-								redirectToMAIN = false							
-							Mode: SECURING_LINK
-							set next state to RX_COMMUNICATIONS
-							go to RUN_HOUSEKEEPING_TASKS							
-						end if
-					else			
-						if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
-							//Send the second set of messages
-							if redirectToMAIN == true
-								Redirect external msg(s) to MAIN
-							end if				
-							if redirectToCMNC == true
-								Redirect external msg(s) to CMNC
-							end if					
-							clear message queues and redirect flags
-								cmnc_msg_queue = CMD_TAG_NO_MSG
-								main_msg_queue = CMD_TAG_NO_MSG					
-								redirectToCMNC = false
-								redirectToMAIN = false		
-							first_transmission = true //reset the flag
-							Mode: SECURING_LINK
-							set next state to RX_COMMUNICATIONS
-							go to RUN_HOUSEKEEPING_TASKS	
-						else
-							transmission_delay_cnt++//increment the transmission delay counter
-							Mode: SECURING_LINK
-							set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
-							go to RUN_HOUSEKEEPING_TASKS	
-						end if
-					end if
-*/
+				if(transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY) //once the desired delay has been reached, continue with the code
+				{
+					//Send the second set of messages
+					redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+					redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)	
+					//clears message queue(s) and redirect flags		
+					cmnc_msg_queue = CMD_TAG_NO_MSG;
+					main_msg_queue = CMD_TAG_NO_MSG;
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);			
 					
-/*			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			//Sends data to CMNC
-			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
-			{
-				txData(txMsgBuffer_CMNC, ROVERCOMM_CMNC);
-			}//end if
-			//Sends data to MAIN
-			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
-			}//end if			
-			redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
-			redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)			
-			//clears message queue(s) and redirect flags		
-			cmnc_msg_queue = CMD_TAG_NO_MSG;
-			main_msg_queue = CMD_TAG_NO_MSG;
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_);
+				}//end if
+				else//the desired delay has not been reached yet, so just increment the count
+				{
+					transmission_delay_cnt++;
+				}//end else			
+			}//end else
 			break;
-			
-*/			
-			
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
