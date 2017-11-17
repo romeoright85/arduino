@@ -389,13 +389,14 @@ COMM:
 						set next state to CONTROL_OUTPUTS					
 					go to RUN_HOUSEKEEPING_TASKS
 				NORMAL_OPERATIONS		
-				
+					Process PIR status
+					
 					Categorize all commands/data from all sources.					
 					Sort based on priority.
 					Allow for all non-conflicting commands to run.
 					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 					
-					Process PIR status							
+												
 					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 					Unless overridden,

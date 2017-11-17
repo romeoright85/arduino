@@ -125,7 +125,7 @@ get basic state machine infrastructure up
 
 
 	
-LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished NORMAL_OPERATIONS mode, now start on HW_RESETTING. Start by writing runModeFunction_HW_RESETTING at CONTROL_OUTPUTS.
+LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished SECURING_LINK mode, now start on NORMAL_OPERATIONS. Start by writing runModeFunction_NORMAL_OPERATIONS at RX_COMMUNICATIONS.
 	
 	
 	Note: pay attention to memory use!
