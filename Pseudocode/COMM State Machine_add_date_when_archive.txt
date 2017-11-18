@@ -554,16 +554,16 @@ COMM:
 					go to RUN_HOUSEKEEPING_TASKS							
 			CONTROL_OUTPUTS			
 				POWER_ON_AND_HW_RESET
-					do nothing
+					Control Heart LED, full 3/3 brightness
 				INITIALIZATION
-					do nothing		
+					Control Heart LED, full 3/3 brightness
 				SYNCHRONIZATION
-					Control Heart LED, heartbeat
+					Control Heart LED, full 3/3 brightness
 					Mode: SYNCHRONIZATION
 					set next state to CREATE_DATA
 					go to RUN_HOUSEKEEPING_TASKS						
 				SECURING_LINK
-					Control Heart LED, heartbeat
+					Control Heart LED, partial 1/3 brightness
 					Mode: SECURING_LINK
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS						
@@ -573,7 +573,7 @@ COMM:
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS						
 				HW_RESETTING
-					Control Heart LED, blink
+					Control Heart LED, partial 1/3 brightness
 					HW Reset MAIN
 					HW Reset NAVI
 					HW Reset AUXI
@@ -581,23 +581,23 @@ COMM:
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS	
 				SYSTEM_SLEEPING
-					Control Heart LED, blink
+					Control Heart LED, partial 1/3 brightness
 					Mode: SYSTEM_SLEEPING					
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS						
 				SYSTEM_WAKING
-					Control Heart LED, blink
+					Control Heart LED, partial 2/3 brightness
 					Wake up MAIN
 					Mode: SYSTEM_WAKING					
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS							
 				SW_RESETTING
-					Control Heart LED, blink
+					Control Heart LED, partial 1/3 brightness
 					Mode: SW_RESETTING			
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS						
 				SYSTEM_ERROR					
-					Control Heart LED, solid
+					Control Heart LED, full 3/3 brightness
 					Mode: SYSTEM_ERROR					
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS					

@@ -125,7 +125,7 @@ get basic state machine infrastructure up
 
 
 	
-LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished NORMAL_OPERATIONS mode, now start on HW_RESETTING. Start by writing runModeFunction_HW_RESETTING at CONTROL_OUTPUTS.
+LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished HW_RESETTING mode, now start on SYSTEM_SLEEPING. Start by writing runModeFunction_SYSTEM_SLEEPING at PROCESS_DATA.
 	
 	
 	Note: pay attention to memory use!
@@ -162,6 +162,7 @@ LEFT OFF HERE, START HERE->Rover_StateMachine_COMM: just finished NORMAL_OPERATI
 Rover_StateMachine_COMM (in progress)
 [9 days] 11/23 through 11/26, 12/1 through 12/3, 12/9 through 12/10
 Rover_StateMachine_MAIN (get the complex communications going)
+	if have time go back to Rover_StateMachine_COMM and change some of the 1/3 or 3/3 brightness to blinks. need to write code to poll/time the blinks or use interrupts or something
 [11 days] 12/16 through 12/17, 12/23 through 12/31
 Rover_StateMachine_NAVI (get the rover rolling)
 [11 days] 1/1, 1/6 through 1/7, 1/12 through 1/14, 1/20 through 1/21, 1/26 through 1/28

@@ -169,10 +169,10 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //Uncomment in order to print timeout counter value
 #define _DEBUG_DISABLE_SECURE_LINK_TIMEOUT
 //============End Debugging: Print timeout counter value
-
-
-
-
+//============Debugging: HW Reset Status Message
+//Uncomment in order to print out the hardware reset status messages
+#define _DEBUG_OUTPUT_HW_RESET_STATUS_
+//============End Debugging: HW Reset Status Message
 
 
 
@@ -850,6 +850,7 @@ void loop() {
 				case HW_RESETTING:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;
+					//Note: Stay in the TX_COMMUNICATIONS state and keep sending hw resetting status to CMNC and hw reset request to MAIN until MAIN hw resets CMNC and puts it in POWER_ON_AND_HW_RESET mode at POR
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_HW_RESETTING(currentState);
 					break;
@@ -1801,13 +1802,13 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
 
 
 			//Transmit data and/or execute command(s)
 
-			//Skip for CMNC (since the link isn't secure yet)
+			//No data for CMNC (since the link isn't secure yet)
+			//Skip for CMNC
 			//Note: no reset (hw or sw) allowed from CMNC yet. because if it can take a reset msg, it should be able to secure link. Also there is a secure link timeout, that then goes to error mode and allows for hw/sw reset.
 			//no redirections from CMNC
 
@@ -2258,7 +2259,6 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 			break;
 		case DATA_FILTER:
-//LEFT OFF HERE
 
 			//Reset/clear flags (no data for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
@@ -2350,7 +2350,8 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 		
 			break;
 		case CONTROL_OUTPUTS:
-			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			//Nothing to do here.
+			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			break;
 		case CREATE_DATA:
 			//Creates data for MAIN
@@ -2440,14 +2441,62 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		case CONTROL_OUTPUTS:
-//LEFT OFF HERE		
-			//WRITE ME LATER
+
+			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			
+			//HW Reset NAVI			
+			#ifdef _DEBUG_OUTPUT_HW_RESET_STATUS_
+				_SERIAL_DEBUG_CHANNEL_.println(F("HwRstNAVI"));//debug
+			#endif
+			
+			naviHwResetter->performHwReset();
+			
+			
+			//HW Reset AUXI
+			#ifdef _DEBUG_OUTPUT_HW_RESET_STATUS_
+				_SERIAL_DEBUG_CHANNEL_.println(F("HwRstAUXI"));//debug
+			#endif
+			
+			auxiHwResetter->performHwReset();
+			
+			
+			//HW Reset MAIN
+			#ifdef _DEBUG_OUTPUT_HW_RESET_STATUS_
+				_SERIAL_DEBUG_CHANNEL_.println(F("HwRstMAIN"));//debug
+			#endif
+			
+			mainHwResetter->performHwReset();
+			
 			break;
 		case CREATE_DATA:
-			//WRITE ME LATER
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if
+			 //Creates data for CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_CMNC);
+			}//end if
 			break;
 		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
+			//1. Sends data to CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_CMNC, ROVERCOMM_CMNC);
+			}//end if
+			//2. Sends data to MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+			}//end if			
+			//No redirection in the HW_RESETTING mode
+			//clears message queue(s) and redirect flags		
+			cmnc_msg_queue = CMD_TAG_NO_MSG;
+			main_msg_queue = CMD_TAG_NO_MSG;
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -2465,15 +2514,95 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		case RX_COMMUNICATIONS:
-			//WRITE ME LATER
+			//skip for CMNC
+
+			//rxData() from MAIN
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function		break;
 			break;
 		case DATA_VALIDATION:
-			//WRITE ME LATER
+			//skip for CMNC
+
+			//parseAndValidateData() from MAIN
+			//Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid as well as parses it, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}
+				//Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}
+			}
+			//Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 			break;
 		case DATA_FILTER:
-			//WRITE ME LATER
+//LEFT OFF HERE		
+		
+
+			//Reset/clear flags (no data for COMM)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_CMNC);//for CMNC
+			setAllCommandFiltersTo(false, ROVERCOMM_MAIN);//for MAIN
+			//Then enable the allowed commands for this mode:
+			//For CMNC
+				//leave false
+			//For MAIN			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
+			
+			
+			
+			//Transmit data and/or execute command(s)
+
+			
+			//No data for CMNC (since system is sleeping)
+			//Skip for CMNC
+			//no redirections from CMNC
+
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				
+				//Set no redirections from MAIN	
+				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set set the "data was for COMM flag" to true if it was for this Arduino
+				
+				//Note: this is a local .ino function
+
+				/*
+				Set filter to throw away all MAIN data except:
+				hw reset requests message(s) from MAIN
+				sw reset requests message(s) from MAIN
+				generic status error message(s) from MAIN
+				comm sleep request message(s) from MAIN
+					DEBUG: If COMM misses the COMM sleep request message from, the code may go haywire. So if you have issues, you may want to have MAIN send it a few times before going to sleep.
+				*/
+
+			}//end if
+			 //else the data was invalid or not ready, so do nothing
+			 
 			break;
 		case PROCESS_DATA:
+//LEFT OFF HERE		
+		
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
