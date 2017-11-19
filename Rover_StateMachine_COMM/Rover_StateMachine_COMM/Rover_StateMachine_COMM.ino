@@ -1341,6 +1341,10 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	
 		//Clear the system go flag		
 		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_);
+
+		//Put MAIN to sleep (actually MAIN should have put itself to sleep. This is just to update Status that MAIN should now be sleeping)
+		sleeperMAIN->goToSleep();//update awake flag status
+		
 		
 		currentMode = SYSTEM_WAKING;//Set mode to SYSTEM_WAKING *begin*
 		cmnc_msg_queue = CMD_TAG_SYSTEM_IS_WAKING;
@@ -1739,6 +1743,7 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS:
+			//Mode: POWER_ON_AND_HW_RESET
 			runPORTasks();
 			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
@@ -1754,7 +1759,7 @@ void runModeFunction_INITIALIZATION(byte currentState)
 
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
+		case RUN_HOUSEKEEPING_TASKS: //Mode: INITIALIZATION
 			//initialize / reinitialize all variables
 			initializeVariables();
 			//start background tasks
@@ -1774,12 +1779,11 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 	_PRINT_MODE_(F("MODE: SYNCHRONIZATION"));
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYNCHRONIZATION			
 			runBackgroundTasks();
 			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
-		case RX_COMMUNICATIONS:
-
+		case RX_COMMUNICATIONS: //Mode: SYNCHRONIZATION			
 			//skip for CMNC
 
 			//rxData() from MAIN
@@ -1789,7 +1793,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			roverComm_Ch2->clearRxData();
 			//3. Receive data
 			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function		break;
-		case DATA_VALIDATION:
+		case DATA_VALIDATION: //Mode: SYNCHRONIZATION
 
 			//skip for CMNC
 
@@ -1811,7 +1815,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 
 			break;
-		case DATA_FILTER:
+		case DATA_FILTER: //Mode: SYNCHRONIZATION
 
 
 			//Reset/clear flags (no data for COMM)
@@ -1879,7 +1883,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 			break;
-		case PROCESS_DATA:
+		case PROCESS_DATA: //Mode: SYNCHRONIZATION
 		
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
@@ -1930,18 +1934,19 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			}//end if		
 			
 			break;
-		case CONTROL_OUTPUTS:
+		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			break;
-		case CREATE_DATA:
+		case CREATE_DATA: //Mode: SYNCHRONIZATION
+			//Skip creating data for CMNC
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if
-			 //Skip creating data for CMNC
+			}//end if			 
 			break;
-		case TX_COMMUNICATIONS:
+		case TX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
+			//Skip sending data for CMNC
 			//Sends data to MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
@@ -1971,11 +1976,11 @@ void runModeFunction_SECURING_LINK(byte currentState)
 	_PRINT_MODE_(F("MODE: SECURING_LINK"));
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SECURING_LINK
 			runBackgroundTasks();
 			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
-		case RX_COMMUNICATIONS:
+		case RX_COMMUNICATIONS: //Mode: SECURING_LINK
 
 			//rxData() from CMNC
 			//1. Reset status flag
@@ -1994,7 +1999,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
 
 			break;
-		case DATA_VALIDATION:
+		case DATA_VALIDATION: //Mode: SECURING_LINK
 
 			//parseAndValidateData() from CMNC
 			//Process/validate the data that was received
@@ -2034,7 +2039,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 
 
 			break;
-		case DATA_FILTER:
+		case DATA_FILTER: //Mode: SECURING_LINK
 
 			//Reset/clear flags (no data for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
@@ -2091,7 +2096,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			//else the data was invalid or not ready, so do nothing				
 			
 			break;
-		case READ_INPUTS:
+		case READ_INPUTS: //Mode: SECURING_LINK
 			if(pirSensor->monitorMotion())//if the PIR detected motion
 			{
 				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
@@ -2149,10 +2154,10 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			}//end if
 			
 			break;
-		case CONTROL_OUTPUTS:
+		case CONTROL_OUTPUTS: //Mode: SECURING_LINK
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			break;
-		case CREATE_DATA:
+		case CREATE_DATA: //Mode: SECURING_LINK
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
@@ -2164,7 +2169,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 				createDataFromQueueFor(ROVERCOMM_CMNC);
 			}//end if
 			break;
-		case TX_COMMUNICATIONS:
+		case TX_COMMUNICATIONS: //Mode: SECURING_LINK
 			//Interweave primary transmissions and redirection, to allow the receiving end have time to process each incoming data
 	
 			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
@@ -2233,11 +2238,11 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 	_PRINT_MODE_(F("MODE: NORMAL_OPERATIONS"));
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
+		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
 			runBackgroundTasks();
 			heartLed->breathing();//run the heart led in breathing mode
 			break;
-		case RX_COMMUNICATIONS:
+		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
 			//rxData() from CMNC
 			//1. Reset status flag
 			ch1Status = DATA_STATUS_NOT_READY;
@@ -2255,7 +2260,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
 
 			break;
-		case DATA_VALIDATION:
+		case DATA_VALIDATION: //Mode: NORMAL_OPERATIONS
 			//parseAndValidateData() from CMNC
 			//Process/validate the data that was received
 			if (ch1Status == DATA_STATUS_READY)
@@ -2291,7 +2296,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			}//end if
 			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 			break;
-		case DATA_FILTER:
+		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
 
 			//Reset/clear flags (no data for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
@@ -2342,7 +2347,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//else the data was invalid or not ready, so do nothing				
 			
 			break;
-		case READ_INPUTS:
+		case READ_INPUTS: //Mode: NORMAL_OPERATIONS
 			if(pirSensor->monitorMotion())//if the PIR detected motion
 			{
 				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
@@ -2382,11 +2387,11 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			
 		
 			break;
-		case CONTROL_OUTPUTS:
+		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
 			//Nothing to do here.
 			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			break;
-		case CREATE_DATA:
+		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
@@ -2398,7 +2403,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				createDataFromQueueFor(ROVERCOMM_CMNC);
 			}//end if
 			break;
-		case TX_COMMUNICATIONS:
+		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
 
 		
 			//Interweave primary transmissions and redirection, to allow the receiving end have time to process each incoming data
@@ -2469,11 +2474,11 @@ void runModeFunction_HW_RESETTING(byte currentState)
 	_PRINT_MODE_(F("MODE: HW_RESETTING"));
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
+		case RUN_HOUSEKEEPING_TASKS: //Mode: HW_RESETTING
 			runBackgroundTasks();
 			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
-		case CONTROL_OUTPUTS:
+		case CONTROL_OUTPUTS: //Mode: HW_RESETTING
 
 			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			
@@ -2501,7 +2506,7 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			mainHwResetter->performHwReset();
 			
 			break;
-		case CREATE_DATA:
+		case CREATE_DATA: //Mode: HW_RESETTING
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
@@ -2513,7 +2518,7 @@ void runModeFunction_HW_RESETTING(byte currentState)
 				createDataFromQueueFor(ROVERCOMM_CMNC);
 			}//end if
 			break;
-		case TX_COMMUNICATIONS:
+		case TX_COMMUNICATIONS: //Mode: HW_RESETTING
 			//1. Sends data to CMNC
 			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
 			{
@@ -2542,11 +2547,11 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 	_PRINT_MODE_(F("MODE: SYSTEM_SLEEPING"));
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_SLEEPING
 			runBackgroundTasks();
 			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
-		case RX_COMMUNICATIONS:
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
 			//skip for CMNC
 
 			//rxData() from MAIN
@@ -2557,7 +2562,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//3. Receive data
 			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function		break;
 			break;
-		case DATA_VALIDATION:
+		case DATA_VALIDATION: //Mode: SYSTEM_SLEEPING
 			//skip for CMNC
 
 			//parseAndValidateData() from MAIN
@@ -2577,7 +2582,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			}
 			//Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 			break;
-		case DATA_FILTER:
+		case DATA_FILTER: //Mode: SYSTEM_SLEEPING
 
 
 			//Reset/clear flags (no data for COMM)
@@ -2632,7 +2637,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			 //else the data was invalid or not ready, so do nothing
 			 
 			break;
-		case PROCESS_DATA:
+		case PROCESS_DATA: //Mode: SYSTEM_SLEEPING
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif			
@@ -2685,15 +2690,39 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_COMM_SLEEP_REQUESTED_);
 			}//end else
 			break;
-		case CONTROL_OUTPUTS:
-//LEFT OFF HERE				
-			//WRITE ME LATER
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
+		case CREATE_DATA: //Mode: SYSTEM_SLEEPING
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if
+			 //Creates data for CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_CMNC);
+			}//end if			
 			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
+			//1. Sends data to CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_CMNC, ROVERCOMM_CMNC);
+			}//end if
+			//2. Sends data to MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+			}//end if			
+			//No redirection in the HW_RESETTING mode
+			//clears message queue(s) and redirect flags		
+			cmnc_msg_queue = CMD_TAG_NO_MSG;
+			main_msg_queue = CMD_TAG_NO_MSG;
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -2706,24 +2735,35 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 	_PRINT_MODE_(F("MODE: SYSTEM_WAKING"));
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_WAKING
 			runBackgroundTasks();
 			heartLed->ledSetLevel(_TWO_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
-		case PROCESS_DATA:
-			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
-				Serial.println(timeout_counter);//DEBUG
-			#endif
-			//WRITE ME LATER
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
+			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			sleeperMAIN->wakeUp();//Toggles the wakeup pin to low (then back to high). The low level on the interrupt pin wakes up MAIN, which then wakes up all others
 			break;
-		case CONTROL_OUTPUTS:
-			//WRITE ME LATER
+		case CREATE_DATA: //Mode: SYSTEM_WAKING
+			 //Creates data for CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_CMNC);
+			}//end if
+			//Skip creating data for MAIN
 			break;
-		case CREATE_DATA:
-			//WRITE ME LATER
-			break;
-		case TX_COMMUNICATIONS:
-			//WRITE ME LATER
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
+			//Sends data to CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_CMNC, ROVERCOMM_CMNC);
+			}//end if			
+			//Skip sending data for MAIN
+			//No redirection in the SYSTEM_WAKING mode			
+			//clears message queue(s) and redirect flags		
+			cmnc_msg_queue = CMD_TAG_NO_MSG;
+			main_msg_queue = CMD_TAG_NO_MSG;
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);			
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);			
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -2736,32 +2776,33 @@ void runModeFunction_SW_RESETTING(byte currentState)
 	_PRINT_MODE_(F("MODE: SW_RESETTING"));
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SW_RESETTING
 			runBackgroundTasks();
 			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
-		case RX_COMMUNICATIONS:
+		case RX_COMMUNICATIONS: //Mode: SW_RESETTING
+//LEFT OFF HERE		
 			//WRITE ME LATER
 			break;
-		case DATA_VALIDATION:
+		case DATA_VALIDATION: //Mode: SW_RESETTING
 			//WRITE ME LATER
 			break;
-		case DATA_FILTER:
+		case DATA_FILTER: //Mode: SW_RESETTING
 			//WRITE ME LATER
 			break;
-		case PROCESS_DATA:
+		case PROCESS_DATA: //Mode: SW_RESETTING
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
 			//WRITE ME LATER
 			break;
-		case CONTROL_OUTPUTS:
+		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
 			//WRITE ME LATER
 			break;
-		case CREATE_DATA:
+		case CREATE_DATA: //Mode: SW_RESETTING
 			//WRITE ME LATER
 			break;
-		case TX_COMMUNICATIONS:
+		case TX_COMMUNICATIONS: //Mode: SW_RESETTING
 			//WRITE ME LATER
 			break;
 		default: //default state
@@ -2775,35 +2816,35 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 	_PRINT_MODE_(F("MODE: SYSTEM_ERROR"));
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_ERROR
 			runBackgroundTasks();
 			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
-		case RX_COMMUNICATIONS:
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
 			//WRITE ME LATER
 			break;
-		case DATA_VALIDATION:
+		case DATA_VALIDATION: //Mode: SYSTEM_ERROR
 			//WRITE ME LATER
 			break;
-		case DATA_FILTER:
+		case DATA_FILTER: //Mode: SYSTEM_ERROR
 			//WRITE ME LATER
 			break;
-		case READ_INPUTS:
+		case READ_INPUTS: //Mode: SYSTEM_ERROR
 			//WRITE ME LATER
 			break;
-		case PROCESS_DATA:
+		case PROCESS_DATA: //Mode: SYSTEM_ERROR
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
 			//WRITE ME LATER
 			break;
-		case CONTROL_OUTPUTS:
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
 			//WRITE ME LATER
 			break;
-		case CREATE_DATA:
+		case CREATE_DATA: //Mode: SYSTEM_ERROR
 			//WRITE ME LATER
 			break;
-		case TX_COMMUNICATIONS:
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
 			//WRITE ME LATER
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.

@@ -1,0 +1,1000 @@
+Note: Make sure for any serials, use a #define serial_type. So it can be replaced with PC USB's serial if needed.
+Note: For redirects, it assumes only one arduino will be redirected to another. If by chance, two source Arduinos are being redirected to the same destination Arduino, only one will get through and the other message will be dropped.
+	The prioritization will be giving to the hard coded order of the if/else statements.
+	This a a design weakness that may be able to be improved later.
+	For now keep it this way to reduce the complexity of the code and memory usage.
+	So right now each transmission cycle will send up to two messages. One for internal messages going out, and the other for external messages being redirected to another external destination.
+Note: For command tags, see command creator excel in K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+Note: Once the system goes into the state, SYSTEM_ERROR, it can only be fixed with a HW or SW reset.
+
+#define AUXI_SYNC_TIMEOUT_VALUE ??
+#define CONCURRENT_TRANSMISSION_DELAY		??//delay for about 1-5ms or so between potentially sending messages out again to the same arduino
+#define AUTO_DATA_LOOP_MAX_MAIN ?? //max number of auto data before looping over (should be the number of elements in the auto_data_array_MAIN array - 1, since the index starts at 0], data going to MAIN
+
+
+
+
+
+At POR (defaults):
+	Current State: RUN_HOUSEKEEPING_TASKS
+	Next State: RUN_HOUSEKEEPING_TASKS
+	Current Mode: POWER_ON_AND_HW_RESET *begin*
+	Next Mode: POWER_ON_AND_HW_RESET 
+	main_pri_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // primary message queue
+	main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
+	auto_data_array_MAIN[] = {
+		VOLTAGE_7D2_ACTUAL_STATUS,
+		CURRENT_7D2_PRESW25A_ACTUAL_STATUS,
+		CURRENT_7D2_SW12D5A_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_ACTUAL_STATUS,
+		TEMPSENSOR_BEACONCCA_CENTERSIDE_ACTUAL_STATUS,
+		TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_ACTUAL_STATUS,
+		VOLTAGE_5_ANALOGCCA_ACTUAL_STATUS,
+		CURRENT_3D3_SW12D5A_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL_STATUS,
+		TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_ACTUAL_STATUS,
+		TEMPSENSOR_DIGITALCCA_MIDDLESIDE_ACTUAL_STATUS,
+		VOLTAGE_3D3_SW_ACTUAL_STATUS,
+		CURRENT_MOTORCTRLR_CH1_12D5A_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_ACTUAL_STATUS,
+		PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_ACTUAL_STATUS,
+		TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_ACTUAL_STATUS,
+		GAS_BEACONCCA_RIGHTPOINTING_ACTUAL_STATUS,
+		CURRENT_MOTORCTRLR_CH2_12D5A_ACTUAL_STATUS,
+		PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_ACTUAL_STATUS,
+		PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_ACTUAL_STATUS,
+		PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL_STATUS,
+		TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_ACTUAL_STATUS,
+		IR_DISTANCE_FWD_CTR_STATUS,
+		IR_DISTANCE_SIDE_RT_STATUS,
+		IR_DISTANCE_SIDE_LT_STATUS,
+		IR_DISTANCE_REAR_CTR_STATUS,	
+		HEADING_STATUS,
+		ROLL_STATUS,
+		PITCH_STATUS,
+		YAW_STATUS,
+		CURRENT_FAULT_1_7D2V_25A_PRESW_STATUS,
+		CURRENT_FAULT_2_3D3V_12D5A_SW_STATUS,
+		CURRENT_FAULT_3_MCTRLRCH1_12D5A_STATUS,
+		CURRENT_FAULT_4_MCTRLRCH2_12D5A_STATUS,
+		CURRENT_FAULT_5_7D2_12D5A_SW_STATUS
+	}// add more as needed
+	auto_data_cnt_MAIN = 0 //data counter
+	transmission_delay_cnt = 0;//concurrent transmission delay counter
+	first_transmission = true
+	main_system_ready = false
+	sync_error = false
+	invalid_state_or_mode_error = false
+	health_error = false
+	timeout_counter = 0 //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), error timeouts, etc. Make sure to clear it out before use and only use it for one purpose at a time.
+	enable_left_laser = false
+	enable_right_laser = false
+	left_laser_prev_state = false //used to save the last state the left laser was on before turning it off to go to sleep
+	right_laser_prev_state = false //used to save the last state the right laser was on before turning it off to go to sleep
+
+
+
+
+
+
+
+	RUN_HOUSEKEEPING_TASKS
+		POWER_ON_AND_HW_RESET
+			run POR tasks
+			Set mode to INITIALIZATION *begin*
+			Go to whatever the next state is
+				(still is Next State: RUN_HOUSEKEEPING_TASKS)		
+		INITIALIZATION
+			run initialization tasks
+				initialize/reinitialize all variables
+				i.e. clear system go flag
+			start background tasks
+			//Note: Lasers are turned off in the variable initial declarations above
+			Set mode to SYNCHRONIZATION *begin*
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+			Set next state to RX_COMMUNICATIONS
+			Go to whatever the next state is
+				(now just set to RX_COMMUNICATIONS)
+		SYNCHRONIZATION			
+			run background tasks
+			Go to whatever the next state is
+		NORMAL_OPERATIONS	
+			run background tasks
+			Go to whatever the next state is	
+		SYSTEM_SLEEPING
+			run background tasks
+			Go to whatever the next state is	
+		SYSTEM_WAKING
+			run background tasks
+			Go to whatever the next state is			
+		SW_RESETTING
+			run background tasks
+			Go to whatever the next state is				
+		SYSTEM_ERROR	
+			run background tasks
+			Go to whatever the next state is		
+	RX_COMMUNICATIONS
+		POWER_ON_AND_HW_RESET
+			do nothing
+		INITIALIZATION
+			do nothing
+		SYNCHRONIZATION	
+			rxData() from MAIN
+			Mode: SYNCHRONIZATION
+			set next state to DATA_VALIDATION
+			go to RUN_HOUSEKEEPING_TASKS		
+		NORMAL_OPERATIONS	
+			rxData() from MAIN
+			Mode: NORMAL_OPERATIONS
+			set next state to DATA_VALIDATION
+			go to RUN_HOUSEKEEPING_TASKS	
+		SYSTEM_SLEEPING
+			do nothing	
+		SYSTEM_WAKING
+			do nothing
+		SW_RESETTING
+			do nothing
+		SYSTEM_ERROR	
+			rxData() from MAIN
+			Mode: SYSTEM_ERROR
+			set next state to DATA_VALIDATION
+			go to RUN_HOUSEKEEPING_TASKS			
+	DATA_VALIDATION
+		POWER_ON_AND_HW_RESET
+			do nothing
+		INITIALIZATION
+			do nothing
+		SYNCHRONIZATION		
+			parseAndValidateData() from MAIN
+			Mode: SYNCHRONIZATION
+			set next state to DATA_FILTER
+			go to RUN_HOUSEKEEPING_TASKS			
+		NORMAL_OPERATIONS	
+			parseAndValidateData() from MAIN
+			Mode: NORMAL_OPERATIONS
+			set next state to DATA_FILTER
+			go to RUN_HOUSEKEEPING_TASKS			
+		SYSTEM_SLEEPING
+			do nothing	
+		SYSTEM_WAKING
+			do nothing			
+		SW_RESETTING
+			do nothing	
+		SYSTEM_ERROR	
+			parseAndValidateData() from MAIN
+			Mode: SYSTEM_ERROR
+			set next state to DATA_FILTER
+			go to RUN_HOUSEKEEPING_TASKS			
+	DATA_FILTER
+		POWER_ON_AND_HW_RESET
+			do nothing
+		INITIALIZATION
+			do nothing
+		SYNCHRONIZATION
+			Note: There is no redirection for AUXI
+			filter and throw away all MAIN data except:
+				system ready message(s) from MAIN
+				system go message(s) from MAIN
+				sw reset requests message(s) from MAIN
+			Mode: SYNCHRONIZATION
+			set next state to SYSTEM_HEALTH
+			go to RUN_HOUSEKEEPING_TASKS				
+		NORMAL_OPERATIONS	
+			Note: There is no redirection for AUXI
+			filter MAIN data
+				throw away any data not meant for AUXI				
+			Mode: NORMAL_OPERATIONS
+			set next state to READ_INPUTS
+			go to RUN_HOUSEKEEPING_TASKS		
+		SYSTEM_SLEEPING
+			do nothing		
+		SYSTEM_WAKING
+			do nothing	
+		SW_RESETTING
+			do nothing
+		SYSTEM_ERROR	
+			Note: There is no redirection for AUXI
+			filter and throw away all MAIN data except:
+				//Note: There is no hw reset requests for AUXI. It would have to be done by COMM.
+				SW reset requests message(s) from MAIN
+				Any of the status requests (i.e. Get 7.2V (Actual) Status, etc.)
+			Mode: SYSTEM_ERROR
+			set next state to READ_INPUTS
+			go to RUN_HOUSEKEEPING_TASKS		
+	READ_INPUTS
+		POWER_ON_AND_HW_RESET
+			do nothing
+		INITIALIZATION
+			do nothing		
+		SYNCHRONIZATION			
+			do nothing		
+		NORMAL_OPERATIONS		
+			read IR sensors
+			read imu sensor
+			Mode: NORMAL_OPERATIONS
+			set next state to SYSTEM_HEALTH
+			go to RUN_HOUSEKEEPING_TASKS						
+		SYSTEM_SLEEPING
+			do nothing		
+		SYSTEM_WAKING
+			do nothing		
+		SW_RESETTING
+			do nothing	
+		SYSTEM_ERROR	
+			read IR sensors
+			read imu sensor
+			Mode: SYSTEM_ERROR
+			set next state to SYSTEM_HEALTH
+			go to RUN_HOUSEKEEPING_TASKS		
+	SYSTEM_HEALTH			
+		POWER_ON_AND_HW_RESET
+			do nothing
+		INITIALIZATION
+			do nothing
+		SYNCHRONIZATION		
+			read all analog signals
+				Note: For the analog muxes, the inputs raw voltages are read and the output controls are created in one combined state, the SYSTEM_HEALTH state, instead of the separate READ_INPUTS and CONTROL_OUTPUTS states.			
+			read current faults (digital signal)
+			Convert all analog signals to respective units.
+			Determine health status (detect any errors or anomalies)
+				If any health errors (since it's just in the SYNCHRONIZATION mode), send a generic error to MAIN.
+					main_pri_msg_queue == GENERIC_HEALTH_STATUS_ERROR //will be processed by MAIN and also resent to COMM and NAVI
+					//Note: MAIN will turn off the motor enable when it gets a GENERIC_HEALTH_STATUS_ERROR
+					//Note: NAVI will shut off the LEDs when it gets a GENERIC_HEALTH_STATUS_ERROR
+					Set mode to SYSTEM_ERROR *begin*
+					set health_error = true
+						(Note: the health_error flag can only be cleared with a sw reset, hw reset, or for health_errors, when the error goes away)					
+					//Turn off Lasers (just in case they're not already off)
+					Set enable_left_laser = false
+					Set enable_right_laser = false
+					//initialize/reset shared counter before use
+					timeout_counter = 0;			
+				else//everything is okay			
+					Mode: SYNCHRONIZATION
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS			
+				end if
+		NORMAL_OPERATIONS						
+			read all analog signals
+				Note: For the analog muxes, the inputs raw voltages are read and the output controls are created in one combined state, the SYSTEM_HEALTH state, instead of the separate READ_INPUTS and CONTROL_OUTPUTS states.			
+			read current faults (digital signal)
+			Convert all analog signals to respective units.
+			Determine health status (detect any errors or anomalies)
+			If any health errors, send a generic error to MAIN.
+				main_pri_msg_queue == GENERIC_HEALTH_STATUS_ERROR //will be processed by MAIN and also resent to COMM and NAVI
+				//Note: MAIN will turn off the motor enable when it gets a GENERIC_HEALTH_STATUS_ERROR
+				//Note: NAVI will shut off the LEDs when it gets a GENERIC_HEALTH_STATUS_ERROR
+				//also prioritize and send out the worst error
+				main_sec_msg_queue == <output the corresponding health error, based on highest priority> //will be sent to COMM (through MAIN) for possible redirect to CMNC (if the link is secure)
+				Set mode to SYSTEM_ERROR *begin*
+				set health_error = true
+					(Note: the health_error flag can only be cleared with a sw reset, hw reset, or for health_errors, when the error goes away)	
+				//Turn off Lasers
+				Set enable_left_laser = false
+				Set enable_right_laser = false				
+				//initialize/reset shared counter before use
+				timeout_counter = 0;
+			else//everything is okay			
+				Mode: NORMAL_OPERATIONS
+				set next state to PROCESS_DATA
+				go to RUN_HOUSEKEEPING_TASKS			
+			end if
+		SYSTEM_SLEEPING
+			do nothing	
+		SYSTEM_WAKING
+			do nothing	
+		SW_RESETTING
+			do nothing	
+		SYSTEM_ERROR
+			//Note: If it already has a health_error, this will create the messages since it was cleared after TX_COMMUNICATIONS
+			read all analog signals
+				Note: For the analog muxes, the inputs raw voltages are read and the output controls are created in one combined state, the SYSTEM_HEALTH state, instead of the separate READ_INPUTS and CONTROL_OUTPUTS states.			
+			read current faults (digital signal)
+			Convert all analog signals to respective units.
+			Determine health status (detect any errors or anomalies)
+			If any health errors, recreate/recreate and send a generic error to MAIN.
+				main_pri_msg_queue == GENERIC_HEALTH_STATUS_ERROR //will be processed by MAIN and also resent to COMM and NAVI
+				//Note: MAIN will turn off the motor enable when it gets a GENERIC_HEALTH_STATUS_ERROR
+				//Note: NAVI will shut off the LEDs when it gets a GENERIC_HEALTH_STATUS_ERROR
+				//also prioritize and send out the worst error
+				main_sec_msg_queue == <output the corresponding health error, based on highest priority> //will be sent to COMM (through MAIN) for possible redirect to CMNC (if the link is secure)
+				Mode: SYSTEM_ERROR											
+				set health_error = true
+					(Note: the health_error flag can only be cleared with a sw reset, hw reset, or for health_errors, when the error goes away)
+				//Turn off Lasers
+				set enable_left_laser = false
+				set enable_right_laser = false				
+				//initialize/reset shared counter before use
+				timeout_counter = 0;
+				Note: The health error supercedes other errors. So it take over the error messages, etc.
+			else //if there was no health error
+				if health_error == true && sync_error == false //and if there use to be a health error and it was the only error.
+					//Note: List all other error flags in the if statement above
+					Set health_error = false //clear the health error since the health error went away
+					//initialize/reset shared counter before use
+					timeout_counter = 0;	
+					Mode: NORMAL_OPERATIONS *begin* //go back to Normal Operations since the health error cleared itself
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS	
+				else //there wasn't a health error (meaning it was in the SYSTEM_ERROR for another reason) or there used to be a health_error and that cleared up but there are still other error(s) (i.e. sync_error)
+					Mode: SYSTEM_ERROR
+					set next state to PROCESS_DATA
+					go to RUN_HOUSEKEEPING_TASKS	
+				endif				
+			end if	
+	PROCESS_DATA
+		POWER_ON_AND_HW_RESET
+			do nothing
+		INITIALIZATION
+			do nothing	
+		SYNCHRONIZATION
+			Categorize all commands/data from all sources.					
+			Sort based on priority.
+			Allow for all non-conflicting commands to run.
+			Then only run the highest priority functions for AUXI last, so it will overwrite anything else, right before state transition.
+			
+			skip IR sensors
+			skip imu sensor
+			
+			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+			Note: Either you should get no data, sw reset, or system ready or system go message(s) from MAIN. as everything else was filtered out.
+
+			//Run lower priority functions here. (i.e. system ready msgs)
+			
+			If !(system go msg received, check system go flag from MAIN aka can be system ready or no msg)
+				main_pri_msg_queue = SYSTEM_READY_STATUS (tells MAIN it's ready to synchronize)
+			end if
+			Note: If system go or system ready msg has been received from MAIN, see "Command Options" below for more info.
+
+			//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+				
+			
+			If no system go msg from MAIN received && main_system_ready == false (MAIN system not ready yet to set the main_system_ready flag and have not received a system go to switch states yet, then keep incrementing the timeout counter)
+				timeout_counter++
+				if timeout_counter >= AUXI_SYNC_TIMEOUT_VALUE
+					Set mode to SYSTEM_ERROR *begin*
+					main_pri_msg_queue == SYNC_ERROR_STATUS
+					set sync_error = true
+						(Note: the sync_error flag can only be cleared with a sw reset or hw reset)							
+					//Turn off Lasers
+					Set enable_left_laser = false
+					Set enable_right_laser = false				
+					//initialize/reset shared counter before use
+					timeout_counter = 0;
+				end if
+			end if								
+			
+			Unless overridden,
+				set next state to CONTROL_OUTPUTS								
+			Unless overridden,						
+				Mode: SYNCHRONIZATION
+			go to RUN_HOUSEKEEPING_TASKS				
+		NORMAL_OPERATIONS	
+		
+		
+			process IMU data (calculate heading)
+			process IR data (calculate distance)
+			
+
+			Categorize all commands/data from all sources.
+			Allow for all non-conflicting commands to run.
+			Sort based on priority.
+			Then only run the highest priority for AUXI.
+
+			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+														
+			//Run lower priority functions here.
+													
+			//Run highest priority functions here. //this will override any lower priority messages
+				
+
+			Unless overridden,
+				set next state to CONTROL_OUTPUTS					
+			Unless overridden,						
+				Mode: NORMAL_OPERATIONS
+			go to RUN_HOUSEKEEPING_TASKS	
+		SYSTEM_SLEEPING
+			do nothing			
+		SYSTEM_WAKING
+			do nothing	
+		SW_RESETTING
+			do nothing		
+		SYSTEM_ERROR		
+			process IMU data (calculate heading)
+			process IR data (calculate distance)
+			
+
+			Categorize all commands/data from all sources.
+			Allow for all non-conflicting commands to run.
+			Sort based on priority.
+			Then only run the highest priority for AUXI.
+									
+			//Run lower priority functions here.
+
+			//Recreate any error messages (but allow them to be overwritten by higher priority messages)
+			if health_error == false
+				if sync_error
+					(Note: the sync_error flag can only be cleared with a sw reset or hw reset)					
+					main_pri_msg_queue == SYNC_ERROR_STATUS //send error to comm which will send a copy to cmnc as well
+				else
+					main_pri_msg_queue == GENERIC_SYSTEM_ERROR //send error to MAIN
+			//else health_error == true, then don't let sync_error override the health_error message
+				//the message would have been already recreated during the SYSTEM_HEALTH				
+			end if
+
+			
+			//Run highest priority functions here. //this will override any lower priority messages
+
+			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+					Note: Should only be SW requests, or any of the statuses (i.e. Get 7.2V (Actual) Status, etc.) . Anything else is filtered out.
+			
+
+			Unless overridden,
+				set next state to CONTROL_OUTPUTS					
+			Unless overridden,						
+				Mode: SYSTEM_ERROR
+			go to RUN_HOUSEKEEPING_TASKS	
+			
+	CONTROL_OUTPUTS			
+		POWER_ON_AND_HW_RESET
+			do nothing
+		INITIALIZATION
+			do nothing		
+		SYNCHRONIZATION
+			//Control the lasers
+			Since enable_left_laser == false
+				turn off the left laser
+			Since enable_right_laser == false
+				turn off the right laser			
+			Mode: SYNCHRONIZATION
+			set next state to CREATE_DATA
+			go to RUN_HOUSEKEEPING_TASKS			
+		NORMAL_OPERATIONS			
+			//Control the lasers
+			if enable_left_laser
+				turn on the left laser
+			else
+				turn off the left laser
+			end if				
+			if enable_right_laser
+				turn on the right laser
+			else
+				turn off the right laser
+			end if	
+			Mode: NORMAL_OPERATIONS					
+			set next state to CREATE_DATA					
+			go to RUN_HOUSEKEEPING_TASKS					
+		SYSTEM_SLEEPING
+			//Control the lasers
+			Since enable_left_laser == false
+				turn off the left laser
+			Since enable_right_laser == false
+				turn off the right laser			
+			Mode: SYSTEM_SLEEPING
+			set next state to CREATE_DATA
+			go to RUN_HOUSEKEEPING_TASKS					
+		SYSTEM_WAKING
+			//Control the lasers
+			if enable_left_laser
+				turn on the left laser
+			else
+				turn off the left laser
+			end if				
+			if enable_right_laser
+				turn on the right laser
+			else
+				turn off the right laser
+			end if	
+			Set mode to SYNCHRONIZATION *begin*
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+			set next state to RX_COMMUNICATIONS
+			go to RUN_HOUSEKEEPING_TASKS				
+		SW_RESETTING
+			//Control the lasers
+			Since enable_left_laser == false
+				turn off the left laser
+			Since enable_right_laser == false
+				turn off the right laser			
+			Mode: SW_RESETTING
+			set next state to CREATE_DATA
+			go to RUN_HOUSEKEEPING_TASKS					
+		SYSTEM_ERROR	
+			//Control the lasers
+			Since enable_left_laser == false
+				turn off the left laser
+			Since enable_right_laser == false
+				turn off the right laser			
+			Mode: SYSTEM_ERROR
+			set next state to CREATE_DATA
+			go to RUN_HOUSEKEEPING_TASKS						
+	CREATE_DATA
+		POWER_ON_AND_HW_RESET
+			do nothing
+		INITIALIZATION
+			do nothing		
+		SYNCHRONIZATION		
+			Since main_pri_msg_queue == SYSTEM_READY_STATUS (the AUXI, aka this arduino, is up and running, so let MAIN know)
+				create system ready msg for MAIN (tells MAIN it's ready to synchronize)				
+			Mode: SYNCHRONIZATION
+			set next state to TX_COMMUNICATIONS						
+			go to RUN_HOUSEKEEPING_TASKS				
+		NORMAL_OPERATIONS			
+			//Send up to two auto datas between the two queues (primary and secondary)
+			if main_pri_msg_queue != CMD_TAG_NO_MSG
+				create any msg(s) for MAIN as needed based on main_pri_msg_queue					
+			else //since there is no custom data for the primary queue, then send the next auto data										
+				create message corresponding to the next auto data for MAIN
+				main_pri_msg_queue = auto_data_array_MAIN[auto_data_cnt_MAIN]
+				//set the next auto data for MAIN for the next use
+				if auto_data_cnt_MAIN >= AUTO_DATA_LOOP_MAX_MAIN
+					auto_data_cnt_MAIN = 0
+				else
+					auto_data_cnt_MAIN++
+				endif
+			end if
+			if main_sec_msg_queue != CMD_TAG_NO_MSG
+				create any msg(s) for MAIN as needed based on main_sec_msg_queue					
+			else //since there is no custom data for the secondary queue, then send the next auto data										
+				create message corresponding to the next auto data for MAIN
+				main_sec_msg_queue = auto_data_array_MAIN[auto_data_cnt_MAIN]
+				//set the next auto data for MAIN for the next use
+				if auto_data_cnt_MAIN >= AUTO_DATA_LOOP_MAX_MAIN
+					auto_data_cnt_MAIN = 0
+				else
+					auto_data_cnt_MAIN++
+				endif
+			end if
+			Mode: NORMAL_OPERATIONS
+			set next state to TX_COMMUNICATIONS						
+			go to RUN_HOUSEKEEPING_TASKS						
+		SYSTEM_SLEEPING
+			Since main_pri_msg_queue = SYSTEM_IS_SLEEPING
+				Create AUXI Sleeping Acknowledgement to MAIN
+				Mode: SYSTEM_SLEEPING
+				set next state to TX_COMMUNICATIONS						
+				go to RUN_HOUSEKEEPING_TASKS
+		SYSTEM_WAKING
+			do nothing	
+		SW_RESETTING
+			Since main_pri_msg_queue = SW_IS_RESETTING
+				Create AUXI SW Resetting Acknowledgement to MAIN
+			Mode: SW_RESETTING
+			set next state to TX_COMMUNICATIONS						
+			go to RUN_HOUSEKEEPING_TASKS
+		SYSTEM_ERROR	
+			//Note: For SYSTEM_ERROR, still send auto data through main_sec_msg_queue, to be used for debugging
+			//Send up to two auto datas between the two queues (primary and secondary)
+			if main_pri_msg_queue != CMD_TAG_NO_MSG
+				create any msg(s) for MAIN as needed based on main_pri_msg_queue					
+				i.e. create error msg for MAIN about SYNC issues, health status issues, get statues (i.e. Get 7.2V (Actual) Status, etc.) etc.
+			else //since there is no custom data for the primary queue, then send the next auto data										
+				create message corresponding to the next auto data for MAIN
+				main_pri_msg_queue = auto_data_array_MAIN[auto_data_cnt_MAIN]
+				//set the next auto data for MAIN for the next use
+				if auto_data_cnt_MAIN >= AUTO_DATA_LOOP_MAX_MAIN
+					auto_data_cnt_MAIN = 0
+				else
+					auto_data_cnt_MAIN++
+				endif
+			end if
+			if main_sec_msg_queue != CMD_TAG_NO_MSG
+				create any msg(s) for MAIN as needed based on main_sec_msg_queue					
+			else //since there is no custom data for the secondary queue, then send the next auto data										
+				create message corresponding to the next auto data for MAIN
+				main_sec_msg_queue = auto_data_array_MAIN[auto_data_cnt_MAIN]
+				//set the next auto data for MAIN for the next use
+				if auto_data_cnt_MAIN >= AUTO_DATA_LOOP_MAX_MAIN
+					auto_data_cnt_MAIN = 0
+				else
+					auto_data_cnt_MAIN++
+				endif
+			end if
+			Mode: SYSTEM_ERROR
+			set next state to TX_COMMUNICATIONS						
+			go to RUN_HOUSEKEEPING_TASKS		
+	TX_COMMUNICATIONS		
+		POWER_ON_AND_HW_RESET
+			do nothing	
+		INITIALIZATION
+			do nothing			
+		SYNCHRONIZATION		
+			//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary.
+			if first_transmission == true		
+				//send the first set of messages
+				if main_pri_msg_queue != CMD_TAG_NO_MSG
+					Sends interally generated msg(s) to MAIN
+				end if		
+				//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary				
+				//check to see if there are any second messages to send
+				if main_sec_msg_queue != CMD_TAG_NO_MSG
+					first_transmission = false //clear the flag
+					//reset the counter before use
+					transmission_delay_cnt = 0
+					Mode: SYNCHRONIZATION
+					set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+					go to RUN_HOUSEKEEPING_TASKS	
+				else//if there is no second transmission, move on
+					clear message queues
+						main_pri_msg_queue = CMD_TAG_NO_MSG					
+						main_sec_msg_queue = CMD_TAG_NO_MSG			
+					Mode: SYNCHRONIZATION
+					set next state to RX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS							
+				end if						
+			else			
+				if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
+					//Send the second set of messages
+					if main_sec_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to MAIN
+					end if			
+					clear message queues
+						main_pri_msg_queue = CMD_TAG_NO_MSG					
+						main_sec_msg_queue = CMD_TAG_NO_MSG													
+					first_transmission = true //reset the flag
+					Mode: SYNCHRONIZATION
+					set next state to RX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS	
+				else
+					transmission_delay_cnt++//increment the transmission delay counter
+					Mode: SYNCHRONIZATION
+					set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+					go to RUN_HOUSEKEEPING_TASKS	
+				end if
+			end if					
+		NORMAL_OPERATIONS
+			//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary.		
+			if first_transmission == true		
+				first_transmission = false //clear the flag
+				//reset the counter before use
+				transmission_delay_cnt = 0
+				//send the first set of messages
+				if main_pri_msg_queue != CMD_TAG_NO_MSG
+					Sends interally generated msg(s) to MAIN
+				end if						
+				//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary
+				//check to see if there are any second messages to send
+				if main_sec_msg_queue != CMD_TAG_NO_MSG
+					first_transmission = false //clear the flag
+					//reset the counter before use
+					transmission_delay_cnt = 0
+					Mode: NORMAL_OPERATIONS
+					set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+					go to RUN_HOUSEKEEPING_TASKS	
+				else//if there is no second transmission, move on
+					clear message queues
+						main_pri_msg_queue = CMD_TAG_NO_MSG					
+						main_sec_msg_queue = CMD_TAG_NO_MSG							
+					Mode: NORMAL_OPERATIONS
+					set next state to RX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS							
+				end if	
+			else			
+				if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
+					//Send the second set of messages
+					if main_sec_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to MAIN
+					end if			
+					clear message queues
+						main_pri_msg_queue = CMD_TAG_NO_MSG					
+						main_sec_msg_queue = CMD_TAG_NO_MSG													
+					first_transmission = true //reset the flag
+					Mode: NORMAL_OPERATIONS
+					set next state to RX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS	
+				else
+					transmission_delay_cnt++//increment the transmission delay counter
+					Mode: NORMAL_OPERATIONS
+					set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+					go to RUN_HOUSEKEEPING_TASKS	
+				end if
+			end if			
+		SYSTEM_SLEEPING
+			//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary				
+			//Only the primary message queue is sent (the sleeping acknowledgement to MAIN), and everything else can be ignored since the system is going to sleep anyways.
+			If main_pri_msg_queue != CMD_TAG_NO_MSG
+				Sends interally generated msg(s) to MAIN//Sends the sleeping acknowledgement
+			end if			
+			clear message queues
+				main_pri_msg_queue = CMD_TAG_NO_MSG
+				main_sec_msg_queue = CMD_TAG_NO_MSG
+				
+			//Note: If MAIN misses this message, MAIN will go into sleeping error and would require a SW reset or HW reset to take the Rover out of this error. (AUXI can't resend the sleeping acknowledgement since it already went to sleep)
+			//Troubleshooting tip: If MAIN keeps missing this message, can send it twice through the main_pri_msg_queue and then the main_sec_msg_queue as well.
+
+			
+			//SETUP FOR WAKEUP
+				Mode: SYSTEM_WAKING *begin* //setup this mode ahead of time before going to sleep
+				
+				set next state to CONTROL_OUTPUTS //Go to CONTROL_OUTPUTS in order to restore previous states
+				
+				//Restore previous laser states
+				enable_left_laser = left_laser_prev_state
+				enable_right_laser = right_laser_prev_state
+				
+				//clear the flags for future reuse
+				left_laser_prev_state = false
+				right_laser_prev_state = false
+
+				Run other pre-sleep tasks. (i.e. end software serial, as needed)
+			//END OF SETUP FOR WAKEUP
+					
+
+			//GOING TO SLEEP
+			Put AUXI to sleep
+				Don't switch states yet. Go to sleep in the current TX_COMMUNICATIONS state.
+
+			//WAKING UP
+			MAIN will wake up AUXI from the sleep.
+
+			Run wake up tasks. (i.e. begin SW serial as needed, etc.)
+							
+			While in the SYSTEM_WAKING mode, after going to RUN_HOUSEKEEPING_TASKS, it will go to the next state, which is set to CONTROL_OUTPUTS			
+		SYSTEM_WAKING
+			do nothing	
+		SW_RESETTING
+			//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary			
+			If main_pri_msg_queue != CMD_TAG_NO_MSG
+				Sends interally generated msg(s) to MAIN//Sends the SW reset acknowledgement
+			end if				
+			clear message queues
+				main_pri_msg_queue = CMD_TAG_NO_MSG
+				main_sec_msg_queue = CMD_TAG_NO_MSG
+			//Note: If MAIN misses this message, MAIN will go into SW reset error and re-request for a SW reset			
+			//Troubleshooting tip: If MAIN keeps missing this message, can send it twice through the main_pri_msg_queue and then the main_sec_msg_queue as well.
+			Mode: INITIALIZATION *begin*		
+			set next state to RUN_HOUSEKEEPING_TASKS
+			
+		
+			
+		SYSTEM_ERROR
+			//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary		
+			if first_transmission == true		
+				first_transmission = false //clear the flag
+				//reset the counter before use
+				transmission_delay_cnt = 0
+				//send the first set of messages
+				if main_pri_msg_queue != CMD_TAG_NO_MSG
+					Sends interally generated msg(s) to MAIN
+				end if						
+				//check to see if there are any second messages to send
+				if main_sec_msg_queue != CMD_TAG_NO_MSG
+					first_transmission = false //clear the flag
+					//reset the counter before use
+					transmission_delay_cnt = 0
+					Mode: SYSTEM_ERROR
+					set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+					go to RUN_HOUSEKEEPING_TASKS	
+				else//if there is no second transmission, move on
+					clear message queues
+						main_pri_msg_queue = CMD_TAG_NO_MSG					
+						main_sec_msg_queue = CMD_TAG_NO_MSG			
+					Mode: SYSTEM_ERROR
+					set next state to RX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS							
+				end if	
+			else			
+				if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
+					//Send the second set of messages
+					if main_sec_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to MAIN
+					end if			
+					clear message queues
+						main_pri_msg_queue = CMD_TAG_NO_MSG					
+						main_sec_msg_queue = CMD_TAG_NO_MSG			
+						//Note: Any health errors will have it's messages recreated in SYSTEM_HEALTH						
+					first_transmission = true //reset the flag
+					Mode: SYSTEM_ERROR
+					set next state to RX_COMMUNICATIONS
+					go to RUN_HOUSEKEEPING_TASKS	
+				else
+					transmission_delay_cnt++//increment the transmission delay counter
+					Mode: SYSTEM_ERROR
+					set next state to TX_COMMUNICATIONS //return to this state after running house keeping tasks (to allow for delays before another transmission)					
+					go to RUN_HOUSEKEEPING_TASKS	
+				end if
+			end if				
+		DEFAULT:
+			Set mode to SYSTEM_ERROR *begin*
+			cmnc_msg_queue == invalid_state_or_mode_error_STATUS
+			set invalid_state_or_mode_error = true
+					(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+			Set next state to CONTROL_OUTPUTS								
+			go to RUN_HOUSEKEEPING_TASKS
+
+
+
+
+	
+	
+
+			
+State Matrix Design = States vs. Modes			
+==================
+States
+==================
+Note: These states don't always have to go in order.
+	RUN_HOUSEKEEPING_TASKS
+		runs in parallel with every loop
+	RX_COMMUNICATIONS
+		rxData()
+	DATA_VALIDATION
+		data parsing and validation
+		parseAndValidateData()
+	DATA_FILTER
+		dataDirector()
+	READ_INPUTS
+	SYSTEM_HEALTH
+	PROCESS_DATA
+		commandDirector()
+	CONTROL_OUTPUTS			
+	CREATE_DATA
+	TX_COMMUNICATIONS		
+	
+==================
+Modes
+==================
+Note: These states don't always have to go in order.
+Note: *begin* means this is one of the starting points for this mode
+
+POWER_ON_AND_HW_RESET
+INITIALIZATION
+SYNCHRONIZATION			
+NORMAL_OPERATIONS
+SYSTEM_SLEEPING
+SYSTEM_WAKING
+SW_RESETTING
+SYSTEM_ERROR
+DEFAULT
+		
+==================
+Command Options (i.e. used in the PROCESS_DATA state. Typically from the NORMAL_OPERATIONS mode, but not always)
+==================	
+Note: With external commands, you only want to do all hw or all sw request (and not individual hw/sw requests). Else the system won't be in sync anymore. So hw/sw requests must be synced and have controlled points of entry.
+	But interally, it may call individual commands as required.
+Note: With external commands, you only want to do all sleep requests (and not individual sleep requests). Else the system won't be in sync anymore. So sleep requests must be synced and have controlled points of entry.
+	But interally, it may call individual commands as required.
+
+--------------	
+
+Non-Conflicting Functions (i.e. it doesn't override the message queues or change states or modes)
+
+	MAIN System Ready (from MAIN)
+		main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
+		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
+		timeout_counter = 0 (for future use)
+
+Conflicting Functions Ordered By Priority	
+	Note: Don't forget to look at Non-Conflicting Functions as well.
+	Most of the time (but not always), these commands will be ran from NORMAL_OPERATIONS mode under the PROCESS_DATA state. The next state is CONTROL_OUTPUTS, unless overwritten.
+
+		AUXI SW Reset Request (usually from MAIN)
+			main_pri_msg_queue = SW_IS_RESETTING
+			//Turn off Lasers, since the next state from here will be CONTROL_OUTPUTS
+			Set enable_left_laser = false
+			Set enable_right_laser = false
+			Mode: SW_RESETTING *begin*		
+		System Go (from MAIN)
+			set system go flag
+			Mode: NORMAL_OPERATIONS *begin*		
+			//initialize/reset shared counter before use
+			timeout_counter = 0;	
+		AUXI Sleep Request (usually from MAIN)
+			//save the state of the laser enables before shutting them off to go to sleep
+			clear system go flag
+			left_laser_prev_state = enable_left_laser
+			right_laser_prev_state = enable_right_laser
+			//set to turn off the laser when sleeping
+			Set enable_left_laser = false
+			Set enable_right_laser = false
+			main_pri_msg_queue = SYSTEM_IS_SLEEPING
+			Mode: SYSTEM_SLEEPING *begin*
+		Set Left Laser Enable			
+			If Turn Left Laser On
+				turn on the left laser
+				enable_left_laser = true
+				main_pri_msg_queue = ENABLING_LEFT_LASER
+			Else//Turn Left Laser Off
+				turn off the left laser
+				enable_left_laser = false
+				main_pri_msg_queue = DISABLING_LEFT_LASER						
+			End if				
+		Get Left Laser Status
+			main_pri_msg_queue = LEFT_LASER_STATUS	
+		Set Right Laser Enable
+			If Turn Right Laser On
+				turn on the right laser
+				enable_right_laser = true
+				main_pri_msg_queue = ENABLING_RIGHT_LASER
+			Else//Turn Right Laser Off
+				turn off the right laser
+				enable_right_laser = false
+				main_pri_msg_queue = DISABLING_RIGHT_LASER		
+			End if
+		Get Right Laser Status
+			main_pri_msg_queue = RIGHT_LASER_STATUS		
+		Get 7.2V (Actual) Status
+			main_pri_msg_queue = VOLTAGE_7D2_ACTUAL_STATUS
+		Get Current 7.2V Pre switched (25A) (Actual) Status
+			main_pri_msg_queue = CURRENT_7D2_PRESW25A_ACTUAL_STATUS
+		Get Current 7.2V Switched (25A) (Actual) Status
+			main_pri_msg_queue = CURRENT_7D2_SW12D5A_ACTUAL_STATUS
+		Get Photosensor Beacon CCA Left Side-Left Pointing (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_BEACONCCA_LEFTSIDE_LEFTPOINTING_ACTUAL_STATUS
+		Get Photosensor Beacon CCA Left Side-Left Pointing (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_GPSCCA_REARSIDE_UPWARDPOINTING_ACTUAL_STATUS
+		Get Temp Sensor Beacon CCA Center Side (Actual) Status
+			main_pri_msg_queue = TEMPSENSOR_BEACONCCA_CENTERSIDE_ACTUAL_STATUS
+		Get Temp Sensor Power CCA Center Side Mtr Mosfet (Actual) Status
+			main_pri_msg_queue = TEMPSENSOR_POWERCCA_CENTERSIDE_MTRMOSFET_ACTUAL_STATUS
+		Get Voltage 5 Analog CCA (Actual) Status
+			main_pri_msg_queue = VOLTAGE_5_ANALOGCCA_ACTUAL_STATUS
+		Get Current 3D3 SW 12.5A (Actual) Status
+			main_pri_msg_queue = CURRENT_3D3_SW12D5A_ACTUAL_STATUS
+		Get Photosensor Beacon CCA Center Side Upward Pointing (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_BEACONCCA_CENTERSIDE_UPWARDPOINTING_ACTUAL_STATUS
+		Get Photosensor Beacon CCA Rear Side Rear Pointing (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_BEACONCCA_REARSIDE_REARPOINTING_ACTUAL_STATUS
+		Get Photosensor Beacon CCA Left Side Upward Pointing (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_BEACONCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL_STATUS
+		Get Temp Sensor Current CCA Center Side Powerresistor (Actual) Status
+			main_pri_msg_queue = TEMPSENSOR_CURRENTCCA_CENTERSIDE_POWERRESISTOR_ACTUAL_STATUS
+		Get Temp Sensor Digital CCA Middle Side (Actual) Status
+			main_pri_msg_queue = TEMPSENSOR_DIGITALCCA_MIDDLESIDE_ACTUAL_STATUS
+		Get Voltage 3D3 SW (Actual) Status
+			main_pri_msg_queue = VOLTAGE_3D3_SW_ACTUAL_STATUS
+		Get Current Motorctrlr Ch1 12.5A (Actual) Status
+			main_pri_msg_queue = CURRENT_MOTORCTRLR_CH1_12D5A_ACTUAL_STATUS
+		Get Photosensor Beacon CCA Front Side Forward Pointing (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_BEACONCCA_FRONTSIDE_FORWARDPOINTING_ACTUAL_STATUS
+		Get Photosensor Current CCA Center Side Upward Pointing Middledeck (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_CURRENTCCA_CENTERSIDE_UPWARDPOINTING_MIDDLEDECK_ACTUAL_STATUS
+		Get Photosensor Power CCA Left Side Left Pointing (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_POWERCCA_LEFTSIDE_LEFTPOINTING_ACTUAL_STATUS
+		Get Temp Sensor Gps CCA Rear Side Upperdeck (Actual) Status
+			main_pri_msg_queue = TEMPSENSOR_GPSCCA_REARSIDE_UPPERDECK_ACTUAL_STATUS
+		Get Gas Beacon CCA Right Pointing (Actual) Status
+			main_pri_msg_queue = GAS_BEACONCCA_RIGHTPOINTING_ACTUAL_STATUS
+		Get Current Motorctrlr Ch2 12.5A (Actual) Status
+			main_pri_msg_queue = CURRENT_MOTORCTRLR_CH2_12D5A_ACTUAL_STATUS
+		Get Photosensor Beacon CCA Right Side Right Pointing (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_BEACONCCA_RIGHTSIDE_RIGHTPOINTING_ACTUAL_STATUS
+		Get Photosensor Current CCA Frontupward Pointing Middledeck (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_ACTUAL_STATUS
+		Get Photosensor Digital CCA Left Side Upward Pointing (Actual) Status
+			main_pri_msg_queue = PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL_STATUS
+		Get Temp Sensor Power CCA Front Side Charger Solar Or Gate (Actual) Status
+			main_pri_msg_queue = TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_ACTUAL_STATUS
+		Get IR Distance Forward Center Status
+			main_pri_msg_queue = IR_DISTANCE_FWD_CTR_STATUS
+		Get IR Distance Side Right Status
+			main_pri_msg_queue = IR_DISTANCE_SIDE_RT_STATUS
+		Get IR Distance Side Left Status
+			main_pri_msg_queue = IR_DISTANCE_SIDE_LT_STATUS
+		Get IR Distance Rear Center Status
+			main_pri_msg_queue = IR_DISTANCE_REAR_CTR_STATUS
+		Get Heading Status
+			main_pri_msg_queue = HEADING_STATUS
+		Get Roll Status
+			main_pri_msg_queue = ROLL_STATUS
+		Get Pitch Status
+			main_pri_msg_queue = PITCH_STATUS
+		Get Yaw Status
+			main_pri_msg_queue = YAW_STATUS
+		Get Current Fault 7.2V 25A Preswitch Status
+			main_pri_msg_queue = CURRENT_FAULT_1_7D2V_25A_PRESW_STATUS
+		Get Current Fault 3.3V 12.5A Preswitch Status
+			main_pri_msg_queue = CURRENT_FAULT_2_3D3V_12D5A_SW_STATUS
+		Get Current Fault Motor Controller Ch 1 12.5A Status
+			main_pri_msg_queue = CURRENT_FAULT_3_MCTRLRCH1_12D5A_STATUS
+		Get Current Fault Motor Controller Ch 2 12.5A Status
+			main_pri_msg_queue = CURRENT_FAULT_4_MCTRLRCH2_12D5A_STATUS
+		Get Current Fault 7.2V 25A Switched Status
+			main_pri_msg_queue = CURRENT_FAULT_5_7D2_12D5A_SW_STATUS

@@ -176,7 +176,7 @@ void wakeUpNAVI() {
 	if (!sleeperNAVI->isAwake())
 	{
 		//Wake Up
-		sleeperNAVI->wakeUp();//Creates a low level on the interrupt pin to wake up NAVI
+		sleeperNAVI->wakeUp();//Toggles the wakeup pin to low (then back to high). The low level on the interrupt pin wakes up NAVI.
 
 		//Post Wake Up tasks
 		_SERIAL_DEBUG_CHANNEL_.println(F("NAVI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
@@ -204,7 +204,7 @@ void wakeUpAUXI() {
 	if (!sleeperAUXI->isAwake())
 	{
 		//Wake Up
-		sleeperAUXI->wakeUp();//Creates a low level on the interrupt pin to wake up AUXI
+		sleeperAUXI->wakeUp();//Toggles the wakeup pin to low (then back to high). The low level on the interrupt pin wakes up AUXI.
 
 		//Post Wake Up tasks
 		_SERIAL_DEBUG_CHANNEL_.println(F("AUXI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
