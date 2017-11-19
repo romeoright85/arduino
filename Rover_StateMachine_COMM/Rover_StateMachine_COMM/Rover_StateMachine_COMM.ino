@@ -143,32 +143,51 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 						  //============End Debugging: Print Mode and/or State
 
 
-						  //============Debugging: Allow Redirect During Synchronization Mode
-						  //Uncomment to allow Ch2 (MAIN and COMM) to have redirection when in synchronization mode
+ //============Debugging: Allow Redirect During Synchronization Mode
+ //Uncomment to allow Ch2 (MAIN and COMM) to have redirection when in synchronization mode
 #define _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
+
 //Uncomment to output notice when redirection is occuring
 //#define _DEBUG_REDIRECTION_NOTICE
-						  //============End Debugging: Allow Redirect During Synchronization Mode
+//============End Debugging: Allow Redirect During Synchronization Mode
+
+
 //============Debugging: All Data Filtering Off
 //Uncomment in order to allow all data to pass (turn off all data filters) for debugging)
 #define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
 //============End Debugging: All Data Filtering Off
+
+
 //============Debugging: Turn off System Ready Status During Synchronization Mode
 //Uncomment in order to allow other data to be in the main_msg_queue instead of just System Status
 #define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS
 //============End Debugging: All Data Filtering Off
+
+
 //============Debugging: Print timeout counter value
 //Uncomment in order to print timeout counter value
 //#define _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 //============End Debugging: Print timeout counter value
+
+
 //============Debugging: Disable Comm Sync Timeout
 //Uncomment in order to print timeout counter value
 #define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT
-//============End Debugging: Print timeout counter value
+//============End Debugging: Disable Comm Sync Timeout
+
+
+//============Debugging: Disable Sleep Error Timeout
+//Uncomment in order to print timeout counter value
+//#define _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT
+//============End Debugging: Disable Sleep Error Timeout
+
+
 //============Debugging: Disable Secure Link Timeout
 //Uncomment in order to print timeout counter value
 #define _DEBUG_DISABLE_SECURE_LINK_TIMEOUT
 //============End Debugging: Print timeout counter value
+
+
 //============Debugging: HW Reset Status Message
 //Uncomment in order to print out the hardware reset status messages
 #define _DEBUG_OUTPUT_HW_RESET_STATUS_
@@ -218,8 +237,10 @@ byte ch2Status = DATA_STATUS_NOT_READY;//for MAIN
 byte flagSet_Error = _BTFG_NONE_;
 //Flag(s) - Message Controls
 byte flagSet_MessageControl = _BTFG_NONE_;
-//Flag(s) - System Status
-byte flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
+//Flag(s) - System Status 1
+byte flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
+//Flag(s) - System Status 2
+byte flagSet_SystemStatus2 = _BTFG_NONE_;
 //Flag(s) - Command Filter Options - MAIN and CMNC each have their own set since they have separate data filters
 //Command Filter Options for CMNC: Set 1
 byte commandFilterOptionsSet1_CMNC = _BTFG_NONE_;
@@ -939,8 +960,10 @@ void initializeVariables()
 	flagSet_Error = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
 	//Flag(s) - Message Controls
 	flagSet_MessageControl = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
-	//Flag(s) - System Status
-	flagSet_SystemStatus = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset. This assumes all other flags are default low as well.
+	//Flag(s) - System Status 1
+	flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
+	//Flag(s) - System Status 2
+	flagSet_SystemStatus2 = _BTFG_NONE_;
 	//Flag(s) - Command Filter Options
 	//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
 	//Command Filter Options for CMNC: Set 1
@@ -1162,7 +1185,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 		//so it can stop checking for this message since the MAIN system is known to be ready
 		//Set MAIN System Ready flag to true		
-		BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_);
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_);
 		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code		
 		timeout_counter = 0;//reset counter (for future use)		
 	}//end if
@@ -1236,17 +1259,17 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 
 		//Set the system go flag
-		BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_);
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_);
 	
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		//if for some reason the system ready message was no received before the system go message, go ahead and make it true as any system go must also mean system ready. this doesn't really matter, but just doing it for consistency since the flags are global.
-		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_))
+		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_))
 		{
 			//Set MAIN System Ready flag to true
-			BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_);
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_);
 		}//end if
 
-		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_COMMUNICATIONS_SECURE_))//it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it justs needs to sync up again
+		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_))//it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it justs needs to sync up again
 		{
 
 			currentMode = SECURING_LINK;//Set mode to SECURING_LINK *begin*				
@@ -1275,7 +1298,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		currentMode = SECURING_LINK;//Set mode to SECURING_LINK *begin*
 									//set flag for secure link broken
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_COMMUNICATIONS_SECURE_);
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_);
 		//initialize/reset shared counter before use
 		timeout_counter = 0;
 
@@ -1297,7 +1320,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
 		currentMode = NORMAL_OPERATIONS;//Set mode to NORMAL_OPERATIONS *begin*
 										//set flag for secure link established
-		BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_COMMUNICATIONS_SECURE_);
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_);
 		timeout_counter = 0; //reset for future use		
 		cmnc_msg_queue = CMD_TAG_ESTABLISH_SECURE_LINK;//tells CMNC link is now secured
 	}//end else if
@@ -1311,11 +1334,20 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft			
 		//Pre-sleep tasks - Setting up wake tasks before going to sleep
-		//Clear the system go flag
-		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_);
+		
+		
+		//Set the COMM Sleep Requested flag
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_COMM_SLEEP_REQUESTED_);
+	
+		//Clear the system go flag		
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_);
+		
 		currentMode = SYSTEM_WAKING;//Set mode to SYSTEM_WAKING *begin*
 		cmnc_msg_queue = CMD_TAG_SYSTEM_IS_WAKING;
 		timeout_counter = 0; //reset for future use				
+		
+		
+		
 		 //Run other pre-sleep tasks. (i.e. end software serial, as needed)		
 		 //WRITE LATER!!!!
 		 /*
@@ -1595,10 +1627,10 @@ void setAllMessageControlFlagsTo(boolean choice)
 }//end of setAllMessageControlFlagsTo()
 void setAllSystemStatusFlagsTo(boolean choice)
 {
-	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_, choice);
-	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_, choice);
-	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_COMMUNICATIONS_SECURE_, choice);
-	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_, choice);
 }//end of setAllSystemStatusFlagsTo()
 void setAllCommandFiltersTo(boolean choice, byte roverComm)
 {
@@ -1873,29 +1905,30 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 			
 			//If System Go (from MAIN to COMM) was not received (Note: Messages received could still have been sys ready or no message at all)
-			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_GO_))
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_))
 			{
 				#ifndef _DEBUG_TURN_OFF_SYSTEM_READY_STATUS //normally the main_msg_queue will send the CMD_TAG_SYSTEM_READY_STATUS. Can disable it for debugging purposes
 					main_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;//tells MAIN it's ready to synchronize, it should be normally on. only turn off when in debugging to reduce clutter
 				#endif
 				//If no system go msg from MAIN received && main_system_ready == false (MAIN system not ready yet to set the main_system_ready flag and have not received a system go to switch states yet, then keep incrementing the timeout counter)
-				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_MAIN_SYSTEM_READY_))
+				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_))
 				{
 					timeout_counter++;
+					#ifndef _DEBUG_DISABLE_COMM_SYNC_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes
+						if(timeout_counter >= COMM_SYNC_TIMEOUT_VALUE)
+						{
+							currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+							cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
+							//set sync_error = true
+							BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SYNC_ERROR_);			
+							//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
+							//initialize/reset shared counter before use
+							timeout_counter = 0;	
+						}//end if	
+					#endif
 				}//end if
 			}//end if		
-			#ifndef _DEBUG_DISABLE_COMM_SYNC_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes
-				if(timeout_counter >= COMM_SYNC_TIMEOUT_VALUE)
-				{
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
-					//set sync_error = true
-					BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SYNC_ERROR_);			
-					//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
-					//initialize/reset shared counter before use
-					timeout_counter = 0;	
-				}//end if	
-			#endif
+			
 			break;
 		case CONTROL_OUTPUTS:
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
@@ -2061,7 +2094,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 		case READ_INPUTS:
 			if(pirSensor->monitorMotion())//if the PIR detected motion
 			{
-				BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
 			}//end if
 			//Clear the PIR Sensor
 			pirSensor->reset();//reset the pir sensor once samples are processed
@@ -2075,7 +2108,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			//PLACEHOLDER: Maybe add in later to send PIR status to MAIN if needed.
 			//For now do nothing.			
 			//Clear PIR Status Flag
-			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_PIR_MOTION_DETECTED_);
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);
 			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 			//Note: Either you should get no data, generic health status errors, or secure link data. as everything else was filtered out
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
@@ -2097,24 +2130,24 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)		
 			
 			//Keep requesting for a secure link from CMNC until one is received
-			if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_COMMUNICATIONS_SECURE_))//it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it justs needs to sync up again
+			if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_))//it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it justs needs to sync up again
 			{
 				cmnc_msg_queue = CMD_TAG_SECURE_LINK_REQUEST;//tells CMNC it's ready for a secure link
 				timeout_counter++;
-				
+				#ifndef _DEBUG_DISABLE_SECURE_LINK_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes				
+					if(timeout_counter >= SECURE_LINK_TIMEOUT_VALUE)
+					{
+						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+						cmnc_msg_queue == CMD_TAG_SECURE_LINK_ERROR_STATUS;
+						//set secure_link_error = true
+						BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SECURE_LINK_ERROR_);			
+						//(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
+						//initialize/reset shared counter before use
+						timeout_counter = 0;	
+					}//end if
+				#endif			
 			}//end if
-			#ifndef _DEBUG_DISABLE_SECURE_LINK_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes				
-				if(timeout_counter >= SECURE_LINK_TIMEOUT_VALUE)
-				{
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					cmnc_msg_queue == CMD_TAG_SECURE_LINK_ERROR_STATUS;
-					//set secure_link_error = true
-					BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SECURE_LINK_ERROR_);			
-					//(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
-					//initialize/reset shared counter before use
-					timeout_counter = 0;	
-				}//end if
-			#endif			
+			
 			break;
 		case CONTROL_OUTPUTS:
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
@@ -2134,7 +2167,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 		case TX_COMMUNICATIONS:
 			//Interweave primary transmissions and redirection, to allow the receiving end have time to process each incoming data
 	
-			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
+			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
 			{							
 				//1. Sends data to CMNC
 				if (cmnc_msg_queue != CMD_TAG_NO_MSG)
@@ -2152,7 +2185,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 					|| BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_)
 					)		
 				{
-					BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_);//clear the flag
+					BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);//clear the flag
 					//reset the counter before use
 					transmission_delay_cnt = 0;
 					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
@@ -2181,7 +2214,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);			
 					
 					//reset the first transmission flag
-					BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_);
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 				}//end if
 				else//the desired delay has not been reached yet, so just increment the count
 				{
@@ -2312,7 +2345,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 		case READ_INPUTS:
 			if(pirSensor->monitorMotion())//if the PIR detected motion
 			{
-				BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
 			}//end if
 			//Clear the PIR Sensor
 			pirSensor->reset();//reset the pir sensor once samples are processed
@@ -2326,7 +2359,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//PLACEHOLDER: Maybe add in later to send PIR status to MAIN if needed.
 			//For now do nothing.			
 			//Clear PIR Status Flag
-			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_PIR_MOTION_DETECTED_);
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);
 			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 			//Note: Either you should get no data, generic health status errors, or secure link data. as everything else was filtered out
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
@@ -2370,7 +2403,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 		
 			//Interweave primary transmissions and redirection, to allow the receiving end have time to process each incoming data
 	
-			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
+			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
 			{							
 				//1. Sends data to CMNC
 				if (cmnc_msg_queue != CMD_TAG_NO_MSG)
@@ -2388,7 +2421,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					|| BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_)
 					)		
 				{
-					BooleanBitFlags::clearFlagBit(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_);//clear the flag
+					BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);//clear the flag
 					//reset the counter before use
 					transmission_delay_cnt = 0;
 					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
@@ -2417,7 +2450,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);			
 					
 					//reset the first transmission flag
-					BooleanBitFlags::setFlagBit(flagSet_SystemStatus, _BTFG_FIRST_TRANSMISSION_);
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 				}//end if
 				else//the desired delay has not been reached yet, so just increment the count
 				{
@@ -2545,8 +2578,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 			break;
 		case DATA_FILTER:
-//LEFT OFF HERE		
-		
+
 
 			//Reset/clear flags (no data for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
@@ -2601,14 +2633,60 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			 
 			break;
 		case PROCESS_DATA:
-//LEFT OFF HERE		
-		
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
-			#endif
-			//WRITE ME LATER
+			#endif			
+			//Skip Process of PIR status
+			//Skip Process CMNC command/data
+			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+			//Note: Either you should get no data, hw reset, sw reset, generic health status errors, or COMM sleep request message(s) from MAIN. as everything else was filtered out.
+			//Remember, only hw reset, sw reset, generic health status errors, or COMM sleep request message(s) can pass the data filter.
+
+			
+
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh2_COMM, ROVERCOMM_MAIN);
+				//Note: When COMM Sleep Request is received the mode will change to SYSTEM_WAKING to prepare for the wakeup, then COMM will go to sleep in the commandDirector function.
+				//If COMM Sleep Request is received, process it here in the commandDirector and override the timeout
+			}//end if
+			
+			
+			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+			
+			
+			//If COMM Sleep Request was not received from MAIN yet (either because MAIN never got the ALL_SLEEP_REQUEST or because COMM missed the COMM Sleep Request back from MAIN and MAIN already went to sleep)
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_COMM_SLEEP_REQUESTED_) )
+			{
+				//Resend the sleep request a few times (until timeout occurs) to MAIN (and status to CMNC again) just in case MAIN misses it (as MAIN would have gone to sleep and would have ignored this message) or COMM had missed the COMM Sleep Request back from MAIN
+				//So regenerate the messages as needed			
+				cmnc_msg_queue == CMD_TAG_SYSTEM_IS_SLEEPING;
+				main_msg_queue == CMD_TAG_ALL_SLEEP_REQUEST;
+				timeout_counter++;
+				//If timeout has reached while waiting for MAIN to send a COMM Sleep Request then go to error
+				#ifndef _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes
+					if(timeout_counter >= SLEEPING_ERROR_TIMEOUT_VALUE)
+					{
+						//Set mode to SYSTEM_ERROR
+						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+						cmnc_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;
+						//set sleeping_error = true
+						BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SLEEPING_ERROR_);						
+						//(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)
+						//initialize/reset shared counter before use
+						timeout_counter = 0;
+					}//end if
+				#endif
+			}//end if
+			else//COMM sleep was requested, and it already went to sleep in the commandDirector function. So now it's waking up.
+			{
+				//so reset/clear the flag and continue to wake up
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_COMM_SLEEP_REQUESTED_);
+			}//end else
 			break;
 		case CONTROL_OUTPUTS:
+//LEFT OFF HERE				
 			//WRITE ME LATER
 			break;
 		case CREATE_DATA:

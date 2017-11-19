@@ -21,14 +21,16 @@
 		#define _BTFG_REDIRECT_TO_MAIN_								0x02		
 		#define _BTFG_DATA_WAS_FOR_COMM_CH1_					0x04
 		#define _BTFG_DATA_WAS_FOR_COMM_CH2_				0x08
-		//System Status: flagSet_SystemStatus
+		//System Status: flagSet_SystemStatus1
 		#define _BTFG_MAIN_SYSTEM_READY_								0x01
 		#define _BTFG_MAIN_SYSTEM_GO_								0x02
 		#define _BTFG_COMMUNICATIONS_SECURE_						0x04
 		#define _BTFG_FIRST_TRANSMISSION_								0x08
 		#define _BTFG_PIR_MOTION_DETECTED_								0x10
+		//System Status: flagSet_SystemStatus2
+		#define _BTFG_COMM_SLEEP_REQUESTED_							0x01
+		#define _BTFG_COMM_SW_RESET_REQUESTED_							0x02
 		//---------------------------------------------------
-		
 		
 		
 		
