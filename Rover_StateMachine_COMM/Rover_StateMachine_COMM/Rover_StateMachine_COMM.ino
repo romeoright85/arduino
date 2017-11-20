@@ -171,21 +171,26 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 
 //============Debugging: Disable Comm Sync Timeout
-//Uncomment in order to print timeout counter value
+//Uncomment in order to disable the COMM Sync timeout
 #define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT
 //============End Debugging: Disable Comm Sync Timeout
 
 
 //============Debugging: Disable Sleep Error Timeout
-//Uncomment in order to print timeout counter value
+//Uncomment in order to disable the Sleep Error timeout
 //#define _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT
 //============End Debugging: Disable Sleep Error Timeout
 
-
 //============Debugging: Disable Secure Link Timeout
-//Uncomment in order to print timeout counter value
+//Uncomment in order to disable the Secure Link timeout
 #define _DEBUG_DISABLE_SECURE_LINK_TIMEOUT
 //============End Debugging: Print timeout counter value
+
+//============Debugging: SW Reset Error Timeout
+//Uncomment in order to disable the SW Reset Error and SW Reset Resent timeout
+//Note since this uses a dual timeout design, it uses one flag to disable both of the timeouts
+//#define _DEBUG_DISABLE_SW_RESET_ERROR_AND_RESEND_TIMEOUT
+//============End Debugging: SW Reset Error Timeout
 
 
 //============Debugging: HW Reset Status Message
@@ -1194,6 +1199,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	 //=====Conflicting Functions Ordered By Priority
 	 //Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 	 //All HW Reset Request
+	 //Note: Allow HW reset requests or SW reset re-requests to override the sw reset process if needed (by placing it higher on the if/else chain)
 	else if (commandTag == CMD_TAG_ALL_HW_RESET_REQUEST &&
 			(
 				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_) )
@@ -1214,7 +1220,13 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 	 
 	{
+		//WRITE ME LATER
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
+		
+		
+		//Set the COMM SW Reset Requested flag
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_COMM_SW_RESET_REQUESTED_);
+		
 		currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*	
 
 	}//end else if
@@ -1890,6 +1902,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			#endif
 			
 			//Skip Process of PIR status
+			//Clear PIR Status Flag
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);
 			//Skip Process CMNC command/data
 			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 			//Note: Either you should get no data, hw reset, sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
@@ -1963,7 +1977,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			main_msg_queue = CMD_TAG_NO_MSG;
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
-			
+			//reset the first transmission flag
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -2202,6 +2217,8 @@ void runModeFunction_SECURING_LINK(byte currentState)
 					main_msg_queue = CMD_TAG_NO_MSG;
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 				}//end else
 			}//end if	
 			else//this is not the first transmission
@@ -2216,8 +2233,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
-					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);			
-					
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);					
 					//reset the first transmission flag
 					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 				}//end if
@@ -2404,7 +2420,6 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			}//end if
 			break;
 		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
-
 		
 			//Interweave primary transmissions and redirection, to allow the receiving end have time to process each incoming data
 	
@@ -2432,12 +2447,14 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
 				}//end if
 				else//there is no second transmission, move on
-				{
+				{					
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 				}//end else
 			}//end if	
 			else//this is not the first transmission
@@ -2453,7 +2470,6 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					main_msg_queue = CMD_TAG_NO_MSG;
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);			
-					
 					//reset the first transmission flag
 					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 				}//end if
@@ -2535,6 +2551,8 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			main_msg_queue = CMD_TAG_NO_MSG;
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+			//reset the first transmission flag
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -2642,6 +2660,8 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				Serial.println(timeout_counter);//DEBUG
 			#endif			
 			//Skip Process of PIR status
+			//Clear PIR Status Flag
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);
 			//Skip Process CMNC command/data
 			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 			//Note: Either you should get no data, hw reset, sw reset, generic health status errors, or COMM sleep request message(s) from MAIN. as everything else was filtered out.
@@ -2723,6 +2743,8 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			main_msg_queue = CMD_TAG_NO_MSG;
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+			//reset the first transmission flag
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -2763,7 +2785,9 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);			
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);			
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);	
+			//reset the first transmission flag
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);			
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -2781,29 +2805,226 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		case RX_COMMUNICATIONS: //Mode: SW_RESETTING
-//LEFT OFF HERE		
-			//WRITE ME LATER
+			//rxData() from CMNC
+			//1. Reset status flag
+			ch1Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch1->clearRxData();
+			//3. Receive data
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_CMNC);//Note: this is a local .ino function
+
+			//rxData() from MAIN
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
 			break;
 		case DATA_VALIDATION: //Mode: SW_RESETTING
-			//WRITE ME LATER
+			//parseAndValidateData() from CMNC
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+
+			 //parseAndValidateData() from MAIN
+			 //Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 			break;
 		case DATA_FILTER: //Mode: SW_RESETTING
-			//WRITE ME LATER
+
+			//Reset/clear flags (no data for COMM)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+			
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_CMNC);//for CMNC
+			setAllCommandFiltersTo(false, ROVERCOMM_MAIN);//for MAIN
+			//Then enable the allowed commands for this mode:
+			//For CMNC
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);
+			//For MAIN
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
+			
+			//Transmit data and/or execute command
+			//For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, COMM
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Set no redirections from MAIN	
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
+
+				/*
+				filter and throw away all CMNC data except:
+					hw reset request message(s) from CMNC
+					All SW Reset (Re-)Request message(s) from CMNC
+						Note: Allow HW reset requests or All SW Reset (Re-)Request to override the sw reset process if needed
+				*/
+
+			}//end if
+
+			//For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, COMM		
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Set no redirections from MAIN	
+				//Note: this is a local .ino function
+				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
+
+				/*
+				filter and throw away all MAIN data except:
+					hw reset request message(s) from MAIN/AUXI/NAVI
+					COMM SW Request Message(s) from MAIN (to SW reset the COMM)
+						Note: Allow HW reset requests or SW reset re-requests to override the sw reset process if needed							
+				*/
+				
+			}//end if
+			//else the data was invalid or not ready, so do nothing				
+
 			break;
 		case PROCESS_DATA: //Mode: SW_RESETTING
+		
+//LEFT OFF HERE
+			
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
-			//WRITE ME LATER
+			//Skip Process of PIR status
+			//Clear PIR Status Flag
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);
+			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+			//Note: Either you should get no data or hw or All SW Reset (Re-)Request from CMNC. as everything else was filtered out
+			//Note: If hw/sw reset requests from CMNC, see "Command Options" below for more info.						
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh1_COMM, ROVERCOMM_CMNC);
+			}//end if			
+			
+			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+			//Note: Either you should get no data or hw request (it could come from MAIN, AUXI, or NAVI), or a COMM sw reset request (for all or COMM only) from MAIN. as everything else was filtered out
+			//Note: If hw reset request or COMM sw reset request from MAIN, see "Command Options" below for more info.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh2_COMM, ROVERCOMM_MAIN);
+			}//end if
+						
+			
+			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)		
+			
+			//For SW_RESETTING, it uses a dual timeout design
+			//Note: SW_RESET_ERROR_TIMEOUT_VALUE should be greater than SW_RESET_RESEND_TIMEOUT_VALUE
+
+			//If COMM SW Reset Request was not received from MAIN yet
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_COMM_SW_RESET_REQUESTED_) )
+			{				
+				timeout_counter++;
+				//if COMM has waited for a really long time, it should error out itself
+								
+				#ifndef _DEBUG_DISABLE_SW_RESET_ERROR_AND_RESEND_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes.
+					//Note since this uses a dual timeout design, it uses one flag to disable both of the timeouts
+					if(timeout_counter >= SW_RESET_ERROR_TIMEOUT_VALUE)
+					{
+					
+						//Set mode to SYSTEM_ERROR
+						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+						cmnc_msg_queue == CMD_TAG_SW_RESET_ERROR_STATUS;
+						//set sleeping_error = true
+						BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SW_RESET_ERROR_);						
+						//(Note: the sw_reset_error flag can only be cleared with a hw reset)
+						//initialize/reset shared counter before use
+						timeout_counter = 0;
+					
+					}//end if
+					//else if it just waited a little bit, it should try resending the ALL_SW_RESET_REQUEST to MAIN
+					else if(timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE)
+					{
+						//Note: It should send the request periodically and not continuously so the system has time to process the request and it doesn't get stuck in a loop
+						cmnc_msg_queue == CMD_TAG_SW_IS_RESETTING;//Resend this message to CMNC to show that it's attempting to SW reset the system again
+						main_msg_queue == CMD_TAG_ALL_SW_RESET_REQUEST;//Resending this request to MAIN
+						//Don't reset timeout_counter, keep counting and see if it will reach the SW_RESET_ERROR_TIMEOUT_VALUE
+					}//end else if
+				#endif				
+			}//end if
+			else//COMM SW Reset was requested, and the next mode was already set to INITIALIZATION in commandDirect (to override the SW_RESETTING state)
+			{
+				//so reset/clear the flag and continue to do the SW reset by switching to the INITIALIZATION mode
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_COMM_SW_RESET_REQUESTED_);
+			}//end else
 			break;
 		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
-			//WRITE ME LATER
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			break;
 		case CREATE_DATA: //Mode: SW_RESETTING
-			//WRITE ME LATER
+			//TROUBLESHOOTING TIP: If MAIN misses this message or has issues, then main_msg_queue = ALL_SW_RESET_REQUEST should be set and sent again.
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if
+			 //Creates data for CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_CMNC);
+			}//end if	
 			break;
 		case TX_COMMUNICATIONS: //Mode: SW_RESETTING
-			//WRITE ME LATER
+			//1. Sends data to CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_CMNC, ROVERCOMM_CMNC);
+			}//end if
+			//2. Sends data to MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+			}//end if			
+			//No redirection in the HW_RESETTING mode
+			//clears message queue(s) and redirect flags
+			cmnc_msg_queue = CMD_TAG_NO_MSG;
+			main_msg_queue = CMD_TAG_NO_MSG;
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+			//reset the first transmission flag
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 			break;
 		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -2821,31 +3042,98 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
-			//WRITE ME LATER
+//LEFT OFF HERE
+//WRITE ME LATER
 			break;
 		case DATA_VALIDATION: //Mode: SYSTEM_ERROR
-			//WRITE ME LATER
+//WRITE ME LATER
 			break;
 		case DATA_FILTER: //Mode: SYSTEM_ERROR
-			//WRITE ME LATER
+//WRITE ME LATER
 			break;
 		case READ_INPUTS: //Mode: SYSTEM_ERROR
-			//WRITE ME LATER
+//WRITE ME LATER
 			break;
 		case PROCESS_DATA: //Mode: SYSTEM_ERROR
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
-			//WRITE ME LATER
+//WRITE ME LATER
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
-			//WRITE ME LATER
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_ERROR
-			//WRITE ME LATER
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if
+			 //Creates data for CMNC
+			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_CMNC);
+			}//end if
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
-			//WRITE ME LATER
+		
+			//Interweave primary transmissions and redirection, to allow the receiving end have time to process each incoming data
+	
+			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
+			{							
+				//1. Sends data to CMNC
+				if (cmnc_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_CMNC, ROVERCOMM_CMNC);
+				}//end if
+				//2. Sends data to MAIN
+				if (main_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+				}//end if				
+				//3. Check to see if there are any second messages to send
+				if (
+					BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_)
+					|| BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_)
+					)		
+				{
+					BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);//clear the flag
+					//reset the counter before use
+					transmission_delay_cnt = 0;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
+				}//end if
+				else//there is no second transmission, move on
+				{					
+					//clears message queue(s) and redirect flags		
+					cmnc_msg_queue = CMD_TAG_NO_MSG;
+					main_msg_queue = CMD_TAG_NO_MSG;
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
+				}//end else
+			}//end if	
+			else//this is not the first transmission
+			{
+			
+				if(transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY) //once the desired delay has been reached, continue with the code
+				{
+					//Send the second set of messages
+					redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+					redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)	
+					//clears message queue(s) and redirect flags		
+					cmnc_msg_queue = CMD_TAG_NO_MSG;
+					main_msg_queue = CMD_TAG_NO_MSG;
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);								
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
+				}//end if
+				else//the desired delay has not been reached yet, so just increment the count
+				{
+					transmission_delay_cnt++;
+				}//end else			
+			}//end else		
 			break;
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 				 //This code should never execute, if it does, there is a logical or programming error

@@ -235,6 +235,7 @@ COMM:
 				SYSTEM_WAKING
 					do nothing
 				SW_RESETTING
+					no redirections from CMNC or MAIN
 					filter and throw away all CMNC data except:
 						hw reset request message(s) from CMNC
 						All SW Reset (Re-)Request message(s) from CMNC
@@ -412,6 +413,8 @@ COMM:
 					do nothing
 				SYSTEM_SLEEPING
 				
+					Skips PIR status	
+					
 					Categorize all commands/data from all sources.					
 					Sort based on priority.
 					Allow for all non-conflicting commands to run.
@@ -419,7 +422,7 @@ COMM:
 				
 					Skip for CMNC
 						Improvement Idea: Maybe allow hw resets requests from CMNC later if want to. For now good enough.
-					Skips PIR status	
+					
 			
 										
 					//Run lower priority functions here.
@@ -468,12 +471,14 @@ COMM:
 					do nothing					
 				SW_RESETTING
 
+					Skips PIR status
+									
 					Categorize all commands/data from all sources.					
 					Sort based on priority.
 					Allow for all non-conflicting commands to run.
 					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 				
-					Skips PIR status
+
 					
 					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						Note: Either you should get no data or hw or All SW Reset (Re-)Request from CMNC. as everything else was filtered out
@@ -506,9 +511,10 @@ COMM:
 							timeout_counter = 0;
 						end if
 						//else if it just waited a little bit, it should try resending the ALL_SW_RESET_REQUEST to MAIN
-						else if timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE
+						else if timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE							
+							//Note: It should send the request periodically and not continuously so the system has time to process the request and it doesn't get stuck in a loop. it will get cleared out in TX_COMMUNICATIONS after the messages are sent.
+							cmnc_msg_queue == SW_IS_RESETTING //Resend this message to CMNC to show that it's attempting to SW reset the system again
 							main_msg_queue == ALL_SW_RESET_REQUEST //Resending this request to MAIN
-							cmnc_msg_queue == SW_IS_RESETTING //Resend this message to CMNC to show that it's attempting to SW reset the system again	
 							//Don't reset timeout_counter, keep counting and see if it will reach the SW_RESET_ERROR_TIMEOUT_VALUE
 						end else if
 					end if
@@ -708,6 +714,7 @@ COMM:
 						main_msg_queue = CMD_TAG_NO_MSG					
 						redirectToCMNC = false
 						redirectToMAIN = false
+					first_transmission = true //reset the flag
 					Mode: SYNCHRONIZATION
 					set next state to RX_COMMUNICATIONS											
 					go to RUN_HOUSEKEEPING_TASKS
@@ -722,7 +729,7 @@ COMM:
 						end if
 						//check to see if there are any second messages to send
 						if redirectToMAIN == true || redirectToCMNC == true
-							first_transmission = false //clear the flag
+							first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 							//reset the counter before use
 							transmission_delay_cnt = 0
 							Mode: SECURING_LINK
@@ -733,7 +740,8 @@ COMM:
 								cmnc_msg_queue = CMD_TAG_NO_MSG
 								main_msg_queue = CMD_TAG_NO_MSG					
 								redirectToCMNC = false
-								redirectToMAIN = false							
+								redirectToMAIN = false				
+							first_transmission = true //reset the flag
 							Mode: SECURING_LINK
 							set next state to RX_COMMUNICATIONS
 							go to RUN_HOUSEKEEPING_TASKS							
@@ -774,7 +782,7 @@ COMM:
 						end if
 						//check to see if there are any second messages to send
 						if redirectToMAIN == true || redirectToCMNC == true
-							first_transmission = false //clear the flag
+							first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 							//reset the counter before use
 							transmission_delay_cnt = 0
 							Mode: NORMAL_OPERATIONS
@@ -786,6 +794,7 @@ COMM:
 								main_msg_queue = CMD_TAG_NO_MSG					
 								redirectToCMNC = false
 								redirectToMAIN = false							
+							first_transmission = true //reset the flag
 							Mode: NORMAL_OPERATIONS
 							set next state to RX_COMMUNICATIONS
 							go to RUN_HOUSEKEEPING_TASKS							
@@ -844,6 +853,7 @@ COMM:
 						main_msg_queue = CMD_TAG_NO_MSG					
 						redirectToCMNC = false
 						redirectToMAIN = false
+					first_transmission = true //reset the flag
 						Note: When in SYSTEM_SLEEPING mode, it will regenerate the message every loop. (though inefficient, it allows for easier following of the code through the stages. Can change this to make it more efficient, later if needed)
 					Mode: SYSTEM_SLEEPING
 					set next state to RX_COMMUNICATIONS					
@@ -859,6 +869,7 @@ COMM:
 						main_msg_queue = CMD_TAG_NO_MSG					
 						redirectToCMNC = false
 						redirectToMAIN = false
+					first_transmission = true //reset the flag
 					Mode: SYNCHRONIZATION *begin*
 						DEBUG TIP: If for some reason MAIN didn't wake up properly, COMM will already be in SYNCHRONIZATION. If it can't synchronize, SYNCHRONIZATION will time out as normal and go into SYSTEM_ERROR with sync_error = true.
 					set next state to RX_COMMUNICATIONS					
@@ -876,6 +887,7 @@ COMM:
 						main_msg_queue = CMD_TAG_NO_MSG					
 						redirectToCMNC = false
 						redirectToMAIN = false
+					first_transmission = true //reset the flag
 						TROUBLESHOOTING TIP: Make sure the queues are cleared out so it doesn't keep getting stuck in loop. (i..e keeps resetting itself)
 					Mode: SW_RESETTING
 					set next state to RX_COMMUNICATIONS					
@@ -892,7 +904,7 @@ COMM:
 						end if
 						//check to see if there are any second messages to send
 						if redirectToMAIN == true || redirectToCMNC == true
-							first_transmission = false //clear the flag
+							first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 							//reset the counter before use
 							transmission_delay_cnt = 0
 							Mode: SYSTEM_ERROR
@@ -904,6 +916,7 @@ COMM:
 								main_msg_queue = CMD_TAG_NO_MSG					
 								redirectToCMNC = false
 								redirectToMAIN = false						
+							first_transmission = true //reset the flag
 							Mode: SYSTEM_ERROR
 							set next state to RX_COMMUNICATIONS
 							go to RUN_HOUSEKEEPING_TASKS							
@@ -1033,8 +1046,8 @@ Conflicting Functions Ordered By Priority
 			comm_sw_reset_requested = true
 			Next State: RUN_HOUSEKEEPING_TASKS
 		All SW Reset Request
-			main_msg_queue = ALL_SW_RESET_REQUEST
 			cmnc_msg_queue = SW_IS_RESETTING			
+			main_msg_queue = ALL_SW_RESET_REQUEST
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 			Mode: SW_RESETTING *begin*				

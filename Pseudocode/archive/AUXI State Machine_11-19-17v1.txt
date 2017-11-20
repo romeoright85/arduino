@@ -613,7 +613,7 @@ At POR (defaults):
 				//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary				
 				//check to see if there are any second messages to send
 				if main_sec_msg_queue != CMD_TAG_NO_MSG
-					first_transmission = false //clear the flag
+					first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 					//reset the counter before use
 					transmission_delay_cnt = 0
 					Mode: SYNCHRONIZATION
@@ -623,6 +623,7 @@ At POR (defaults):
 					clear message queues
 						main_pri_msg_queue = CMD_TAG_NO_MSG					
 						main_sec_msg_queue = CMD_TAG_NO_MSG			
+					first_transmission = true //reset the flag
 					Mode: SYNCHRONIZATION
 					set next state to RX_COMMUNICATIONS
 					go to RUN_HOUSEKEEPING_TASKS							
@@ -650,7 +651,7 @@ At POR (defaults):
 		NORMAL_OPERATIONS
 			//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary.		
 			if first_transmission == true		
-				first_transmission = false //clear the flag
+				first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 				//reset the counter before use
 				transmission_delay_cnt = 0
 				//send the first set of messages
@@ -660,7 +661,7 @@ At POR (defaults):
 				//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary
 				//check to see if there are any second messages to send
 				if main_sec_msg_queue != CMD_TAG_NO_MSG
-					first_transmission = false //clear the flag
+					first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 					//reset the counter before use
 					transmission_delay_cnt = 0
 					Mode: NORMAL_OPERATIONS
@@ -670,6 +671,7 @@ At POR (defaults):
 					clear message queues
 						main_pri_msg_queue = CMD_TAG_NO_MSG					
 						main_sec_msg_queue = CMD_TAG_NO_MSG							
+					first_transmission = true //reset the flag
 					Mode: NORMAL_OPERATIONS
 					set next state to RX_COMMUNICATIONS
 					go to RUN_HOUSEKEEPING_TASKS							
@@ -703,7 +705,7 @@ At POR (defaults):
 			clear message queues
 				main_pri_msg_queue = CMD_TAG_NO_MSG
 				main_sec_msg_queue = CMD_TAG_NO_MSG
-				
+			first_transmission = true //reset the flag
 			//Note: If MAIN misses this message, MAIN will go into sleeping error and would require a SW reset or HW reset to take the Rover out of this error. (AUXI can't resend the sleeping acknowledgement since it already went to sleep)
 			//Troubleshooting tip: If MAIN keeps missing this message, can send it twice through the main_pri_msg_queue and then the main_sec_msg_queue as well.
 
@@ -745,6 +747,7 @@ At POR (defaults):
 			clear message queues
 				main_pri_msg_queue = CMD_TAG_NO_MSG
 				main_sec_msg_queue = CMD_TAG_NO_MSG
+			first_transmission = true //reset the flag
 			//Note: If MAIN misses this message, MAIN will go into SW reset error and re-request for a SW reset			
 			//Troubleshooting tip: If MAIN keeps missing this message, can send it twice through the main_pri_msg_queue and then the main_sec_msg_queue as well.
 			Mode: INITIALIZATION *begin*		
@@ -755,7 +758,7 @@ At POR (defaults):
 		SYSTEM_ERROR
 			//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary		
 			if first_transmission == true		
-				first_transmission = false //clear the flag
+				first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 				//reset the counter before use
 				transmission_delay_cnt = 0
 				//send the first set of messages
@@ -764,7 +767,7 @@ At POR (defaults):
 				end if						
 				//check to see if there are any second messages to send
 				if main_sec_msg_queue != CMD_TAG_NO_MSG
-					first_transmission = false //clear the flag
+					first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 					//reset the counter before use
 					transmission_delay_cnt = 0
 					Mode: SYSTEM_ERROR
@@ -774,6 +777,7 @@ At POR (defaults):
 					clear message queues
 						main_pri_msg_queue = CMD_TAG_NO_MSG					
 						main_sec_msg_queue = CMD_TAG_NO_MSG			
+					first_transmission = true //reset the flag
 					Mode: SYSTEM_ERROR
 					set next state to RX_COMMUNICATIONS
 					go to RUN_HOUSEKEEPING_TASKS							
@@ -787,8 +791,8 @@ At POR (defaults):
 					clear message queues
 						main_pri_msg_queue = CMD_TAG_NO_MSG					
 						main_sec_msg_queue = CMD_TAG_NO_MSG			
-						//Note: Any health errors will have it's messages recreated in SYSTEM_HEALTH						
 					first_transmission = true //reset the flag
+					//Note: Any health errors will have it's messages recreated in SYSTEM_HEALTH						
 					Mode: SYSTEM_ERROR
 					set next state to RX_COMMUNICATIONS
 					go to RUN_HOUSEKEEPING_TASKS	

@@ -870,6 +870,7 @@ MAIN:
 						redirectToNAVI = false
 						redirectToAUXI = false
 						redirectToCOMM = false						
+					first_transmission = true //reset the flag						
 					Mode: SYNCHRONIZATION
 					set next state to RX_COMMUNICATIONS											
 					go to RUN_HOUSEKEEPING_TASKS				
@@ -888,7 +889,7 @@ MAIN:
 						end if
 						//check to see if there are any second messages to send
 						if redirectToCOMM == true || redirectToNAVI == true || redirectToAUXI == true
-							first_transmission = false //clear the flag
+							first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 							//reset the counter before use
 							transmission_delay_cnt = 0
 							Mode: NORMAL_OPERATIONS
@@ -901,7 +902,8 @@ MAIN:
 								comm_msg_queue = CMD_TAG_NO_MSG
 								redirectToNAVI = false
 								redirectToAUXI = false
-								redirectToCOMM = false							
+								redirectToCOMM = false	
+							first_transmission = true //reset the flag								
 							Mode: NORMAL_OPERATIONS
 							set next state to RX_COMMUNICATIONS
 							go to RUN_HOUSEKEEPING_TASKS							
@@ -956,6 +958,7 @@ MAIN:
 						redirectToNAVI = false
 						redirectToAUXI = false
 						redirectToCOMM = false					
+					first_transmission = true //reset the flag
 					if run_task_on_main_now == true
 						run_task_on_main_now = false //clear the flag
 						//MAIN Sleeps itself once the request from MAIN to COMM for COMM to sleep itself has been sent
@@ -1010,6 +1013,7 @@ MAIN:
 						redirectToNAVI = false
 						redirectToAUXI = false
 						redirectToCOMM = false					
+					first_transmission = true //reset the flag
 					if run_task_on_main_now == true
 						run_task_on_main_now = false //clear the flag
 						//MAIN SW resets itself once the request from MAIN to COMM for COMM to sw reset itself has been sent
@@ -1035,7 +1039,7 @@ MAIN:
 						end if						
 						//check to see if there are any second messages to send
 						if redirectToCOMM == true || redirectToNAVI == true || redirectToAUXI == true
-							first_transmission = false //clear the flag
+							first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
 							//reset the counter before use
 							transmission_delay_cnt = 0
 							Mode: SYSTEM_ERROR
@@ -1048,7 +1052,8 @@ MAIN:
 								comm_msg_queue = CMD_TAG_NO_MSG
 								redirectToNAVI = false
 								redirectToAUXI = false
-								redirectToCOMM = false							
+								redirectToCOMM = false			
+							first_transmission = true //reset the flag								
 							Mode: SYSTEM_ERROR
 							set next state to RX_COMMUNICATIONS
 							go to RUN_HOUSEKEEPING_TASKS							

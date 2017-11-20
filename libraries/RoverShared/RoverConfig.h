@@ -345,12 +345,10 @@
 		#define SECURE_LINK_TIMEOUT_VALUE 50//arbitrariliy chosen value for now
 		#define CONCURRENT_TRANSMISSION_DELAY		50//delay for about 1-5ms or so between potentially sending messages out again to the same arduino, //DEBUG arbitrariliy chosen value for now
 		#define SLEEPING_ERROR_TIMEOUT_VALUE 50//time to waiting for a COMM Sleep Request from MAIN and keep resending a ALL_SLEEP_REQUEST to MAIN (since unlike SW requests, if MAIN is already asleep and you send it another request, there is no harm) before just COMM should just error out itself. //DEBUG arbitrariliy chosen value for now
-		//WRITE LATER
-		/*		
-		#define SW_RESET_RESEND_TIMEOUT_VALUE		??//time to wait for the COMM SW Reset Request from MAIN before restarting the All SW Reset , by sending the All SW Reset Request to MAIN again.
-		#define SW_RESET_ERROR_TIMEOUT_VALUE ??//time to waiting and resend the All SW Reset (Re-)Requests to MAIN before COMM should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
+		#define SW_RESET_RESEND_TIMEOUT_VALUE		50//time to wait for the COMM SW Reset Request from MAIN before restarting the All SW Reset , by sending the All SW Reset Request to MAIN again. //DEBUG arbitrariliy chosen value for now
+		#define SW_RESET_ERROR_TIMEOUT_VALUE 50//time to waiting and resend the All SW Reset (Re-)Requests to MAIN before COMM should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE //DEBUG arbitrariliy chosen value for now
 		
-		*/
+		
 	#endif
 	#ifdef _MAIN_STATE_MACHINE_VARIABLES_
 		//WRITE ME LATER
