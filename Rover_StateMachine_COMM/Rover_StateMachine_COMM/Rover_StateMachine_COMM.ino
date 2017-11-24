@@ -239,7 +239,7 @@ byte ch1Status = DATA_STATUS_NOT_READY;//for PC USB/CNMC
 byte ch2Status = DATA_STATUS_NOT_READY;//for MAIN
 
 									   //Flag(s) - Error
-byte flagSet_Error = _BTFG_NONE_;
+byte flagSet_Error1 = _BTFG_NONE_;
 //Flag(s) - Message Controls
 byte flagSet_MessageControl = _BTFG_NONE_;
 //Flag(s) - System Status 1
@@ -962,7 +962,7 @@ void initializeVariables()
 	
 	
 	//Flag(s) - Error
-	flagSet_Error = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
+	flagSet_Error1 = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
 	//Flag(s) - Message Controls
 	flagSet_MessageControl = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
 	//Flag(s) - System Status 1
@@ -1256,7 +1256,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*				
 		cmnc_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
-		BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_GENERIC_HEALTH_ERROR_);
+		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);
 		//Note: the generic_health_error flag can only be cleared with a sw reset or hw reset
 
 		timeout_counter = 0;//reset counter (for future use)
@@ -1420,11 +1420,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 
 	}//end else if			
-	 //Received Error Messages
+	 //Received Generic System Error
 	else if (commandTag == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS &&
 			(
-				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_) )
-				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_))
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_))
 			)
 		)		 	 
 	{
@@ -1627,12 +1627,13 @@ void createDataFromQueueFor(byte roverCommDestination)
 }//end of createDataFromQueueFor()
 void setAllErrorFlagsTo(boolean choice)
 {
-	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_INVALID_STATE_OR_MODE_ERROR_, choice);
-	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_SYNC_ERROR_, choice);
-	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_SECURE_LINK_ERROR_, choice);
-	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_SW_RESET_ERROR_, choice);
-	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_GENERIC_HEALTH_ERROR_, choice);
-	BooleanBitFlags::assignFlagBit(flagSet_Error, _BTFG_SLEEPING_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_SYNC_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_SECURE_LINK_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_SW_RESET_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_SLEEPING_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_, choice);
 }//end of setAllErrorFlagsTo()
 void setAllMessageControlFlagsTo(boolean choice)
 {
@@ -1647,6 +1648,7 @@ void setAllSystemStatusFlagsTo(boolean choice)
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_, choice);
 }//end of setAllSystemStatusFlagsTo()
 void setAllCommandFiltersTo(boolean choice, byte roverComm)
 {
@@ -1667,7 +1669,7 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_, choice);
-		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);//DEBUG
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);//DEBUG
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);//DEBUG
@@ -1686,7 +1688,7 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_, choice);
-		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);//DEBUG
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);//DEBUG
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);//DEBUG
@@ -1847,10 +1849,11 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				//leave false
 			//For MAIN
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
 
 
 			//Transmit data and/or execute command(s)
@@ -1938,7 +1941,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 							currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 							cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
 							//set sync_error = true
-							BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SYNC_ERROR_);			
+							BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SYNC_ERROR_);			
 							//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
 							//initialize/reset shared counter before use
 							timeout_counter = 0;	
@@ -2085,7 +2088,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			if (ch1Status == DATA_STATUS_VALID)
 			{
 				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-				//Set no redirections from MAIN	
+				//Set no redirections from CMNC
 				//Note: this is a local .ino function
 
 				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
@@ -2103,7 +2106,6 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			if (ch2Status == DATA_STATUS_VALID)
 			{
 				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-				//Set no redirections from MAIN	
 				//Note: this is a local .ino function
 				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
 
@@ -2160,7 +2162,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 						cmnc_msg_queue == CMD_TAG_SECURE_LINK_ERROR_STATUS;
 						//set secure_link_error = true
-						BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SECURE_LINK_ERROR_);			
+						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SECURE_LINK_ERROR_);			
 						//(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
 						//initialize/reset shared counter before use
 						timeout_counter = 0;	
@@ -2343,7 +2345,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			if (ch1Status == DATA_STATUS_VALID)
 			{
 				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-				//Set no redirections from MAIN	
+				//Set no redirections from CMNC	
 				//Note: this is a local .ino function
 
 				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
@@ -2355,7 +2357,6 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			if (ch2Status == DATA_STATUS_VALID)
 			{
 				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-				//Set no redirections from MAIN	
 				//Note: this is a local .ino function
 				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
 
@@ -2371,7 +2372,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//Clear the PIR Sensor
 			pirSensor->reset();//reset the pir sensor once samples are processed
 			break;
-		case PROCESS_DATA:
+		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
@@ -2620,12 +2621,13 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				//leave false
 			//For MAIN			
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
 			
-			
-			
+		
+
 			//Transmit data and/or execute command(s)
 
 			
@@ -2697,7 +2699,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
 						cmnc_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;
 						//set sleeping_error = true
-						BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SLEEPING_ERROR_);						
+						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SLEEPING_ERROR_);						
 						//(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)
 						//initialize/reset shared counter before use
 						timeout_counter = 0;
@@ -2885,7 +2887,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			if (ch1Status == DATA_STATUS_VALID)
 			{
 				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-				//Set no redirections from MAIN	
+				//Set no redirections from CMNC	
 				//Note: this is a local .ino function
 
 				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
@@ -2921,7 +2923,6 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			break;
 		case PROCESS_DATA: //Mode: SW_RESETTING
 		
-//LEFT OFF HERE
 			
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
@@ -2968,7 +2969,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
 						cmnc_msg_queue == CMD_TAG_SW_RESET_ERROR_STATUS;
 						//set sleeping_error = true
-						BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_SW_RESET_ERROR_);						
+						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SW_RESET_ERROR_);						
 						//(Note: the sw_reset_error flag can only be cleared with a hw reset)
 						//initialize/reset shared counter before use
 						timeout_counter = 0;
@@ -3042,23 +3043,213 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
-//LEFT OFF HERE
-//WRITE ME LATER
+
+			//rxData() from CMNC
+			//1. Reset status flag
+			ch1Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch1->clearRxData();
+			//3. Receive data
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_CMNC);//Note: this is a local .ino function
+
+			//rxData() from MAIN
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+		
 			break;
 		case DATA_VALIDATION: //Mode: SYSTEM_ERROR
-//WRITE ME LATER
+			//parseAndValidateData() from CMNC
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+
+			 //parseAndValidateData() from MAIN
+			 //Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
 			break;
 		case DATA_FILTER: //Mode: SYSTEM_ERROR
-//WRITE ME LATER
+
+			//Reset/clear flags (no data for COMM)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
+
+			
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_CMNC);//for CMNC
+			setAllCommandFiltersTo(false, ROVERCOMM_MAIN);//for MAIN
+			//Then enable the allowed commands for this mode:
+			//For CMNC
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_);		
+			//For MAIN
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
+			
+			
+			//Transmit data and/or execute command
+			//For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, COMM
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
+
+				/*
+					Set filter to throw away all CMNC data except:
+					any redirections
+						if redirection needed to MAIN:
+						redirectToMAIN = true
+					hw reset request message(s) from CMNC
+					All SW Reset (Re-)Request message(s) from CMNC							
+					PIR status request message(s) from CMNC (used for debugging)
+					Allow all CMNC data to be redirected so MAIN/AUXI/NAVI can send requested data back. Each Arduino will filter out what it will allow in error mode.
+					Note: This will be a known vulnerability with the Rover. If it's in error mode, anything can be sent to it to do anything. Though each Arduino may block certain messages.)											
+				*/
+
+			}//end if
+
+			//For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, COMM		
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Note: this is a local .ino function
+				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set the "data was for COMM flag" to true if it was for this Arduino
+				
+				/*
+					Set filter to throw away all MAIN data except:
+					any redirections
+						if redirection needed to CMNC:
+							redirectToCMNC = true
+						(to allow system data to be passed from MAIN/AUXI/NAVI to CMNC)
+					hw reset requests message(s) from MAIN
+					COMM SW Request Message(s) from MAIN (to SW reset the COMM)						
+					generic health error message(s) from MAIN (redirected from AUXI)
+					generic system error message(s) from MAIN		
+				*/
+				
+			}//end if
+			//else the data was invalid or not ready, so do nothing				
+					
 			break;
 		case READ_INPUTS: //Mode: SYSTEM_ERROR
-//WRITE ME LATER
+			if(pirSensor->monitorMotion())//if the PIR detected motion
+			{
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
+			}//end if
+			//Clear the PIR Sensor
+			pirSensor->reset();//reset the pir sensor once samples are processed
 			break;
 		case PROCESS_DATA: //Mode: SYSTEM_ERROR
+
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
 			#endif
-//WRITE ME LATER
+			//Process PIR status
+			//WRITE ME LATER
+			//PLACEHOLDER: Maybe add in later to send PIR status to MAIN if needed.
+			//For now do nothing.			
+			//Clear PIR Status Flag			
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);
+			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+			//Note: Either you should get no data, generic health status errors, or secure link data. as everything else was filtered out
+			
+			
+			//Recreate any error messages (but allow them to be overwritten by higher priority messages)
+			//Improvement Tip: Maybe can send MAIN (and AUXI and NAVI. MAIN would need to copy and reroute these error messages) the error messages as well so it can react to it. But for now good enough.
+			if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SYNC_ERROR_))
+			{
+				cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
+				//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)					
+			}//end if
+			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SECURE_LINK_ERROR_))
+			{
+				cmnc_msg_queue == CMD_TAG_SECURE_LINK_ERROR_STATUS;
+				//(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
+			}//end else if
+			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SLEEPING_ERROR_))
+			{
+				cmnc_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;
+				//(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)
+			}//end else if
+			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SW_RESET_ERROR_))
+			{
+				cmnc_msg_queue == CMD_TAG_SW_RESET_ERROR_STATUS;
+				//(Note: the sw_reset_error flag can only be cleared with a hw reset)
+				//Troubleshooting tip, if it's a sw_reset_error, it will need a HW reset. But SYSTEM_ERROR will allow for both sw and hw resets because it's designed to handle any errors in general. So the user will have to know to send a HW reset in order to clear a SW reset error.
+			}//end else if
+			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_))
+			{
+				cmnc_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+				//(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)
+			}//end else if
+			else //which includes generic_system_error = true									
+			{
+				cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+				//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+			}//end else
+			
+	
+			
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh1_COMM, ROVERCOMM_CMNC);
+			}//end if
+			
+			
+			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+			//(the mode and next state may be overridden by MAIN data if required. i.e. error, etc. But under normal circumstances, it shouldn't.)
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh2_COMM, ROVERCOMM_MAIN);
+			}//end if
+						
+			
+			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)		
+			
+		
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
@@ -3152,7 +3343,7 @@ void runModeFunction_default()
 
 	//Set Invalid State Error Flag
 	//Note: The Invalid State Error Flag cann only be cleared with a sw reset or hw reset
-	BooleanBitFlags::setFlagBit(flagSet_Error, _BTFG_INVALID_STATE_OR_MODE_ERROR_);
+	BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_);
 
 
 	//initialize/reset shared counter before use

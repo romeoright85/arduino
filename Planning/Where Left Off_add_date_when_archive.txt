@@ -2,7 +2,7 @@ Where I left off
 ------------------------
 
 DEADLINES:
-[9 days] 11/23 through 11/26, 12/1 through 12/3, 12/9 through 12/10
+[8 days] 11/24 through 11/26, 12/1 through 12/3, 12/9 through 12/10
 Finish Rover_StateMachine_COMM (in progress)
 Rover_StateMachine_MAIN (get the complex communications going)
 	if have time go back to Rover_StateMachine_COMM and change some of the 1/3 or 3/3 brightness to blinks. need to write code to poll/time the blinks or use interrupts or something
@@ -147,9 +147,11 @@ LEFT OFF HERE, START HERE->Rover_StateMachine_COMM:
 	just finished SW_RESETTING mode
 	now start on SYSTEM_ERROR. Start by writing runModeFunction_SYSTEM_ERROR at RX_COMMUNICATIONS.
 		Note: Already completed CONTROL_OUTPUTS, CREATE_DATA, an TX_COMMUNICATIONS for SYSTEM_ERROR
-		also finish writing comm sleep request in command director
-		
-		
+	also finish writing comm sleep request in command director
+	write what to do with pir status (probably just save it until requested) in all the process data
+	then in the command queue put that data in the message string
+	
+	
 		
 	
 	Note: pay attention to memory use!

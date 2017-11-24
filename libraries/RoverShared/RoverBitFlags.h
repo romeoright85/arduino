@@ -9,13 +9,16 @@
 		//---------------------------------------------------
 		//Universal
 		#define _BTFG_NONE_													0x00
-		//Error: flagSet_Error
+		//Error: flagSet_Error1
 		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
 		#define _BTFG_SYNC_ERROR_										0x02
 		#define _BTFG_SECURE_LINK_ERROR_							0x04
 		#define _BTFG_SW_RESET_ERROR_								0x08
 		#define _BTFG_GENERIC_HEALTH_ERROR_						0x10
 		#define _BTFG_SLEEPING_ERROR_									0x20
+		#define _BTFG_GENERIC_SYSTEM_ERROR_							0x40
+		//Error: flagSet_Error2//the variable has not yet been created
+		//None Yet. Placeholder.
 		//Message Controls: flagSet_MessageControl
 		#define _BTFG_REDIRECT_TO_CMNC_								0x01
 		#define _BTFG_REDIRECT_TO_MAIN_								0x02		
@@ -29,7 +32,7 @@
 		#define _BTFG_PIR_MOTION_DETECTED_								0x10
 		//System Status: flagSet_SystemStatus2
 		#define _BTFG_COMM_SLEEP_REQUESTED_							0x01
-		#define _BTFG_COMM_SW_RESET_REQUESTED_							0x02
+		#define _BTFG_COMM_SW_RESET_REQUESTED_							0x02		
 		//---------------------------------------------------
 		
 		
@@ -47,14 +50,14 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_									0x20
 		#define _BTFG_COMMAND_ENABLE_OPTION_BREAKSECURELINK_						0x40
 		#define _BTFG_COMMAND_ENABLE_OPTION_ESTABLISHSECURELINK_				0x80
-		//Command Filter Options: Set 2: Used in commandFilterOptionsSet2_MAIN, and commandFilterOptionsSet1_CMNC
+		//Command Filter Options: Set 2: Used in commandFilterOptionsSet2_MAIN, and commandFilterOptionsSet2_CMNC
 		#define _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_					0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_						0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_PIRSTATUS_									0x04
-		#define _BTFG_COMMAND_ENABLE_OPTION_RXDERRORMESSAGES_					0x08
+		#define _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_			0x08
 		#define _BTFG_COMMAND_ENABLE_OPTION_HI_												0x10
 		#define _BTFG_COMMAND_ENABLE_OPTION_BYE_										0x20
-		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID_										0x40		 
+		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID_										0x40		 		
 		 //---------------------------------------------------
 		 
 		 
