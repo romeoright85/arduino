@@ -322,7 +322,7 @@ COMM:
 										
 										
 					Skip for CMNC
-					Skips PIR status					
+					PIR Status is filtered out for this mode.
 					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 					Note: Either you should get no data, hw reset, comm sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
 
@@ -357,7 +357,7 @@ COMM:
 						Mode: SYNCHRONIZATION
 					go to RUN_HOUSEKEEPING_TASKS
 				SECURING_LINK
-					Process PIR status
+					Note: PIR status is used in this mode.
 
 					Categorize all commands/data from all sources.					
 					Sort based on priority.
@@ -401,7 +401,7 @@ COMM:
 						set next state to CONTROL_OUTPUTS					
 					go to RUN_HOUSEKEEPING_TASKS
 				NORMAL_OPERATIONS		
-					Process PIR status
+					Note: PIR status is used in this mode.
 					
 					Categorize all commands/data from all sources.					
 					Sort based on priority.
@@ -420,7 +420,7 @@ COMM:
 					do nothing
 				SYSTEM_SLEEPING
 				
-					Skips PIR status	
+					Note: PIR Status is filtered out for this mode.	
 					
 					Categorize all commands/data from all sources.					
 					Sort based on priority.
@@ -478,7 +478,7 @@ COMM:
 					do nothing					
 				SW_RESETTING
 
-					Skips PIR status
+					PIR Status is filtered out for this mode.
 									
 					Categorize all commands/data from all sources.					
 					Sort based on priority.
@@ -538,7 +538,7 @@ COMM:
 						Mode: SW_RESETTING
 					go to RUN_HOUSEKEEPING_TASKS			
 				SYSTEM_ERROR		
-					Process PIR status	
+					Note: PIR status is used in this mode.	
 					
 					Categorize all commands/data from all sources.					
 					Sort based on priority.

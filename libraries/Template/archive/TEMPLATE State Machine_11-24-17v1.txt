@@ -1,3 +1,7 @@
+
+============COMM Template Below================
+
+
 /*
 Note:
 The best way to read this code from scratch is look at the global default values, see what state and mode the variables get on power on, then follow the state machine in the loop from the initializing state and mode
