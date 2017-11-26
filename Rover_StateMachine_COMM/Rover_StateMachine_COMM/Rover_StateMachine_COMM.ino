@@ -104,28 +104,28 @@ to test redirection from MAIN to MAIN (loopback) through COMM
 //============Function Prototypes
 void InterruptDispatch_PIRSensor();//For PirSensorTest
 void InterruptDispatch_WakeUpArduino();//For RoverSleeper
-						  //============End of Function Prototypes
+//============End of Function Prototypes
 
 
-						  //============Debugging: Serial Channel Selection
-						  //Used to output debugging messages only when the _DEBUG_COMM_BROADCAST flag is defined
-						  //Uncomment the flag below in order to output debugging messages
-						  //#define _DEBUG_COMM_BROADCAST
+//============Debugging: Serial Channel Selection
+//Used to output debugging messages only when the _DEBUG_COMM_BROADCAST flag is defined
+//Uncomment the flag below in order to output debugging messages
+//#define _DEBUG_COMM_BROADCAST
 
-						  //Flag Logic, no need to edit this below
-						  //Reference the "Where Left Off...txt" at: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Planning
+//Flag Logic, no need to edit this below
+//Reference the "Where Left Off...txt" at: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Planning
 #ifdef _DEBUG_COMM_BROADCAST
-#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ //for COMM, either way it goes to the PC USB Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _CMNC_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to CMNC instead (which is actually still the same channel as PC USB for the COMM Arduino)
 #else
-#define _SERIAL_DEBUG_CHANNEL_ _CMNC_SERIAL_
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ 
 #endif
-						  //============End of Debugging: Serial Channel Selection
+//============End of Debugging: Serial Channel Selection
 
 
-						  //============Debugging: Print Mode and/or State
-						  //Uncomment the flag below in order to print the current state and/or mode
-						  //#define _DEBUG_PRINT_CURRENT_STATE
-						  //#define _DEBUG_PRINT_CURRENT_MODE
+//============Debugging: Print Mode and/or State
+//Uncomment the flag below in order to print the current state and/or mode
+//#define _DEBUG_PRINT_CURRENT_STATE
+//#define _DEBUG_PRINT_CURRENT_MODE
 
 
 						  //Flag Logic, no need to edit this below
@@ -140,7 +140,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 #else
 #define _PRINT_MODE_ void
 #endif
-						  //============End Debugging: Print Mode and/or State
+//============End Debugging: Print Mode and/or State
 
 
  //============Debugging: Allow Redirect During Synchronization Mode
@@ -245,12 +245,20 @@ unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
 PirSensor * pirSensor = new PirSensor(PIR_PIN, &InterruptDispatch_PIRSensor);//Note: This is my custom function and not attachInterrupt (though it calls it)
 
 
+//------------------From CommTester_COMM
+//RoverData and RoverComms
+//Ch1 is between CMNC and COMM
+RoverData * roverDataCh1_COMM = new RoverData();
+RoverComm * roverComm_Ch1 = new RoverComm(roverDataCh1_COMM);
+//Ch2 is between COMM and MAIN
+RoverData * roverDataCh2_COMM = new RoverData();
+RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 
-//Command Parsers
 //Rover Data Pointers for use with either internal processing or outgoing messages
 RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data incoming to COMM
 RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
 RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data outgoing to MAIN
+
 
 //------------------From AnalogLedTester
 DelayCounter * heartLedCounter = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods, though can pass anything here as the heart led will automatically set it to the number of short delay periods (that is also passed to it as DELAY_10_PERIODS) anyways.
@@ -265,6 +273,31 @@ RoverHwReset * mainHwResetter = new RoverHwReset(MAIN_HW_RESET_CTRL_PIN);
 //Controls the self wakeup of COMM
 RoverSleeperServer * sleeperCOMM = new RoverSleeperServer(COMM_WAKEUP_CTRL_PIN, &InterruptDispatch_WakeUpArduino);//COMM Wakeup Pin Control
 RoverSleeperClient * sleeperMAIN = new RoverSleeperClient(MAIN_WAKEUP_CTRL_PIN);
+
+
+
+
+
+
+//Note: Make sure to add any new objects created to this array
+//Note: Declare this after SW Resettable and Non-Resettable variables, else the compiler will complain.
+RoverReset * resetArray[] = {
+	heartLedCounter,
+	heartLed,
+	heartLedTimer,
+	pirSensor,
+	naviHwResetter,
+	auxiHwResetter,
+	mainHwResetter,
+	sleeperCOMM,
+	sleeperMAIN,
+	roverDataCh1_COMM,
+	roverComm_Ch1,
+	roverDataCh2_COMM,
+	roverComm_Ch2
+};//for pointers, pass them directly, for objects pass the address
+
+
 
 
 //=====End of: SW Resettable Variables
@@ -304,16 +337,6 @@ const char* const msg_str_table[] PROGMEM = {
 
 
 
-//Rover Data and COMMs
-//RoverData pointers and RoverComms
-//Ch1 is between CMNC and COMM
-RoverData * roverDataCh1_COMM = new RoverData();
-RoverComm * roverComm_Ch1 = new RoverComm(roverDataCh1_COMM);
-//Ch2 is between COMM and MAIN
-RoverData * roverDataCh2_COMM = new RoverData();
-RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
-
-
 
 //States //(these states will not be re-initalized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
 byte currentState = RUN_HOUSEKEEPING_TASKS;
@@ -330,26 +353,6 @@ byte currentMode = POWER_ON_AND_HW_RESET;
 //=====End of: Non-SW Resettable Variables
 
 
-
-
-
-//Note: Make sure to add any new objects created to this array
-//Note: Declare this after SW Resettable and Non-Resettable variables, else the compiler will complain.
-RoverReset * resetArray[] = {
-	heartLedCounter,
-	heartLed,
-	heartLedTimer,
-	pirSensor,
-	naviHwResetter,
-	auxiHwResetter,
-	mainHwResetter,
-	sleeperCOMM,
-	sleeperMAIN,
-	roverDataCh1_COMM,
-	roverComm_Ch1,
-	roverDataCh2_COMM,
-	roverComm_Ch2
-};//for pointers, pass them directly, for objects pass the address
 
 
 
@@ -853,16 +856,14 @@ void loop() {
 					break;
 				case SECURING_LINK:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					//FIX ME LATER					
 					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SECURING_LINK(currentState);
 					break;
 				case NORMAL_OPERATIONS:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					//FIX ME LATER					
 					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
-													//Keep the currentMode the same (unchanged)	
+					//Keep the currentMode the same (unchanged)	
 					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;
 				case HW_RESETTING:
@@ -892,9 +893,8 @@ void loop() {
 					break;
 				case SYSTEM_ERROR:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					//FIX ME LATER					
 					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
-													//Keep the currentMode the same (unchanged)	
+					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
@@ -1820,7 +1820,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//2. Clear all Rx'ed data before getting new data				
 			roverComm_Ch2->clearRxData();
 			//3. Receive data
-			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function		break;
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+			break;
 		case DATA_VALIDATION: //Mode: SYNCHRONIZATION
 
 			//skip for CMNC

@@ -1,3 +1,5 @@
+//Used for AUXI - 2
+
 //RoverHealthAndStatus.h
 #ifndef _ROVERHEALTHANDSTATUS_H
 #define _ROVERHEALTHANDSTATUS_H

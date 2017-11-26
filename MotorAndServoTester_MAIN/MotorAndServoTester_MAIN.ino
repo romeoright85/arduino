@@ -16,10 +16,11 @@ It's actually best just to switch buffers to manual mode or auto mode when you w
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_
+	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to COMM instead
 #else
 	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
+
 
 //Global Variables
 
@@ -43,13 +44,13 @@ WheelEncoderSensor * wheelEncoder_MidRight = new WheelEncoderSensor(ENCODER_A_MI
 
 
 RoverReset * resetArray[] = {
+	mtrPowerCtrlr,
 	midLeftSyncCounter,
 	midLeftSyncTimer,
 	midRightSyncCounter,
 	midRightSyncTimer,
 	wheelEncoder_MidLeft,
-	wheelEncoder_MidRight,
-	mtrPowerCtrlr
+	wheelEncoder_MidRight	
 };
 
 

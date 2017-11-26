@@ -1,13 +1,1176 @@
-void setup()
-{
+/*
+Note:
+The best way to read this code from scratch is look at the global default values, see what state and mode the variables get on power on, then follow the state machine in the loop from the initializing state and mode
+*/
 
-  /* add setup code here */
+
+
+/*
+Design Notes:
+Currently the priority level is not being used to prioritize right now. It's just there as a placeholder.
+*/
+
+//Rover_StateMachine_MAIN
+
+
+
+/*
+--------------------------------
+Regular Operation
+--------------------------------
+//No commands are sent to MAIN directly during regular operation.
+
+
+--------------------------------
+Debug Operation
+--------------------------------
+//To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
+
+
+To test locally with only one Arduino (best to test the MEGA to make sure it can handle the memory needs for the COMM), first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
+Can send:
+//WRITE ME LATER
+*/
+
+
+
+//Configuration defines for #includes (must come before the #includes)
+#ifndef _ROVER_STATES_AND_MODES
+#define _ROVER_STATES_AND_MODES
+#endif
+#ifndef _COMMAND_CREATION_DEFINITIONS
+#define _COMMAND_CREATION_DEFINITIONS //for RoverCommandDefs.h
+#endif
+#ifndef _ARD_3_MAIN_H
+#define _ARD_3_MAIN_H //Must define this before calling RoverConfig.h (either directly or through another header file), define this flag to turn on COMM definitions
+#endif
+#ifndef _MAIN_BIT_FLAGS_
+#define _MAIN_BIT_FLAGS_ //For RoverBitFlags.h
+#endif
+#ifndef _MAIN_STATE_MACHINE_VARIABLES_
+#define _MAIN_STATE_MACHINE_VARIABLES_ //For RoverConfig.h
+#endif
+
+
+
+//#includes
+#include <RoverStatesAndModes.h>
+#include <RoverCommandDefs.h>
+#include <RoverCommandCreator.h>
+#include <RoverData.h>
+#include <RoverComm.h> //calls RoverConfig.h
+#include <GlobalDelayTimer.h>
+#include <DelayCounter.h>
+#include <RoverHwReset.h>
+#include <RoverSleeperServer.h>
+#include <RoverSleeperClient.h>
+#include <RoverConfig.h>	
+#include <avr/pgmspace.h> //To store certain variables in Flash
+#include <BooleanBitFlags.h>	
+#include <RoverBitFlags.h>	
+#include <MotorPowerControl.h>
+#include <WheelEncoderSensor.h>
+
+
+
+//============Function Prototypes
+void InterruptDispatch_wheelEncoder_MidLeft();
+void InterruptDispatch_wheelEncoder_MidRight();
+void InterruptDispatch_WakeUpArduino();//For RoverSleeper
+//============End of Function Prototypes
+
+
+//============Debugging: Serial Channel Selection
+//Used to output debugging messages only when the _DEBUG_COMM_BROADCAST flag is defined
+//Uncomment the flag below in order to output debugging messages
+//#define _DEBUG_COMM_BROADCAST
+
+//Flag Logic, no need to edit this below
+//Reference the "Where Left Off...txt" at: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Planning
+#ifdef _DEBUG_COMM_BROADCAST
+	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to COMM instead
+#else
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#endif
+
+//============End of Debugging: Serial Channel Selection
+
+
+
+
+//============Debugging: Print Mode and/or State
+//Uncomment the flag below in order to print the current state and/or mode
+//#define _DEBUG_PRINT_CURRENT_STATE
+//#define _DEBUG_PRINT_CURRENT_MODE
+
+
+//Flag Logic, no need to edit this below
+#ifdef _DEBUG_PRINT_CURRENT_STATE
+#define _PRINT_STATE_ _SERIAL_DEBUG_CHANNEL_.println
+#else
+#define _PRINT_STATE_ void
+#endif
+
+#ifdef _DEBUG_PRINT_CURRENT_MODE
+#define _PRINT_MODE_ _SERIAL_DEBUG_CHANNEL_.println
+#else
+#define _PRINT_MODE_ void
+#endif
+//============End Debugging: Print Mode and/or State
+
+
+ //============Debugging: Redirection Notice
+//Uncomment to output notice when redirection is occuring
+//#define _DEBUG_REDIRECTION_NOTICE
+//============End Debugging: Redirection Notice
+
+
+//============Debugging: All Data Filtering Off
+//Uncomment in order to allow all data to pass (turn off all data filters) for debugging)
+#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
+//============End Debugging: All Data Filtering Off
+
+
+
+//============Debugging: Print timeout counter value
+//Uncomment in order to print timeout counter value
+//#define _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+//============End Debugging: Print timeout counter value
+
+
+//============Debugging: Print Sleep/Wake Status
+//Uncomment in order to print out the Sleep/Wake Status
+#define _DEBUG_OUTPUT_SLEEP_WAKE_STATUS_
+//============End Debugging: Print Sleep/Wake Status
+
+
+//LEFT OFF HERE Editting the COMM Template for MAIN
+
+//============Global Declarations
+
+
+//=====SW Resettable Variables (reinitialize these variables on software reset)
+
+//Message Queues
+byte pc_usb_msg_queue = CMD_TAG_NO_MSG;
+byte comm_msg_queue = CMD_TAG_NO_MSG;
+byte navi_msg_queue = CMD_TAG_NO_MSG;
+byte auxi_msg_queue = CMD_TAG_NO_MSG;
+
+//Flag(s) - Rover Data Channels Status
+byte ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
+byte ch2Status = DATA_STATUS_NOT_READY;//for COMM
+byte ch3Status = DATA_STATUS_NOT_READY;//for NAVI
+byte ch4Status = DATA_STATUS_NOT_READY;//for AUXI
+
+//Flag(s) - Error
+//TEMPLATE//byte flagSet_Error1 = _BTFG_NONE_;
+//Flag(s) - Message Controls
+//TEMPLATE//byte flagSet_MessageControl = _BTFG_NONE_;
+//Flag(s) - System Status 1
+//TEMPLATE//byte flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
+//Flag(s) - System Status 2
+//TEMPLATE//byte flagSet_SystemStatus2 = _BTFG_NONE_;
+//Flag(s) - Command Filter Options - MAIN and CMNC each have their own set since they have separate data filters
+//Command Filter Options for CMNC: Set 1
+//TEMPLATE//byte commandFilterOptionsSet1_CMNC = _BTFG_NONE_;
+//Command Filter Options for CMNC: Set 2
+//TEMPLATE//byte commandFilterOptionsSet2_CMNC = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 1
+//TEMPLATE//byte commandFilterOptionsSet1_MAIN = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 2
+//TEMPLATE//byte commandFilterOptionsSet2_MAIN = _BTFG_NONE_;
+
+
+//Counters
+//TEMPLATE//unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
+//TEMPLATE//unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
+
+
+
+//------------------From CommTester_MAIN
+//RoverData and RoverComms
+//Ch1 is between MAIN and PC USB
+RoverData * roverDataCh1_COMM = new RoverData();
+RoverComm * roverComm_Ch1 = new RoverComm(roverDataCh1_COMM);
+//Ch3 is between MAIN and COMM
+RoverData * roverDataCh2_COMM = new RoverData();
+RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
+//Ch3 is between MAIN and NAVI
+RoverData * roverDataCh3_COMM = new RoverData();
+RoverComm * roverComm_Ch3 = new RoverComm(roverDataCh3_COMM);
+//Ch4 is between MAIN and AUXI
+RoverData * roverDataCh4_COMM = new RoverData();
+RoverComm * roverComm_Ch4 = new RoverComm(roverDataCh4_COMM);
+
+//Rover Data Pointers for use with either internal processing or outgoing messages
+RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data incoming to MAIN
+RoverData * roverDataForPC_USB;//pointer used access the RoverData which has the command data outgoing to PC_USB
+RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data outgoing to COMM
+RoverData * roverDataForNAVI;//pointer used access the RoverData which has the command data outgoing to NAVI
+RoverData * roverDataForAUXI;//pointer used access the RoverData which has the command data outgoing to AUXI
+
+
+
+
+//------------------From RoverHwResetTester_MAIN
+RoverHwReset * commHwResetter = new RoverHwReset(COMM_HW_RESET_CTRL_PIN);
+
+
+//------------------From WakeUpTester_MAIN
+RoverSleeperServer * sleeperMAIN = new RoverSleeperServer(MAIN_WAKEUP_CTRL_PIN, &InterruptDispatch_WakeUpArduino);//MAIN Wakeup Pin Control
+RoverSleeperClient * sleeperAUXI = new RoverSleeperClient(AUXI_WAKEUP_CTRL_PIN);
+RoverSleeperClient * sleeperNAVI = new RoverSleeperClient(NAVI_WAKEUP_CTRL_PIN);
+
+
+
+//------------------From MotorAndServoTester_MAIN
+MotorPowerControl * mtrPowerCtrlr = new MotorPowerControl(MTR_FET_CTRL_PIN, MTR_ENABLE_STATUS);
+DelayCounter * midLeftSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
+GlobalDelayTimer * midLeftSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, midLeftSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
+DelayCounter * midRightSyncCounter = new DelayCounter(DELAY_200_PERIODS);//initialize it to count to 1 periods x 1ms delay timer resolution = 1ms before the count has reached flag goes true
+GlobalDelayTimer * midRightSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, midRightSyncCounter);//everytime the delay interval (resolution) is reached, it will increment the delay counter. The standard resolution used for the Rover has been 5mS so it's not too small where it has to increment the counter often, but not to big where it won't work for many different classes without being too slow or fast
+
+
+//Note: Remember to update all fields of the constructor. All the fields are unique to/distinct for each motor. You can't share the counter, because it gets reset for each one. And each timer get's only one counter, so you need a timer for each one as well.
+WheelEncoderSensor * wheelEncoder_MidLeft = new WheelEncoderSensor(ENCODER_A_MID_LEFT, ENCODER_B_MID_LEFT, LEFT_MOUNTED, &InterruptDispatch_wheelEncoder_MidLeft, midLeftSyncCounter);
+WheelEncoderSensor * wheelEncoder_MidRight = new WheelEncoderSensor(ENCODER_A_MID_RIGHT, ENCODER_B_MID_RIGHT, RIGHT_MOUNTED, &InterruptDispatch_wheelEncoder_MidRight, midRightSyncCounter);
+
+
+//WRITE ME LATER, ADD MORE LATER
+
+
+
+//Note: Make sure to add any new objects created to this array
+//Note: Declare this after SW Resettable and Non-Resettable variables, else the compiler will complain.
+RoverReset * resetArray[] = {	
+	roverDataCh1_COMM,
+	roverComm_Ch1,
+	roverDataCh2_COMM,
+	roverComm_Ch2,
+	roverDataCh3_COMM,
+	roverComm_Ch3,
+	roverDataCh4_COMM,
+	roverComm_Ch4,	
+	commHwResetter,
+	sleeperMAIN,
+	sleeperAUXI,
+	sleeperNAVI,
+	mtrPowerCtrlr,
+	midLeftSyncCounter,
+	midLeftSyncTimer,
+	midRightSyncCounter,
+	midRightSyncTimer,
+	wheelEncoder_MidLeft,
+	wheelEncoder_MidRight
+//WRITE ME LATER	
+};//for pointers, pass them directly, for objects pass the address
+
+
+//=====End of: SW Resettable Variables
+
+
+
+
+//=====Non-SW Resettable Variables (do not reinitialize these variables on software reset)
+
+
+//Message Char Array
+char txMsgBuffer_PC_USB[UNIV_BUFFER_SIZE];//transmit buffer for PC_USB
+char txMsgBuffer_COMM[UNIV_BUFFER_SIZE];//transmit buffer for COMM (CMNC)
+char txMsgBuffer_NAVI[UNIV_BUFFER_SIZE];//transmit buffer for NAVI
+char txMsgBuffer_AUXI[UNIV_BUFFER_SIZE];//transmit buffer for AUXI
+char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
+
+
+//Fixed Message Strings (to store in flash)
+const static char msg_strg_0[] PROGMEM = "nodata";//getMsgString(0)
+const static char msg_strg_1[] PROGMEM = "invlcmd";//getMsgString(1)
+const static char msg_strg_2[] PROGMEM = "error";//getMsgString(2)
+//Note: Make sure to update  the msg_str_table[] array
+
+//Table of Fixed Commaned Strings (array of strings stored in flash)
+const char* const msg_str_table[] PROGMEM = {
+	msg_strg_0,
+	msg_strg_1,
+	msg_strg_2
+};
+
+
+
+
+
+//States //(these states will not be re-initalized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
+byte currentState = RUN_HOUSEKEEPING_TASKS;
+byte nextState = RUN_HOUSEKEEPING_TASKS;
+byte queuedState = RUN_HOUSEKEEPING_TASKS;
+
+//Modes //(this mode will not be re-initalized in initializeVariables() as they're set by the state machine when being SW resetted)
+byte currentMode = POWER_ON_AND_HW_RESET;
+
+
+
+
+
+//=====End of: Non-SW Resettable Variables
+
+
+
+
+
+
+//============End of Global Declarations
+
+
+
+void setup() {
+
+
+	//resetting all objects in this sketch
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		if (!resetArray[i] == NULL)//if the object isn't null
+		{
+			resetArray[i]->reset();//reset the object	
+		}//end if
+	}//end for
+
+
+	 //Serial Communications
+//WRITE ME LATER
+
+	//Setting Up Timer Interrupt
+	OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
+	TIMSK0 |= _BV(OCIE0A);//Activating the Timer Interrupt by setting the Mask Register
+						  /*
+						  Reference:
+						  https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
+						  http://forum.arduino.cc/index.php?topic=3240.0
+						  https://protostack.com.au/2010/09/timer-interrupts-on-an-atmega168/
+						  */
+
+
+}//end of setup()
+
+
+
+SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
+{
+	//Tasks always running in the background, called by the timer about every 1 ms
+	//This will allow the millis value to be checked every millisecond and not get missed.
+	//Timer(s)
+
+	//ADD TIMERS
+//WRITE ME LATER
 
 }
 
-void loop()
+
+
+
+
+void loop() {
+
+
+	
+
+	//State Machine
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS:
+			_PRINT_STATE_(F("STATE: RUN_HOUSEKEEPING_TASKS"));
+
+			switch (currentMode)
+			{
+				case POWER_ON_AND_HW_RESET:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case INITIALIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case HW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER					
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER					
+					break;
+				case SYSTEM_WAKING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				default: //default mode
+					 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+			}//end switch
+			
+			 //Advance to the queued (saved) state
+			nextState = queuedState;//Setting the Queued State as the Next State while in RUN_HOUSEKEEPING_TASKS state. And then when this state ends, outside the switch case for states, the Next State will change into the Current State.
+			//This happens only when in the RUN_HOUSEKEEPING_TASKS state.
+			//All other states will always go to the RUN_HOUSEKEEPING_TASKS as it's next state in order to run housekeeping tasks with every loop.
+			break;
+		case RX_COMMUNICATIONS:
+			_PRINT_STATE_(F("STATE: RX_COMMUNICATIONS"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+			}//end switch			
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
+			break;
+		case DATA_VALIDATION:
+			_PRINT_STATE_(F("STATE: DATA_VALIDATION"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
+//WRITE ME LATER
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
+//WRITE ME LATER
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
+//WRITE ME LATER
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
+			break;
+		case DATA_FILTER:
+			_PRINT_STATE_(F("STATE: DATA_FILTER"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+//WRITE ME LATER
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+				default: //default mode
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
+			break;
+		case READ_INPUTS:
+			_PRINT_STATE_(F("STATE: READ_INPUTS"));
+			switch (currentMode)
+			{
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+				default: //default mode
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state		
+			break;
+		case PROCESS_DATA:
+			_PRINT_STATE_(F("STATE: PROCESS_DATA"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+//WRITE ME LATER
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				default: //default mode
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
+			break;
+		case CONTROL_OUTPUTS:
+			_PRINT_STATE_(F("STATE: CONTROL_OUTPUTS"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case HW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_WAKING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
+			break;
+		case CREATE_DATA:
+			_PRINT_STATE_(F("STATE: CREATE_DATA"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case HW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_WAKING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				default: //default mode
+						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+			}//end switch	
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
+			break;
+		case TX_COMMUNICATIONS:
+			_PRINT_STATE_(F("STATE: TX_COMMUNICATIONS"));
+			switch (currentMode)
+			{
+				case SYNCHRONIZATION:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case NORMAL_OPERATIONS:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case HW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_SLEEPING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_WAKING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER
+					break;
+				case SYSTEM_ERROR:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER					
+					break;
+				default: //default mode
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+//WRITE ME LATER					
+					break;
+			}//end switch	
+			
+			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
+			
+			break;
+		default: //default state
+			_PRINT_STATE_(F("STATE: default"));
+			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes							
+//WRITE ME LATER
+			break;
+	}//end switch
+
+
+	 //Advance to the next state (happens after every loop through the switch case for state selection)
+	currentState = nextState;//go to the next state
+
+
+}//end of loop()
+
+
+
+
+ //============Function Definitions
+
+
+ //====Misc Functions
+void runPORTasks()
 {
+	//run POR tasks
+//PLACEHOLDER: Add things here as needed.
 
-  /* add main program code here */
+}//runPORTasks()
+void initializeVariables()
+{
+	//(re)initialize most global variables (i.e. for software reset)
 
-}
+//WRITE ME LATER
+
+} //end of initializeVariables()
+void startBackgroundTasks()
+{
+	//start background tasks
+//PLACEHOLDER: Add things here as needed.
+}//end of startBackgroundTasks()
+void runBackgroundTasks()
+{
+	//run background tasks	
+//PLACEHOLDER: Add things here as needed.	
+}//end of runBackgroundTasks()
+byte rxData(RoverComm * roverComm, byte roverCommType) {
+//WRITE ME LATER
+}//end of rxData()
+
+void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byte flagOfInterest)
+{
+//WRITE ME LATER
+}//end of dataDirector()
+
+void txData(char * txData, byte roverCommType)
+{
+//WRITE ME LATER
+}//end of txData()
+
+void commandDirector(RoverData * roverDataPointer, byte roverComm)
+{
+//WRITE ME LATER
+}//end of commandDirector()
+void createDataFromQueueFor(byte roverCommDestination)
+{
+//WRITE ME LATER
+
+}//end of createDataFromQueueFor()
+void setAllErrorFlagsTo(boolean choice)
+{
+//WRITE ME LATER
+}//end of setAllErrorFlagsTo()
+void setAllMessageControlFlagsTo(boolean choice)
+{
+//WRITE ME LATER
+}//end of setAllMessageControlFlagsTo()
+void setAllSystemStatusFlagsTo(boolean choice)
+{
+//WRITE ME LATER
+}//end of setAllSystemStatusFlagsTo()
+void setAllCommandFiltersTo(boolean choice, byte roverComm)
+{
+	//WRITE ME LATER
+}//end of setAllCommands()
+void redirectData(RoverComm * roverComm)
+{
+//WRITE ME LATER
+}//End of redirectData()
+
+
+//====End of: Misc Functions
+
+
+//====Mode Functions
+
+void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: POWER_ON_AND_HW_RESET"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: POWER_ON_AND_HW_RESET
+//TEMPLATE//runBackgroundTasks();
+			break;
+		case RX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
+//WRITE ME LATER
+			break;
+		case DATA_VALIDATION: //Mode: POWER_ON_AND_HW_RESET
+//WRITE ME LATER
+			break;		
+		case DATA_FILTER: //Mode: POWER_ON_AND_HW_RESET
+//WRITE ME LATER
+			break;	
+		case READ_INPUTS: //Mode: POWER_ON_AND_HW_RESET
+//WRITE ME LATER
+			break;	
+		case PROCESS_DATA: //Mode: POWER_ON_AND_HW_RESET
+//WRITE ME LATER
+			break;		
+		case CONTROL_OUTPUTS: //Mode: POWER_ON_AND_HW_RESET
+//WRITE ME LATER
+			break;		
+		case CREATE_DATA: //Mode: POWER_ON_AND_HW_RESET
+//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
+//WRITE ME LATER
+			break;				
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runStateFunction_POWER_ON_AND_HW_RESET
+void runModeFunction_INITIALIZATION(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: INITIALIZATION"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: INITIALIZATION
+//TEMPLATE//runBackgroundTasks();
+			break;
+		case RX_COMMUNICATIONS: //Mode: INITIALIZATION
+//WRITE ME LATER
+			break;
+		case DATA_VALIDATION: //Mode: INITIALIZATION
+//WRITE ME LATER
+			break;		
+		case DATA_FILTER: //Mode: INITIALIZATION
+//WRITE ME LATER
+			break;	
+		case READ_INPUTS: //Mode: INITIALIZATION
+//WRITE ME LATER
+			break;	
+		case PROCESS_DATA: //Mode: INITIALIZATION
+//WRITE ME LATER
+			break;		
+		case CONTROL_OUTPUTS: //Mode: INITIALIZATION
+//WRITE ME LATER
+			break;		
+		case CREATE_DATA: //Mode: INITIALIZATION
+//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS: //Mode: INITIALIZATION
+//WRITE ME LATER
+			break;				
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runModeFunction_INITIALIZATION
+void runModeFunction_SYNCHRONIZATION(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SYNCHRONIZATION"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYNCHRONIZATION
+//TEMPLATE//runBackgroundTasks();
+			break;
+		case RX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
+//WRITE ME LATER
+			break;
+		case DATA_VALIDATION: //Mode: SYNCHRONIZATION
+//WRITE ME LATER
+			break;		
+		case DATA_FILTER: //Mode: SYNCHRONIZATION
+//WRITE ME LATER
+			break;	
+		case READ_INPUTS: //Mode: SYNCHRONIZATION
+//WRITE ME LATER
+			break;	
+		case PROCESS_DATA: //Mode: SYNCHRONIZATION
+//WRITE ME LATER
+			break;		
+		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
+//WRITE ME LATER
+			break;		
+		case CREATE_DATA: //Mode: SYNCHRONIZATION
+//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
+//WRITE ME LATER
+			break;				
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runModeFunction_SYNCHRONIZATION()
+void runModeFunction_NORMAL_OPERATIONS(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: NORMAL_OPERATIONS"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
+//TEMPLATE//runBackgroundTasks();
+			break;
+		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
+//WRITE ME LATER
+			break;
+		case DATA_VALIDATION: //Mode: NORMAL_OPERATIONS
+//WRITE ME LATER
+			break;		
+		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
+//WRITE ME LATER
+			break;	
+		case READ_INPUTS: //Mode: NORMAL_OPERATIONS
+//WRITE ME LATER
+			break;	
+		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
+//WRITE ME LATER
+			break;		
+		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
+//WRITE ME LATER
+			break;		
+		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
+//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
+//WRITE ME LATER
+			break;				
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runModeFunction_NORMAL_OPERATIONS()
+void runModeFunction_HW_RESETTING(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: HW_RESETTING"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: HW_RESETTING
+//TEMPLATE//runBackgroundTasks();
+			break;
+		case RX_COMMUNICATIONS: //Mode: HW_RESETTING
+//WRITE ME LATER
+			break;
+		case DATA_VALIDATION: //Mode: HW_RESETTING
+//WRITE ME LATER
+			break;		
+		case DATA_FILTER: //Mode: HW_RESETTING
+//WRITE ME LATER
+			break;	
+		case READ_INPUTS: //Mode: HW_RESETTING
+//WRITE ME LATER
+			break;	
+		case PROCESS_DATA: //Mode: HW_RESETTING
+//WRITE ME LATER
+			break;		
+		case CONTROL_OUTPUTS: //Mode: HW_RESETTING
+//WRITE ME LATER
+			break;		
+		case CREATE_DATA: //Mode: HW_RESETTING
+//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS: //Mode: HW_RESETTING
+//WRITE ME LATER
+			break;				
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runModeFunction_HW_RESETTING()
+void runModeFunction_SYSTEM_SLEEPING(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SYSTEM_SLEEPING"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_SLEEPING
+//TEMPLATE//runBackgroundTasks();
+			break;
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
+//WRITE ME LATER
+			break;
+		case DATA_VALIDATION: //Mode: SYSTEM_SLEEPING
+//WRITE ME LATER
+			break;		
+		case DATA_FILTER: //Mode: SYSTEM_SLEEPING
+//WRITE ME LATER
+			break;	
+		case READ_INPUTS: //Mode: SYSTEM_SLEEPING
+//WRITE ME LATER
+			break;	
+		case PROCESS_DATA: //Mode: SYSTEM_SLEEPING
+//WRITE ME LATER
+			break;		
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
+//WRITE ME LATER
+			break;		
+		case CREATE_DATA: //Mode: SYSTEM_SLEEPING
+//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
+//WRITE ME LATER
+			break;				
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runModeFunction_SYSTEM_SLEEPING()
+void runModeFunction_SYSTEM_WAKING(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SYSTEM_WAKING"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_WAKING
+//TEMPLATE//runBackgroundTasks();
+			break;
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
+//WRITE ME LATER
+			break;
+		case DATA_VALIDATION: //Mode: SYSTEM_WAKING
+//WRITE ME LATER
+			break;		
+		case DATA_FILTER: //Mode: SYSTEM_WAKING
+//WRITE ME LATER
+			break;	
+		case READ_INPUTS: //Mode: SYSTEM_WAKING
+//WRITE ME LATER
+			break;	
+		case PROCESS_DATA: //Mode: SYSTEM_WAKING
+//WRITE ME LATER
+			break;		
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
+//WRITE ME LATER
+			break;		
+		case CREATE_DATA: //Mode: SYSTEM_WAKING
+//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
+//WRITE ME LATER
+			break;				
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runModeFunction_SYSTEM_WAKING()
+void runModeFunction_SW_RESETTING(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SW_RESETTING"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SW_RESETTING
+//TEMPLATE//runBackgroundTasks();
+			break;
+		case RX_COMMUNICATIONS: //Mode: SW_RESETTING
+//WRITE ME LATER
+			break;
+		case DATA_VALIDATION: //Mode: SW_RESETTING
+//WRITE ME LATER
+			break;		
+		case DATA_FILTER: //Mode: SW_RESETTING
+//WRITE ME LATER
+			break;	
+		case READ_INPUTS: //Mode: SW_RESETTING
+//WRITE ME LATER
+			break;	
+		case PROCESS_DATA: //Mode: SW_RESETTING
+//WRITE ME LATER
+			break;		
+		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
+//WRITE ME LATER
+			break;		
+		case CREATE_DATA: //Mode: SW_RESETTING
+//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS: //Mode: SW_RESETTING
+//WRITE ME LATER
+			break;				
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runModeFunction_SW_RESETTING()
+void runModeFunction_SYSTEM_ERROR(byte currentState)
+{
+	_PRINT_MODE_(F("MODE: SYSTEM_ERROR"));
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_ERROR
+//TEMPLATE//runBackgroundTasks();
+			break;
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
+//WRITE ME LATER
+			break;
+		case DATA_VALIDATION: //Mode: SYSTEM_ERROR
+//WRITE ME LATER
+			break;		
+		case DATA_FILTER: //Mode: SYSTEM_ERROR
+//WRITE ME LATER
+			break;	
+		case READ_INPUTS: //Mode: SYSTEM_ERROR
+//WRITE ME LATER
+			break;	
+		case PROCESS_DATA: //Mode: SYSTEM_ERROR
+//WRITE ME LATER
+			break;		
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
+//WRITE ME LATER
+			break;		
+		case CREATE_DATA: //Mode: SYSTEM_ERROR
+//WRITE ME LATER
+			break;
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
+//WRITE ME LATER
+			break;				
+		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+}//end of runModeFunction_SYSTEM_ERROR()
+void runModeFunction_default()
+{
+	_PRINT_MODE_(F("MODE: default"));
+	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
+	//No switch case needed for the states, all states do the same thing
+//WRITE ME LATER
+}//end of runStateFunction_default
+
+ //====End of: Mode Functions
+ //============End of Function Definitions
+
+
+
+
+
+
+void InterruptDispatch_wheelEncoder_MidLeft() {
+//WRITE ME LATER
+}//emd of InterruptDispatch_wheelEncoder_MidLeft()
+
+void InterruptDispatch_wheelEncoder_MidRight() {
+//WRITE ME LATER
+}//end of InterruptDispatch_wheelEncoder_MidRight()
+
+void InterruptDispatch_WakeUpArduino() {
+	//Have to keep the ISR short else the program won't work
+	sleeperMAIN->isrUpdate();//update the awake flag to reflect current status
+}//end of InterruptDispatch_WakeUpArduino()
+
+
+
+
+char * getMsgString(byte arrayIndex) {
+//WRITE ME LATER
+}//end of getMsgString()
+
+
+
+void clearRoverDataPointers()
+{
+//WRITE ME LATER
+}//end of clearRoverDataPointer()
+
+void setRoverDataPointer(RoverData * roverDataPointer, byte roverCommType)
+{
+//WRITE ME LATER
+}//end of setRoverDataPointer()

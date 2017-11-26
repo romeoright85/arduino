@@ -9,10 +9,12 @@
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ Serial2
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to MAIN instead
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
+
+#include <RoverConfig.h>
 
 
 //All the current sensors share one fault reset pin

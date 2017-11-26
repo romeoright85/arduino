@@ -114,9 +114,9 @@ You can turn on this flag (_DEBUG_REDIRECTION_NOTICE) below to verify it's redir
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 #ifdef _DEBUG_COMM_BROADCAST
-#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to MAIN instead
 #else
-#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 //============End of Debugging: Serial Channel Selection
 

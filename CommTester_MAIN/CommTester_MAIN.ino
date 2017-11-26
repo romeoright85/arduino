@@ -111,10 +111,11 @@ You can turn on this flag (_DEBUG_REDIRECTION_NOTICE) below to verify it's redir
 
 //If it is decided CommBroadcast_MAIN isn't being loaded on MAIN, then instead of going to COMM, direct any MAIN, AUXI, or NAVI data out to the PC USB of MAIN
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_
+	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to COMM instead
 #else
 	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
+
 
 //============End of Debugging: Serial Channel Selection
 

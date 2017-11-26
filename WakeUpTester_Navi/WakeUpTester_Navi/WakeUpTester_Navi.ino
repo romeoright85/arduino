@@ -7,12 +7,12 @@
 //uncomment below to use PC to simulate the COMM Arduino and be able to send sleep commands to NAVI
 //#define _DEBUG_W_PC_INPUT
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
-	//Note: The COMM Broadcast only works if _DEBUG_W_PC_INPUT is commented out
-	
+//Note: The COMM Broadcast only works if _DEBUG_W_PC_INPUT is commented out
+
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
+#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to MAIN instead
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 //Also see the debug flag _DEBUG_STAY_AWAKE in RoverSleeperServer.h
@@ -23,12 +23,12 @@
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
-			
+
 //define Arduino 2: NAVI in order to use it's config pins
 #ifndef _ARD_1_NAVI_H
-	#define _ARD_1_NAVI_H		
+#define _ARD_1_NAVI_H		
 #endif
-	
+
 /********************************************************************/
 
 #include <RoverConfig.h>
@@ -44,8 +44,8 @@ void InterruptDispatch1();
 //Controls the self wakeup of NAVI
 RoverSleeperServer * sleeperNAVI = new RoverSleeperServer(NAVI_WAKEUP_CTRL_PIN, &InterruptDispatch1);//NAVI Wakeup Pin Control
 
-//Holds all custom objects created by this sketch
-RoverReset * resetArray[] = { 
+																									 //Holds all custom objects created by this sketch
+RoverReset * resetArray[] = {
 	sleeperNAVI
 };
 
@@ -76,13 +76,13 @@ void loop()
 	if (_MAIN_SERIAL_.available() > 0)//Check MAIN to NAVI serial bus
 #endif	
 	{
-	
-	#ifdef _DEBUG_W_PC_INPUT
+
+#ifdef _DEBUG_W_PC_INPUT
 		rxData = _PC_USB_SERIAL_.read();//Get data from the MAIN to NAVI serial bus
-	#else
+#else
 		rxData = _MAIN_SERIAL_.read();//Get data from the MAIN to NAVI serial bus
-	#endif
-		
+#endif
+
 		if (rxData == 's')//NAVI sleep
 		{
 			goToSleepNAVI();
@@ -133,5 +133,5 @@ void wakeUpNAVI() {
 	//Post Wake Up tasks
 	delay(100);// let everybody get up and running for a sec
 	_SERIAL_DEBUG_CHANNEL_.println(F("NAVI Awoken!"));//output to PC for debug
-	
+
 }

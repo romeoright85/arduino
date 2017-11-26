@@ -44,7 +44,7 @@ LaserControl
 RoverData
 >RoverComm
 >RoverCommand
-RoverCommandProcessor
+RoverCommandCreator
 
 
 [DONE, TESTED GOOD] RoverSleeperServer
@@ -74,7 +74,7 @@ WheelEncoderSensor
 RoverData
 >RoverComm
 >RoverCommand
-RoverCommandProcessor
+RoverCommandCreator
 		
 RoverSleeperServer
 
@@ -111,7 +111,7 @@ WheelEncoderSensor
 RoverData
 >RoverComm
 >RoverCommand
-RoverCommandProcessor
+RoverCommandCreator
 
 RoverGpsSensor		
 
@@ -148,7 +148,7 @@ HeartLed
 RoverData
 >RoverComm
 >RoverCommand
-RoverCommandProcessor
+RoverCommandCreator
 
 PirSensor
 

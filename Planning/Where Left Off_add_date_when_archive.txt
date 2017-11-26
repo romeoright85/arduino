@@ -145,8 +145,12 @@ get basic state machine infrastructure up
 	
 LEFT OFF HERE, START HERE->Rover_StateMachine_MAIN:
 	need to start from scratch
-		
-		
+		[DONE]get objects created
+		[DONE]get states and modes setup
+		get state transitions up
+			delete the states that are not used in certain modes
+		get error, message, etc. flags created
+		start programming the mode functions
 		
 	
 	
@@ -229,11 +233,13 @@ About 2 weekend each arduino
 	
 
 
-
+=================2 WEEKENDS===================			
+Update broken code, due to known code updates.
+	RoverProgram_AUXI
+	RoverHealthAndStatus.h
+	RoverHealthAndStatus.cpp
 	
-	
-	
-	
+Fix RoverHwResetTester_MAIN to use #define with the corresponding defined serial instead of Serial, Serial1, etc.	
 	
 	
 	

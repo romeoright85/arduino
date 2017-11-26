@@ -1,7 +1,7 @@
 Note: Make sure for any serials, use a #define serial_type. So it can be replaced with PC USB's serial if needed.
 Note: For redirects, it assumes only one arduino will be redirected to another. If by chance, two source Arduinos are being redirected to the same destination Arduino, only one will get through and the other message will be dropped.
 	The prioritization will be giving to the hard coded order of the if/else statements.
-	This a a design weakness that may be able to be improved later.
+	This is a design weakness that may be able to be improved later.
 	For now keep it this way to reduce the complexity of the code and memory usage.
 	So right now each transmission cycle will send up to two messages. One for internal messages going out, and the other for external messages being redirected to another external destination.
 Note: For command tags, see command creator excel in K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes

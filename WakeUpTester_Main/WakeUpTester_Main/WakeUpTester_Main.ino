@@ -5,10 +5,11 @@
 //Note: Should be used with _DEBUG_W_PC_INPUT commented out
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_
+#define _SERIAL_DEBUG_CHANNEL_ _COMM_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to COMM instead
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
+
 
 //Note: Since all the Arduinos use this class, you have to define them in each of its .ino as there are shared naming conventions and will cause a conflict otherwise.
 
@@ -20,12 +21,12 @@
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
-				
+
 //define Arduino 3: MAIN in order to use it's config pins
 #ifndef _ARD_3_MAIN_H
-	#define _ARD_3_MAIN_H		
+#define _ARD_3_MAIN_H		
 #endif
-	
+
 
 /********************************************************************/
 
@@ -53,9 +54,9 @@ RoverSleeperClient * sleeperNAVI = new RoverSleeperClient(NAVI_WAKEUP_CTRL_PIN);
 
 //Holds all custom objects created by this sketch
 
-RoverReset * resetArray[] = { 
-	sleeperMAIN, 
-	sleeperAUXI, 
+RoverReset * resetArray[] = {
+	sleeperMAIN,
+	sleeperAUXI,
 	sleeperNAVI
 };
 
@@ -75,7 +76,7 @@ void setup() {
 	_COMM_SERIAL_.begin(COMM_BAUD_RATE);//Use to talk between MAIN and COMM
 	_NAVI_SERIAL_.begin(NAVI_BAUD_RATE);//Use to talk between MAIN and NAVI
 	_AUXI_SERIAL_.begin(AUXI_BAUD_RATE);//Use to talk between MAIN and AUXI
-	
+
 }
 
 void loop()
@@ -89,12 +90,12 @@ void loop()
 	if (_COMM_SERIAL_.available() > 0)//Check COMM to MAIN serial bus
 #endif
 	{
-		#ifdef _DEBUG_W_PC_INPUT
-			rxData = _PC_USB_SERIAL_.read();//Get data from the PC to MAIN serial bus
-		#else
-			rxData = _COMM_SERIAL_.read();//Get data from the COMM to MAIN serial bus
-		#endif
-		
+#ifdef _DEBUG_W_PC_INPUT
+		rxData = _PC_USB_SERIAL_.read();//Get data from the PC to MAIN serial bus
+#else
+		rxData = _COMM_SERIAL_.read();//Get data from the COMM to MAIN serial bus
+#endif
+
 		if (rxData == 's')//AUXI, NAVI, MAIN sleep
 		{
 			goToSleepAUXI();
@@ -113,7 +114,7 @@ void loop()
 			wakeUpAUXI();
 			_SERIAL_DEBUG_CHANNEL_.println(F("All Megas Now Awake"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 
-		
+
 		}//end if
 	}//end if
 
@@ -142,12 +143,12 @@ void goToSleepMAIN() {
 	_SERIAL_DEBUG_CHANNEL_.println(F("MAIN Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	delay(100);//add some delay to allow the serial print to finish before going to sleep
 
-	//Go to sleep
-	//Note: Make sure to end any Software Serial here
-	//No SW Serials used for MAIN
+			   //Go to sleep
+			   //Note: Make sure to end any Software Serial here
+			   //No SW Serials used for MAIN
 	sleeperMAIN->goToSleep();//will sleep and wakeup the MAIN
-//sleeperMAIN->goToSleep(&InterruptDispatch1);//DEBUG
-	
+							 //sleeperMAIN->goToSleep(&InterruptDispatch1);//DEBUG
+
 }
 void wakeUpMAIN() {
 	//Wake Up
@@ -164,10 +165,10 @@ void wakeUpMAIN() {
 void goToSleepNAVI() {
 	//Pre sleep tasks	
 	_SERIAL_DEBUG_CHANNEL_.println(F("NAVI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-	//Go to sleep
-	//Note: Don't forget to call this before sending the command, else the status won't be up to date
+														  //Go to sleep
+														  //Note: Don't forget to call this before sending the command, else the status won't be up to date
 	sleeperNAVI->goToSleep();//update awake flag status
-	//Send command over software serial to shutdown the NAVI
+							 //Send command over software serial to shutdown the NAVI
 	_NAVI_SERIAL_.println('s');//send 's' to the NAVI over NAVI's dedicated serial bus
 
 }
@@ -178,7 +179,7 @@ void wakeUpNAVI() {
 		//Wake Up
 		sleeperNAVI->wakeUp();//Toggles the wakeup pin to low (then back to high). The low level on the interrupt pin wakes up NAVI.
 
-		//Post Wake Up tasks
+							  //Post Wake Up tasks
 		_SERIAL_DEBUG_CHANNEL_.println(F("NAVI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 	else
@@ -192,10 +193,10 @@ void wakeUpNAVI() {
 void goToSleepAUXI() {
 	//Pre sleep tasks
 	_SERIAL_DEBUG_CHANNEL_.println(F("AUXI Sleeping..."));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
-	//Go to sleep
-	//Note: Don't forget to call this before sending the command, else the status won't be up to date
+														  //Go to sleep
+														  //Note: Don't forget to call this before sending the command, else the status won't be up to date
 	sleeperAUXI->goToSleep();//update awake flag status
-	//Send command over software serial to shutdown the AUXI
+							 //Send command over software serial to shutdown the AUXI
 	_AUXI_SERIAL_.println('s');//send 's' to the AUXI over AUXI's dedicated serial bus
 
 }
@@ -206,7 +207,7 @@ void wakeUpAUXI() {
 		//Wake Up
 		sleeperAUXI->wakeUp();//Toggles the wakeup pin to low (then back to high). The low level on the interrupt pin wakes up AUXI.
 
-		//Post Wake Up tasks
+							  //Post Wake Up tasks
 		_SERIAL_DEBUG_CHANNEL_.println(F("AUXI Awoken!"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 	}
 	else

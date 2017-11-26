@@ -101,10 +101,11 @@ You can turn on this flag (_DEBUG_REDIRECTION_NOTICE) below to verify it's redir
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 #ifdef _DEBUG_COMM_BROADCAST
-#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ //for COMM, either way it goes to the PC USB Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _CMNC_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to CMNC instead (which is actually still the same channel as PC USB for the COMM Arduino)
 #else
-#define _SERIAL_DEBUG_CHANNEL_ _CMNC_SERIAL_
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_ 
 #endif
+
 //============End of Debugging: Serial Channel Selection
 
 //============Debugging: Redirection

@@ -11,16 +11,19 @@
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to MAIN instead
 #else
 	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
+#include <RoverConfig.h>
+
+
 void setup()
 {
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);
-	Serial3.begin(GPS_BAUD_RATE);	
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);
+	_GPS_SERIAL_.begin(GPS_BAUD_RATE);
 }
 
 void loop()
@@ -28,9 +31,9 @@ void loop()
 	char temp;
 	#ifdef _DEBUG_OUTPUT_GPS_AS_RX
 	//Check availabiltiy of serial data
-	if (Serial3.available() > 0)
+	if (_GPS_SERIAL_.available() > 0)
 	{
-		temp = (char)Serial3.read();
+		temp = (char)_GPS_SERIAL_.read();
 		_SERIAL_DEBUG_CHANNEL_.print(temp);
 	}
 	#endif
@@ -39,9 +42,9 @@ void loop()
 	#ifdef _DEBUG_OUTPUT_GPS_NEWLINES
 
 		//Check availabiltiy of serial data
-		if (Serial3.available() > 0)
+		if (_GPS_SERIAL_.available() > 0)
 		{
-			temp = (char)Serial3.read();
+			temp = (char)_GPS_SERIAL_.read();
 			if (temp == '\n')
 			{
 				_SERIAL_DEBUG_CHANNEL_.println();

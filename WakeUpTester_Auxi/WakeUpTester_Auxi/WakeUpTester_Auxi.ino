@@ -13,21 +13,21 @@
 //#define _DEBUG_COMM_BROADCAST //Debugging with COMM Broadcast
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
+#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to MAIN instead
 #else
-	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
+#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
-			
+
 //define Arduino 1: AUXI in order to use it's config pins
 #ifndef _ARD_2_AUXI_H
-	#define _ARD_2_AUXI_H		
+#define _ARD_2_AUXI_H		
 #endif
-	
+
 /********************************************************************/
 
 #include <RoverConfig.h>
@@ -48,7 +48,7 @@ RoverSleeperServer * sleeperAUXI = new RoverSleeperServer(AUXI_WAKEUP_CTRL_PIN, 
 
 
 
-RoverReset * resetArray[] = { 
+RoverReset * resetArray[] = {
 	sleeperAUXI
 };
 
@@ -80,12 +80,12 @@ void loop()
 	if (_MAIN_SERIAL_.available() > 0)//Check MAIN to AUXI serial bus	
 #endif
 	{
-		#ifdef _DEBUG_W_PC_INPUT
-			rxData = _PC_USB_SERIAL_.read();//Get data from the MAIN to AUXI serial bus
-		#else		
-			rxData = _MAIN_SERIAL_.read();//Get data from the MAIN to AUXI serial bus
-		#endif				
-		
+#ifdef _DEBUG_W_PC_INPUT
+		rxData = _PC_USB_SERIAL_.read();//Get data from the MAIN to AUXI serial bus
+#else		
+		rxData = _MAIN_SERIAL_.read();//Get data from the MAIN to AUXI serial bus
+#endif				
+
 		if (rxData == 's')//AUXI sleep
 		{
 			goToSleepAUXI();

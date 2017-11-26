@@ -1,7 +1,7 @@
 //Used for AUXI - 2
 
 /*
-Takes CMNC data and broadcasts the exact same message to all Ardunio.
+Takes CMNC data and broadcasts the exact same message to all Arduino.
 Good for a quick debug when you need to receive unformatted data back to CMNC and want to send data to from CMNC without having to worry about data filtering and re-routing. (all data from CMNC will be broadcasted to all other Arduinos the same)
 Load this on all Arduinos except the UUT. The UUT should have it's own code running. The input to the UUT will take in data sent from this CommBroadcast and the output will be received by CommBroadcast and sent back out to CMNC.
 

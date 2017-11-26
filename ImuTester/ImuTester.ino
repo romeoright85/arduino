@@ -23,10 +23,11 @@
 //Note: You also have to uncomment _DEBUG_COMM_BROADCAST in ImuSensor.cpp
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to MAIN instead
 #else
 	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
+
 
 
 DelayCounter * counter50Hz = new DelayCounter(DELAY_4_PERIODS);//initialize it to count to 4 periods

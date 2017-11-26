@@ -1,12 +1,14 @@
+//Used for AUXI - 2
+
 #include <RoverHealthAndStatus.h>
 
 //Note: Include ImuSensor.h here as it won't work right when including it in RoverHealthAndStatus.h since it's not a class but a bunch of functions and variable declarations
 #include <ImuSensor.h>
 
 #ifdef _DEBUG_COMM_BROADCAST
-	#define SERIAL_DEBUG_CHANNEL Serial2
+	#define _SERIAL_DEBUG_CHANNEL_ _MAIN_SERIAL_ //When using COMM Broadcast, reroute the PC USB output to the channel to MAIN instead
 #else
-	#define SERIAL_DEBUG_CHANNEL Serial
+	#define _SERIAL_DEBUG_CHANNEL_ _PC_USB_SERIAL_
 #endif
 
 
