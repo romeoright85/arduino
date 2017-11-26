@@ -483,7 +483,7 @@ void loop() {
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
-						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 					runModeFunction_default();//no state needed, all states do the same thing					
@@ -585,7 +585,7 @@ void loop() {
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
-						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 					runModeFunction_default();//no state needed, all states do the same thing
@@ -665,7 +665,7 @@ void loop() {
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
-						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 					runModeFunction_default();//no state needed, all states do the same thing
@@ -775,7 +775,7 @@ void loop() {
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
-						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 					runModeFunction_default();//no state needed, all states do the same thing
@@ -836,7 +836,7 @@ void loop() {
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
-						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 					runModeFunction_default();//no state needed, all states do the same thing
@@ -898,7 +898,7 @@ void loop() {
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
-						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 					runModeFunction_default();//no state needed, all states do the same thing
@@ -1770,8 +1770,7 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS:
-			//Mode: POWER_ON_AND_HW_RESET
+		case RUN_HOUSEKEEPING_TASKS: //Mode: POWER_ON_AND_HW_RESET
 			runPORTasks();
 			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
@@ -1966,7 +1965,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
-			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
+			//Keep as a placeholder.
 			break;
 		case CREATE_DATA: //Mode: SYNCHRONIZATION
 			//Skip creating data for CMNC
@@ -2185,7 +2185,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			
 			break;
 		case CONTROL_OUTPUTS: //Mode: SECURING_LINK
-			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed) (so that it can be updated regularly)
 			break;
 		case CREATE_DATA: //Mode: SECURING_LINK
 			//Creates data for MAIN
@@ -2416,8 +2416,8 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 		
 			break;
 		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
-			//Nothing to do here.
-			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
+			//Keep as a placeholder.
 			break;
 		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
 			//Creates data for MAIN
@@ -2510,7 +2510,7 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: HW_RESETTING
 
-			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
 			
 			//HW Reset NAVI			
 			#ifdef _DEBUG_OUTPUT_HW_RESET_STATUS_
@@ -2727,8 +2727,8 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			}//end else
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
-			//Nothing to do here.
-			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
+			//Keep as a placeholder.
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_SLEEPING
 			//Creates data for MAIN
@@ -2780,7 +2780,7 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			heartLed->ledSetLevel(_TWO_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
-			//The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
 			sleeperMAIN->wakeUp();//Toggles the wakeup pin to low (then back to high). The low level on the interrupt pin wakes up MAIN, which then wakes up all others
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_WAKING
@@ -3009,7 +3009,8 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			}//end else
 			break;
 		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
-			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed) (so that it can be updated regularly an change patterns if needed)
+			//Keep as a placeholder.
 			break;
 		case CREATE_DATA: //Mode: SW_RESETTING
 			//TROUBLESHOOTING TIP: If MAIN misses this message or has issues, then main_msg_queue = ALL_SW_RESET_REQUEST should be set and sent again.
@@ -3267,7 +3268,8 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 		
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
-			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state.
+			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed) (so that it can be updated regularly an change patterns if needed)
+			//Keep as a placeholder.
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_ERROR
 			//Creates data for MAIN
