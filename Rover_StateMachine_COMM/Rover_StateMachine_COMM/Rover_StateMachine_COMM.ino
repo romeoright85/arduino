@@ -1021,7 +1021,7 @@ byte rxData(RoverComm * roverComm, byte roverCommType) {
 			while (_CMNC_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
-				//Note: Must type cast the _CMNC_SERIAL_.Read to a char since not saving it to a char type first
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first.
 				roverComm->appendToRxData((char)_CMNC_SERIAL_.read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
@@ -1047,7 +1047,7 @@ byte rxData(RoverComm * roverComm, byte roverCommType) {
 			while (_MAIN_SWSERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
 			{
 				//Read one character of serial data at a time
-				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first.
 				roverComm->appendToRxData((char)_MAIN_SWSERIAL_.read());//construct the string one char at a time
 				counter++;
 				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
@@ -1079,7 +1079,7 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 
 	byte roverCommType = roverData->getDestinationCommType();//get the roverComm Destination
 
-	if (roverCommType == ROVERCOMM_COMM)
+	if (roverCommType == ROVERCOMM_COMM)//if the data is for this Arduino unit
 	{
 		//if the data is for this unit, COMM
 		BooleanBitFlags::setFlagBit(flagSet, flagOfInterest);//set the status such that the data was for this unit, COMM
@@ -1103,7 +1103,7 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 		 //else the command type is ROVERCOMM_NONE
 		 //invalid RoverComm Type, so do nothing		
 	}//end if
-	 //else the data was not for this local unit, and redirect was disabled, so do nothing
+	 //else the data was not for this local unit, and/or redirect was disabled, so do nothing
 
 	return;
 }//end of dataDirector()
@@ -2129,7 +2129,12 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			if(pirSensor->monitorMotion())//if the PIR detected motion
 			{
 				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
+				//Note: The PIR status flag will be cleared after the CREATE_DATA state.
 			}//end if
+			else
+			{
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//clear the motion detected flag
+			}//end else
 			//Clear the PIR Sensor
 			pirSensor->reset();//reset the pir sensor once samples are processed
 			break;
@@ -2184,15 +2189,15 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed) (so that it can be updated regularly)
 			break;
 		case CREATE_DATA: //Mode: SECURING_LINK
-			//Creates data for MAIN
-			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if
 			 //Creates data for CMNC
 			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_CMNC);
+			}//end if
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
 			}//end if
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);				
@@ -2379,7 +2384,12 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			if(pirSensor->monitorMotion())//if the PIR detected motion
 			{
 				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
+				//Note: The PIR status flag will be cleared after the CREATE_DATA state.
 			}//end if
+			else
+			{
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//clear the motion detected flag
+			}//end else
 			//Clear the PIR Sensor
 			pirSensor->reset();//reset the pir sensor once samples are processed
 			break;
@@ -2416,16 +2426,16 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//Keep as a placeholder.
 			break;
 		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
-			//Creates data for MAIN
-			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if
 			 //Creates data for CMNC
 			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_CMNC);
 			}//end if
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if			
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);							
 			break;
@@ -2533,16 +2543,16 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			
 			break;
 		case CREATE_DATA: //Mode: HW_RESETTING
-			//Creates data for MAIN
-			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if
 			 //Creates data for CMNC
 			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_CMNC);
 			}//end if
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if			
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);							
 			break;
@@ -2727,16 +2737,16 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//Keep as a placeholder.
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_SLEEPING
-			//Creates data for MAIN
-			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if
 			 //Creates data for CMNC
 			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_CMNC);
 			}//end if			
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);				
 			break;
@@ -3009,17 +3019,17 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//Keep as a placeholder.
 			break;
 		case CREATE_DATA: //Mode: SW_RESETTING
-			//TROUBLESHOOTING TIP: If MAIN misses this message or has issues, then main_msg_queue = ALL_SW_RESET_REQUEST should be set and sent again.
-			//Creates data for MAIN
-			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if
 			 //Creates data for CMNC
 			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_CMNC);
 			}//end if	
+			//Creates data for MAIN
+			//TROUBLESHOOTING TIP: If MAIN misses this message or has issues, then main_msg_queue = ALL_SW_RESET_REQUEST should be set and sent again.			
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
+			}//end if			
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);				
 			break;
@@ -3192,7 +3202,12 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			if(pirSensor->monitorMotion())//if the PIR detected motion
 			{
 				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//set the status as motion detected				
+				//Note: The PIR status flag will be cleared after the CREATE_DATA state.
 			}//end if
+			else
+			{
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);//clear the motion detected flag
+			}//end else
 			//Clear the PIR Sensor
 			pirSensor->reset();//reset the pir sensor once samples are processed
 			break;
@@ -3268,15 +3283,15 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			//Keep as a placeholder.
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_ERROR
-			//Creates data for MAIN
-			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if
 			 //Creates data for CMNC
 			if (cmnc_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_CMNC);
+			}//end if
+			//Creates data for MAIN
+			if (main_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_MAIN);
 			}//end if
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);				

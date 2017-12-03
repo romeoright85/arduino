@@ -2,7 +2,7 @@ Where I left off
 ------------------------
 
 DEADLINES:
-[9 days left] 12/1, 12/2, 12/9, 12/10, 12/15, 12/16, 12/17, 12/23, 12/24
+[8 days left]  12/3, 12/9, 12/10, 12/15, 12/16, 12/17, 12/23, 12/24
 Rover_StateMachine_MAIN (get the complex communications going)
 	if have time go back to Rover_StateMachine_COMM and change some of the 1/3 or 3/3 brightness to blinks. need to write code to poll/time the blinks or use interrupts or something
 [12 days] 12/25, 12/26, 12/27, 12/28, 12/29, 12/30, 12/31, 1/1, 1/6, 1/7, 1/12, 1/13
@@ -145,24 +145,25 @@ get basic state machine infrastructure up
 	
 LEFT OFF HERE, START HERE->Rover_StateMachine_MAIN:
 	need to start from scratch
-		[DONE]get objects created
-		[DONE]get states and modes setup
-		[DONE]get state transitions up
-			[DONE]delete the modes that are not used in certain states in the main loop state machine
-			[DONE]delete the states that are not used in certain modes in runModeFunctions
-		[IN PROGRESS]start on runModeFunctions
-			[LEFT OFF AT] 
-			runModeFunction_SYNCHRONIZATION
-				CREATE_DATA
-				TX_COMMUNICATIONS
+		[LEFT OFF]
 			write commandDirector functions		
+			write createDataFromQueueFor functions
+			
+		[LEFT OFF, IN PROGRESS]work on runModeFunctions
+			[DONE]runModeFunction_SYNCHRONIZATION
+			runModeFunction_NORMAL_OPERATIONS
+			runModeFunction_HW_RESETTING
+			runModeFunction_SYSTEM_SLEEPING
+			runModeFunction_SYSTEM_WAKING
+			runModeFunction_SW_RESETTING
+			runModeFunction_SYSTEM_ERROR
+			runModeFunction_default
+	
 			add error, message, etc. flags created
 			add other variables needed
 				use the state machine add data when archive template to see what you might need to add in
-		finish off runModeFunctions
-		
-	
-	
+				
+				
 		
 	
 	Note: pay attention to memory use!
@@ -1678,3 +1679,16 @@ Note: The last thing I did before stopping was:
 									Minimum Memory Usage: 1169 bytes (57% of a 2048 byte maximum)
 							
 				
+				
+				Rover_StateMachine_MAIN
+		[DONE]get objects created
+		[DONE]get states and modes setup
+		[DONE]get state transitions up
+			[DONE]delete the modes that are not used in certain states in the main loop state machine
+			[DONE]delete the states that are not used in certain modes in runModeFunctions
+			[DONE]write txdata
+			[DONE]write rxdata			
+			[DONE] write dataDirector
+			
+			
+	

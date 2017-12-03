@@ -870,17 +870,184 @@ void runBackgroundTasks()
 	
 }//end of runBackgroundTasks()
 byte rxData(RoverComm * roverComm, byte roverCommType) {
-//WRITE ME LATER
+
+	byte counter;
+	byte dataStatus = DATA_STATUS_NOT_READY;
+
+	//Note: Make sure parseAndValidateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
+	if ( roverCommType == ROVERCOMM_PC_USB )
+	{
+		if (_PC_USB_SERIAL_.available() > 1)
+		{
+			//initialize the counter
+			counter = 0;
+			while (_PC_USB_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			{
+				//Read one character of serial data at a time
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first.
+				roverComm->appendToRxData((char)_PC_USB_SERIAL_.read());//construct the string one char at a time
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
+			}//end while
+			dataStatus = DATA_STATUS_READY;
+		}//end if
+		else
+		{
+			dataStatus = DATA_STATUS_NOT_READY;
+		}//end else
+	}//end if
+	else if ( roverCommType == ROVERCOMM_COMM )
+	{
+		if (_COMM_SERIAL_.available() > 1)
+		{
+			//initialize the counter
+			counter = 0;
+			while (_COMM_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			{
+				//Read one character of serial data at a time
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_COMM_SERIAL_.read());//construct the string one char at a time
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
+			}//end while
+			dataStatus = DATA_STATUS_READY;
+		}//end if
+		else
+		{
+			dataStatus = false;
+		}//end DATA_STATUS_NOT_READY
+	}//end else if
+	else if ( roverCommType == ROVERCOMM_NAVI )
+	{
+		if (_NAVI_SERIAL_.available() > 1)
+		{
+			//initialize the counter
+			counter = 0;
+			while (_NAVI_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			{
+				//Read one character of serial data at a time
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_NAVI_SERIAL_.read());//construct the string one char at a time
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
+			}//end while
+			dataStatus = DATA_STATUS_READY;
+		}//end if
+		else
+		{
+			dataStatus = false;
+		}//end DATA_STATUS_NOT_READY
+	}//end else if	
+	else if ( roverCommType == ROVERCOMM_AUXI )
+	{
+		if (_AUXI_SERIAL_.available() > 1)
+		{
+			//initialize the counter
+			counter = 0;
+			while (_AUXI_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			{
+				//Read one character of serial data at a time
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_AUXI_SERIAL_.read());//construct the string one char at a time
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
+			}//end while
+			dataStatus = DATA_STATUS_READY;
+		}//end if
+		else
+		{
+			dataStatus = false;
+		}//end DATA_STATUS_NOT_READY
+	}//end else if		
+	else
+	{
+		//invalid RoverComm Type, so do nothing
+		dataStatus = DATA_STATUS_NOT_READY;
+	}//end else
+
+	return dataStatus;
+	
 }//end of rxData()
 
 void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byte flagOfInterest)
 {
-//WRITE ME LATER
+
+	//Note: This function varies for different Arduinos
+
+
+	BooleanBitFlags::clearFlagBit(flagSet, flagOfInterest);//initialize flag to false
+
+	byte roverCommType = roverData->getDestinationCommType();//get the roverComm Destination
+
+	if (roverCommType == ROVERCOMM_MAIN)//if the data is for this Arduino unit
+	{
+		//if the data is for this unit, MAIN
+		BooleanBitFlags::setFlagBit(flagSet, flagOfInterest);//set the status such that the data was for this unit, MAIN
+		//process it back in the main loop (to prevent software stack from being too deep)
+	}//end if
+	 //else check to see if the data was for other cases
+	else if (redirectOption == DATA_REDIRECT_ENABLED)
+	{
+		if (roverCommType == ROVERCOMM_PC_USB)
+		{
+			//if the data is for PC_USB, transmit the data out from MAIN to PC_USB
+			//Set redirect to PC_USB flag to true			
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_PC_USB_);
+		}//end else if	
+		else if (roverCommType == ROVERCOMM_COMM)
+		{
+			//if the data is for COMM, transmit the data out from MAIN to COMM
+			//Set redirect to COMM flag to true			
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_COMM_);
+		}//end else if
+		else if (roverCommType == ROVERCOMM_NAVI)
+		{
+			//if the data is for NAVI, transmit the data out from MAIN to NAVI
+			//Set redirect to NAVI flag to true			
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_NAVI_);
+		}//end else if
+		else if (roverCommType == ROVERCOMM_AUXI)
+		{
+			//if the data is for AUXI, transmit the data out from MAIN to AUXI
+			//Set redirect to AUXI flag to true			
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_AUXI_);
+		}//end else if		
+		 //else the command type is ROVERCOMM_NONE
+		 //invalid RoverComm Type, so do nothing		
+	}//end if
+	 //else the data was not for this local unit, and/or redirect was disabled, so do nothing
+
+	return;
+	
 }//end of dataDirector()
 
 void txData(char * txData, byte roverCommType)
 {
-//WRITE ME LATER
+	//Note: This function varies for different Arduinos
+	if (roverCommType == ROVERCOMM_PC_USB)
+	{
+		//transmit the data to PC_USB
+		_PC_USB_SERIAL_.println(txData);
+	}//end if
+	else if (roverCommType == ROVERCOMM_COMM)
+	{
+		//transmit the data to COMM
+		_COMM_SERIAL_.println(txData);
+	}//end else if
+	else if (roverCommType == ROVERCOMM_NAVI)
+	{
+		//transmit the data to NAVI
+		_NAVI_SERIAL_.println(txData);
+	}//end else if
+	else if (roverCommType == ROVERCOMM_AUXI)
+	{
+		//transmit the data to AUXI
+		_AUXI_SERIAL_.println(txData);
+	}//end else if
+	else
+	{
+		//do nothing
+	}//end else
 }//end of txData()
 
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
@@ -911,6 +1078,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 void createDataFromQueueFor(byte roverCommDestination)
 {
 //WRITE ME LATER
+//LEFT OFF HERE
 
 }//end of createDataFromQueueFor()
 void setAllErrorFlagsTo(boolean choice)
@@ -1276,6 +1444,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			if (mtrPowerCtrlr->motorIsOn())//if motor is currently on
 			{
 				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+				//Note: The motor power status flag will be cleared after the CREATE_DATA state.
 			}//end if
 			else
 			{
@@ -1370,15 +1539,61 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			}//end if		
 			break;		
 		case CREATE_DATA: //Mode: SYNCHRONIZATION
-		
-//LEFT OFF HERE
-		//WRITE ME LATER
+			//Creates data for PC_USB
+			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_PC_USB);
+			}//end if
+			//Creates data for COMM
+			if (comm_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_COMM);
+			}//end if
+			//Creates data for NAVI
+			if (navi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_NAVI);
+			}//end if
+			//Creates data for AUXI
+			if (auxi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_AUXI);
+			}//end if			
+			//Clear Motor Power Status
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
-//WRITE ME LATER
-//LEFT OFF HERE
-
-
+			//Sends data to PC_USB
+			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
+			}//end if
+			//Sends data to COMM
+			if (comm_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
+			}//end if
+			//Sends data to NAVI
+			if (navi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_NAVI, ROVERCOMM_NAVI);
+			}//end if
+			//Sends data to AUXI
+			if (auxi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_AUXI, ROVERCOMM_AUXI);
+			}//end if
+			//clears message queue(s) and redirect flags		
+			pc_usb_msg_queue = CMD_TAG_NO_MSG;
+			comm_msg_queue = CMD_TAG_NO_MSG;
+			navi_msg_queue = CMD_TAG_NO_MSG;
+			auxi_msg_queue = CMD_TAG_NO_MSG;
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_);
+			//reset the first transmission flag
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 			break;				
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -1388,6 +1603,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 }//end of runModeFunction_SYNCHRONIZATION()
 void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 {
+
+//LEFT OFF HERE
 	_PRINT_MODE_(F("MODE: NORMAL_OPERATIONS"));
 	switch (currentState)
 	{
