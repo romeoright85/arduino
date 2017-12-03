@@ -92,6 +92,11 @@
 		#define _BTFG_DATA_WAS_FOR_MAIN_CH4_				0x80
 		//DEBUG//Message Controls: flagSet_MessageControl2//the variable has not yet been created
 		//None Yet. Placeholder.
+		
+		
+		 //---------------------------------------------------	
+		 //Command Filter Option Flag(s)
+		 //---------------------------------------------------
 		//Command Filter Options: Set 1: Used in commandFilterOptionsSet1_PC_USB, commandFilterOptionsSet1_COMM, commandFilterOptionsSet1_NAVI, commandFilterOptionsSet1_AUXI
 		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_							0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_					0x02
@@ -104,7 +109,10 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_									0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_									0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_									0x04
-		#define _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_									0x08
+		#define _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_									0x08		
+		#define _BTFG_COMMAND_ENABLE_OPTION_HI_												0x10
+		#define _BTFG_COMMAND_ENABLE_OPTION_BYE_										0x20
+		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID_										0x40		
 		//TEMPLATE//System Status: flagSet_SystemStatus1
 		#define _BTFG_FIRST_TRANSMISSION_								0x01
 		#define _BTFG_MTR_POWER_ON_																					0x02

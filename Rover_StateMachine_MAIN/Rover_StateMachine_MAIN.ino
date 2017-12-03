@@ -354,8 +354,13 @@ void setup() {
 
 
 	 //Serial Communications
-//WRITE ME LATER
-
+	//Setup the HW_UART for communications between MAIN and COMM, MAIN and AUXI, MAIN and NAVI, and MAIN and PC USB
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_COMM_SERIAL_.begin(COMM_BAUD_RATE);
+	_NAVI_SERIAL_.begin(NAVI_BAUD_RATE);
+	_AUXI_SERIAL_.begin(AUXI_BAUD_RATE);
+	
+	
 	//Setting Up Timer Interrupt
 	OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
 	TIMSK0 |= _BV(OCIE0A);//Activating the Timer Interrupt by setting the Mask Register
@@ -896,7 +901,7 @@ byte rxData(RoverComm * roverComm, byte roverCommType) {
 			dataStatus = DATA_STATUS_NOT_READY;
 		}//end else
 	}//end if
-	else if ( roverCommType == ROVERCOMM_COMM )
+	else if ( roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC )//CMNC has to go through COMM
 	{
 		if (_COMM_SERIAL_.available() > 1)
 		{
@@ -992,25 +997,25 @@ void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byt
 		{
 			//if the data is for PC_USB, transmit the data out from MAIN to PC_USB
 			//Set redirect to PC_USB flag to true			
-			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
 		}//end else if	
-		else if (roverCommType == ROVERCOMM_COMM)
+		else if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC)//CMNC has to go through COMM
 		{
-			//if the data is for COMM, transmit the data out from MAIN to COMM
+			//if the data is for COMM (CMNC), transmit the data out from MAIN to COMM
 			//Set redirect to COMM flag to true			
-			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_COMM_);
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
 		}//end else if
 		else if (roverCommType == ROVERCOMM_NAVI)
 		{
 			//if the data is for NAVI, transmit the data out from MAIN to NAVI
 			//Set redirect to NAVI flag to true			
-			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_NAVI_);
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
 		}//end else if
 		else if (roverCommType == ROVERCOMM_AUXI)
 		{
 			//if the data is for AUXI, transmit the data out from MAIN to AUXI
 			//Set redirect to AUXI flag to true			
-			BooleanBitFlags::setFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_AUXI_);
+			BooleanBitFlags::setFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_);
 		}//end else if		
 		 //else the command type is ROVERCOMM_NONE
 		 //invalid RoverComm Type, so do nothing		
@@ -1029,7 +1034,7 @@ void txData(char * txData, byte roverCommType)
 		//transmit the data to PC_USB
 		_PC_USB_SERIAL_.println(txData);
 	}//end if
-	else if (roverCommType == ROVERCOMM_COMM)
+	else if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC)//CMNC has to go through COMM
 	{
 		//transmit the data to COMM
 		_COMM_SERIAL_.println(txData);
@@ -1052,33 +1057,358 @@ void txData(char * txData, byte roverCommType)
 
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
-//LEFT OFF HERE
-//WRITE ME LATER
 
-
-
-//TEMPLATE FOR System Ready
+	//Note: This function varies for different Arduinos
+	//Categorize all commands/data from all sources.					
+	//Sort based on priority.
+	//Allow for all non-conflicting commands to run.
+	//Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 
 	
+	#ifdef _DEBUG_TURN_OFF_ALL_DATA_FILTERS
+		setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);//for PC_USB
+		setAllCommandFiltersTo(true, ROVERCOMM_COMM);//for COMM
+		setAllCommandFiltersTo(true, ROVERCOMM_NAVI);//for NAVI
+		setAllCommandFiltersTo(true, ROVERCOMM_AUXI);//for AUXI
+	#endif
 
-			//Check to see if all systems are ready for systems go		
-			//the status for a particular arduino (i.e. navi_system_ready fpr NAVI) would be set true when the system ready msg was received for that arduino
-			if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_) )
-			{
-				comm_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
-				navi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;				
-				auxi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
-				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_);
-				currentMode = NORMAL_OPERATIONS;//Set mode to NORMAL_OPERATIONS *begin*				
-			}//end if
-//END OF TEMPLATE			
-			
+	byte originRoverCommType;//holds the received data's origin
+	byte destinationRoverCommType;//holds the received data's destination
+	byte commandTag;//holds received data's commandtag
+
+
+	//Get the received data's origin and destination
+	originRoverCommType = roverDataPointer->getOriginCommType();
+	destinationRoverCommType = roverDataPointer->getDestinationCommType();
+
+	//Get the command tag from the Rover Data Object
+	commandTag = roverDataPointer->getCommandTag();
+
+
+	//Setting the roverDataPointer in order to route where the rover command data will be routed to
+	//Clears/resets all data pointers before setting them.
+	clearRoverDataPointers();
+	//Sets the default such that the rover command data goes to the destination of the command. If needed, this can be overwritten by the command tag if/else statements
+	setRoverDataPointer(roverDataPointer, destinationRoverCommType);
+	//Note: The roverDataPointer should be going to, MAIN, this unit (else it would have been redirected already with dataDirector).
+	//However, it can be overwritten in the if/else conditions below based on the command tag for special cases like when it redirects itself to the original sender (i.e. when the command is a request for data/status, like with PIR Status request)
+
+	//Run highest priority functions first and lower priorities last.
+	//Note: Right now the way it's coded, the conflicting and non conflicting functions are all merged together and treated as conflicting. However, one data channel with a lower priority task may still override a higher priority task because the commandDirector for that channel was called later. If needed, fix this later.
+	
+	
+	//COMM HW Reset Request
+	if (commandTag == CMD_TAG_COMM_HW_RESET_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_))
+			)
+		)	 
+	{
+//LEFT OFF HERE	
+//WRITE ME LATER
+	}//end else if
+	//All SW Reset Request
+	else if (commandTag == CMD_TAG_ALL_SW_RESET_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_))
+			)
+		)	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if
+	//SW Reset Acknowledgement (usually from NAVI or AUXI)
+	else if (commandTag == CMD_TAG_SW_IS_RESETTING_ACK &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_))
+			)
+		)	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if
+	//Generic Health Error
+	else if (commandTag == CMD_TAG_GENERIC_HEALTH_STATUS_ERROR &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_))
+			)
+		)	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if
+	//System Ready	
+	else if (commandTag == CMD_TAG_SYSTEM_READY_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))
+			)
+		)	 
+	{
+
+
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+			/*	
+			TEMPLATE FOR System Ready
+
+				
+
+						//Check to see if all systems are ready for systems go		
+						//the status for a particular arduino (i.e. navi_system_ready fpr NAVI) would be set true when the system ready msg was received for that arduino
+						if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_) )
+						{
+							comm_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
+							navi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;				
+							auxi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
+							BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_);
+							currentMode = NORMAL_OPERATIONS;//Set mode to NORMAL_OPERATIONS *begin*				
+						}//end if
+			*/
+
+
+	}//end else if
+	//All Sleep Request
+	else if (commandTag == CMD_TAG_ALL_SLEEP_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_))
+			)
+		)	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if
+	//Sleep Request Acknowledgement
+	else if (commandTag == CMD_TAG_SYSTEM_IS_SLEEPING_ACK &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_))
+			)
+		)	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if
+	//Set Motor Power Enable
+	else if (commandTag == CMD_TAG_SET_MOTOR_POWER_ENABLE &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_))
+			)
+		)	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if
+	//Get Motor Power Status
+	else if (commandTag == CMD_TAG_MOTOR_POWER_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_))
+			)
+		)	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if
+	//Get Mid Right Encoder Status
+	else if (commandTag == CMD_TAG_ENC_STATUS_MID_RIGHT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_))
+			)
+		)	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if
+	//Get Mid Left Encoder Status
+	else if (commandTag == CMD_TAG_ENC_STATUS_MID_LEFT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_))
+			)
+		)	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if	
+	 //Hi Command - DEBUG
+	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_HI_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_HI_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_HI_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_HI_))
+			)
+		)		 	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end if
+	 //Bye Command - DEBUG
+	else if (commandTag == CMD_TAG_DEBUG_BYE_TEST_MSG &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_BYE_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_BYE_))
+			)
+		)		 	 
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end if
+	 //Invalid - DEBUG
+	else if (
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_INVALID_) )
+				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))
+				|| (roverComm == ROVERCOMM_NAVI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))
+				|| (roverComm == ROVERCOMM_AUXI && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))
+			)	
+		)
+	{
+//WRITE ME LATER
+//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	}//end else if
+	 //else output nothing	
+
+	return;	
 			
 }//end of commandDirector()
 void createDataFromQueueFor(byte roverCommDestination)
 {
-//WRITE ME LATER
 //LEFT OFF HERE
+
+	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+
+	byte queueOfInterest;
+	char * commandDataOfInterest;//holds the rover's command data string
+	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command
+	//Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
+	if (roverCommDestination == ROVERCOMM_PC_USB)
+	{
+		queueOfInterest = pc_usb_msg_queue;
+		if (roverDataForPC_USB != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForPC_USB->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else		
+	}//end if
+	else if (roverCommDestination == ROVERCOMM_COMM)
+	{
+		queueOfInterest = comm_msg_queue;
+		if (roverDataForCOMM != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForCOMM->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else
+	}//end else if
+	else if (roverCommDestination == ROVERCOMM_NAVI)
+	{
+		queueOfInterest = navi_msg_queue;
+		if (roverDataForNAVI != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForNAVI->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else
+	}//end else if	
+	else if (roverCommDestination == ROVERCOMM_AUXI)
+	{
+		queueOfInterest = auxi_msg_queue;
+		if (roverDataForAUXI != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForAUXI->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else
+	}//end else if	
+	 //else
+	 //do nothing
+
+	
+	
+	
+	//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
+	switch (queueOfInterest)
+	{
+
+
+//ADD MORE LATER
+		case CMD_TAG_DEBUG_HI_TEST_MSG:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);
+			break;
+		case CMD_TAG_DEBUG_BYE_TEST_MSG:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest, createdCommand);
+			break;
+		case CMD_TAG_INVALID_CMD:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);
+			break;
+		default:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);//output invalid command
+			break;
+	}//end switch
+	
+	
+	if (roverCommDestination == ROVERCOMM_PC_USB)
+	{
+		sprintf(txMsgBuffer_PC_USB, createdCommand);
+	}//end if
+	else if (roverCommDestination == ROVERCOMM_COMM)
+	{
+		sprintf(txMsgBuffer_COMM, createdCommand);
+	}//end else if
+	else if (roverCommDestination == ROVERCOMM_NAVI)
+	{
+		sprintf(txMsgBuffer_NAVI, createdCommand);
+	}//end else if
+	else if (roverCommDestination == ROVERCOMM_AUXI)
+	{
+		sprintf(txMsgBuffer_AUXI, createdCommand);
+	}//end else if
+	 //else
+
+
+	return;
 
 }//end of createDataFromQueueFor()
 void setAllErrorFlagsTo(boolean choice)
@@ -1166,7 +1496,78 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 }//end of setAllCommands()
 void redirectData(RoverComm * roverComm)
 {
-//WRITE ME LATER
+
+	/*
+	Notes:
+	For program efficiency, instead of sending all redirect messages, it sends only one per channel.
+	This is because between each message transmission, there needs to be a delay (since the receiving code is designed only to receive so many messages at once.
+	And if there are a lot of redirects, it will be stuck in the TX_COMMUNICATIONS for a while.
+	*/
+	RoverData * roverData;
+	byte roverCommType;
+
+	//Get the roverData object from the RoverComm Object
+	roverData = roverComm->getRoverDataObject();
+
+	//Get destination from either MAIN's or CMNC's Rover Data
+	roverCommType = roverData->getDestinationCommType();//get the destination comm type for the roverData
+	
+	
+	//If the destination is from: 1) COMM (CMNC), NAVI, AUXI to PC_USB or 2) PC_USB to PC_USB (loopback)
+	if (roverCommType == ROVERCOMM_PC_USB)
+	{
+		//And if redirection to PC_USB is allowed
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_))
+		{
+			#ifdef _DEBUG_REDIRECTION_NOTICE
+				Serial.println(F("Redirect2PC_USB"));
+			#endif
+			//Then transmit the data out to PC_USB
+			txData(roverComm->getRxData(), ROVERCOMM_PC_USB);
+		}//end if		 
+	}//end if	
+	//Else if the destination is from: 1) PC_USB, NAVI, AUXI to COMM (CMNC) or 2) COMM (CMNC) to COMM (CMNC) (loopback)
+	else if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC)//CMNC has to go through COMM
+	{
+		//And if redirection to COMM (CMNC) is allowed
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_))//Checks to see if redirection is allowed to COMM
+		{
+			#ifdef _DEBUG_REDIRECTION_NOTICE
+				Serial.println(F("Redirect2COMM"));
+			#endif
+			//Then transmit the data out to COMM (CMNC)
+			txData(roverComm->getRxData(), ROVERCOMM_COMM);
+		}//end if		 
+	}//end if		
+	//Else if the destination is from: 1) PC_USB, COMM (CMNC), AUXI to NAVI or 2) NAVI to NAVI (loopback)
+	else if (roverCommType == ROVERCOMM_NAVI)
+	{
+		//And if redirection to NAVI is allowed
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_))//Checks to see if redirection is allowed to NAVI
+		{
+			#ifdef _DEBUG_REDIRECTION_NOTICE
+				Serial.println(F("Redirect2NAVI"));
+			#endif
+			//Then transmit the data out to NAVI
+			txData(roverComm->getRxData(), ROVERCOMM_NAVI);
+		}//end if		 
+	}//end if
+	//Else if the destination is from: 1) PC_USB, COMM (CMNC), NAVI to AUXI or 2) AUXI to AUXI (loopback)
+	else if (roverCommType == ROVERCOMM_AUXI)
+	{
+		//And if redirection to AUXI is allowed
+		if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_))//Checks to see if redirection is allowed to AUXI
+		{
+			#ifdef _DEBUG_REDIRECTION_NOTICE
+				Serial.println(F("Redirect2AUXI"));
+			#endif
+			//Then transmit the data out to AUXI
+			txData(roverComm->getRxData(), ROVERCOMM_AUXI);
+		}//end if		 
+	}//end if
+	
+	return;
+	
 }//End of redirectData()
 
 
@@ -1321,9 +1722,6 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				}//end else
 			}//end if
 			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
-
-
-		
 		
 			break;		
 		case DATA_FILTER: //Mode: SYNCHRONIZATION
@@ -1822,17 +2220,53 @@ void InterruptDispatch_WakeUpArduino() {
 
 
 char * getMsgString(byte arrayIndex) {
-//WRITE ME LATER
+	if( arrayIndex < sizeof(msg_str_table)/sizeof(msg_str_table[0]))
+	{
+		memset(programMem2RAMBuffer, 0, sizeof(programMem2RAMBuffer));//clear char array buffer
+		return strcpy_P(programMem2RAMBuffer, (char*)pgm_read_word(&(msg_str_table[arrayIndex])));//copy the fixed string from flash into the char buffer
+	}//end if
+	else
+	{
+		Serial.println(F("ArrayOvflw"));
+		while(1);//hold the code here until it's fixed
+	}
 }//end of getMsgString()
 
 
 
 void clearRoverDataPointers()
 {
-//WRITE ME LATER
+	//Clears/resets all data pointers
+	roverDataForMAIN = NULL;
+	roverDataForPC_USB = NULL;
+	roverDataForCOMM = NULL;
+	roverDataForNAVI = NULL;
+	roverDataForAUXI = NULL;
+	
 }//end of clearRoverDataPointer()
 
 void setRoverDataPointer(RoverData * roverDataPointer, byte roverCommType)
 {
-//WRITE ME LATER
+	//This sets the roverDataPointer to the desired roverCommType.
+	//Note: This function can be called more than once to set more than one roverDataPointer to the same data (i.e. if the same data needs to be shared in multiple places)
+	if (roverCommType == ROVERCOMM_PC_USB)
+	{
+		roverDataForPC_USB = roverDataPointer;
+	}//end if
+	else if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC)//CMNC has to go through COMM
+	{
+		roverDataForCOMM = roverDataPointer;
+	}//end else if
+	else if (roverCommType == ROVERCOMM_NAVI)
+	{
+		roverDataForNAVI = roverDataPointer;
+	}//end else if
+	else if (roverCommType == ROVERCOMM_AUXI)
+	{
+		roverDataForAUXI = roverDataPointer;
+	}//end else if
+	else//the roverCommType should be for this local Arduino (i.e. ROVERCOMM_MAIN)
+	{
+		roverDataForMAIN = roverDataPointer;
+	}//end else
 }//end of setRoverDataPointer()

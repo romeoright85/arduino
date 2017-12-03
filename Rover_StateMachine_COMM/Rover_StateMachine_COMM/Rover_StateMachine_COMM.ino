@@ -1161,7 +1161,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	clearRoverDataPointers();
 	//Sets the default such that the rover command data goes to the destination of the command. If needed, this can be overwritten by the command tag if/else statements
 	setRoverDataPointer(roverDataPointer, destinationRoverCommType);
-	//Note: The roverDataPointer should be going to COMM (else it would have been redirected already with dataDirector).
+	//Note: The roverDataPointer should be going to, COMM, this unit (else it would have been redirected already with dataDirector).
 	//However, it can be overwritten in the if/else conditions below based on the command tag for special cases like when it redirects itself to the original sender (i.e. when the command is a request for data/status, like with PIR Status request)
 
 
@@ -1308,8 +1308,6 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 
 	{
 
-
-		//WRITE LATER
 		//maybe add a check here to check the command data for a string which is the "key code" or "rfid tag" used to establish secure link
 
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
@@ -1630,7 +1628,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 
 
 
-
+	return;
 
 
 
@@ -1751,6 +1749,8 @@ void redirectData(RoverComm * roverComm)
 			txData(roverComm->getRxData(), ROVERCOMM_MAIN);
 		}//end if		 
 	}//end if		
+	
+	return;
 
 }//End of redirectData()
 
