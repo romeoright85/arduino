@@ -1,3 +1,4 @@
+error
 Note: Make sure for any serials, use a #define serial_type. So it can be replaced with PC USB's serial if needed.
 Note: For redirects, it assumes only one arduino will be redirected to another. If by chance, two source Arduinos are being redirected to the same destination Arduino, only one will get through and the other message will be dropped.
 	The prioritization will be giving to the hard coded order of the if/else statements.
@@ -208,17 +209,19 @@ MAIN:
 				SYNCHRONIZATION
 					Allow all data from PC_USB (it's a debugging communication/backdoor to run tests, but use with caution)
 						no redirections during SYNCHRONIZATION
+					filter and throw away all COMM data except:
+						no redirections during SYNCHRONIZATION
+						system ready message(s) from COMM	
+						All SW Reset Request from COMM/CMNC (to restart the SW reset process again)				
+						comm hw reset request message(s), from COMM (used to hw reset the COMM after the COMM has hw reset MAIN, NAVI, and AUXI)						
 					filter and throw away all NAVI data except:
+						no redirections during SYNCHRONIZATION
 						//Note: No error messages allowed from AUXI or NAVI at this stage. If any of them have an error, they won't sync and will cause the timeout in MAIN to take MAIN into error.
 						system ready message(s) from NAVI
 					filter and throw away all AUXI data except:
-						//Note: No error messages allowed from AUXI or NAVI at this stage. If any of them have an error, they won't sync and will cause the timeout in MAIN to take MAIN into error.					
-						system ready message(s) from AUXI						
-						generic system error message(s) from AUXI
-					filter and throw away all COMM data except:
-						system ready message(s) from COMM	
-						All SW Reset Request from COMM/CMNC (to restart the SW reset process again)				
-						hw reset request message(s) from COMM (used to hw reset the COMM after the COMM has hw reset MAIN, NAVI, and AUXI)
+						no redirections during SYNCHRONIZATION
+						//Note: No error messages allowed from AUXI or NAVI at this stage. If any of them have an error, they won't sync anyways, and will cause the automatic timeout in MAIN to take MAIN into error.					
+						system ready message(s) from AUXI					
 					Unless overriden
 						Mode: SYNCHRONIZATION
 					set next state to READ_INPUTS //to read motor power status
@@ -265,11 +268,6 @@ MAIN:
 				SYSTEM_SLEEPING			
 					Allow all data from PC_USB (it's a debugging communication/backdoor to run tests, but use with caution)
 						no redirections during SYNCHRONIZATION
-					filter and throw away all NAVI data except:
-						System Is Sleeping Acknowledgement from NAVI	
-					filter and throw away all AUXI data except:
-						System Is Sleeping Acknowledgement from AUXI
-						generic system error message(s) from AUXI
 					filter and throw away all COMM data except:						
 						All Sleep (Re-)Request from COMM/CMNC (to restart the sleep process again)
 							Note: Allow sleep (Re-)Request to override the sleep process if needed
@@ -277,6 +275,12 @@ MAIN:
 								Since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SYSTEM_SLEEPING mode anyways.
 								After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.					
 							TROUBLESHOOTING TIP: Make sure it doesn't keep getting stuck in the sleep request state.
+					filter and throw away all NAVI data except:
+						System Is Sleeping Acknowledgement from NAVI	
+					filter and throw away all AUXI data except:
+						System Is Sleeping Acknowledgement from AUXI
+						generic system error message(s) from AUXI
+
 					Mode: SYSTEM_SLEEPING
 					set next state to READ_INPUTS //to read motor power status
 					go to RUN_HOUSEKEEPING_TASKS						
@@ -285,10 +289,6 @@ MAIN:
 				SW_RESETTING	
 					Allow all data from PC_USB (it's a debugging communication/backdoor to run tests, but use with caution)
 						no redirections during SW_RESETTING
-					filter and throw away all NAVI data except:
-						SW Reset Acknowledgement from NAVI
-					filter and throw away all AUXI data except:
-						SW Reset Acknowledgement from AUXI						
 					filter and throw away all COMM data except:
 						All SW Reset (Re-)Request from COMM/CMNC (to restart the SW reset process again)
 							Note: Allow All SW Reset (Re-)Request to override the sw reset process if needed
@@ -296,6 +296,10 @@ MAIN:
 									Since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SW_RESETTING mode anyways.
 									After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.					
 							TROUBLESHOOTING TIP: Make sure it doesn't keep getting stuck in the re-resetting state.
+					filter and throw away all NAVI data except:
+						SW Reset Acknowledgement from NAVI
+					filter and throw away all AUXI data except:
+						SW Reset Acknowledgement from AUXI						
 					Mode: SW_RESETTING
 					set next state to READ_INPUTS
 					go to RUN_HOUSEKEEPING_TASKS						
@@ -309,6 +313,22 @@ MAIN:
 							else if redirection needed COMM:
 								redirectToCOMM = true
 							end if	
+					filter and throw away all COMM data except:
+						sw reset request message(s) from COMM
+						mid left encoder requests (used for debugging)
+						mid right encoder requests (used for debugging)
+						motor power status requests (used for debugging)
+						any redirections
+							if redirection needed to AUXI:						
+							redirectToAUXI = true						
+							else if redirection needed to NAVI:						
+								redirectToNAVI = true							
+							else if redirection needed PC_USB:
+								redirectToPCUSB = true								
+							end if
+						Allow all COMM/CMNC data to be redirected so AUXI/NAVI can send requested data back. Each Arduino will filter out what it will allow in error mode.						
+						Note: There is no need for HW requests here, since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SYSTEM_ERROR mode anyways.
+									After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.						
 					filter and throw away all NAVI data except:
 						//Note: All SW and HW requests should be initiated originally from COMM (and not NAVI or AUXI)
 						any redirections
@@ -332,22 +352,7 @@ MAIN:
 							redirectToPCUSB = true							
 						end if
 						(to allow system data to be passed from AUXI to NAVI or COMM or CMNC)
-					filter and throw away all COMM data except:
-						sw reset request message(s) from COMM
-						mid left encoder requests (used for debugging)
-						mid right encoder requests (used for debugging)
-						motor power status requests (used for debugging)
-						any redirections
-							if redirection needed to AUXI:						
-							redirectToAUXI = true						
-							else if redirection needed to NAVI:						
-								redirectToNAVI = true							
-							else if redirection needed PC_USB:
-								redirectToPCUSB = true								
-							end if
-						Allow all COMM/CMNC data to be redirected so AUXI/NAVI can send requested data back. Each Arduino will filter out what it will allow in error mode.						
-						Note: There is no need for HW requests here, since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SYSTEM_ERROR mode anyways.
-									After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.						
+
 					Mode: SYSTEM_ERROR
 					set next state to READ_INPUTS
 					go to RUN_HOUSEKEEPING_TASKS			
@@ -409,18 +414,22 @@ MAIN:
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						No redirections in SYNCHRONIZATION.
 						All other messages are allowed from PC_USB. Use with caution.						
-					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-						Note: If system ready msg received from NAVI, see "Command Options" below for more info.
-						Note: Only system ready messages from NAVI are allowed. Everything else is filtered out.
-						
-					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-						Note: If system ready msg received from AUXI, see "Command Options" below for more info.
-						Note: Only system ready messages or generic health errors from AUXI are allowed. Everything else is filtered out.
 						
 					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						No redirections in SYNCHRONIZATION.
 						Note: If system ready msg, hw reset request, or All SW Reset Request from COMM/CMNC, see "Command Options" below for more info.
-						Note: Only HW or SW reset, or system ready messages from COMM are allowed. Everything else is filtered out.
-					
+						Note: Either you should get HW or SW reset, or system ready messages from COMM. as everything else was filtered out
+										
+					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						No redirections in SYNCHRONIZATION.
+						Note: If system ready msg received from NAVI, see "Command Options" below for more info.
+						Note: Either you should get system ready messages from NAVI. as everything else was filtered out
+						
+					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						No redirections in SYNCHRONIZATION.					
+						Note: If system ready msg received from AUXI, see "Command Options" below for more info.
+						Note: Either you should get system ready messages or generic health errors from AUXI. as everything else was filtered out
+	
 					
 					//Run lower priority functions here. (i.e. system ready msgs)
 
@@ -487,8 +496,11 @@ MAIN:
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						All messages are allowed from PC_USB. Use with caution.
 					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						All messages are allowed from COMM.
 					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						All messages are allowed from NAVI.
 					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						All messages are allowed from AUXI.
 																
 					//Run lower priority functions here.
 															
@@ -512,13 +524,13 @@ MAIN:
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						No redirections in SYNCHRONIZATION.
 						All other messages are allowed from PC_USB. Use with caution.
+					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						Note: Either you should get no data, All SW Reset Requests, or All Sleep (Re-)Request from COMM/CMNC. as everything else was filtered out					
 					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
 						Note: Either you should get no data or System Is Sleeping Acknowledgement from NAVI. as everything else was filtered out
 					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						Note: Either you should get no data, generic health error, or System Is Sleeping Acknowledgement from AUXI. as everything else was filtered out					
-					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
-						Note: Either you should get no data, All SW Reset Requests, or All Sleep (Re-)Request from COMM/CMNC. as everything else was filtered out					
-						
+											
 					Categorize all commands/data from all sources.
 					Allow for all non-conflicting commands to run.
 					Sort based on priority.
@@ -597,12 +609,12 @@ MAIN:
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						No redirections in SYNCHRONIZATION.
 						All other messages are allowed from PC_USB. Use with caution.
+					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						Note: Either you should get no data or All SW Reset (Re-)Request from COMM/CMNC. as everything else was filtered out										
 					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
 						Note: Either you should get no data or SW Reset Acknowledgement from NAVI. as everything else was filtered out
 					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						Note: Either you should get no data or SW Reset Acknowledgement from AUXI. as everything else was filtered out					
-					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
-						Note: Either you should get no data or All SW Reset (Re-)Request from COMM/CMNC. as everything else was filtered out					
 																
 					//Run lower priority functions here.
 
@@ -689,12 +701,12 @@ MAIN:
 					
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						All messages are allowed from PC_USB. Use with caution.
+					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						Note: Either you should get SW requests, motor power status, or mid left or mid right encoder status requests. as everything else was filtered out
 					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
 						Note: Either you should get no data redirections from NAVI. as everything else was filtered out
 					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						Note: Either you should get no data redirections and generic health errors from AUXI. as everything else was filtered out
-					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
-						Note: Should only be SW requests, motor power status, or mid left or mid right encoder status requests. Anything else is filtered out or redirected.
 								
 					
 					//Run lower priority functions here. (i.e. error status)
@@ -1304,21 +1316,7 @@ Note: With external commands, you only want to do all sleep requests (and not in
 	
 Non-Conflicting Functions (i.e. it doesn't override the message queues or change states or modes)
 
-	System Ready
-		//Check to see where the command was from
-		If command was from NAVI
-			set navi_system_ready = true					
-		else if command was from AUXI
-			set auxi_system_ready = true		
-		else if command was from COMM
-			set comm_system_ready = true							
-		end if
-		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
-		if(navi_system_ready && auxi_system_ready && comm_system_ready) // if all systetms are ready, reset the timeout counter
-			timeout_counter = 0;//reset timer
-		end if
-		
-		
+
 		
 
 Conflicting Functions Ordered By Priority	
@@ -1359,25 +1357,7 @@ Conflicting Functions Ordered By Priority
 			timeout_counter = 0;			
 		end if
 		Mode: SW_RESETTING
-		
-		
-	Set Motor Power Enable
-		If Disable Motor Power
-			//if disable motor power is called, set it to be disabled, "no questions asked" aka with highest priority
-			//because if any arduinos are requesting to disable the motor power, it will override any requests to enable it (safety feature). So give it higher priority than enable motor pwr
-			turn off the motor
-			enable_mtr_pwr = false
-			navi_msg_queue = DISABLING_MTR_PWR
-			auxi_msg_queue = DISABLING_MTR_PWR
-			comm_msg_queue = DISABLING_MTR_PWR//to be redirected to CMNC
-		Else//Enable Motor Power
-			turn on the motor
-			enable_mtr_pwr = true
-			navi_msg_queue = ENABLING_MTR_PWR
-			auxi_msg_queue = ENABLING_MTR_PWR
-			comm_msg_queue = ENABLING_MTR_PWR//to be redirected to CMNC
-		End If
-			
+	
 	Generic Health Error		
 		turn off the motor
 		enable_mtr_pwr = false
@@ -1392,34 +1372,24 @@ Conflicting Functions Ordered By Priority
 		timeout_counter = 0;		
 		Set mode to SYSTEM_ERROR *begin*
 	
-	Get Motor Power Status
+	
+	
+		System Ready
 		//Check to see where the command was from
 		If command was from NAVI
-			navi_msg_queue = MTR_PWR_STATUS
+			set navi_system_ready = true					
 		else if command was from AUXI
-			auxi_msg_queue = MTR_PWR_STATUS
+			set auxi_system_ready = true		
 		else if command was from COMM
-			comm_msg_queue = MTR_PWR_STATUS
+			set comm_system_ready = true							
+		end if
+		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
+		if(navi_system_ready && auxi_system_ready && comm_system_ready) // if all systetms are ready, reset the timeout counter
+			timeout_counter = 0;//reset timer
 		end if
 		
-	Get Mid Right Encoder Status
-		//Check to see where the command was from
-		If command was from NAVI
-			navi_msg_queue = ENC_STATUS_MID_RIGHT
-		else if command was from AUXI
-			auxi_msg_queue = ENC_STATUS_MID_RIGHT
-		else if command was from COMM
-			comm_msg_queue = ENC_STATUS_MID_RIGHT
-		end if	
-	Get Mid Left Encoder Status
-		//Check to see where the command was from
-		If command was from NAVI
-			navi_msg_queue = ENC_STATUS_MID_LEFT
-		else if command was from AUXI
-			auxi_msg_queue = ENC_STATUS_MID_LEFT
-		else if command was from COMM
-			comm_msg_queue = ENC_STATUS_MID_LEFT
-		end if
+			
+
 	All Sleep Request
 	
 		//Create first message here and regenerate later on as needed
@@ -1457,8 +1427,56 @@ Conflicting Functions Ordered By Priority
 		end if			
 		Mode: SYSTEM_SLEEPING
 	
+		
+		
+	Set Motor Power Enable
+		If Disable Motor Power
+			//if disable motor power is called, set it to be disabled, "no questions asked" aka with highest priority
+			//because if any arduinos are requesting to disable the motor power, it will override any requests to enable it (safety feature). So give it higher priority than enable motor pwr
+			turn off the motor
+			enable_mtr_pwr = false
+			navi_msg_queue = DISABLING_MTR_PWR
+			auxi_msg_queue = DISABLING_MTR_PWR
+			comm_msg_queue = DISABLING_MTR_PWR//to be redirected to CMNC
+		Else//Enable Motor Power
+			turn on the motor
+			enable_mtr_pwr = true
+			navi_msg_queue = ENABLING_MTR_PWR
+			auxi_msg_queue = ENABLING_MTR_PWR
+			comm_msg_queue = ENABLING_MTR_PWR//to be redirected to CMNC
+		End If
+			
 	
 
+	
+	Get Motor Power Status
+		//Check to see where the command was from
+		If command was from NAVI
+			navi_msg_queue = MTR_PWR_STATUS
+		else if command was from AUXI
+			auxi_msg_queue = MTR_PWR_STATUS
+		else if command was from COMM
+			comm_msg_queue = MTR_PWR_STATUS
+		end if	
+	
+	Get Mid Right Encoder Status
+		//Check to see where the command was from
+		If command was from NAVI
+			navi_msg_queue = ENC_STATUS_MID_RIGHT
+		else if command was from AUXI
+			auxi_msg_queue = ENC_STATUS_MID_RIGHT
+		else if command was from COMM
+			comm_msg_queue = ENC_STATUS_MID_RIGHT
+		end if	
+	Get Mid Left Encoder Status
+		//Check to see where the command was from
+		If command was from NAVI
+			navi_msg_queue = ENC_STATUS_MID_LEFT
+		else if command was from AUXI
+			auxi_msg_queue = ENC_STATUS_MID_LEFT
+		else if command was from COMM
+			comm_msg_queue = ENC_STATUS_MID_LEFT
+		end if
 	
 	
 IMPROVEMENT TIP: Maybe add system hold and system standby states later if have time.			

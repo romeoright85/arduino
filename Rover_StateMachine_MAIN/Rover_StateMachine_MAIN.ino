@@ -130,6 +130,11 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 #define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
 //============End Debugging: All Data Filtering Off
 
+//============Debugging: Turn off System Ready Status During Synchronization Mode
+//Uncomment in order to allow other data to be in the comm_msg_queue, navi_msg_queue, and/or auxi_msg_queue instead of just System Status
+#define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS
+//============End Debugging: All Data Filtering Off
+
 
 
 //============Debugging: Print timeout counter value
@@ -162,22 +167,36 @@ byte ch3Status = DATA_STATUS_NOT_READY;//for NAVI
 byte ch4Status = DATA_STATUS_NOT_READY;//for AUXI
 
 //Flag(s) - Error
-//TEMPLATE//byte flagSet_Error1 = _BTFG_NONE_;
+byte flagSet_Error1 = _BTFG_NONE_;
 //Flag(s) - Message Controls
-//TEMPLATE//byte flagSet_MessageControl = _BTFG_NONE_;
+byte flagSet_MessageControl1 = _BTFG_NONE_;
 //Flag(s) - System Status 1
-//TEMPLATE//byte flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
+byte flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
 //Flag(s) - System Status 2
 //TEMPLATE//byte flagSet_SystemStatus2 = _BTFG_NONE_;
 //Flag(s) - Command Filter Options - MAIN and CMNC each have their own set since they have separate data filters
-//Command Filter Options for CMNC: Set 1
-//TEMPLATE//byte commandFilterOptionsSet1_CMNC = _BTFG_NONE_;
-//Command Filter Options for CMNC: Set 2
-//TEMPLATE//byte commandFilterOptionsSet2_CMNC = _BTFG_NONE_;
-//Command Filter Options for MAIN: Set 1
-//TEMPLATE//byte commandFilterOptionsSet1_MAIN = _BTFG_NONE_;
-//Command Filter Options for MAIN: Set 2
-//TEMPLATE//byte commandFilterOptionsSet2_MAIN = _BTFG_NONE_;
+
+//Command Filter Options for PC_USB: Set 1
+byte commandFilterOptionsSet1_PC_USB = _BTFG_NONE_;
+//Command Filter Options for PC_USB: Set 2
+byte commandFilterOptionsSet2_PC_USB = _BTFG_NONE_;
+
+//Command Filter Options for COMM: Set 1
+byte commandFilterOptionsSet1_COMM = _BTFG_NONE_;
+//Command Filter Options for COMM: Set 2
+byte commandFilterOptionsSet2_COMM = _BTFG_NONE_;
+
+//Command Filter Options for NAVI: Set 1
+byte commandFilterOptionsSet1_NAVI = _BTFG_NONE_;
+//Command Filter Options for NAVI: Set 2
+byte commandFilterOptionsSet2_NAVI = _BTFG_NONE_;
+
+//Command Filter Options for AUXI: Set 1
+byte commandFilterOptionsSet1_AUXI = _BTFG_NONE_;
+//Command Filter Options for AUXI: Set 2
+byte commandFilterOptionsSet2_AUXI = _BTFG_NONE_;
+
+
 
 
 //Counters
@@ -188,7 +207,7 @@ unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MA
 
 //------------------From CommTester_MAIN
 //RoverData and RoverComms
-//Ch1 is between MAIN and PC USB
+//Ch1 is between MAIN and PC_USB
 RoverData * roverDataCh1_COMM = new RoverData();
 RoverComm * roverComm_Ch1 = new RoverComm(roverDataCh1_COMM);
 //Ch3 is between MAIN and COMM
@@ -357,8 +376,8 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 	//Tasks always running in the background, called by the timer about every 1 ms
 	//This will allow the millis value to be checked every millisecond and not get missed.
 	//Timer(s)
-
-	//ADD TIMERS
+	midLeftSyncTimer->Running();
+	midRightSyncTimer->Running();
 //WRITE ME LATER
 
 }
@@ -844,7 +863,11 @@ void startBackgroundTasks()
 void runBackgroundTasks()
 {
 	//run background tasks	
-//PLACEHOLDER: Add things here as needed.	
+	
+	//Wheel Encoders
+	wheelEncoder_MidLeft->sensorOnline();
+	wheelEncoder_MidRight->sensorOnline();
+	
 }//end of runBackgroundTasks()
 byte rxData(RoverComm * roverComm, byte roverCommType) {
 //WRITE ME LATER
@@ -862,7 +885,28 @@ void txData(char * txData, byte roverCommType)
 
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
+//LEFT OFF HERE
 //WRITE ME LATER
+
+
+
+//TEMPLATE FOR System Ready
+
+	
+
+			//Check to see if all systems are ready for systems go		
+			//the status for a particular arduino (i.e. navi_system_ready fpr NAVI) would be set true when the system ready msg was received for that arduino
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_) )
+			{
+				comm_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
+				navi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;				
+				auxi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_);
+				currentMode = NORMAL_OPERATIONS;//Set mode to NORMAL_OPERATIONS *begin*				
+			}//end if
+//END OF TEMPLATE			
+			
+			
 }//end of commandDirector()
 void createDataFromQueueFor(byte roverCommDestination)
 {
@@ -883,7 +927,74 @@ void setAllSystemStatusFlagsTo(boolean choice)
 }//end of setAllSystemStatusFlagsTo()
 void setAllCommandFiltersTo(boolean choice, byte roverComm)
 {
-	//WRITE ME LATER
+	//Note: Right now this function doesn't discriminate where the commands are coming from. So if they're all set to true, in theory, for example CMNC can "inject" or "spoof" a command that looks like it's coming from somewhere else.
+	//This is a bug that can be fixed later if needed. Keeping it simple for now.
+
+	if(roverComm == ROVERCOMM_PC_USB)
+	{
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_, choice);
+		
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_, choice);
+		
+	}//end if
+	else if(roverComm == ROVERCOMM_COMM)
+	{
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_, choice);
+		
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_, choice);
+		
+	}//end else if
+	else if(roverComm == ROVERCOMM_NAVI)
+	{
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_, choice);
+		
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_, choice);
+		
+	}//end else if	
+	else if(roverComm == ROVERCOMM_AUXI)
+	{
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_, choice);
+		
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_, choice);
+		
+	}//end else if		
+		
 }//end of setAllCommands()
 void redirectData(RoverComm * roverComm)
 {
@@ -938,51 +1049,336 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
-//LEFT OFF HERE		
-			//rxData() from COMM
+
+			//rxData() from PC_USB
 			//1. Reset status flag
 			ch1Status = DATA_STATUS_NOT_READY;
 			//2. Clear all Rx'ed data before getting new data				
 			roverComm_Ch1->clearRxData();
 			//3. Receive data
-			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_CMNC);//Note: this is a local .ino function
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_PC_USB);//Note: this is a local .ino function
 
-			//rxData() from AUXI
+			//rxData() from COMM
 			//1. Reset status flag
 			ch2Status = DATA_STATUS_NOT_READY;
 			//2. Clear all Rx'ed data before getting new data				
 			roverComm_Ch2->clearRxData();
 			//3. Receive data
-			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
-
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_COMM);//Note: this is a local .ino function
 			
 			//rxData() from NAVI
 			//1. Reset status flag
-			ch2Status = DATA_STATUS_NOT_READY;
+			ch3Status = DATA_STATUS_NOT_READY;
 			//2. Clear all Rx'ed data before getting new data				
-			roverComm_Ch2->clearRxData();
+			roverComm_Ch3->clearRxData();
 			//3. Receive data
-			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+			ch3Status = rxData(roverComm_Ch3, ROVERCOMM_NAVI);//Note: this is a local .ino function
 
-			
+			//rxData() from AUXI
+			//1. Reset status flag
+			ch4Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch4->clearRxData();
+			//3. Receive data
+			ch4Status = rxData(roverComm_Ch4, ROVERCOMM_AUXI);//Note: this is a local .ino function
+	
 			break;
 		case DATA_VALIDATION: //Mode: SYNCHRONIZATION
-//WRITE ME LATER
+
+			//parseAndValidateData() from PC_USB
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+
+			//parseAndValidateData() from COMM
+			//Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+			 //parseAndValidateData() from NAVI
+			//Process/validate the data that was received
+			if (ch3Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch3->parseAndValidateData())
+				{
+					ch3Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch3Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+			//parseAndValidateData() from AUXI
+			//Process/validate the data that was received
+			if (ch4Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch4->parseAndValidateData())
+				{
+					ch4Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch4Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+
+		
+		
 			break;		
 		case DATA_FILTER: //Mode: SYNCHRONIZATION
-//WRITE ME LATER
+
+			//Reset/clear flags (no data was for MAIN)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);
+			
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_);
+			
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_PC_USB);//for PC_USB
+			setAllCommandFiltersTo(false, ROVERCOMM_COMM);//for COMM
+			setAllCommandFiltersTo(false, ROVERCOMM_NAVI);//for NAVI
+			setAllCommandFiltersTo(false, ROVERCOMM_AUXI);//for AUXI
+			//Then enable the allowed commands for this mode:
+			//For PC_USB
+			//No filter on PC_USB data. (Allow all data from PC_USB)
+			//No commands from PC_USB are filtered, so set all to true.
+			setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);			
+			//For COMM
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_);	
+			//For NAVI			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);	
+			//For AUXI
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);	
+
+			
+			//Transmit data and/or execute command
+						
+			//For data from PC_USB, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+
+				/*
+				Allow all data from PC_USB.
+				*/
+
+			}//end if
+
+			//For data from COMM, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all COMM data except:
+				system ready message(s) from COMM	
+				All SW Reset Request from COMM/CMNC (to restart the SW reset process again)				
+				comm hw reset request message(s), from COMM (used to hw reset the COMM after the COMM has hw reset MAIN, NAVI, and AUXI)
+				*/				
+
+			}//end if
+			
+			//For data from NAVI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch3Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh3_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all NAVI data except:
+				system ready message(s) from NAVI
+				*/		
+				
+			}//end if
+			
+			
+			//For data from AUXI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch4Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh4_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all AUXI data except:
+				system ready message(s) from AUXI
+				*/			
+				
+			}//end if				
+
 			break;	
 		case READ_INPUTS: //Mode: SYNCHRONIZATION
-//WRITE ME LATER
+			//Skip Encoders
+			//Read Motor Power Status
+			if (mtrPowerCtrlr->motorIsOn())//if motor is currently on
+			{
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+			}//end if
+			else
+			{
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+			}//end else
 			break;	
 		case PROCESS_DATA: //Mode: SYNCHRONIZATION
-//WRITE ME LATER
+
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			
+			//Skip Encoders
+			//Motor Power Status: When applicable, the Motor Power Status is captured in READ_INPUTS with a flag, the message is queued up by commandDirector of PROCESS_DATA, and then processed in CREATE_DATA with createDataFromQueueFor, then the flag is cleared.
+						
+			
+			//Run lower priority functions here.
+			//These messages and flags may be overrided with commandDirector()			
+			
+			#ifndef _DEBUG_TURN_OFF_SYSTEM_READY_STATUS //normally the comm_msg_queue, navi_msg_queue, and/or auxi_msg_queue will send the CMD_TAG_SYSTEM_READY_STATUS. Can disable it for debugging purposes
+				//check each arduino to see which isn't ready yet and keep having it send out system ready status from MAIN
+				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_))
+				{
+					comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+				}//end if
+				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_))
+				{
+					navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
+				}//end if
+				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_))
+				{
+					auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+				}//end if		
+			#endif						
+			
+			//Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//All other messages are allowed from PC_USB. Use with caution.
+				//No redirections in SYNCHRONIZATION.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh1_COMM, ROVERCOMM_PC_USB);
+			}//end if			
+			//Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//Note: If system ready msg, hw reset request, or All SW Reset Request from COMM/CMNC, see "Command Options" below for more info.
+				//Note: Either you should get HW or SW reset, or system ready messages from COMM. as everything else was filtered out
+				//No redirections in SYNCHRONIZATION.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh2_COMM, ROVERCOMM_COMM);
+			}//end if				
+			//Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//Note: If system ready msg received from NAVI, see "Command Options" below for more info.
+				//Note: Either you should get system ready messages from NAVI. as everything else was filtered out
+				//No redirections in SYNCHRONIZATION.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh3_COMM, ROVERCOMM_NAVI);
+			}//end if				
+			//Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//Note: If system ready msg received from AUXI, see "Command Options" below for more info.
+				//Note: Either you should get system ready messages or generic health errors from AUXI. as everything else was filtered out
+				//No redirections in SYNCHRONIZATION.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh4_COMM, ROVERCOMM_AUXI);
+			}//end if
+
+							
+			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+	
+			//If all systems are not ready, and it's not yet a systems go
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_) )
+			{
+				//increment counter
+				timeout_counter++;
+				//if MAIN has been stuck in SYNCHRONIZATION for a long time while waiting on NAVI, AUXI, or COMM, it will send a sync error status
+				if(timeout_counter >= MAIN_SYNC_TIMEOUT_VALUE)
+				{
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					comm_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;							
+					pc_usb_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;											
+					//set sync_error = true
+					BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SYNC_ERROR_);			
+					//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
+					//initialize/reset shared counter before use
+					timeout_counter = 0;	
+				}//end if
+			}//end if		
 			break;		
 		case CREATE_DATA: //Mode: SYNCHRONIZATION
-//WRITE ME LATER
+		
+//LEFT OFF HERE
+		//WRITE ME LATER
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
 //WRITE ME LATER
+//LEFT OFF HERE
+
+
 			break;				
 		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -1193,11 +1589,11 @@ void runModeFunction_default()
 
 
 void InterruptDispatch_wheelEncoder_MidLeft() {
-//WRITE ME LATER
+	wheelEncoder_MidLeft->isrUpdate();
 }//emd of InterruptDispatch_wheelEncoder_MidLeft()
 
 void InterruptDispatch_wheelEncoder_MidRight() {
-//WRITE ME LATER
+	wheelEncoder_MidRight->isrUpdate();
 }//end of InterruptDispatch_wheelEncoder_MidRight()
 
 void InterruptDispatch_WakeUpArduino() {

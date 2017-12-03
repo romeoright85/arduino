@@ -151,7 +151,11 @@ LEFT OFF HERE, START HERE->Rover_StateMachine_MAIN:
 			[DONE]delete the modes that are not used in certain states in the main loop state machine
 			[DONE]delete the states that are not used in certain modes in runModeFunctions
 		[IN PROGRESS]start on runModeFunctions
-			[LEFT OFF AT] runModeFunction_SYNCHRONIZATION at RX_COMMUNICATIONS
+			[LEFT OFF AT] 
+			runModeFunction_SYNCHRONIZATION
+				CREATE_DATA
+				TX_COMMUNICATIONS
+			write commandDirector functions		
 			add error, message, etc. flags created
 			add other variables needed
 				use the state machine add data when archive template to see what you might need to add in

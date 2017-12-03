@@ -1052,10 +1052,6 @@ Note: With external commands, you only want to do all sleep requests (and not in
 
 
 Non-Conflicting Functions (i.e. it doesn't override the message queues or change states or modes)
-	MAIN System Ready (from MAIN)
-		main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
-		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
-		timeout_counter = 0 (for future use)
 		
 Conflicting Functions Ordered By Priority
 	Note: Don't forget to look at Non-Conflicting Functions as well.
@@ -1097,6 +1093,10 @@ Conflicting Functions Ordered By Priority
 			end if			
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
+		MAIN System Ready (from MAIN)
+			main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
+			//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
+			timeout_counter = 0 (for future use)			
 		Break Secure Link
 			communications_secure = false			
 			Mode: SECURING_LINK *begin* //Starting over with having to securing link again

@@ -1165,31 +1165,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//However, it can be overwritten in the if/else conditions below based on the command tag for special cases like when it redirects itself to the original sender (i.e. when the command is a request for data/status, like with PIR Status request)
 
 
-	//=====Non-Conflicting Functions					
-	//Run lower priority functions here. (i.e. system ready msgs)
-	//Example: If it's Main System Ready, and either it's from MAIN and the MAIN data filter for System Ready is set or it's from CMNC and the CMNc data filter for System Ready is set
-	//Main System Ready 
-	if (commandTag == CMD_TAG_SYSTEM_READY_STATUS &&
-			(
-				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_) )
-				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))
-			)
-		)
-	{
-
-		//so it can stop checking for this message since the MAIN system is known to be ready
-		//Set MAIN System Ready flag to true		
-		BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_);
-		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code		
-		timeout_counter = 0;//reset counter (for future use)		
-	}//end if
-
-
-	 //=====Conflicting Functions Ordered By Priority
-	 //Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
-	 //All HW Reset Request
-	 //Note: Allow HW reset requests or SW reset re-requests to override the sw reset process if needed (by placing it higher on the if/else chain)
-	else if (commandTag == CMD_TAG_ALL_HW_RESET_REQUEST &&
+	//Run highest priority functions first and lower priorities last.
+	//Note: Right now the way it's coded, the conflicting and non conflicting functions are all merged together and treated as conflicting. However, one data channel with a lower priority task may still override a higher priority task because the commandDirector for that channel was called later. If needed, fix this later.
+	//All HW Reset Request
+	//Note: Allow HW reset requests or SW reset re-requests to override the sw reset process if needed (by placing it higher on the if/else chain)
+	if (commandTag == CMD_TAG_ALL_HW_RESET_REQUEST &&
 			(
 				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_) )
 				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_))
@@ -1284,6 +1264,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		 //initialize/reset shared counter before use
 		timeout_counter = 0;
 
+	}//end else if	
+	//Example: If it's Main System Ready, and either it's from MAIN and the MAIN data filter for System Ready is set or it's from CMNC and the CMNc data filter for System Ready is set
+	//Main System Ready 
+	else if (commandTag == CMD_TAG_SYSTEM_READY_STATUS &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_))
+			)
+		)
+	{
+
+		//so it can stop checking for this message since the MAIN system is known to be ready
+		//Set MAIN System Ready flag to true		
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_);
+		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code		
+		timeout_counter = 0;//reset counter (for future use)		
 	}//end else if
 	 //Break Secure Link
 	else if (commandTag == CMD_TAG_BREAK_SECURE_LINK &&
@@ -1687,7 +1683,7 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);//DEBUG
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);//DEBUG
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);//DEBUG
-	}
+	}//end if
 	else if(roverComm == ROVERCOMM_MAIN)
 	{
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_, choice);
@@ -1706,7 +1702,7 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);//DEBUG
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);//DEBUG
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);//DEBUG
-	}
+	}//end else if
 }//end of setAllCommands()
 void redirectData(RoverComm * roverComm)
 {
@@ -1846,7 +1842,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		case DATA_FILTER: //Mode: SYNCHRONIZATION
 
 
-			//Reset/clear flags (no data for COMM)
+			//Reset/clear flags (no data was for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
@@ -1888,7 +1884,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 				#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
-							//Allow redirections for debugging purposes
+							//Allow redirections from MAIN for debugging purposes
 							dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set set the "data was for COMM flag" to true if it was for this Arduino
 				#else
 							//Set no redirections from MAIN	
@@ -2075,7 +2071,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			break;
 		case DATA_FILTER: //Mode: SECURING_LINK
 
-			//Reset/clear flags (no data for COMM)
+			//Reset/clear flags (no data was for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
@@ -2331,7 +2327,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			break;
 		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
 
-			//Reset/clear flags (no data for COMM)
+			//Reset/clear flags (no data was for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
@@ -2619,7 +2615,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 		case DATA_FILTER: //Mode: SYSTEM_SLEEPING
 
 
-			//Reset/clear flags (no data for COMM)
+			//Reset/clear flags (no data was for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
@@ -2879,7 +2875,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			break;
 		case DATA_FILTER: //Mode: SW_RESETTING
 
-			//Reset/clear flags (no data for COMM)
+			//Reset/clear flags (no data was for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
@@ -3119,7 +3115,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			break;
 		case DATA_FILTER: //Mode: SYSTEM_ERROR
 
-			//Reset/clear flags (no data for COMM)
+			//Reset/clear flags (no data was for COMM)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);
 			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.

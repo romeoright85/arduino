@@ -72,6 +72,15 @@
 		//---------------------------------------------------
 		//Universal
 		#define _BTFG_NONE_													0x00
+		//Error: flagSet_Error1
+		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
+		#define _BTFG_SYNC_ERROR_										0x02
+		#define _BTFG_SW_RESET_ERROR_								0x04
+		#define _BTFG_SLEEPING_ERROR_									0x08				
+		#define _BTFG_GENERIC_HEALTH_ERROR_						0x01
+		#define _BTFG_GENERIC_SYSTEM_ERROR_							0x02		
+		//DEBUG//Error: flagSet_Error2//the variable has not yet been created
+		//None Yet. Placeholder.
 		//Message Controls: flagSet_MessageControl1
 		#define _BTFG_REDIRECT_TO_PC_USB_								0x01
 		#define _BTFG_REDIRECT_TO_COMM_									0x02		
@@ -83,8 +92,35 @@
 		#define _BTFG_DATA_WAS_FOR_MAIN_CH4_				0x80
 		//DEBUG//Message Controls: flagSet_MessageControl2//the variable has not yet been created
 		//None Yet. Placeholder.
+		//Command Filter Options: Set 1: Used in commandFilterOptionsSet1_PC_USB, commandFilterOptionsSet1_COMM, commandFilterOptionsSet1_NAVI, commandFilterOptionsSet1_AUXI
+		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_							0x01
+		#define _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_					0x02
+		#define _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_					0x04
+		#define _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_					0x08
+		#define _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_				0x10
+		#define _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_					0x20
+		#define _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_					0x040
+		//Command Filter Options: Set 2: Used in commandFilterOptionsSet2_PC_USB, commandFilterOptionsSet2_COMM, commandFilterOptionsSet2_NAVI, commandFilterOptionsSet2_AUXI
+		#define _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERENABLE_									0x01
+		#define _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_									0x02
+		#define _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_									0x04
+		#define _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_									0x08
+		//TEMPLATE//System Status: flagSet_SystemStatus1
+		#define _BTFG_FIRST_TRANSMISSION_								0x01
+		#define _BTFG_MTR_POWER_ON_																					0x02
+		#define _BTFG_COMM_SYSTEM_READY_								0x04
+		#define _BTFG_NAVI_SYSTEM_READY_								0x08
+		#define _BTFG_AUXI_SYSTEM_READY_								0x10		
+		#define _BTFG_ALL_SYSTEMS_GO_								0x20		
+		//TEMPLATE//System Status: flagSet_SystemStatus2//the variable has not yet been created
+		
+		
 		//---------------------------------------------------
 	
+	
+	
+	
+
 	#endif
 	
 	
