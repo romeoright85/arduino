@@ -113,15 +113,20 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_HI_												0x10
 		#define _BTFG_COMMAND_ENABLE_OPTION_BYE_										0x20
 		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID_										0x40		
-		//TEMPLATE//System Status: flagSet_SystemStatus1
+		//System Status: flagSet_SystemStatus1
 		#define _BTFG_FIRST_TRANSMISSION_								0x01
 		#define _BTFG_MTR_POWER_ON_																					0x02
 		#define _BTFG_COMM_SYSTEM_READY_								0x04
 		#define _BTFG_NAVI_SYSTEM_READY_								0x08
 		#define _BTFG_AUXI_SYSTEM_READY_								0x10		
-		#define _BTFG_ALL_SYSTEMS_GO_								0x20		
-		//TEMPLATE//System Status: flagSet_SystemStatus2//the variable has not yet been created
-		
+		#define _BTFG_ALL_SYSTEMS_GO_								0x20				
+		//System Status: flagSet_SystemStatus2
+		#define _BTFG_NAVI_ACKNOWLEDGEMENT_								0x01
+		#define _BTFG_AUXI_ACKNOWLEDGEMENT_								0x02
+		#define _BTFG_RUN_TASKS_ON_MAIN_NOW_								0x04	
+		//System Control: flagSet_SystemControls1
+		#define _BTFG_ENABLE_MTR_POWER_								0x01		
+		#define _BTFG_MTR_PREV_STATE_								0x02
 		
 		//---------------------------------------------------
 	

@@ -36,11 +36,11 @@ At POR (defaults):
 	invalid_state_or_mode_error = false
 	navi_system_ready = false	
 	auxi_system_ready = false	
-	navi_acknowledgement = false //a shared status flag, used for sw resets, sleep requests, etc. Make sure to clear it out before use and only use it for one purpose at a time.
-	auxi_acknowledgement = false	//a shared status flag, used for sw resets, sleep requests, etc. Make sure to clear it out before use and only use it for one purpose at a time.	
+	navi_acknowledgement = false //a shared status flag, used for sw resets, sleep requests, etc. Make sure to clear it out before use and only use it for one purpose at a time. It's used with auxi_acknowledgement and run_task_on_main_now. See run_task_on_main_now for details.
+	auxi_acknowledgement = false	//a shared status flag, used for sw resets, sleep requests, etc. Make sure to clear it out before use and only use it for one purpose at a time. It's used with navi_acknowledgement and run_task_on_main_now. See run_task_on_main_now for details.
 	comm_system_ready = false	
 	enable_mtr_pwr = false
-	run_task_on_main_now = false //a shared status flag, used for sw resets, sleep requests, etc. Make sure to clear it out before use and only use it for one purpose at a time.
+	run_task_on_main_now = false //a shared status flag, used for sw resets, sleep requests, etc. Make sure to clear it out before use and only use it for one purpose at a time. It's used to track if auxi_acknowledgement and auxi_acknowledgement are true (i.e. they have given acknowledgements) before the system runs it's tasks for main.
 	//NAVI
 	auto_NAVI_data_array[] = {
 		MTR_PWR_STATUS,
@@ -1352,20 +1352,21 @@ Conflicting Functions Ordered By Priority
 		//once MAIN gets an ack for sw reset from both NAVI and AUXI
 		if navi_acknowledgement == true && auxi_acknowledgement = true
 			run_task_on_main_now = true
-			comm_msg_queue = COMM_SW_RESET_REQUEST //MAIN sends COMM a COMM SW resquest, so COMM can do a SW reset
+			comm_msg_queue = COMM_SW_RESET_REQUEST //MAIN sends COMM a COMM SW request, so COMM can do a SW reset
 			//initialize/reset shared counter for future use and to prevent being stuck in a loop
 			timeout_counter = 0;			
 		end if
 		Mode: SW_RESETTING
 	
 	Generic Health Error	
-		turn off the motor
+		//turn off the motor when there is a health error for safety
 		enable_mtr_pwr = false
 		//disabling of the motor is implied by the generic health status error
 		pc_usb_msg_queue = GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
+		comm_msg_queue = GENERIC_HEALTH_STATUS_ERROR
 		navi_msg_queue = GENERIC_HEALTH_STATUS_ERROR
 		auxi_msg_queue = GENERIC_HEALTH_STATUS_ERROR
-		comm_msg_queue = GENERIC_HEALTH_STATUS_ERROR
+		
 		set generic_health_error = true
 			(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)			
 		//initialize/reset shared counter before use
@@ -1421,7 +1422,7 @@ Conflicting Functions Ordered By Priority
 		//once MAIN gets an ack for system sleeping from both NAVI and AUXI
 		if navi_acknowledgement == true && auxi_acknowledgement = true
 			run_task_on_main_now = true
-			comm_msg_queue = COMM_SLEEP_REQUEST //MAIN sends COMM a COMM Sleep resquest, so COMM can go to sleep
+			comm_msg_queue = COMM_SLEEP_REQUEST //MAIN sends COMM a COMM Sleep request, so COMM can go to sleep
 			//initialize/reset shared counter for future use and to prevent being stuck in a loop
 			timeout_counter = 0;			
 		end if			

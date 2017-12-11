@@ -173,7 +173,9 @@ byte flagSet_MessageControl1 = _BTFG_NONE_;
 //Flag(s) - System Status 1
 byte flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
 //Flag(s) - System Status 2
-//TEMPLATE//byte flagSet_SystemStatus2 = _BTFG_NONE_;
+byte flagSet_SystemStatus2 = _BTFG_NONE_;
+//Flag(s) - System Controls
+byte flagSet_SystemControls1 = _BTFG_NONE_;
 //Flag(s) - Command Filter Options - MAIN and CMNC each have their own set since they have separate data filters
 
 //Command Filter Options for PC_USB: Set 1
@@ -1107,8 +1109,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//LEFT OFF HERE	
-//WRITE ME LATER
+		currentMode = HW_RESETTING;//Set mode to HW_RESETTING *begin*				
 	}//end else if
 	//All SW Reset Request
 	else if (commandTag == CMD_TAG_ALL_SW_RESET_REQUEST &&
@@ -1120,8 +1121,21 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+
+		//Create first message here and regenerate later on as needed
+		navi_msg_queue = CMD_TAG_NAVI_SW_RESET_REQUEST;
+		auxi_msg_queue = CMD_TAG_NAVI_SW_RESET_REQUEST;
+		
+		//initialize/reset shared flags before use
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_);
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_);
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_);
+
+		//shut down motor when sw resetting for safety
+		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+		
+		currentMode = SW_RESETTING;//Set mode to SW_RESETTING *begin*				
+
 	}//end else if
 	//SW Reset Acknowledgement (usually from NAVI or AUXI)
 	else if (commandTag == CMD_TAG_SW_IS_RESETTING_ACK &&
@@ -1133,8 +1147,31 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+		
+		//Check to see where the command was from		
+		if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			//navi_acknowledgement = true
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_);
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
+		{
+			//auxi_acknowledgement = true
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_);
+		}//end else if	
+		//else do nothing
+		
+		
+		//once MAIN gets an ack for sw reset from both NAVI and AUXI
+		if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_) )
+		{
+			//run_task_on_main_now = true
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_);
+			comm_msg_queue = CMD_TAG_COMM_SW_RESET_REQUEST;//MAIN sends COMM a COMM SW request, so COMM can do a SW reset
+			//initialize/reset shared counter for future use and to prevent being stuck in a loop
+			timeout_counter = 0;	
+		}//end if
+		
 	}//end else if
 	//Generic Health Error
 	else if (commandTag == CMD_TAG_GENERIC_HEALTH_STATUS_ERROR &&
@@ -1146,8 +1183,21 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+
+		//turn off the motor when there is a health error for safety
+		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+		//send error out through the PC_USB for debugging
+		pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+		comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+		navi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+		auxi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+		//set generic_health_error = true
+		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);			
+		//(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)			
+		//initialize/reset shared counter before use
+		timeout_counter = 0;		
+		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*	
+		
 	}//end else if
 	//System Ready	
 	else if (commandTag == CMD_TAG_SYSTEM_READY_STATUS &&
@@ -1160,27 +1210,36 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)	 
 	{
 
-
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
-			/*	
-			TEMPLATE FOR System Ready
-
-				
-
-						//Check to see if all systems are ready for systems go		
-						//the status for a particular arduino (i.e. navi_system_ready fpr NAVI) would be set true when the system ready msg was received for that arduino
-						if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_) )
-						{
-							comm_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
-							navi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;				
-							auxi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
-							BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_);
-							currentMode = NORMAL_OPERATIONS;//Set mode to NORMAL_OPERATIONS *begin*				
-						}//end if
-			*/
-
-
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			//set comm_system_ready = true
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_);
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			//set navi_system_ready = true	
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_);
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
+		{
+			//set auxi_system_ready = true	
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_);			
+		}//end else if
+		//else do nothing
+		
+		//Check to see if all systems are ready for systems go		
+		//the status for a particular arduino (i.e. navi_system_ready fpr NAVI) would be set true when the system ready msg was received for that arduino
+		if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_) )
+		{
+			comm_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
+			navi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;				
+			auxi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
+			//reset the timeout counter
+			timeout_counter = 0;
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_);
+			currentMode = NORMAL_OPERATIONS;//Set mode to NORMAL_OPERATIONS *begin*				
+		}//end if
 	}//end else if
 	//All Sleep Request
 	else if (commandTag == CMD_TAG_ALL_SLEEP_REQUEST &&
@@ -1192,8 +1251,35 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+
+		//Create first message here and regenerate later on as needed
+		navi_msg_queue = CMD_TAG_NAVI_SLEEP_REQUEST;
+		auxi_msg_queue = CMD_TAG_AUXI_SLEEP_REQUEST;
+
+
+		//initialize/reset shared flags before use
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_);
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_);
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_);
+		
+		
+		//save the state of the motor power before shutting it off to go to sleep
+		//Let motor_power_prev_state = enable_mtr_pwr
+		if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_) )
+		{
+			BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_MTR_PREV_STATE_);
+		}//end if
+		else
+		{
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_MTR_PREV_STATE_);
+		}//end else
+		
+		//set to shut down motor when sleeping for safety
+		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+		
+		currentMode = SYSTEM_SLEEPING;//Set mode to SYSTEM_SLEEPING *begin*				
+		
+
 	}//end else if
 	//Sleep Request Acknowledgement
 	else if (commandTag == CMD_TAG_SYSTEM_IS_SLEEPING_ACK &&
@@ -1205,8 +1291,32 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			//navi_acknowledgement = true
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_);
+			//Put NAVI to sleep (actually NAVI puts itself to sleep after sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of NAVI before going to sleep itself, so it can wake up NAVI correctly)
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
+		{
+			//auxi_acknowledgement = true
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_);
+			//Put AUXI to sleep (actually AUXI puts itself to sleep after sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of AUXI before going to sleep itself, so it can wake up AUXI correctly)			
+		}//end else if	
+		//else do nothing
+		
+		//once MAIN gets an ack for system sleeping from both NAVI and AUXI
+		if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_) )
+		{
+			//run_task_on_main_now = true
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_);
+			comm_msg_queue = CMD_TAG_COMM_SLEEP_REQUEST;//MAIN sends COMM a COMM Sleep request, so COMM can 
+			//go to sleep
+			//initialize/reset shared counter for future use and to prevent being stuck in a loop
+			timeout_counter = 0;			
+		}//end if
 	}//end else if
 	//Set Motor Power Enable
 	else if (commandTag == CMD_TAG_SET_MOTOR_POWER_ENABLE &&
@@ -1218,6 +1328,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
+//LEFT OFF HERE		
 //WRITE ME LATER
 //DO LATER, make sure to add any messages to createDataFromQueueFor as well
 	}//end else if
@@ -1371,9 +1482,50 @@ void createDataFromQueueFor(byte roverCommDestination)
 	//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
 	switch (queueOfInterest)
 	{
-
-
-//ADD MORE LATER
+		case CMD_TAG_COMM_HW_RESET_REQUEST:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_ALL_SW_RESET_REQUEST:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SW_RESET_REQUEST, getMsgString(0), createdCommand);
+			break;	
+		case CMD_TAG_SW_IS_RESETTING_ACK:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_SYSTEM_READY_STATUS:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_READY_STATUS, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_ALL_SLEEP_REQUEST:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SLEEP_REQUEST, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_SYSTEM_IS_SLEEPING_ACK:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_SET_MOTOR_POWER_ENABLE:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SET_MOTOR_POWER_ENABLE, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_MOTOR_POWER_STATUS:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_POWER_STATUS, getMsgString(0), createdCommand);
+			break;			
+		case CMD_TAG_ENC_STATUS_MID_RIGHT:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_RIGHT, getMsgString(0), createdCommand);
+			break;					
+		case CMD_TAG_ENC_STATUS_MID_LEFT:
+		//WRITE ME LATER
+				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_LEFT, getMsgString(0), createdCommand);
+			break;					
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);
 			break;
@@ -1442,6 +1594,9 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);
 		
 	}//end if
 	else if(roverComm == ROVERCOMM_COMM)
@@ -1458,6 +1613,9 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);
 		
 	}//end else if
 	else if(roverComm == ROVERCOMM_NAVI)
@@ -1474,6 +1632,9 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);
 		
 	}//end else if	
 	else if(roverComm == ROVERCOMM_AUXI)
@@ -1490,6 +1651,9 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_, choice);
 		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_HI_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_BYE_, choice);
+		BooleanBitFlags::assignFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_INVALID_, choice);
 		
 	}//end else if		
 		

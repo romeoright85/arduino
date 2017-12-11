@@ -1222,6 +1222,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*				
+		//Create first message here and regenerate later on as needed
 		cmnc_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
 		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);
 		//Note: the generic_health_error flag can only be cleared with a sw reset or hw reset
@@ -1392,6 +1393,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
 		currentMode = SYSTEM_SLEEPING;//Set mode to SYSTEM_SLEEPING *begin*
+		//Create first message here and regenerate later on as needed
 		main_msg_queue = CMD_TAG_ALL_SLEEP_REQUEST;
 		cmnc_msg_queue = CMD_TAG_SYSTEM_IS_SLEEPING;
 		timeout_counter = 0; //reset for future use				
@@ -1502,6 +1504,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		{
 			main_msg_queue = CMD_TAG_INVALID_CMD;
 		}//end else if	
+		//else do nothing
 
 		 //Clears/resets all data pointers before setting them.
 		clearRoverDataPointers();

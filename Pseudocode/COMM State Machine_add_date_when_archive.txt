@@ -1067,6 +1067,7 @@ Conflicting Functions Ordered By Priority
 			comm_sw_reset_requested = true
 			Next State: RUN_HOUSEKEEPING_TASKS
 		All SW Reset Request
+			//Create first message here and regenerate later on as needed
 			cmnc_msg_queue = SW_IS_RESETTING			
 			main_msg_queue = ALL_SW_RESET_REQUEST
 			//initialize/reset shared counter before use
@@ -1123,6 +1124,7 @@ Conflicting Functions Ordered By Priority
 			Then it will go to RUN_HOUSEKEEPING_TASKS, while in SYSTEM_WAKING
 				Then it will go to the next state, which will default to CONTROL_OUTPUTS		
 		All Sleep Request
+			//Create first message here and regenerate later on as needed
 			Mode: SYSTEM_SLEEPING *begin*
 			main_msg_queue = ALL_SLEEP_REQUEST
 			cmnc_msg_queue = SYSTEM_IS_SLEEPING
