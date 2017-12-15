@@ -130,8 +130,14 @@
 	//definition for Character Buffer Array Sizes
 	#ifdef _CHAR_BUFFER_ARRAY_SIZES
 		//Char Array Sizes		
+		//Note: Typicall you need char length + 1 since the terminating char /0 is added on with CharArray::substring()
+		#define BUFFER_SIZE_1		1
 		#define BUFFER_SIZE_2		2
+		#define BUFFER_SIZE_3		3
+		#define BUFFER_SIZE_4		4
+		#define BUFFER_SIZE_5		5
 		#define BUFFER_SIZE_6		6
+		#define BUFFER_SIZE_7		7
 	#endif
 
 	

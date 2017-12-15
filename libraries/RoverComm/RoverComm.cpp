@@ -48,12 +48,13 @@ void RoverComm::reset()
 
 boolean RoverComm::parseAndValidateData()
 {
+	//Note: Need char length + 1 since the terminating char /0 is added on with CharArray::substring()
 	char imuSubstringANG[BUFFER_SIZE_6];
-	char dataFrameFwdSlash[BUFFER_SIZE_2];	
-	char dataFrameLowercaseC[BUFFER_SIZE_2];	
-	char dataFrameAsterisk[BUFFER_SIZE_2];	
-	char cmdDataOriginRvrComm[BUFFER_SIZE_2];	
-	char cmdDataDestinationRvrComm[BUFFER_SIZE_2];	
+	char dataFrameFwdSlash[BUFFER_SIZE_2];
+	char dataFrameLowercaseC[BUFFER_SIZE_2];
+	char dataFrameAsterisk[BUFFER_SIZE_2];
+	char cmdDataOriginRvrComm[BUFFER_SIZE_2];
+	char cmdDataDestinationRvrComm[BUFFER_SIZE_2];
 	char cmdDataCommandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];
 	char cmdDataCommandTagCharArray[CMD_DATA_CMD_TAG_ARRAY_SIZE];
 	byte commandType;

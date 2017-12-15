@@ -160,8 +160,9 @@ get basic state machine infrastructure up
 			[FINISH LATER WITH mtr pwr status and encoder statuses] write createDataFromQueueFor functions		
 				work on algoritm to create message for encoders
 					CMD_TAG_ENC_STATUS_MID_RIGHT
-						[LEFT OFF HERE]write a new class (RoverMessagePackager) that can package three strings into one comma separated one
-							have the RoverMessagePackager class also unpackage the comma separated string into three strings
+						[DONE]write a new class (RoverMessagePackager) that can package three strings into one comma separated one
+						[DONE]have the RoverMessagePackager class also unpackage the comma separated string into three strings
+						[LEFT OFF] add this use of this class to createDataFromQueueFor
 			
 			add error, message, etc. flags created
 			add other variables needed

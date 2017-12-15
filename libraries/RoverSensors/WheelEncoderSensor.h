@@ -79,8 +79,8 @@ A Quadrature Encoder has two channels. For this design, they will be called chan
 		
 		
 		byte getDirection();//returns the direction of the motor in
-		int getSpeed();//returns the speed of the motor in inches per second, value is rounded off/truncated
-		int getFootage();//returns the distance traveled in feet, value is rounded off/truncated
+		int getSpeed();//returns the speed of the motor in inches per second. Note: The value is rounded off/truncated since it is and integer.
+		int getFootage();//returns the distance traveled in feet. Note: The value is rounded off/truncated since it is and integer.
 		void sensorOnline();//to run the calculations, always have this function called on every loop() interation.
 		
 		void isrUpdate();//updates the _chAIsLeadingChB and _encoderAEdgeCount variables when the interrupt service routine (ISR) is called

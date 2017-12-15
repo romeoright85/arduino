@@ -8,33 +8,55 @@ RoverMessagePackager::~RoverMessagePackager()
 {
 	//do nothing
 }
-void packEncoderStatus(byte mtrDirection, int speed, int footage, char * outputCharArray, &byte arraySize)
+void RoverMessagePackager::packEncoderStatus(byte mtrDirection, int speed, int footage, char * outputCharArray, byte &arraySize)
 {
-	char tempCharArray[_MAX_ROVER_COMMAND_DATA_LEN_] = "";	
-
-//WRITE ME LATER	
-	//use DataType's byteToChar or byteToChars	
-	//use sprintf to convert int to char array
-	//https://faq.cprogramming.com/cgi-bin/smartfaq.cgi?answer=1043808026&id=1043284385
+	
+	//Note: The data per this design will be fixed predetermined lengths, i.e. xyyyzzzz (where x is the direction, y is the speed, and z is the footage/distance in feet.
 		
-	arraySize = sizeof(tempCharArray);//save the output char array size
-	strncpy(outputCharArray, tempCharArray, arraySize);//copy the temp char array to the output char array
+	char tempArray[_MAX_ROVER_COMMAND_DATA_LEN_] = "";	
+	
+	//Data range bounding
+	if(speed > 999)
+	{
+		speed = 999;//limit the speed  to a max range of 999
+	}
+	if(footage > 9999)
+	{
+		footage = 9999;//limit the footage to a max range of 9999
+	}
+
+	
+	//Start by filling the output char array with the Motor Direction
+	sprintf(tempArray, "%c", DataType::byteToChar(mtrDirection));
+	//Concatenating Speed to the output char array
+	sprintf(tempArray, "%s%03u", tempArray, speed);
+	//Concatenating Footage to the output char array
+	sprintf(tempArray, "%s%03u", tempArray, footage);	
+	arraySize = sizeof(tempArray);//save the output char array size
+	strncpy(outputCharArray, tempArray, arraySize);//copy the temp char array to the output char array
 	
 	
 }//end of packEncoderStatus()
-void unpackEncoderStatus(char * inputCharArray, byte inputCharArraySize, &byte mtrDirection, &int speed, &int footage)
+void RoverMessagePackager::unpackEncoderStatus(char * inputCharArray, byte inputCharArraySize, byte &mtrDirection, int &speed, int &footage)
 {
-	
-	char tempCharArray[_MAX_ROVER_COMMAND_DATA_LEN_] = "";	
-	
-//WRITE ME LATER	
 
-	//since it's fixed length, use CharArray::substring to get the byte, speed, and footage char arrays. Refer to RoverGpsSensor.cpp	
-	//use atoi to go from array to int
-	//use DataType's charToByte or charToBytes
+	//Note: The data per this design will be fixed predetermined lengths, i.e. xyyyzzzz (where x is the direction, y is the speed, and z is the footage/distance in feet.
+		
+	//Note: Need char length + 1 since the terminating char /0 is added on with CharArray::substring()
+	char mtrDirectionCharArray[BUFFER_SIZE_2];
+	char speedCharArray[BUFFER_SIZE_4];
+	char footageCharArray[BUFFER_SIZE_5];
+
+	CharArray::substring(inputCharArray, inputCharArraySize, 0, 1, mtrDirectionCharArray);	
+	CharArray::substring(inputCharArray, inputCharArraySize, 1, 4, speedCharArray);	
+	CharArray::substring(inputCharArray, inputCharArraySize, 4, 8, footageCharArray);	
 	
-	
-	strncpy(tempCharArray, inputCharArray, inputCharArraySize);//copy the input string to the temp array, tempCharArray
+	//Convert Char Array to Byte
+	mtrDirection = DataType::charsToByte(mtrDirectionCharArray);
+	//Convert Char Array to Integer
+	speed = atoi(speedCharArray);
+	//Convert Char Array to Integer
+	footage = atoi(footageCharArray);
 	
 	
 }//end of unpackEncoderStatus()

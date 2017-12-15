@@ -376,8 +376,10 @@ void setup() {
 	 //Serial Communications
 	 //Setup the HW_UART for communications between COMM and CMNC/PC USB
 	_CMNC_SERIAL_.begin(CMNC_BAUD_RATE);
+	_CMNC_SERIAL_.flush();//waits for any outgoing serial data to complete
 	//Setup the SW_UART for communications between COMM and MAIN
 	_MAIN_SWSERIAL_.begin(MAIN_BAUD_RATE);
+	_MAIN_SWSERIAL_.flush();//waits for any outgoing serial data to complete
 
 	//Setting Up Timer Interrupt
 	OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)

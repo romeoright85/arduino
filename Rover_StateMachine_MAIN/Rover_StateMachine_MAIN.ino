@@ -360,9 +360,16 @@ void setup() {
 	 //Serial Communications
 	//Setup the HW_UART for communications between MAIN and COMM, MAIN and AUXI, MAIN and NAVI, and MAIN and PC USB
 	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.flush();//waits for any outgoing serial data to complete
+	
 	_COMM_SERIAL_.begin(COMM_BAUD_RATE);
+	_COMM_SERIAL_.flush();//waits for any outgoing serial data to complete
+	
 	_NAVI_SERIAL_.begin(NAVI_BAUD_RATE);
+	_NAVI_SERIAL_.flush();//waits for any outgoing serial data to complete
+	
 	_AUXI_SERIAL_.begin(AUXI_BAUD_RATE);
+	_AUXI_SERIAL_.flush();//waits for any outgoing serial data to complete
 	
 	
 	//Setting Up Timer Interrupt
