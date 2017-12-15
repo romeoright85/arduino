@@ -306,6 +306,8 @@ char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Messag
 const static char msg_strg_0[] PROGMEM = "nodata";//getMsgString(0)
 const static char msg_strg_1[] PROGMEM = "invlcmd";//getMsgString(1)
 const static char msg_strg_2[] PROGMEM = "error";//getMsgString(2)
+const static char msg_strg_3[] PROGMEM = "on";//getMsgString(3)
+const static char msg_strg_4[] PROGMEM = "off";//getMsgString(4)
 //Note: Make sure to update  the msg_str_table[] array
 
 //Table of Fixed Commaned Strings (array of strings stored in flash)
@@ -1333,7 +1335,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 //DO LATER, make sure to add any messages to createDataFromQueueFor as well
 	}//end else if
 	//Get Motor Power Status
-	else if (commandTag == CMD_TAG_MOTOR_POWER_STATUS &&
+	else if (commandTag == CMD_TAG_MTR_PWR_STATUS &&
 			(
 				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_) )
 				|| (roverComm == ROVERCOMM_COMM && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_))
@@ -1342,8 +1344,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_MTR_PWR_STATUS;
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			navi_msg_queue = CMD_TAG_MTR_PWR_STATUS;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
+		{
+			auxi_msg_queue = CMD_TAG_MTR_PWR_STATUS;			
+		}//end else if
+		//else do nothing
+
 	}//end else if
 	//Get Mid Right Encoder Status
 	else if (commandTag == CMD_TAG_ENC_STATUS_MID_RIGHT &&
@@ -1355,8 +1371,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			navi_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
+		{
+			auxi_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;			
+		}//end else if
+		//else do nothing	
+	
 	}//end else if
 	//Get Mid Left Encoder Status
 	else if (commandTag == CMD_TAG_ENC_STATUS_MID_LEFT &&
@@ -1368,8 +1398,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_ENC_STATUS_MID_LEFT;
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			navi_msg_queue = CMD_TAG_ENC_STATUS_MID_LEFT;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
+		{
+			auxi_msg_queue = CMD_TAG_ENC_STATUS_MID_LEFT;			
+		}//end else if
+		//else do nothing		
+	
 	}//end else if	
 	 //Hi Command - DEBUG
 	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG &&
@@ -1381,8 +1425,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			navi_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
+		{
+			auxi_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;			
+		}//end else if
+		//else do nothing	
+	
 	}//end if
 	 //Bye Command - DEBUG
 	else if (commandTag == CMD_TAG_DEBUG_BYE_TEST_MSG &&
@@ -1394,8 +1452,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			navi_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
+		{
+			auxi_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;			
+		}//end else if
+		//else do nothing	
+	
 	}//end if
 	 //Invalid - DEBUG
 	else if (
@@ -1407,8 +1479,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)	
 		)
 	{
-//WRITE ME LATER
-//DO LATER, make sure to add any messages to createDataFromQueueFor as well
+	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_INVALID_CMD;
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			navi_msg_queue = CMD_TAG_INVALID_CMD;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
+		{
+			auxi_msg_queue = CMD_TAG_INVALID_CMD;			
+		}//end else if
+		//else do nothing	
+	
 	}//end else if
 	 //else output nothing	
 
@@ -1417,13 +1503,14 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 }//end of commandDirector()
 void createDataFromQueueFor(byte roverCommDestination)
 {
-//LEFT OFF HERE
+
 
 	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
 
 	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string
-	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command
+	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command (createdCommand is the output of the method call RoverCommandCreator::createCmd)
+	
 	//Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
 	if (roverCommDestination == ROVERCOMM_PC_USB)
 	{
@@ -1483,47 +1570,55 @@ void createDataFromQueueFor(byte roverCommDestination)
 	switch (queueOfInterest)
 	{
 		case CMD_TAG_COMM_HW_RESET_REQUEST:
-		//WRITE ME LATER
-				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_ALL_SW_RESET_REQUEST:
-		//WRITE ME LATER
-				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SW_RESET_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;	
 		case CMD_TAG_SW_IS_RESETTING_ACK:
-		//WRITE ME LATER
-				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
 			break;
-		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:
-		//WRITE ME LATER
-				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);
+		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:		
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SYSTEM_READY_STATUS:
-		//WRITE ME LATER
-				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_READY_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_READY_STATUS, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_ALL_SLEEP_REQUEST:
-		//WRITE ME LATER
-				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SLEEP_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SLEEP_REQUEST, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SYSTEM_IS_SLEEPING_ACK:
-		//WRITE ME LATER
-				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SET_MOTOR_POWER_ENABLE:
-		//WRITE ME LATER
-				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SET_MOTOR_POWER_ENABLE, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SET_MOTOR_POWER_ENABLE, getMsgString(0), createdCommand);
 			break;
-		case CMD_TAG_MOTOR_POWER_STATUS:
-		//WRITE ME LATER
-				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_POWER_STATUS, getMsgString(0), createdCommand);
+		case CMD_TAG_MTR_PWR_STATUS:
+			//if the motor power is on
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_) )
+			{
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_MTR_PWR_STATUS, getMsgString(3), createdCommand);
+			}//end if
+			else//the motor power is off
+			{
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_MTR_PWR_STATUS, getMsgString(4), createdCommand);
+			}
 			break;			
 		case CMD_TAG_ENC_STATUS_MID_RIGHT:
-		//WRITE ME LATER
+		//WRITE ME LATER, OUTPUT THE STATUS
+		//construct the message for direction, distance, and speed
+		
+		
+		//wheelEncoder_MidLeft->getDirection();
+		//wheelEncoder_MidLeft->getFootage()
+		//wheelEncoder_MidLeft->getSpeed()
+		
+		//print the enc value
 				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_RIGHT, getMsgString(0), createdCommand);
 			break;					
 		case CMD_TAG_ENC_STATUS_MID_LEFT:
-		//WRITE ME LATER
+		//WRITE ME LATER, OUTPUT THE STATUS
+		//print the enc value
 				//TEMPLATE//RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_LEFT, getMsgString(0), createdCommand);
 			break;					
 		case CMD_TAG_DEBUG_HI_TEST_MSG:

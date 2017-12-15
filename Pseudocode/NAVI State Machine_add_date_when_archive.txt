@@ -111,9 +111,13 @@ At POR (defaults):
 	prev_blue_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
 	ir_beacon_lights_enable = LIGHTS_OFF
 	prev_ir_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-
-
-
+	byte wheelEncoder_MidLeft_Direction;
+	byte wheelEncoder_MidRight_Direction;
+	int wheelEncoder_MidLeft_Speed;
+	int wheelEncoder_MidRight_Speed;
+	int wheelEncoder_MidLeft_Footage;
+	int wheelEncoder_MidRight_Footage;
+	boolean mtrPowerIsOn;
 
 	RUN_HOUSEKEEPING_TASKS
 		POWER_ON_AND_HW_RESET
@@ -1316,6 +1320,15 @@ Conflicting Functions Ordered By Priority
 		main_pri_msg_queue = MOTOR_TURN_STATUS
 	Get Motor Speed Status
 		main_pri_msg_queue = MOTOR_SPEED_STATUS
+	Set Motor Power Status (Status Received from MAIN)
+		Process motor power save status
+			Set mtrPowerIsOn value;
+	Set Mid Right Encoder Status (Status Received from MAIN)
+		Parse encoder message and save encoder values
+			Set values for wheelEncoder_MidRight_Direction, wheelEncoder_MidRight_Speed, wheelEncoder_MidRight_Footage
+	Set Mid Left Encoder Status (Status Received from MAIN)
+		Parse encoder message and save encoder values
+			Set values for wheelEncoder_MidLeft_Direction, wheelEncoder_MidLeft_Speed, wheelEncoder_MidLeft_Footage
 	Get Gimbal Pan Status
 		main_pri_msg_queue = GIMBAL_PAN_STATUS
 	Get Gimbal Tilt Status

@@ -1523,7 +1523,8 @@ void createDataFromQueueFor(byte roverCommDestination)
 
 	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string
-	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command
+	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command (createdCommand is the output of the method call RoverCommandCreator::createCmd)
+	
 	//Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
 	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
