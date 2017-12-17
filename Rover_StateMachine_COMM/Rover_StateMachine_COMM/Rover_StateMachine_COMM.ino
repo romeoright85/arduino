@@ -1242,45 +1242,34 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 
 	{
 
-
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		
-//LEFT OFF
-//WRITE ME LATER		
-		
-
-/*
-
-
-			//Check to see where the command was from
-			If command was from CMNC
-				Set error_origin = ROVERCOMM_CMNC
-			else if command was from NAVI
-				Set error_origin = ROVERCOMM_NAVI
-			else if command was from AUXI
-				Set error_origin = ROVERCOMM_AUXI
-			else if command was from MAIN
-				Set error_origin = ROVERCOMM_MAIN			
-			else if command was from COMM
-				Set error_origin = ROVERCOMM_COMM							
-			else if command was from PC_USB
-				Set error_origin = ROVERCOMM_PC_USB							
-			else
-				Set error_origin = ROVERCOMM_NONE							
-			end if		
-
-*/
-
-	
+		//Assign the error origin to where the data was generated from
 		error_origin = originRoverCommType;
-		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
-		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*	
+		
+
+		
 		//Create first message here and regenerate later on as needed
-		error_origin = ROVERCOMM_COMM;
 		cmnc_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+		
+		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+		{
+			main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+		}//end if
+		
+		
+		
+		
+		//set generic_health_error = true		
 		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);
 		//Note: the generic_health_error flag can only be cleared with a sw reset or hw reset
 
-		timeout_counter = 0;//reset counter (for future use)
+		//initialize/reset shared counter before use
+		timeout_counter = 0;	
+		
+		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*			
+		
+		
 	}//end else if	
 	
 	
@@ -1292,11 +1281,37 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{
-		cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//When COMM receives and error, always send it out to the CMNC so the base station knows there's an error	
+	
+	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+	
 		
-//LEFT OFF
-//WRITE ME LATER		
+		//Assign the error origin to where the data was generated from
+		error_origin = originRoverCommType;
 				
+		//Create first message here and regenerate later on as needed
+		cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//When COMM receives and error, always send it out to the CMNC so the base station knows there's an error	
+
+		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+		{
+			main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+		}//end if
+		
+		
+		
+		//set generic_system_error = true
+		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_);
+			//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+		
+		//No need to reset timeout_counter since not changing modes
+		
+		//For now just forward it to CMNC (PC_USB) (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.		
+		
+		
+		//All errors from AUXI, NAVI, MAIN, COMM, CMNC (PC_USB) should be redirected to COMM, and COMM will redirect it to CMNC
+		//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
+		//Improvement Tip: COMM can go into error mode if it gets an error message from AUXI, NAVI, MAIN, COMM, CMNC (PC_USB)
+		//Redirect any system errors from MAIN/NAVI/AUXI to CMNC for manual human in the loop disposition (i.e. hw or sw reset)		
 		
 	}//end else if				
 	
@@ -1628,7 +1643,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 	switch (queueOfInterest)
 	{
 
-
+		//Externally Received Commands	
 		case CMD_TAG_COMM_HW_RESET_REQUEST:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;
@@ -1642,19 +1657,11 @@ void createDataFromQueueFor(byte roverCommDestination)
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:
-//FIX ME, use error_origin instead of the fixed ROVERCOMM_COMM		
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);		
-			break;
-			
+				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);		
+			break;			
 		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:
-				//Note: Keep the original destination of the generic system error
-//FIX ME, use error_origin instead of the fixed ROVERCOMM_COMM
-//LEFT OFF HERE		
-//WRITE ME LATER
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(2), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;
-			
-			
 		case CMD_TAG_SECURE_LINK_REQUEST:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SECURE_LINK_REQUEST, getMsgString(0), createdCommand);		
 			break;
@@ -1680,10 +1687,6 @@ void createDataFromQueueFor(byte roverCommDestination)
 					RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(4), createdCommand);
 				}//end else				
 			break;
-		case INVALID_STATE_OR_MODE_ERROR_STATUS: //Internally Generated by this Arduino. (So there is no received command for this type of error. The error messaged will only be redirected out through all the Arduinos and out to CMNC)
-//LEFT OFF HERE		
-//WRITE ME LATER
-			break;					
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);							
 			break;
@@ -1693,6 +1696,21 @@ void createDataFromQueueFor(byte roverCommDestination)
 		case CMD_TAG_INVALID_CMD:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);									
 			break;
+		//Internally Generated Commands - Internally Generated by this Arduino. So there are no received command for these types of commands.			
+		case CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS: //The error message will be redirected out through all the Arduinos and out to CMNC
+		
+				//Since for COMM, PC_USB is the same as CMNC, then when it's any Arduino (including itself) i.e. COMM, CMNC, MAIN, NAVI, PC_USB, or AUXI have the destination be set to CMNC. Send the error back to the ground/base station.
+			
+				//Fixed destination of ROVERCOMM_CMNC
+				RoverCommandCreator::createCmd(error_origin, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(0), createdCommand);			
+
+			break;
+		case CMD_TAG_SYSTEM_IS_SLEEPING_ACK:
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_SECURE_LINK_ERROR_STATUS:
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SECURE_LINK_ERROR_STATUS, getMsgString(0), createdCommand);
+			break;			
 		default:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);//output invalid command
 			break;
@@ -1888,7 +1906,7 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 			break;			
 		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
-			runModeFunction_default();//no state needed, all states do the same thing
+				runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
 }//end of runStateFunction_POWER_ON_AND_HW_RESET
@@ -2150,7 +2168,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;
 		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
-			runModeFunction_default();//no state needed, all states do the same thing
+				runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch	
 }//end of runModeFunction_SYNCHRONIZATION()
@@ -3426,38 +3444,84 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			//Note: Either you should get no data, generic health status errors, or secure link data. as everything else was filtered out
 			
 			
-			//Recreate any error messages (but allow them to be overwritten by higher priority messages)
+			//Recreate/regenerate any error messages (but allow them to be overwritten by higher priority messages)
 			//Improvement Tip: Maybe can send MAIN (and AUXI and NAVI. MAIN would need to copy and reroute these error messages) the error messages as well so it can react to it. But for now good enough.
 			if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SYNC_ERROR_))
 			{
+			
 				cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+				}//end if	
+		
 				//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)					
 			}//end if
 			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SECURE_LINK_ERROR_))
 			{
 				cmnc_msg_queue == CMD_TAG_SECURE_LINK_ERROR_STATUS;
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+				}//end if
+				
 				//(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
 			}//end else if
 			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SLEEPING_ERROR_))
 			{
-				cmnc_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;
+				cmnc_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;				
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+				}//end if
 				//(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)
 			}//end else if
 			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SW_RESET_ERROR_))
 			{
 				cmnc_msg_queue == CMD_TAG_SW_RESET_ERROR_STATUS;
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+				}//end if
 				//(Note: the sw_reset_error flag can only be cleared with a hw reset)
 				//Troubleshooting tip, if it's a sw_reset_error, it will need a HW reset. But SYSTEM_ERROR will allow for both sw and hw resets because it's designed to handle any errors in general. So the user will have to know to send a HW reset in order to clear a SW reset error.
-			}//end else if
+			}//end else if			
+			else if(BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_))
+			{
+				cmnc_msg_queue == CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+				}//end if
+				//(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
+			}			
 			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_))
 			{
 				cmnc_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+				}//end if
 				//(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)
 			}//end else if
-			else //which includes generic_system_error = true									
+			else if(BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_))
 			{
 				cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
-				//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+				}//end if
+			}
+			else //default.
+			{
+				//For default errors set generic_system_error = true
+				BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_);
+					//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+				cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+				}//end if				
 			}//end else	
 			
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
@@ -3465,6 +3529,8 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
 				commandDirector(roverDataCh1_COMM, ROVERCOMM_CMNC);
 			}//end if
+
+			
 			
 			
 			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
@@ -3569,21 +3635,22 @@ void runModeFunction_default()
 	_PRINT_MODE_(F("MODE: default"));
 	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
 	//No switch case needed for the states, all states do the same thing
-	cmnc_msg_queue = CMD_TAG_INVALID_STATE_ERROR_STATUS;
-	main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
-//LEFT OFF HERE
-qwert	
-//FINISH ME LATER. send other arduinos an error too? see if the state machine will actually go through and transmit the error?
-
-//FINISH ME LATER. add error_origin and then go into error mode?
-	error_origin = ROVERCOMM_COMM;
 	
 	heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
+	
+	cmnc_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
+	main_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;
 
+	error_origin = ROVERCOMM_COMM;
+
+		
+	//Set the mode to SYSTEM_ERROR (though it might already be set to that in certain circumstances)
+	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*	
+	//Note: For now don't set the queuedState. But if it doesn't work as expected (i.e. there is a programming logic error), set it to CONTROL_OUTPUTS.
+	
 	//Set Invalid State Error Flag
 	//Note: The Invalid State Error Flag cann only be cleared with a sw reset or hw reset
 	BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_);
-
 
 	//initialize/reset shared counter before use
 	timeout_counter = 0;

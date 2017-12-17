@@ -1219,41 +1219,29 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-	
-	
-//LEFT OFF HERE	
-/*
-		//Check to see where the command was from
-		If command was from CMNC
-			Set error_origin = ROVERCOMM_CMNC
-		else if command was from NAVI
-			Set error_origin = ROVERCOMM_NAVI
-		else if command was from AUXI
-			Set error_origin = ROVERCOMM_AUXI
-		else if command was from MAIN
-			Set error_origin = ROVERCOMM_MAIN			
-		else if command was from COMM
-			Set error_origin = ROVERCOMM_COMM							
-		else if command was from PC_USB
-			Set error_origin = ROVERCOMM_PC_USB							
-		else
-			Set error_origin = ROVERCOMM_NONE							
-		end if				
-*/
-	
+		
 
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+	
 		//turn off the motor when there is a health error for safety
 		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
-		//send error out through the PC_USB for debugging
-		pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+
+		//Assign the error origin to where the data was generated from
+		error_origin = originRoverCommType;
+				
+		//Create first message here and regenerate later on as needed
+		pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send error out through the PC_USB for debugging
 		comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
 		navi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
 		auxi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+		
 		//set generic_health_error = true
 		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);			
 		//(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)			
+		
 		//initialize/reset shared counter before use
-		timeout_counter = 0;		
+		timeout_counter = 0;
+		
 		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*	
 		
 	}//end else if
@@ -1275,49 +1263,33 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 
 	
-//LEFT OFF HERE		
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+	
+		//Assign the error origin to where the data was generated from
+		error_origin = originRoverCommType;
+				
+		//Create first message here and regenerate later on as needed
+		comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//When COMM receives and error, always send it out to the CMNC so the base station knows there's an error	
+		pc_usb_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+		
+		
 
-
-/*
-		//For now just forward it to COMM (CMNC) and PC_USB, keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. 
-		comm_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
-		pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
-		generic_system_error = true
-		(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+		//set generic_system_error = true
+		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_);
+			//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+		
+		//No need to reset timeout_counter since not changing modes
+		
+		//For now just forward it to COMM (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.
 		
 		
-		//Check to see where the command was from
-		If command was from CMNC
-			Set error_origin = ROVERCOMM_CMNC
-		else if command was from NAVI
-			Set error_origin = ROVERCOMM_NAVI
-		else if command was from AUXI
-			Set error_origin = ROVERCOMM_AUXI
-		else if command was from MAIN
-			Set error_origin = ROVERCOMM_MAIN			
-		else if command was from COMM
-			Set error_origin = ROVERCOMM_COMM							
-		else if command was from PC_USB
-			Set error_origin = ROVERCOMM_PC_USB							
-		else
-			Set error_origin = ROVERCOMM_NONE							
-		end if		
-		
-		
-		//All errors from AUXI, NAVI, COMM, MAIN, CMNC, PC_USB should be redirected to COMM, and COMM will redirect it to CMNC
+		//All errors from AUXI, NAVI, MAIN, COMM, CMNC (PC_USB) should be redirected to COMM, and COMM will redirect it to CMNC
 		//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
-		Improvement Tip: MAIN can go into error mode if it gets an error message from AUXI, NAVI, COMM, MAIN, CMNC, PC_USB
-	
-*/	
-	
-		}//end else if
-	
-	
-	
-	
-	
-	
-	
+		//Improvement Tip: MAIN can go into error mode if it gets an error message from AUXI, NAVI, COMM, MAIN, CMNC, PC_USB
+		//Redirect any system errors from MAIN/NAVI/AUXI to CMNC for manual human in the loop disposition (i.e. hw or sw reset)		
+		
+
+	}//end else if
 	
 	//System Ready	
 	else if (commandTag == CMD_TAG_SYSTEM_READY_STATUS &&
@@ -1708,6 +1680,8 @@ void createDataFromQueueFor(byte roverCommDestination)
 	//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
 	switch (queueOfInterest)
 	{
+	
+		//Externally Received Commands	
 		case CMD_TAG_COMM_HW_RESET_REQUEST:
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;
@@ -1718,16 +1692,10 @@ void createDataFromQueueFor(byte roverCommDestination)
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:		
-//LEFT OFF
-//WRITE ME LATER		
-//FIX ME, use error_origin as origin instead of ROVERCOMM_MAIN
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:		
-//LEFT OFF
-//WRITE ME LATER		
-//FIX ME, use error_origin as origin instead of ROVERCOMM_MAIN
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(0), createdCommand);
 			break;			
 		case CMD_TAG_SYSTEM_READY_STATUS:
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_READY_STATUS, getMsgString(0), createdCommand);
@@ -1752,9 +1720,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 					RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_MTR_PWR_STATUS, getMsgString(4), createdCommand);
 				}
 			break;			
-		case CMD_TAG_ENC_STATUS_MID_RIGHT:
-			
-				
+		case CMD_TAG_ENC_STATUS_MID_RIGHT:				
 				//Construct the message for direction, distance, and speed
 				RoverMessagePackager::packEncoderStatus(wheelEncoder_MidRight_Direction, wheelEncoder_MidRight_Speed, wheelEncoder_MidRight_Footage, commandDataCharArray, commandDataCharArraySize);
 				
@@ -1780,9 +1746,43 @@ void createDataFromQueueFor(byte roverCommDestination)
 		case CMD_TAG_INVALID_CMD:
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);
 			break;
-		case INVALID_STATE_OR_MODE_ERROR_STATUS: //Internally Generated by this Arduino. (So there is no received command for this type of error. The error messaged will only be redirected out through all the Arduinos and out to CMNC)
-//LEFT OFF HERE		
-//WRITE ME LATER
+		//Internally Generated Commands - Internally Generated by this Arduino. So there are no received command for these types of commands.
+		case CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS: //The error message will be redirected out through all the Arduinos and out to CMNC
+				//When it's PC_USB, have the destinatation be set to PC_USB
+				if(roverCommDestination == ROVERCOMM_PC_USB)
+				{
+					//Fixed destination of ROVERCOMM_PC_USB, for debugging
+					RoverCommandCreator::createCmd(error_origin, ROVERCOMM_PC_USB, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(0), createdCommand);
+				}//end if
+				else//when it's any other Arduino (including itself) i.e. COMM, CMNC, MAIN, NAVI, or AUXI have the destination be set to CMNC. Send the error back to the ground/base station.
+				{
+					//Fixed destination of ROVERCOMM_CMNC
+					RoverCommandCreator::createCmd(error_origin, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(0), createdCommand);
+				}//end else
+			break;	
+		case CMD_TAG_NAVI_SW_RESET_REQUEST:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_NAVI_SW_RESET_REQUEST, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_COMM_SW_RESET_REQUEST:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_SW_RESET_REQUEST, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_SYSTEM_GO_STATUS:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_GO_STATUS, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_NAVI_SLEEP_REQUEST:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_NAVI_SLEEP_REQUEST, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_COMM_SLEEP_REQUEST:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_SLEEP_REQUEST, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_ENABLING_MTR_PWR:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ENABLING_MTR_PWR, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_DISABLING_MTR_PWR:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DISABLING_MTR_PWR, getMsgString(0), createdCommand);
+			break;
+		case CMD_TAG_SYNC_ERROR_STATUS:
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYNC_ERROR_STATUS, getMsgString(0), createdCommand);
 			break;			
 		default:
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);//output invalid command
@@ -2744,10 +2744,6 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			
 			break;	
 		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
-//WRITE ME LATER
-//LEFT OFF HERE
-
-/******TEMPLATE*/
 
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
@@ -2763,9 +2759,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//Run lower priority functions here.
 			//These messages and flags may be overrided with commandDirector()			
 			
-	
-	
-	
+		
 			
 			//Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				//All other messages are allowed from PC_USB. Use with caution.
@@ -3033,19 +3027,20 @@ void runModeFunction_default()
 	_PRINT_MODE_(F("MODE: default"));
 	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
 	//No switch case needed for the states, all states do the same thing
-	comm_msg_queue = CMD_TAG_INVALID_STATE_ERROR_STATUS;
-	pc_usb_msg_queue = CMD_TAG_INVALID_STATE_ERROR_STATUS;
-//LEFT OFF HERE
-//FINISH ME LATER. send other arduinos an error too? see if the state machine will actually go through and transmit the error?
-//Set error_origin as this Arduino
-error_origin = ROVERCOMM_MAIN;
-	
+	comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
+	pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;
+	navi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;
+	auxi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;
+				
+	error_origin = ROVERCOMM_MAIN;
+
+	//Set the mode to SYSTEM_ERROR (though it might already be set to that in certain circumstances)
+	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*	
+	//Note: For now don't set the queuedState. But if it doesn't work as expected (i.e. there is a programming logic error), set it to CONTROL_OUTPUTS.
+		
 	//Set Invalid State Error Flag
 	//Note: The Invalid State Error Flag cann only be cleared with a sw reset or hw reset
 	BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_);
-
-	
-//FINISH ME LATER. add error_origin and then go into error mode?
 
 	//initialize/reset shared counter before use
 	timeout_counter = 0;

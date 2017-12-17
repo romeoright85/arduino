@@ -144,47 +144,20 @@ get basic state machine infrastructure up
 
 	
 #LEFT OFF HERE, START HERE->Rover_StateMachine_MAIN:
-	need to start from scratch
-		[IN PROGRESS]work on runModeFunctions
-		
-			[DONE]runModeFunction_SYNCHRONIZATION
-			[GET BACK TO THIS ONCE DONE WITH ALL THE ERROR FIXING, left off at CONTROL_OUTPUTS] runModeFunction_NORMAL_OPERATIONS
+
 			
 ----------------[[[[[[[LEFT OFF FIRST]]]]]]]]
-			
-			
-			[DONE]Add place holders in all run mode functions for all states (to make it easier to debug and expand in the future)			
-			[DONE]Add "Received Generic System Error" command to COMM code
-			[DONE]Add "Received Generic System Error" command to MAIN code
-				[DONE]Also go back and add it all state machine plans as well
-				
-			[LEFT OFF 1, NEED TO DO]Add generic_system_error to COMM code
-			[LEFT OFF 2, NEED TO DO]Add generic_system_error to MAIN code
-			
-			
-				[DONE]Also go back and add it all state machine plans as well
-			[DONE]Add error_origin to COMM code
-			[DONE]Add error_origin to MAIN code
-				[DONE]Also go back and add it all state machine plans as well
-				
-				
-			[LEFT OFF 3, IN PROGRESS] Update commandDirector to use data orgin to set error_origin when getting Received Generic (Health and System) Error commands, to COMM code			
-			[LEFT OFF 4, IN PROGRESS] Update commandDirector to use data orgin to set error_origin when getting Received Generic (Health and System) Error commands, to MAIN code			
-			
-			
-				[DONE]Also go back and add it all state machine plans as well (in the list of commands at the bottom of the state machine plans)
-			[LEFT OFF 5, IN PROGRESS] Update createDataFromQueueFor to use error_origin to COMM code
-			[LEFT OFF 6, IN PROGRESS] Update createDataFromQueueFor to use error_origin to MAIN code
-				[DONE]Also go back and add it all state machine plans as well
-				
-			[LEFT OFF 7, IN PROGRESS]Add INVALID_STATE_OR_MODE_ERROR_STATUS to createDataFromQueueFor for COMM. Use error_origin as origin and CMNC as destination. Note: A Received INVALID_STATE_OR_MODE_ERROR_STATUS is not needed. It can just be re-routed directly to CMNC.
-			
-			[LEFT OFF 8, IN PROGRESS]Add INVALID_STATE_OR_MODE_ERROR_STATUS to createDataFromQueueFor for MAIN. Use error_origin as origin and CMNC as destination. Note: A Received INVALID_STATE_OR_MODE_ERROR_STATUS is not needed. It can just be re-routed directly to CMNC.
-			
+						
+			[LEFT OFF, IN PROGRESS]fix void runModeFunction_default() for COMM
+			[LEFT OFF, IN PROGRESS]fix void runModeFunction_default() for MAIN
 						
 ----------------[[[[[[[END OF LEFT OFF FIRST]]]]]]]]
 
-		
+
+
+		work on runModeFunctions
+			[DONE]runModeFunction_SYNCHRONIZATION
+			[LEFT OFF HERE at CONTROL_OUTPUTS] runModeFunction_NORMAL_OPERATIONS
 			runModeFunction_HW_RESETTING
 			runModeFunction_SYSTEM_SLEEPING
 			runModeFunction_SYSTEM_WAKING
@@ -1738,3 +1711,74 @@ Note: The last thing I did before stopping was:
 						[DONE]write a new class (RoverMessagePackager) that can package three strings into one comma separated one
 						[DONE]have the RoverMessagePackager class also unpackage the comma separated string into three strings
 						[DONE] add this use of this class to createDataFromQueueFor
+
+						
+				Improvement tip: Mabe have Arduinos accept one type (one command tag) generic error and then the specific type of error is encoded in the command data message.
+					To do this you'd have to:
+						-update the filtering in some states as well to allow other errors to pass through unfiltered at some states such as SYNCHRONIZATION.
+						-create commands and command enable filters flags to go with those commands for each of the state machines
+					
+					
+			[DONE]Add place holders in all run mode functions for all states (to make it easier to debug and expand in the future)			
+			[DONE]Add "Received Generic System Error" command to COMM code
+			[DONE]Add "Received Generic System Error" command to MAIN code
+				[DONE]Also go back and add it all state machine plans as well
+				
+			[DONE]Add generic_system_error (_BTFG_GENERIC_SYSTEM_ERROR_) to COMM code. For MAIN the code has not been written yet, so no need to update.
+				[DONE]Also go back and add it all state machine plans as well
+			[DONE]Add error_origin to COMM code
+			[DONE]Add error_origin to MAIN code
+				[DONE]Also go back and add it all state machine plans as well
+				
+				
+			[DONE] Update commandDirector to use data origin to set error_origin when getting Received Generic (Health and System) Error commands, to COMM code			
+			[DONE] Update commandDirector to use data origin to set error_origin when getting Received Generic (Health and System) Error commands, to MAIN code			
+			
+			
+			[DONES]update code to recreate invalid_state_or_mode_error in PROCESS_DATA
+				[DONE]Also go back and add it all state machine plans as well (in the list of commands at the bottom of the state machine plans)
+			
+			[DONE]Update createDataFromQueueFor to use error_origin to COMM code
+			[DONE]Update createDataFromQueueFor to use error_origin to MAIN code
+				[DONE]Also go back and add it all state machine plans as well
+				
+				
+			[DONE]think about how i want to change the destination of generic health and system errors to be fixed. have a known chain/series				
+									
+				[DONE]//Make sure don't send it back to itself to avoid an infinite loop				
+				
+					[plan done, not yet written in code]From NAVI:
+					NAVI->MAIN->COMM->CMNC
+						
+					[plan done, not yet written in code]From AUXI:
+					AUXI->MAIN->COMM->CMNC
+									
+					[plan done, not yet written in code]FROM MAIN:
+					if error_origin ! from COMM
+						MAIN->COMM->CMNC
+					if error_origin ! from NAVI
+						MAIN->NAVI
+					if error_origin ! from AUXI
+						MAIN->AUXI
+					
+					[DONE in code and plan]FROM COMM:
+					Note: If it was from CMNC or PC_USB, it's okay to send it back to itself. The external software should not echo the error (and thus not causing and infinite loop)
+					COMM->CMNC
+					if error_origin! from MAIN (i.e. when from COMM itself or CMNC)
+						COMM->MAIN->AUXI
+						COMM->MAIN->NAVI
+								
+			[DONE]go back and audit createDatafromQueue for all msg that are internally generated (not commands) for COMM
+				[DONE]add add all internally generated msgs to createDatafromQueue for COMM
+
+
+			[DONE]go back and audit createDatafromQueue for all msg that are internally generated (not commands) for MAIN
+				[DONE]and add all internally generated msgs to createDatafromQueue for MAIN
+		
+
+			
+				
+			[DONE]Add INVALID_STATE_OR_MODE_ERROR_STATUS to createDataFromQueueFor for COMM. Use error_origin as origin and CMNC as destination. Note: A Received INVALID_STATE_OR_MODE_ERROR_STATUS is not needed. It can just be re-routed directly to CMNC.
+			
+			[DONE]Add INVALID_STATE_OR_MODE_ERROR_STATUS to createDataFromQueueFor for MAIN. Use error_origin as origin and CMNC as destination. Note: A Received INVALID_STATE_OR_MODE_ERROR_STATUS is not needed. It can just be re-routed directly to CMNC.
+											

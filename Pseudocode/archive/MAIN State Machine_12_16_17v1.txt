@@ -718,140 +718,30 @@ MAIN:
 
 					
 					
-					//Recreate/regenerate any error messages (but allow them to be overwritten by higher priority messages)
+					//Recreate any error messages (but allow them to be overwritten by higher priority messages)
 					Improvement Tip: Maybe can send NAVI and AUXI the error messages as well so they can react to it. But for now good enough.
 					if sync_error
 						(Note: the sync_error flag can only be cleared with a sw reset or hw reset)					
-						
 						pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
-										
-
-						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							comm_msg_queue = SYNC_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
-						}						
-						if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to AUXI so every Arduino will know of the error
-						}//end if							
-						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
-						}//end if							
-						
-						
-						
+						comm_msg_queue == SYNC_ERROR_STATUS //send error to comm which will send a copy to cmnc as well
 					else if sw_reset_error
-					
 						pc_usb_msg_queue = SW_RESET_ERROR_STATUS //send error out through the PC_USB for debugging
-						
-						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							comm_msg_queue = SW_RESET_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
-						}																		
-						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
-						}//end if	
-						if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to AUXI so every Arduino will know of the error
-						}//end if							
-						
-						
+						comm_msg_queue == SW_RESET_ERROR_STATUS //send error to comm which will send a copy to cmnc as well
 						(Note: the sw_reset_error flag can only be cleared with a hw reset)
 						Troubleshooting tip, if it's a sw_reset_error, it will need a HW reset. But SYSTEM_ERROR will allow for both sw and hw resets because it's designed to handle any errors in general. So the user will have to know to send a HW reset in order to clear a SW reset error.
 					else if sleeping_error
-						
 						pc_usb_msg_queue = SLEEP_ERROR_STATUS //send error out through the PC_USB for debugging
-
-						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							comm_msg_queue = SLEEP_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
-						}						
-						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
-						}//end if	
-						if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to AUXI so every Arduino will know of the error
-						}//end if		
-												
-						
+						comm_msg_queue == SLEEP_ERROR_STATUS //send error to comm which will send a copy to cmnc as well
 						(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)				
-					else if invalid_state_or_mode_error
-
-						pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS
-						
-						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;//with CMNC as the destination						
-						}						
-						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
-						}//end if	
-						if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to AUXI so every Arduino will know of the error
-						}//end if			
-						
-						(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
 					else if generic_health_error
-						pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
-
-						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send error to comm which will send a copy to cmnc as well
-						}						
-						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							navi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to NAVI so every Arduino will know of the error
-						}//end if	
-						if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							auxi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to AUXI so every Arduino will know of the error
-						}//end if		
-						
-
-						
+						pc_usb_msg_queue = GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
+						navi_msg_queue = GENERIC_HEALTH_STATUS_ERROR
+						auxi_msg_queue = GENERIC_HEALTH_STATUS_ERROR
+						comm_msg_queue = GENERIC_HEALTH_STATUS_ERROR
 						(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)				
-					else if generic_system_error
-					
+					else
 						pc_usb_msg_queue = GENERIC_SYSTEM_ERROR //send error out through the PC_USB for debugging
-						
-						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							comm_msg_queue = GENERIC_SYSTEM_ERROR;//send error to comm which will send a copy to cmnc as well
-						}						
-						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
-						}//end if	
-						if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to AUXI so every Arduino will know of the error
-						}//end if							
-						
-					else//default: set to generic_system_error
-						Set generic_system_error = true
-						
-						pc_usb_msg_queue = GENERIC_SYSTEM_ERROR //send error out through the PC_USB for debugging
-						
-						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							comm_msg_queue = GENERIC_SYSTEM_ERROR;//send error to comm which will send a copy to cmnc as well
-						}							
-						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
-						}//end if	
-						if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
-						{
-							auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to AUXI so every Arduino will know of the error
-						}//end if	
-						
+						comm_msg_queue == GENERIC_SYSTEM_ERROR //send error to comm which will send a copy to cmnc as well
 					end if
 			
 					
@@ -1054,7 +944,7 @@ MAIN:
 		
 						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
 						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
-						CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
+						GENERIC_HEALTH_STATUS_ERROR, INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
 								
 					endif
 					//NAVI
@@ -1062,7 +952,9 @@ MAIN:
 						create any msg(s) for NAVI as needed based on navi_msg_queue
 						//should be general or specfic error messages if no other has priority, skip auto data
 						
-						For GENERIC_SYSTEM_ERROR_STATUS,	CMD_TAG_GENERIC_HEALTH_STATUS_ERROR in createDataFromQueueFor, create the message using error_origin as the message origin
+						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
+						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
+						GENERIC_HEALTH_STATUS_ERROR, INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
 						
 					end if
 					//AUXI
@@ -1070,7 +962,9 @@ MAIN:
 						create any msg(s) for AUXI as needed based on auxi_msg_queue					
 						//should be general or specfic error messages if no other has priority, skip auto data
 						
-						For GENERIC_SYSTEM_ERROR_STATUS,	CMD_TAG_GENERIC_HEALTH_STATUS_ERROR in createDataFromQueueFor, create the message using error_origin as the message origin
+						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
+						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
+						GENERIC_HEALTH_STATUS_ERROR, INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
 						
 					end if
 					//COMM
@@ -1080,9 +974,9 @@ MAIN:
 						
 						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
 						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
-						CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, in createDataFromQueueFor, create the message using error_origin as the message origin
+						GENERIC_HEALTH_STATUS_ERROR, in createDataFromQueueFor, create the message using error_origin as the message origin
 												
-						For CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
+						For INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
 						end if
 						
 						
@@ -1368,8 +1262,8 @@ MAIN:
 					end if			
 			DEFAULT:
 				Set mode to SYSTEM_ERROR *begin*
-				comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS//with CMNC as the destination
-				pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+				comm_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS
+				pc_usb_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS
 				navi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
 				auxi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
 				
@@ -1502,28 +1396,15 @@ Conflicting Functions Ordered By Priority
 		//turn off the motor when there is a health error for safety
 		enable_mtr_pwr = false
 		//disabling of the motor is implied by the generic health status error
-		
-		//Create first message here and regenerate later on as needed
-		pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
-
-		if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
-		{
-			comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send error to comm which will send a copy to cmnc as well
-		}					
-		if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
-		{
-			navi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to NAVI so every Arduino will know of the error
-		}//end if	
-		if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
-		{
-			auxi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to AUXI so every Arduino will know of the error
-		}//end if			
-		
-		
+		pc_usb_msg_queue = GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
+		comm_msg_queue = GENERIC_HEALTH_STATUS_ERROR
+		navi_msg_queue = GENERIC_HEALTH_STATUS_ERROR
+		auxi_msg_queue = GENERIC_HEALTH_STATUS_ERROR
+				
 		set generic_health_error = true
 			(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)			
 	
-		//Assign the error_origin to where the data was generated from
+		//Check to see where the command was from
 		If command was from CMNC
 			Set error_origin = ROVERCOMM_CMNC
 		else if command was from NAVI
@@ -1546,31 +1427,14 @@ Conflicting Functions Ordered By Priority
 	
 	Received Generic System Error
 
-		//For now just forward it to COMM (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.
-		
-		//Create first message here and regenerate later on as needed
-		
-		
-		generic_system_error = true
-		
+		//For now just forward it to COMM (CMNC) and PC_USB, keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. 
+		comm_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
 		pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
-		
-		if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
-		{
-			comm_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
-		}						
-		if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
-		{
-			navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
-		}//end if	
-		if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
-		{
-			auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to AUXI so every Arduino will know of the error
-		}//end if	
-		
+		generic_system_error = true
 		(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
 		
-		//Assign the error_origin to where the data was generated from
+		
+		//Check to see where the command was from
 		If command was from CMNC
 			Set error_origin = ROVERCOMM_CMNC
 		else if command was from NAVI

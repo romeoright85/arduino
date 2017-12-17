@@ -286,7 +286,7 @@ At POR (defaults):
 				//Note: MAIN will turn off the motor enable when it gets a GENERIC_HEALTH_STATUS_ERROR
 				//Note: NAVI will shut off the LEDs when it gets a GENERIC_HEALTH_STATUS_ERROR
 				//also prioritize and send out the worst error
-				main_sec_msg_queue == <output the corresponding health error, based on highest priority> //Destination CMNC, will be sent to MAIN then COMM fors for possible redirect to CMNC (if the link is secure)
+				main_sec_msg_queue == <output the corresponding health error, based on highest priority> //will be sent to COMM (through MAIN) for possible redirect to CMNC (if the link is secure)
 				Set mode to SYSTEM_ERROR *begin*
 				error_origin = ROVERCOMM_AUXI
 				set health_error = true
@@ -314,18 +314,13 @@ At POR (defaults):
 			read current faults (digital signal)
 			Convert all analog signals to respective units.
 			Determine health status (detect any errors or anomalies)
-			If  health_error == true // any health errors, recreate/regenerate and send a generic health error to MAIN.
-			
-			
+			If any health errors, recreate/recreate and send a generic health error to MAIN.
 				main_pri_msg_queue = GENERIC_HEALTH_STATUS_ERROR //will be processed by MAIN and also resent to COMM and NAVI
-			
-
 				pc_usb_msg_queue = GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
-				
 				//Note: MAIN will turn off the motor enable when it gets a GENERIC_HEALTH_STATUS_ERROR
 				//Note: NAVI will shut off the LEDs when it gets a GENERIC_HEALTH_STATUS_ERROR
 				//also prioritize and send out the worst error
-				main_sec_msg_queue == <output the corresponding health error, based on highest priority> //Destination CMNC, will be sent to MAIN then COMM fors for possible redirect to CMNC (if the link is secure)
+				main_sec_msg_queue == <output the corresponding health error, based on highest priority> //will be sent to COMM (through MAIN) for possible redirect to CMNC (if the link is secure)
 				Mode: SYSTEM_ERROR											
 				set health_error = true
 					(Note: the health_error flag can only be cleared with a sw reset, hw reset, or for health_errors, when the error goes away)
@@ -385,7 +380,7 @@ At POR (defaults):
 				if timeout_counter >= AUXI_SYNC_TIMEOUT_VALUE
 					Set mode to SYSTEM_ERROR *begin*
 					error_origin = ROVERCOMM_AUXI
-					main_pri_msg_queue = GENERIC_SYSTEM_ERROR //send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+					main_pri_msg_queue == SYNC_ERROR_STATUS
 					pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
 					set sync_error = true
 						(Note: the sync_error flag can only be cleared with a sw reset or hw reset)							
@@ -448,51 +443,20 @@ At POR (defaults):
 									
 			//Run lower priority functions here.
 
-			//Recreate/regenerate any error messages (but allow them to be overwritten by higher priority messages)
-			if health_error == false (because if health_error == true, let it send it's message that was created in SYSTEM_HEALTH and don't override it with any of the errors below since they are lower priority than a health_error)
+			//Recreate any error messages (but allow them to be overwritten by higher priority messages)
+			if health_error == false
 				if sync_error
-					pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
-	
-					if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
-					{
-						main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
-					}//end if					
-									
-					
 					(Note: the sync_error flag can only be cleared with a sw reset or hw reset)					
-				else if invalid_state_or_mode_error
-
-					pc_usb_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS					
-					
-
-					if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
-					{
-						main_pri_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS;//with CMNC as the destination						
-					}//end if
-
-					
-					(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)				
-				else if generic_system_error
+					main_pri_msg_queue == SYNC_ERROR_STATUS //send error to comm which will send a copy to cmnc as well
+					pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
+				else
+					main_pri_msg_queue == GENERIC_SYSTEM_ERROR //send error to MAIN
 					pc_usb_msg_queue = GENERIC_SYSTEM_ERROR //send error out through the PC_USB for debugging
-					
-					if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
-					{
-						main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
-					}//end if		
-					
-				else//default: set to generic_system_error
-					Set generic_system_error = true
-					
-					pc_usb_msg_queue = GENERIC_SYSTEM_ERROR //send error out through the PC_USB for debugging
+			//else health_error == true, then don't let sync_error override the health_error message
+				//the message would have been already recreated during the SYSTEM_HEALTH				
+			end if
 
-					if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
-					{
-						main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
-					}//end if							
-					
-				end if					
-					
-								
+			
 			//Run highest priority functions here. //this will override any lower priority messages
 
 			Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
@@ -651,7 +615,7 @@ At POR (defaults):
 			Mode: SW_RESETTING
 			set next state to TX_COMMUNICATIONS						
 			go to RUN_HOUSEKEEPING_TASKS
-		SYSTEM_ERROR
+		SYSTEM_ERROR	
 			//PC_USB
 			if pc_usb_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
@@ -665,7 +629,7 @@ At POR (defaults):
 				create any msg(s) for MAIN as needed based on main_pri_msg_queue					
 				i.e. create error msg for MAIN about SYNC issues, health status issues, get statues (i.e. Get 7.2V (Actual) Status, etc.) etc.
 				
-				For GENERIC_SYSTEM_ERROR_STATUS,	GENERIC_HEALTH_STATUS_ERROR in createDataFromQueueFor, create the message using error_origin as the message origin
+				For GENERIC_HEALTH_STATUS_ERROR, SYNC_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS, INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
 
 				For INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
 				end if				
@@ -927,8 +891,8 @@ At POR (defaults):
 		DEFAULT:
 			Set mode to SYSTEM_ERROR *begin*
 			error_origin = ROVERCOMM_AUXI
-			main_pri_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS//with CMNC as the destination
-			pc_usb_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS					
+			INVALID_STATE_OR_MODE_ERROR_STATUS
+			main_pri_msg_queue == INVALID_STATE_OR_MODE_ERROR_STATUS
 			set invalid_state_or_mode_error = true
 					(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
 			//initialize/reset shared counter before use
@@ -1014,20 +978,15 @@ Conflicting Functions Ordered By Priority
 		
 		Received Generic System Error
 
-			//For now just forward it to MAIN (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.		
+			//For now just forward it to MAIN (CMNC) and PC_USB, keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode.
 			
+			main_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
 			pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
-
-			if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
-			{
-				main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
-			}//end if		
-			
 			generic_system_error = true
 			(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
 			
 			
-			//Assign the error_origin to where the data was generated from
+			//Check to see where the command was from
 			If command was from CMNC
 				Set error_origin = ROVERCOMM_CMNC
 			else if command was from NAVI
