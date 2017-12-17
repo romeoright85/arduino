@@ -56,11 +56,5 @@ void RoverMessagePackager::unpackEncoderStatus(char * inputCharArray, byte input
 	//Convert Char Array to Integer
 	speed = atoi(speedCharArray);
 	//Convert Char Array to Integer
-	footage = atoi(footageCharArray);
-	
-	
+	footage = atoi(footageCharArray);	
 }//end of unpackEncoderStatus()
-void RoverMessagePackager::reset()
-{
-}
-

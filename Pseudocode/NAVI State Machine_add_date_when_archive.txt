@@ -81,6 +81,8 @@ At POR (defaults):
 	first_transmission = true
 	main_system_ready = false
 	sync_error = false
+	generic_system_error = false
+	error_origin = ROVERCOMM_NONE
 	invalid_state_or_mode_error = false
 	timeout_counter = 0 //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), error timeouts, etc. Make sure to clear it out before use and only use it for one purpose at a time.
 	motor_turn_value = TURN_NONE
@@ -483,6 +485,7 @@ At POR (defaults):
 				timeout_counter++
 				if timeout_counter >= NAVI_SYNC_TIMEOUT_VALUE
 					Set mode to SYSTEM_ERROR *begin*
+					error_origin = ROVERCOMM_NAVI
 					main_pri_msg_queue == SYNC_ERROR_STATUS
 					pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
 					set sync_error = true
@@ -787,12 +790,22 @@ At POR (defaults):
 			//PC_USB
 			if pc_usb_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
+				
+				For SYNC_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS, INVALID_STATE_OR_MODE_ERROR_STATUS in createDataFromQueueFor, create the message using error_origin as the message origin
+				
 			endif		
 			//Note: For SYSTEM_ERROR, still send auto data through main_sec_msg_queue, to be used for debugging
 			//Send up to two auto datas between the two queues (primary and secondary)
 			if main_pri_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for MAIN as needed based on main_pri_msg_queue					
 				i.e. create error msg for MAIN about SYNC issues, etc.
+				
+				For SYNC_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS in createDataFromQueueFor, create the message using error_origin as the message origin
+
+				For INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
+				end if
+
+						
 			else //since there is no custom data for the primary queue, then send the next auto data										
 				create message corresponding to the next auto data for MAIN
 				main_pri_msg_queue = auto_MAIN_data_array[auto_MAN_data_cnt]
@@ -1052,8 +1065,9 @@ At POR (defaults):
 			end if
 		DEFAULT:
 			Set mode to SYSTEM_ERROR *begin*
-			pc_usb_msg_queue = invalid_state_or_mode_error_STATUS //send error out through the PC_USB for debugging
-			main_pri_msg_queue == invalid_state_or_mode_error_STATUS
+			error_origin = ROVERCOMM_NAVI
+			pc_usb_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS //send error out through the PC_USB for debugging
+			main_pri_msg_queue == INVALID_STATE_OR_MODE_ERROR_STATUS
 			set invalid_state_or_mode_error = true
 					(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
 			//initialize/reset shared counter before use
@@ -1144,11 +1158,10 @@ Conflicting Functions Ordered By Priority
 		Set next state to CONTROL_OUTPUTS
 		Set mode to SW_RESETTING *begin*		
 		
-	Generic Health Error (from AUXI through MAIN)
+	Received Generic Health Error (from AUXI through MAIN)
 		//If the error goes away in AUXI, the system should come back to normal.
 		//AUXI will keep sending NAVI a GENERIC_HEALTH_STATUS_ERROR as long as AUXI has a health error. As soon as this message is gone, everything should go back to normal. 
-		//The next state should be PLAN_ROUTE as normal (though motors will turn off, it can still keep calculating)
-		main_pri_msg_queue = GENERIC_HEALTH_STATUS_ERROR_ACKNOWLEDGEMENT
+		//The next state should be PLAN_ROUTE as normal (though motors will turn off, it can still keep calculating)		
 		//Turn off all LEDs and motors when there is a generic health error. But no need to put the system in error.		
 		motor_turn_value = TURN_NONE
 		motor_speed_value = SPEED_NONE
@@ -1165,11 +1178,45 @@ Conflicting Functions Ordered By Priority
 		reverse_lights_enable = LIGHTS_HEALTH_ERROR
 		blue_beacon_lights_enable = LIGHTS_HEALTH_ERROR
 		ir_beacon_lights_enable = LIGHTS_HEALTH_ERROR							
+
+	Received Generic System Error
+
+		//For now just forward it to MAIN (CMNC) and PC_USB, keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode.
+		
+		main_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+		pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+		generic_system_error = true
+		(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+		
+		
+		//Check to see where the command was from
+		If command was from CMNC
+			Set error_origin = ROVERCOMM_CMNC
+		else if command was from NAVI
+			Set error_origin = ROVERCOMM_NAVI
+		else if command was from AUXI
+			Set error_origin = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set error_origin = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set error_origin = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set error_origin = ROVERCOMM_PC_USB							
+		else
+			Set error_origin = ROVERCOMM_NONE							
+		end if		
+		
+		
+		//All errors from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB should be redirected to MAIN, and MAIN will redirect it to CMNC
+		//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
+		Improvement Tip: NAVI can go into error mode if it gets an error message from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB
+		
 	System Go (from MAIN)
 		set system go flag
 		Mode: NORMAL_OPERATIONS *begin*		
 		//initialize/reset shared counter before use
-		timeout_counter = 0;		
+		timeout_counter = 0;	
+	
 	NAVI Sleep Request (usually from MAIN)			
 		//save the motor, gimbal buffer states before shutting them off to go to sleep
 		clear system go flag

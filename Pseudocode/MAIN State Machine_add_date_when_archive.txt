@@ -57,10 +57,12 @@ At POR (defaults):
 	timeout_counter = 0 //shared counter, used to track how long MAIN has been waiting in the SYSTEM_ERROR state before requesting a hw reset from COMM, etc. Make sure to clear it out before use and only use it for one purpose at a time.
 		Note: It could go to sw reset after waiting in the SYSTEM_ERROR state for a long time, but go ahead and go with a hw reset as that's known to work more reliability than the sw reset
 	motor_power_prev_state = false //used to save the last state the motor power was on before turning it off to go to sleep
+	error_origin = ROVERCOMM_NONE
 	sw_reset_error = false
 	sync_error = false
 	sleeping_error = false
 	generic_health_error = false
+	generic_system_error = false
 	transmission_delay_cnt = 0;//concurrent transmission delay counter
 	first_transmission = true
 							
@@ -464,6 +466,7 @@ MAIN:
 						//if MAIN has been stuck in SYNCHRONIZATION for a long time while waiting on NAVI, AUXI, or COMM, it will send a sync error status
 						if timeout_counter >= MAIN_SYNC_TIMEOUT_VALUE					
 						Set mode to SYSTEM_ERROR *begin*
+						Set error_origin = ROVERCOMM_MAIN						
 						pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
 						comm_msg_queue == SYNC_ERROR_STATUS
 						set sync_error = true
@@ -558,6 +561,7 @@ MAIN:
 						//if MAIN has been stuck in SYSTEM_SLEEPING for a long time while waiting on NAVI and/or AUXI for sleep request acknowledgements
 						if timeout_counter >= SLEEPING_ERROR_TIMEOUT_VALUE					
 							Set mode to SYSTEM_ERROR *begin*
+							Set error_origin = ROVERCOMM_MAIN
 							set enable_mtr_pwr = false //shut down motor when in error for safety
 							pc_usb_msg_queue = SLEEP_ERROR_STATUS //send error out through the PC_USB for debugging
 							comm_msg_queue == SLEEP_ERROR_STATUS
@@ -647,6 +651,7 @@ MAIN:
 						//if MAIN has been stuck in SW_RESETTING for a long time while waiting on NAVI and/or AUXI for SW Request acknowledgements
 						if timeout_counter >= SW_RESET_ERROR_TIMEOUT_VALUE					
 							Set mode to SYSTEM_ERROR *begin*
+							Set error_origin = ROVERCOMM_MAIN
 							set enable_mtr_pwr = false //shut down motor when in error for safety
 							//Create the error message for the message queues for the first time
 							pc_usb_msg_queue = SW_RESET_ERROR_STATUS //send error out through the PC_USB for debugging
@@ -935,21 +940,46 @@ MAIN:
 					//PC_USB
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
+						
+		
+						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
+						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
+						GENERIC_HEALTH_STATUS_ERROR, INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
+								
 					endif
 					//NAVI
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for NAVI as needed based on navi_msg_queue
 						//should be general or specfic error messages if no other has priority, skip auto data
+						
+						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
+						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
+						GENERIC_HEALTH_STATUS_ERROR, INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
+						
 					end if
 					//AUXI
 					if auxi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for AUXI as needed based on auxi_msg_queue					
 						//should be general or specfic error messages if no other has priority, skip auto data
+						
+						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
+						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
+						GENERIC_HEALTH_STATUS_ERROR, INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
+						
 					end if
 					//COMM
 					if comm_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
 						//should be general or specfic error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages. skip auto data
+						
+						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
+						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
+						GENERIC_HEALTH_STATUS_ERROR, in createDataFromQueueFor, create the message using error_origin as the message origin
+												
+						For INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
+						end if
+						
+						
 					end if				
 					Mode: SYSTEM_ERROR
 					set next state to TX_COMMUNICATIONS					
@@ -1232,8 +1262,12 @@ MAIN:
 					end if			
 			DEFAULT:
 				Set mode to SYSTEM_ERROR *begin*
-				cmnc_msg_queue == invalid_state_or_mode_error_STATUS
-				pc_usb_msg_queue == invalid_state_or_mode_error_STATUS
+				comm_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS
+				pc_usb_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS
+				navi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+				auxi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+				
+				Set error_origin = ROVERCOMM_MAIN				
 				set invalid_state_or_mode_error = true
 						(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
 				//initialize/reset shared counter before use
@@ -1358,7 +1392,7 @@ Conflicting Functions Ordered By Priority
 		end if
 		Mode: SW_RESETTING
 	
-	Generic Health Error	
+	Received Generic Health Error	
 		//turn off the motor when there is a health error for safety
 		enable_mtr_pwr = false
 		//disabling of the motor is implied by the generic health status error
@@ -1366,16 +1400,63 @@ Conflicting Functions Ordered By Priority
 		comm_msg_queue = GENERIC_HEALTH_STATUS_ERROR
 		navi_msg_queue = GENERIC_HEALTH_STATUS_ERROR
 		auxi_msg_queue = GENERIC_HEALTH_STATUS_ERROR
-		
+				
 		set generic_health_error = true
 			(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)			
+	
+		//Check to see where the command was from
+		If command was from CMNC
+			Set error_origin = ROVERCOMM_CMNC
+		else if command was from NAVI
+			Set error_origin = ROVERCOMM_NAVI
+		else if command was from AUXI
+			Set error_origin = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set error_origin = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set error_origin = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set error_origin = ROVERCOMM_PC_USB							
+		else
+			Set error_origin = ROVERCOMM_NONE							
+		end if				
+			
 		//initialize/reset shared counter before use
 		timeout_counter = 0;		
 		Set mode to SYSTEM_ERROR *begin*
 	
+	Received Generic System Error
+
+		//For now just forward it to COMM (CMNC) and PC_USB, keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. 
+		comm_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+		pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+		generic_system_error = true
+		(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+		
+		
+		//Check to see where the command was from
+		If command was from CMNC
+			Set error_origin = ROVERCOMM_CMNC
+		else if command was from NAVI
+			Set error_origin = ROVERCOMM_NAVI
+		else if command was from AUXI
+			Set error_origin = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set error_origin = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set error_origin = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set error_origin = ROVERCOMM_PC_USB							
+		else
+			Set error_origin = ROVERCOMM_NONE							
+		end if		
+		
+		
+		//All errors from AUXI, NAVI, COMM, MAIN, CMNC, PC_USB should be redirected to COMM, and COMM will redirect it to CMNC
+		//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
+		Improvement Tip: MAIN can go into error mode if it gets an error message from AUXI, NAVI, COMM, MAIN, CMNC, PC_USB
 	
-	
-		System Ready
+	System Ready
 		//Check to see where the command was from
 		If command was from NAVI
 			set navi_system_ready = true					
@@ -1431,20 +1512,18 @@ Conflicting Functions Ordered By Priority
 		
 		
 	Set Motor Power Enable
-		If Disable Motor Power
-			//if disable motor power is called, set it to be disabled, "no questions asked" aka with highest priority
-			//because if any arduinos are requesting to disable the motor power, it will override any requests to enable it (safety feature). So give it higher priority than enable motor pwr
-			turn off the motor
-			enable_mtr_pwr = false
-			navi_msg_queue = DISABLING_MTR_PWR
-			auxi_msg_queue = DISABLING_MTR_PWR
-			comm_msg_queue = DISABLING_MTR_PWR//to be redirected to CMNC
-		Else//Enable Motor Power
+		If Enable Motor Power
 			turn on the motor
 			enable_mtr_pwr = true
 			navi_msg_queue = ENABLING_MTR_PWR
 			auxi_msg_queue = ENABLING_MTR_PWR
 			comm_msg_queue = ENABLING_MTR_PWR//to be redirected to CMNC
+		Else//Disable Motor Power
+			//if enable is not called, the disable motor power by default			
+			enable_mtr_pwr = false
+			navi_msg_queue = DISABLING_MTR_PWR
+			auxi_msg_queue = DISABLING_MTR_PWR
+			comm_msg_queue = DISABLING_MTR_PWR//to be redirected to CMNC		
 		End If
 			
 	

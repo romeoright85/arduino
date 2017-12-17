@@ -117,8 +117,6 @@ You can turn on this flag (_DEBUG_REDIRECTION_NOTICE) below to verify it's redir
 //============Global Declarations
 
 
-
-
 //Message Queues
 byte cmnc_msg_queue = CMD_TAG_NO_MSG;
 byte main_msg_queue = CMD_TAG_NO_MSG;
@@ -129,7 +127,6 @@ byte main_msg_queue = CMD_TAG_NO_MSG;
 char txMsgBuffer_CMNC[UNIV_BUFFER_SIZE];//transmit buffer for CMNC
 char txMsgBuffer_MAIN[UNIV_BUFFER_SIZE];//transmit buffer for MAIN
 char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
-
 
 
 
@@ -369,11 +366,7 @@ void loop() {
 	BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 	BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 
-
-
-
-
-
+	
 
 }//end of loop()
 
@@ -509,8 +502,6 @@ void commandDirector(RoverData * roverDataPointer)
 	//Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 
 
-
-
 	byte originRoverCommType;//holds the received data's origin
 	byte destinationRoverCommType;//holds the received data's destination
 	byte commandTag;//holds received data's commandtag
@@ -533,8 +524,7 @@ void commandDirector(RoverData * roverDataPointer)
 
 
 	//Run highest priority functions here. //this will override any lower priority messages
-
-
+	
 	if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG)
 	{
 
@@ -547,7 +537,7 @@ void commandDirector(RoverData * roverDataPointer)
 		{
 			main_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
 		}//end else if		
-
+			
 
 		 //Clears/resets all data pointers before setting them.
 		clearRoverDataPointers();
@@ -652,7 +642,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 		queueOfInterest = cmnc_msg_queue;
 		if (roverDataForCMNC != NULL)//make sure the roverDataPointer is not NULL
 		{
-			commandDataOfInterest = roverDataForCMNC->getCommandData();
+			commandDataOfInterest = roverDataForCMNC->getCommandData();			
 		}//end if
 		else
 		{
@@ -664,7 +654,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 		queueOfInterest = main_msg_queue;
 		if (roverDataForMAIN != NULL)//make sure the roverDataPointer is not NULL
 		{
-			commandDataOfInterest = roverDataForMAIN->getCommandData();
+			commandDataOfInterest = roverDataForMAIN->getCommandData();			
 		}//end if
 		else
 		{
@@ -792,9 +782,14 @@ void redirectData(RoverComm * roverComm)
 
 
 char * getMsgString(byte arrayIndex) {
-	memset(programMem2RAMBuffer, 0, sizeof(programMem2RAMBuffer));//clear char array buffer
-	return strcpy_P(programMem2RAMBuffer, (char*)pgm_read_word(&(msg_str_table[arrayIndex])));//copy the fixed string from flash into the char buffer
+	if (arrayIndex < sizeof(msg_str_table) / sizeof(msg_str_table[0]))
+	{
+		memset(programMem2RAMBuffer, 0, sizeof(programMem2RAMBuffer));//clear char array buffer
+		return strcpy_P(programMem2RAMBuffer, (char*)pgm_read_word(&(msg_str_table[arrayIndex])));//copy the fixed string from flash into the char buffer
+	}//end if
+	else
+	{
+		Serial.println(F("ArrayOvflw"));
+		while (1);//hold the code here until it's fixed
+	}
 }//end of getMsgString()
-
-
-

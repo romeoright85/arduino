@@ -22,6 +22,7 @@ At POR (defaults):
 	Next State: RUN_HOUSEKEEPING_TASKS
 	Current Mode: POWER_ON_AND_HW_RESET *begin*
 	Next Mode: POWER_ON_AND_HW_RESET 
+	error_origin = ROVERCOMM_NONE
 	sync_error = false
 	comm_sw_reset_requested = false
 	comm_sleep_requested = false
@@ -351,6 +352,7 @@ COMM:
 							timeout_counter++
 							if timeout_counter >= COMM_SYNC_TIMEOUT_VALUE
 								Set mode to SYSTEM_ERROR *begin*
+								Set error_origin = ROVERCOMM_COMM
 								cmnc_msg_queue == SYNC_ERROR_STATUS
 								set sync_error = true
 								(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
@@ -396,6 +398,7 @@ COMM:
 							timeout_counter++
 							if timeout_counter >= SECURE_LINK_TIMEOUT_VALUE
 								Set mode to SYSTEM_ERROR *begin*
+								Set error_origin = ROVERCOMM_COMM
 								cmnc_msg_queue == SECURE_LINK_ERROR_STATUS
 								set secure_link_error = true
 									(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
@@ -453,11 +456,12 @@ COMM:
 						//Note: When COMM Sleep Request is received the mode will change to SYSTEM_WAKING to prepare for the wakeup, then COMM will go to sleep.
 						//Regenerate the messages as needed			
 						main_msg_queue == ALL_SLEEP_REQUEST
-						cmnc_msg_queue == SYSTEM_IS_SLEEPING
+						cmnc_msg_queue == SYSTEM_IS_SLEEPING_ACK
 						timeout_counter++
 						if timeout_counter >= SLEEPING_ERROR_TIMEOUT_VALUE
 							Set mode to SYSTEM_ERROR *begin*
 							cmnc_msg_queue == SLEEP_ERROR_STATUS
+							Set error_origin = ROVERCOMM_COMM
 							set sleeping_error = true
 								(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)
 							//initialize/reset shared counter before use
@@ -521,7 +525,8 @@ COMM:
 						//if COMM has waited for a really long time, it should error out itself
 						if timeout_counter >= SW_RESET_ERROR_TIMEOUT_VALUE						
 							Set mode to SYSTEM_ERROR *begin*
-							cmnc_msg_queue == SW_RESET_ERROR
+							cmnc_msg_queue == SW_RESET_ERROR_STATUS
+							Set error_origin = ROVERCOMM_COMM
 							sw_reset_error = true
 								(Note: the sw_reset_error flag can only be cleared with a hw reset)
 							//initialize/reset shared counter before use
@@ -530,7 +535,7 @@ COMM:
 						//else if it just waited a little bit, it should try resending the ALL_SW_RESET_REQUEST to MAIN
 						else if timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE							
 							//Note: It should send the request periodically and not continuously so the system has time to process the request and it doesn't get stuck in a loop. it will get cleared out in TX_COMMUNICATIONS after the messages are sent.
-							cmnc_msg_queue == SW_IS_RESETTING //Resend this message to CMNC to show that it's attempting to SW reset the system again
+							cmnc_msg_queue == SW_IS_RESETTING_ACK //Resend this message to CMNC to show that it's attempting to SW reset the system again
 							main_msg_queue == ALL_SW_RESET_REQUEST //Resending this request to MAIN
 							//Don't reset timeout_counter, keep counting and see if it will reach the SW_RESET_ERROR_TIMEOUT_VALUE
 						end else if
@@ -573,7 +578,7 @@ COMM:
 						cmnc_msg_queue == SLEEP_ERROR_STATUS					
 						(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)
 					else if sw_reset_error
-						cmnc_msg_queue == SW_RESET_ERROR
+						cmnc_msg_queue == SW_RESET_ERROR_STATUS
 						(Note: the sw_reset_error flag can only be cleared with a hw reset)
 						Troubleshooting tip, if it's a sw_reset_error, it will need a HW reset. But SYSTEM_ERROR will allow for both sw and hw resets because it's designed to handle any errors in general. So the user will have to know to send a HW reset in order to clear a SW reset error.
 					else if generic_health_error
@@ -709,17 +714,27 @@ COMM:
 					if main_msg_queue = ALL_SW_RESET_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop)
 						Create MAIN all sw reset request msg
 						TROUBLESHOOTING TIP: If MAIN misses this message or has issues, then main_msg_queue = ALL_SW_RESET_REQUEST should be set and sent again.
-					if cmnc_msg_queue == SW_IS_RESETTING (it may be cleared out to CMD_TAG_NO_MSG after the request has been sent)
+					if cmnc_msg_queue == SW_IS_RESETTING_ACK (it may be cleared out to CMD_TAG_NO_MSG after the request has been sent)
 						Create CMNC sw resetting msg
 					set next state to TX_COMMUNICATIONS
 					go to RUN_HOUSEKEEPING_TASKS	
 				SYSTEM_ERROR
 					if main_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for MAIN, NAVI, AUXI (since they all go through MAIN) as needed based on main_msg_queue						
+						
+						For GENERIC_HEALTH_STATUS_ERROR, GENERIC_SYSTEM_ERROR_STATUS, SYNC_ERROR_STATUS, SECURE_LINK_ERROR_STATUS, SLEEP_ERROR_STATUS, SW_RESET_ERROR_STATUS, INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
+
 					end if
 					if cmnc_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for CMNC as needed based on cmnc_msg_queue
 						i.e. create error msg for CMNC about SYNC issues, secure link issues, generic health errors, generic system error, SW reset errors, etc.
+						
+						For GENERIC_HEALTH_STATUS_ERROR, GENERIC_SYSTEM_ERROR_STATUS, SYNC_ERROR_STATUS, SECURE_LINK_ERROR_STATUS, SLEEP_ERROR_STATUS, SW_RESET_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
+							
+						For INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
+						end if
+							
+							
 					end if
 					Mode: SYSTEM_ERROR
 					set next state to TX_COMMUNICATIONS					
@@ -973,12 +988,14 @@ COMM:
 					end if
 			DEFAULT:
 				Set mode to SYSTEM_ERROR *begin*
-				cmnc_msg_queue == invalid_state_or_mode_error_STATUS
+				cmnc_msg_queue = INVALID_STATE_OR_MODE_ERROR_STATUS
+				main_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
 				set invalid_state_or_mode_error = true
 						(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
+				Set error_origin = ROVERCOMM_COMM
 				//initialize/reset shared counter before use
 				timeout_counter = 0;
-				Set next state to CONTROL_OUTPUTS								
+				Set next state to CONTROL_OUTPUTS
 				go to RUN_HOUSEKEEPING_TASKS
 				
 				
@@ -1068,18 +1085,70 @@ Conflicting Functions Ordered By Priority
 			Next State: RUN_HOUSEKEEPING_TASKS
 		All SW Reset Request
 			//Create first message here and regenerate later on as needed
-			cmnc_msg_queue = SW_IS_RESETTING			
+			cmnc_msg_queue = SW_IS_RESETTING_ACK			
 			main_msg_queue = ALL_SW_RESET_REQUEST
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 			Mode: SW_RESETTING *begin*				
-		Generic Health Error
+		Received Generic Health Error
 			Set mode to SYSTEM_ERROR *begin*
+			
+			//Check to see where the command was from
+			If command was from CMNC
+				Set error_origin = ROVERCOMM_CMNC
+			else if command was from NAVI
+				Set error_origin = ROVERCOMM_NAVI
+			else if command was from AUXI
+				Set error_origin = ROVERCOMM_AUXI
+			else if command was from MAIN
+				Set error_origin = ROVERCOMM_MAIN			
+			else if command was from COMM
+				Set error_origin = ROVERCOMM_COMM							
+			else if command was from PC_USB
+				Set error_origin = ROVERCOMM_PC_USB							
+			else
+				Set error_origin = ROVERCOMM_NONE							
+			end if		
+			
 			cmnc_msg_queue = GENERIC_HEALTH_STATUS_ERROR
 			set generic_health_error = true
 			(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
+		Received Generic System Error
+		
+			//For now just forward it to CMNC (PC_USB), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode.
+			
+			cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS
+			
+			//Check to see where the command was from
+			If command was from CMNC
+				Set error_origin = ROVERCOMM_CMNC
+			else if command was from NAVI
+				Set error_origin = ROVERCOMM_NAVI
+			else if command was from AUXI
+				Set error_origin = ROVERCOMM_AUXI
+			else if command was from MAIN
+				Set error_origin = ROVERCOMM_MAIN			
+			else if command was from COMM
+				Set error_origin = ROVERCOMM_COMM							
+			else if command was from PC_USB
+				Set error_origin = ROVERCOMM_PC_USB							
+			else
+				Set error_origin = ROVERCOMM_NONE							
+			end if		
+			
+			generic_system_error = true
+			(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+				
+			
+			//All errors from AUXI, NAVI, MAIN, COMM, CMNC (PC_USB) should be redirected to COMM, and COMM will redirect it to CMNC
+			//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
+			Improvement Tip: COMM can go into error mode if it gets an error message from AUXI, NAVI, MAIN, COMM, CMNC (PC_USB)
+		
+
+			Redirect any system errors from MAIN/NAVI/AUXI to CMNC for manual human in the loop disposition (i.e. hw or sw reset)		
+						
 		System Go (from MAIN)
 			set system go flag
 			if main_system_ready = false //if for some reason the system ready message was no received before the system go message, go ahead and make it true as any system go must also mean system ready. this doesn't really matter, but just doing it for consistency since the flags are global.
@@ -1127,24 +1196,13 @@ Conflicting Functions Ordered By Priority
 			//Create first message here and regenerate later on as needed
 			Mode: SYSTEM_SLEEPING *begin*
 			main_msg_queue = ALL_SLEEP_REQUEST
-			cmnc_msg_queue = SYSTEM_IS_SLEEPING
+			cmnc_msg_queue = SYSTEM_IS_SLEEPING_ACK
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 		PIR Status
 			cmnc_msg_queue or main_msg_queue (based on the requester) = PIR_STATUS
 			Note: The PIR status message will be created in the CREATE_DATA state
-		Received Generic System Error
-			//For now just forward it to CMNC, keeping the original destination
-			cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS
-			generic_system_error = true
-			(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
-			
-			//All errors from main, navi, auxi should be redirected to COMM, and COMM will redirect it to CMNC
-			//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
-		Improvement Tip: COMM can go into error mode if it gets an error message from NAVI, AUXI, or MAIN
 
-		Redirect any system errors from MAIN/NAVI/AUXI to CMNC for manual human in the loop disposition (i.e. hw or sw reset)		
-		
 		
 				
 			

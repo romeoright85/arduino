@@ -218,6 +218,9 @@ byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by 
 byte ch1Status = DATA_STATUS_NOT_READY;//for PC USB/CNMC
 byte ch2Status = DATA_STATUS_NOT_READY;//for MAIN
 
+//Error Origin (used to send out the origin of the error with the error message)
+byte error_origin = ROVERCOMM_NONE;
+
 //Flag(s) - Error
 byte flagSet_Error1 = _BTFG_NONE_;
 //Flag(s) - Message Controls
@@ -239,6 +242,8 @@ byte commandFilterOptionsSet2_MAIN = _BTFG_NONE_;
 //Counters
 unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
 unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
+
+
 
 
 //------------------From PirSensorTest
@@ -486,8 +491,9 @@ void loop() {
 					break;
 				default: //default mode
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-					queuedState = CONTROL_OUTPUTS;
+					queuedState =  CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					error_origin = ROVERCOMM_COMM;
 					runModeFunction_default();//no state needed, all states do the same thing					
 					break;
 			}//end switch
@@ -539,8 +545,9 @@ void loop() {
 					break;
 				default: //default mode
 						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-					queuedState = CONTROL_OUTPUTS;
+					queuedState =  CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					error_origin = ROVERCOMM_COMM;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch			
@@ -588,8 +595,9 @@ void loop() {
 					break;
 				default: //default mode
 					 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-					queuedState = CONTROL_OUTPUTS;
+					queuedState =  CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					error_origin = ROVERCOMM_COMM;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -637,8 +645,9 @@ void loop() {
 					break;
 				default: //default mode
 						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-					queuedState = CONTROL_OUTPUTS;
+					queuedState =  CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					error_origin = ROVERCOMM_COMM;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -668,8 +677,9 @@ void loop() {
 					break;
 				default: //default mode
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-					queuedState = CONTROL_OUTPUTS;
+					queuedState =  CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					error_origin = ROVERCOMM_COMM;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -711,14 +721,16 @@ void loop() {
 					break;
 				case SYSTEM_ERROR:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
+					queuedState = CREATE_DATA; //Default Next State. This may be overriden by the runModeFunction...()
+					//Note: For COMM in particular, it will go to CREATE_DATA since nothing is done in CONTROL_OUTPUTS in COMM when it is in SYSTEM_ERROR.
 					currentMode = SYSTEM_ERROR;//Default Next Mode. This may be overriden by the runModeFunction...()
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
 						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
+					queuedState =  CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					error_origin = ROVERCOMM_COMM;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -778,8 +790,9 @@ void loop() {
 					break;
 				default: //default mode
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
+					queuedState =  CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					error_origin = ROVERCOMM_COMM;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -839,8 +852,9 @@ void loop() {
 					break;
 				default: //default mode
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
+					queuedState =  CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					error_origin = ROVERCOMM_COMM;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -901,8 +915,9 @@ void loop() {
 					break;
 				default: //default mode
 					 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
+					queuedState =  CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					error_origin = ROVERCOMM_COMM;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -913,8 +928,9 @@ void loop() {
 		default: //default state
 			_PRINT_STATE_(F("STATE: default"));
 			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes							
-			queuedState = CONTROL_OUTPUTS;
+			queuedState =  CONTROL_OUTPUTS;
 			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+			error_origin = ROVERCOMM_COMM;
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -953,7 +969,8 @@ void initializeVariables()
 	ch1Status = DATA_STATUS_NOT_READY;
 	ch2Status = DATA_STATUS_NOT_READY;
 
-	
+	//Error Origin (used to send out the origin of the error with the error message)
+	error_origin = ROVERCOMM_NONE;
 	
 	//Flag(s) - Error
 	flagSet_Error1 = _BTFG_NONE_;//This is essential the same as calling the set all flags to function to false, but instead it's setting this flagset to _BTFG_NONE_ directly (instead of bit by bit)
@@ -1147,8 +1164,9 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 	byte originRoverCommType;//holds the received data's origin
 	byte destinationRoverCommType;//holds the received data's destination
-	byte commandTag;//holds received data's commandtag
-
+	byte commandTag;//holds received data's command tag
+	char commandData[_MAX_ROVER_COMMAND_DATA_LEN_];//holds the received data's command data
+		//Note: For COMM, commandData is not used for comparison in any of the code in commandDirector yet, but it might be in the future. So keep it here as a place holder but can remove it if you hit the memory limit.
 
 					//Get the received data's origin and destination
 	originRoverCommType = roverDataPointer->getOriginCommType();
@@ -1156,7 +1174,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 	//Get the command tag from the Rover Data Object
 	commandTag = roverDataPointer->getCommandTag();
-
+	//Get the command data from the Rover Data Object	
+	strncpy(commandData, roverDataPointer->getCommandData(), roverDataPointer->getCommandDataLength());
 
 	//Setting the roverDataPointer in order to route where the rover command data will be routed to
 	//Clears/resets all data pointers before setting them.
@@ -1210,11 +1229,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = SW_RESETTING;//Set mode to SW_RESETTING *begin*				
-		cmnc_msg_queue = CMD_TAG_SW_IS_RESETTING;
+		cmnc_msg_queue = CMD_TAG_SW_IS_RESETTING_ACK;
 		main_msg_queue = CMD_TAG_ALL_SW_RESET_REQUEST;
 		timeout_counter = 0;//reset counter (for future use)
 	}//end else if
-	 //Generic Health Error
+	//Received Generic Health Error
 	else if (commandTag == CMD_TAG_GENERIC_HEALTH_STATUS_ERROR &&
 			(
 				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_) )
@@ -1222,15 +1241,65 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 
 	{
+
+
+		
+//LEFT OFF
+//WRITE ME LATER		
+		
+
+/*
+
+
+			//Check to see where the command was from
+			If command was from CMNC
+				Set error_origin = ROVERCOMM_CMNC
+			else if command was from NAVI
+				Set error_origin = ROVERCOMM_NAVI
+			else if command was from AUXI
+				Set error_origin = ROVERCOMM_AUXI
+			else if command was from MAIN
+				Set error_origin = ROVERCOMM_MAIN			
+			else if command was from COMM
+				Set error_origin = ROVERCOMM_COMM							
+			else if command was from PC_USB
+				Set error_origin = ROVERCOMM_PC_USB							
+			else
+				Set error_origin = ROVERCOMM_NONE							
+			end if		
+
+*/
+
+	
+		error_origin = originRoverCommType;
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
-		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*				
+		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*	
 		//Create first message here and regenerate later on as needed
+		error_origin = ROVERCOMM_COMM;
 		cmnc_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
 		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);
 		//Note: the generic_health_error flag can only be cleared with a sw reset or hw reset
 
 		timeout_counter = 0;//reset counter (for future use)
 	}//end else if	
+	
+	
+	 //Received Generic System Error
+	else if (commandTag == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_) )
+				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_))
+			)
+		)		 	 
+	{
+		cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//When COMM receives and error, always send it out to the CMNC so the base station knows there's an error	
+		
+//LEFT OFF
+//WRITE ME LATER		
+				
+		
+	}//end else if				
+	
 	 //System Go (from MAIN)
 	else if (commandTag == CMD_TAG_SYSTEM_GO_STATUS &&
 			(
@@ -1397,7 +1466,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		currentMode = SYSTEM_SLEEPING;//Set mode to SYSTEM_SLEEPING *begin*
 		//Create first message here and regenerate later on as needed
 		main_msg_queue = CMD_TAG_ALL_SLEEP_REQUEST;
-		cmnc_msg_queue = CMD_TAG_SYSTEM_IS_SLEEPING;
+		cmnc_msg_queue = CMD_TAG_SYSTEM_IS_SLEEPING_ACK;
 		timeout_counter = 0; //reset for future use				
 	}//end else if			
 	 //PIR Status
@@ -1428,16 +1497,6 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 
 	}//end else if			
-	 //Received Generic System Error
-	else if (commandTag == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS &&
-			(
-				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_) )
-				|| (roverComm == ROVERCOMM_CMNC && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_CMNC, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_))
-			)
-		)		 	 
-	{
-		cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//When COMM receives and error, always send it out to the CMNC so the base station knows there's an error	
-	}//end else if					
 	 //Hi Command - DEBUG
 	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG &&
 			(
@@ -1527,6 +1586,13 @@ void createDataFromQueueFor(byte roverCommDestination)
 	char * commandDataOfInterest;//holds the rover's command data string
 	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command (createdCommand is the output of the method call RoverCommandCreator::createCmd)
 	
+	
+	//Create variables needed for the data packaging (i.e. encoder status)
+	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];//Note: This is not needed yet, but is a place holder just in case in the future it's required. If there is a memory limitation, then go ahead and rid of this variable.
+	byte commandDataCharArraySize;//Note: This is not needed yet, but is a place holder just in case in the future it's required. If there is a memory limitation, then go ahead and rid of this variable.
+				
+				
+	
 	//Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
 	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
@@ -1572,12 +1638,23 @@ void createDataFromQueueFor(byte roverCommDestination)
 		case CMD_TAG_ALL_SW_RESET_REQUEST:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SW_RESET_REQUEST, getMsgString(0), createdCommand);		
 			break;
-		case CMD_TAG_SW_IS_RESETTING:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING, getMsgString(0), createdCommand);		
+		case CMD_TAG_SW_IS_RESETTING_ACK:
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:
+//FIX ME, use error_origin instead of the fixed ROVERCOMM_COMM		
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);		
 			break;
+			
+		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:
+				//Note: Keep the original destination of the generic system error
+//FIX ME, use error_origin instead of the fixed ROVERCOMM_COMM
+//LEFT OFF HERE		
+//WRITE ME LATER
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(2), createdCommand);
+			break;
+			
+			
 		case CMD_TAG_SECURE_LINK_REQUEST:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SECURE_LINK_REQUEST, getMsgString(0), createdCommand);		
 			break;
@@ -1603,9 +1680,10 @@ void createDataFromQueueFor(byte roverCommDestination)
 					RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(4), createdCommand);
 				}//end else				
 			break;
-		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(2), createdCommand);
-			break;
+		case INVALID_STATE_OR_MODE_ERROR_STATUS: //Internally Generated by this Arduino. (So there is no received command for this type of error. The error messaged will only be redirected out through all the Arduinos and out to CMNC)
+//LEFT OFF HERE		
+//WRITE ME LATER
+			break;					
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);							
 			break;
@@ -1776,7 +1854,39 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 			runPORTasks();
 			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		case RX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CONTROL_OUTPUTS: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -1797,7 +1907,39 @@ void runModeFunction_INITIALIZATION(byte currentState)
 			timeout_counter = 0;
 			heartLed->ledSetLevel(_THREE_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		case RX_COMMUNICATIONS: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CONTROL_OUTPUTS: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;				
+		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -1914,6 +2056,10 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 			break;
+		case READ_INPUTS: //Mode: SYNCHRONIZATION
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;			
 		case PROCESS_DATA: //Mode: SYNCHRONIZATION
 		
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
@@ -1954,6 +2100,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 						if(timeout_counter >= COMM_SYNC_TIMEOUT_VALUE)
 						{
 							currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+							error_origin = ROVERCOMM_COMM;
 							cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
 							//set sync_error = true
 							BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SYNC_ERROR_);			
@@ -1968,7 +2115,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: SYNCHRONIZATION
 			//Skip creating data for CMNC
@@ -2001,7 +2148,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//reset the first transmission flag
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -2180,6 +2327,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 					if(timeout_counter >= SECURE_LINK_TIMEOUT_VALUE)
 					{
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+						error_origin = ROVERCOMM_COMM;
 						cmnc_msg_queue == CMD_TAG_SECURE_LINK_ERROR_STATUS;
 						//set secure_link_error = true
 						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SECURE_LINK_ERROR_);			
@@ -2267,7 +2415,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 				}//end else			
 			}//end else
 			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -2429,7 +2577,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
 			 //Creates data for CMNC
@@ -2505,7 +2653,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				}//end else			
 			}//end else		
 			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -2520,6 +2668,26 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			runBackgroundTasks();
 			heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
+		case RX_COMMUNICATIONS: //Mode: HW_RESETTING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: HW_RESETTING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: HW_RESETTING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: HW_RESETTING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: HW_RESETTING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;			
 		case CONTROL_OUTPUTS: //Mode: HW_RESETTING
 
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
@@ -2582,7 +2750,7 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			//reset the first transmission flag
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -2684,6 +2852,10 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			 //else the data was invalid or not ready, so do nothing
 			 
 			break;
+		case READ_INPUTS: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;			
 		case PROCESS_DATA: //Mode: SYSTEM_SLEEPING
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
 				Serial.println(timeout_counter);//DEBUG
@@ -2714,7 +2886,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			{
 				//Resend the sleep request a few times (until timeout occurs) to MAIN (and status to CMNC again) just in case MAIN misses it (as MAIN would have gone to sleep and would have ignored this message) or COMM had missed the COMM Sleep Request back from MAIN
 				//So regenerate the messages as needed			
-				cmnc_msg_queue == CMD_TAG_SYSTEM_IS_SLEEPING;
+				cmnc_msg_queue == CMD_TAG_SYSTEM_IS_SLEEPING_ACK;
 				main_msg_queue == CMD_TAG_ALL_SLEEP_REQUEST;
 				timeout_counter++;
 				//If timeout has reached while waiting for MAIN to send a COMM Sleep Request then go to error
@@ -2723,6 +2895,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 					{
 						//Set mode to SYSTEM_ERROR
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+						error_origin = ROVERCOMM_COMM;
 						cmnc_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;
 						//set sleeping_error = true
 						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SLEEPING_ERROR_);						
@@ -2740,7 +2913,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_SLEEPING
 			 //Creates data for CMNC
@@ -2776,7 +2949,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//reset the first transmission flag
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -2791,6 +2964,26 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			runBackgroundTasks();
 			heartLed->ledSetLevel(_TWO_THIRDS_BRIGHTNESS_);//run the heart led with desired brightness
 			break;
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		case DATA_VALIDATION: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;			
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
 			sleeperMAIN->wakeUp();//Toggles the wakeup pin to low (then back to high). The low level on the interrupt pin wakes up MAIN, which then wakes up all others
@@ -2821,7 +3014,7 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//reset the first transmission flag
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);			
 			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -2951,6 +3144,10 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//else the data was invalid or not ready, so do nothing				
 
 			break;
+		case READ_INPUTS: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			break;			
 		case PROCESS_DATA: //Mode: SW_RESETTING
 		
 			
@@ -2996,6 +3193,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 					
 						//Set mode to SYSTEM_ERROR
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+						error_origin = ROVERCOMM_COMM;
 						cmnc_msg_queue == CMD_TAG_SW_RESET_ERROR_STATUS;
 						//set sleeping_error = true
 						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SW_RESET_ERROR_);						
@@ -3008,7 +3206,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 					else if(timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE)
 					{
 						//Note: It should send the request periodically and not continuously so the system has time to process the request and it doesn't get stuck in a loop
-						cmnc_msg_queue == CMD_TAG_SW_IS_RESETTING;//Resend this message to CMNC to show that it's attempting to SW reset the system again
+						cmnc_msg_queue == CMD_TAG_SW_IS_RESETTING_ACK;//Resend this message to CMNC to show that it's attempting to SW reset the system again
 						main_msg_queue == CMD_TAG_ALL_SW_RESET_REQUEST;//Resending this request to MAIN
 						//Don't reset timeout_counter, keep counting and see if it will reach the SW_RESET_ERROR_TIMEOUT_VALUE
 					}//end else if
@@ -3022,7 +3220,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed) (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: SW_RESETTING
 			 //Creates data for CMNC
@@ -3260,9 +3458,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			{
 				cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 				//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
-			}//end else
-			
-	
+			}//end else	
 			
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
@@ -3286,7 +3482,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed) (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder.
+			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_ERROR
 			 //Creates data for CMNC
@@ -3362,7 +3558,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				}//end else			
 			}//end else		
 			break;
-		default: //default state, if the state is not listed, it should never be called from this mode. If it does, there is a logical or programming error.
+		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -3372,8 +3568,15 @@ void runModeFunction_default()
 {
 	_PRINT_MODE_(F("MODE: default"));
 	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
-												  //No switch case needed for the states, all states do the same thing
+	//No switch case needed for the states, all states do the same thing
 	cmnc_msg_queue = CMD_TAG_INVALID_STATE_ERROR_STATUS;
+	main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+//LEFT OFF HERE
+qwert	
+//FINISH ME LATER. send other arduinos an error too? see if the state machine will actually go through and transmit the error?
+
+//FINISH ME LATER. add error_origin and then go into error mode?
+	error_origin = ROVERCOMM_COMM;
 	
 	heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 

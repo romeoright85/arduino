@@ -70,6 +70,8 @@ At POR (defaults):
 	first_transmission = true
 	main_system_ready = false
 	sync_error = false
+	generic_system_error = false
+	error_origin = ROVERCOMM_NONE
 	invalid_state_or_mode_error = false
 	health_error = false
 	timeout_counter = 0 //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), error timeouts, etc. Make sure to clear it out before use and only use it for one purpose at a time.
@@ -259,6 +261,7 @@ At POR (defaults):
 					//Note: MAIN will turn off the motor enable when it gets a GENERIC_HEALTH_STATUS_ERROR
 					//Note: NAVI will shut off the LEDs when it gets a GENERIC_HEALTH_STATUS_ERROR
 					Set mode to SYSTEM_ERROR *begin*
+					error_origin = ROVERCOMM_AUXI
 					set health_error = true
 						(Note: the health_error flag can only be cleared with a sw reset, hw reset, or for health_errors, when the error goes away)					
 					//Turn off Lasers (just in case they're not already off)
@@ -285,6 +288,7 @@ At POR (defaults):
 				//also prioritize and send out the worst error
 				main_sec_msg_queue == <output the corresponding health error, based on highest priority> //will be sent to COMM (through MAIN) for possible redirect to CMNC (if the link is secure)
 				Set mode to SYSTEM_ERROR *begin*
+				error_origin = ROVERCOMM_AUXI
 				set health_error = true
 					(Note: the health_error flag can only be cleared with a sw reset, hw reset, or for health_errors, when the error goes away)	
 				//Turn off Lasers
@@ -375,6 +379,7 @@ At POR (defaults):
 				timeout_counter++
 				if timeout_counter >= AUXI_SYNC_TIMEOUT_VALUE
 					Set mode to SYSTEM_ERROR *begin*
+					error_origin = ROVERCOMM_AUXI
 					main_pri_msg_queue == SYNC_ERROR_STATUS
 					pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
 					set sync_error = true
@@ -614,12 +619,22 @@ At POR (defaults):
 			//PC_USB
 			if pc_usb_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
+				
+				For GENERIC_HEALTH_STATUS_ERROR, SYNC_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS, INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
+				
 			endif		
 			//Note: For SYSTEM_ERROR, still send auto data through main_sec_msg_queue, to be used for debugging
 			//Send up to two auto datas between the two queues (primary and secondary)
 			if main_pri_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for MAIN as needed based on main_pri_msg_queue					
 				i.e. create error msg for MAIN about SYNC issues, health status issues, get statues (i.e. Get 7.2V (Actual) Status, etc.) etc.
+				
+				For GENERIC_HEALTH_STATUS_ERROR, SYNC_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS, INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
+
+				For INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
+				end if				
+				
+				
 			else //since there is no custom data for the primary queue, then send the next auto data										
 				create message corresponding to the next auto data for MAIN
 				main_pri_msg_queue = auto_data_array[auto_data_cnt_MAIN]
@@ -875,8 +890,9 @@ At POR (defaults):
 			end if				
 		DEFAULT:
 			Set mode to SYSTEM_ERROR *begin*
-			invalid_state_or_mode_error_STATUS
-			main_pri_msg_queue == invalid_state_or_mode_error_STATUS
+			error_origin = ROVERCOMM_AUXI
+			INVALID_STATE_OR_MODE_ERROR_STATUS
+			main_pri_msg_queue == INVALID_STATE_OR_MODE_ERROR_STATUS
 			set invalid_state_or_mode_error = true
 					(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
 			//initialize/reset shared counter before use
@@ -956,11 +972,49 @@ Conflicting Functions Ordered By Priority
 			Set enable_left_laser = false
 			Set enable_right_laser = false
 			Mode: SW_RESETTING *begin*		
+
+			
+		//Note: No Received Generic Health Error for AUXI since Health Errors Originate from AUXI.
+		
+		Received Generic System Error
+
+			//For now just forward it to MAIN (CMNC) and PC_USB, keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode.
+			
+			main_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+			pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+			generic_system_error = true
+			(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+			
+			
+			//Check to see where the command was from
+			If command was from CMNC
+				Set error_origin = ROVERCOMM_CMNC
+			else if command was from NAVI
+				Set error_origin = ROVERCOMM_NAVI
+			else if command was from AUXI
+				Set error_origin = ROVERCOMM_AUXI
+			else if command was from MAIN
+				Set error_origin = ROVERCOMM_MAIN			
+			else if command was from COMM
+				Set error_origin = ROVERCOMM_COMM							
+			else if command was from PC_USB
+				Set error_origin = ROVERCOMM_PC_USB							
+			else
+				Set error_origin = ROVERCOMM_NONE							
+			end if
+			
+			
+			//All errors from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB should be redirected to MAIN, and MAIN will redirect it to CMNC
+			//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
+			Improvement Tip: AUXI can go into error mode if it gets an error message from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB
+		
 		System Go (from MAIN)
 			set system go flag
 			Mode: NORMAL_OPERATIONS *begin*		
 			//initialize/reset shared counter before use
 			timeout_counter = 0;	
+					
+			
 		AUXI Sleep Request (usually from MAIN)
 			//save the state of the laser enables before shutting them off to go to sleep
 			clear system go flag

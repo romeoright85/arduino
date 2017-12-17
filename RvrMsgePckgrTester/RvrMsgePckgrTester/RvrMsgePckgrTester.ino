@@ -57,7 +57,7 @@ int unpackedFootage;
 
 
 RoverReset * resetArray[] = {
-	roverMessagePackager
+	//None
 };
 
 
