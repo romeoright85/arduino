@@ -3028,9 +3028,9 @@ void runModeFunction_default()
 	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
 	//No switch case needed for the states, all states do the same thing
 	comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
-	pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;
-	navi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;
-	auxi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;
+	pc_usb_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+	navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+	auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 				
 	error_origin = ROVERCOMM_MAIN;
 

@@ -3639,7 +3639,7 @@ void runModeFunction_default()
 	heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 	
 	cmnc_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
-	main_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;
+	main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 
 	error_origin = ROVERCOMM_COMM;
 
