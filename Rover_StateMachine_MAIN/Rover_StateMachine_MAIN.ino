@@ -1423,7 +1423,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 		if( strcmp( commandData, getMsgString(3) ) == 0 )//if enable motor power, where getMsgString(3) is "on"
 		{
-			//turn on the motor		
+			//turn on the motor	enable
 			BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//enable_mtr_pwr = true
 			comm_msg_queue = CMD_TAG_ENABLING_MTR_PWR;
 			navi_msg_queue = CMD_TAG_ENABLING_MTR_PWR;
@@ -1431,7 +1431,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		}//end if
 		else//else disable motor power
 		{
-			//turn off the motor		
+			//turn off the motor enable		
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//enable_mtr_pwr = false
 			comm_msg_queue = CMD_TAG_DISABLING_MTR_PWR;
 			navi_msg_queue = CMD_TAG_DISABLING_MTR_PWR;
@@ -2442,6 +2442,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			{
 				createDataFromQueueFor(ROVERCOMM_AUXI);
 			}//end if			
+			
 			//Clear Motor Power Status
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
 			break;
@@ -2801,12 +2802,62 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				
 			break;		
 		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
-//WRITE ME LATER
-//LEFT OFF HERE
+				//if motor enable is on
+				if(BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_))
+				{
+					//Turn motor MOSFET on
+					mtrPowerCtrlr->setMotorPower(MTR_ENABLED);
+				}//end if
+				else//else motor enable is off
+				{
+					//Turn motor MOSFET off
+					mtrPowerCtrlr->setMotorPower(MTR_DISABLED);
+				}//end else
 			break;		
 		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
 //WRITE ME LATER
 //LEFT OFF HERE
+
+
+
+			//Creates data for PC_USB
+			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_PC_USB);
+			}//end if
+			//Creates data for COMM
+			if (comm_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_COMM);
+			}//end if
+			else//comm_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
+			{
+//WRITE ME LATER			
+			}//end else
+			//Creates data for NAVI
+			if (navi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_NAVI);
+			}//end if
+			else//navi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
+			{
+//WRITE ME LATER		
+			}//end else
+			//Creates data for AUXI
+			if (auxi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_AUXI);
+			}//end if			
+			else//auxi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
+			{
+//WRITE ME LATER			
+			}//end else
+			
+			//Clear Motor Power Status
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+			break;
+			
+			
 			break;
 		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
 //WRITE ME LATER

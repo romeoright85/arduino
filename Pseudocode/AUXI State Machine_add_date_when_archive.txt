@@ -9,7 +9,6 @@ Note: Once the system goes into the state, SYSTEM_ERROR, it can only be fixed wi
 
 #define AUXI_SYNC_TIMEOUT_VALUE ??
 #define CONCURRENT_TRANSMISSION_DELAY		??//delay for about 1-5ms or so between potentially sending messages out again to the same arduino
-#define AUTO_DATA_LOOP_MAX_MAIN ?? //max number of auto data before looping over (should be the number of elements in the auto_data_array_MAIN array - 1, since the index starts at 0], data going to MAIN
 
 
 
@@ -608,11 +607,10 @@ At POR (defaults):
 				create message corresponding to the next auto data for MAIN
 				main_pri_msg_queue = auto_data_array[auto_data_cnt_MAIN]
 				//set the next auto data for MAIN for the next use
-				if auto_data_cnt_MAIN >= AUTO_DATA_LOOP_MAX_MAIN
-					auto_data_cnt_MAIN = 0
-				else
-					auto_data_cnt_MAIN++
-				endif
+				auto_MAN_data_cnt++
+				if auto_MAN_data_cnt >= sizeof(auto_MAIN_data_array)
+					auto_MAN_data_cnt = 0
+				endif	
 			end if
 			if main_sec_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for MAIN as needed based on main_sec_msg_queue					
@@ -620,11 +618,10 @@ At POR (defaults):
 				create message corresponding to the next auto data for MAIN
 				main_sec_msg_queue = auto_data_array[auto_data_cnt_MAIN]
 				//set the next auto data for MAIN for the next use
-				if auto_data_cnt_MAIN >= AUTO_DATA_LOOP_MAX_MAIN
-					auto_data_cnt_MAIN = 0
-				else
-					auto_data_cnt_MAIN++
-				endif
+				auto_MAN_data_cnt++
+				if auto_MAN_data_cnt >= sizeof(auto_MAIN_data_array)
+					auto_MAN_data_cnt = 0
+				endif	
 			end if
 			Mode: NORMAL_OPERATIONS
 			set next state to TX_COMMUNICATIONS						
@@ -675,11 +672,10 @@ At POR (defaults):
 				create message corresponding to the next auto data for MAIN
 				main_pri_msg_queue = auto_data_array[auto_data_cnt_MAIN]
 				//set the next auto data for MAIN for the next use
-				if auto_data_cnt_MAIN >= AUTO_DATA_LOOP_MAX_MAIN
-					auto_data_cnt_MAIN = 0
-				else
-					auto_data_cnt_MAIN++
-				endif
+				auto_MAN_data_cnt++
+				if auto_MAN_data_cnt >= sizeof(auto_MAIN_data_array)
+					auto_MAN_data_cnt = 0
+				endif	
 			end if
 			if main_sec_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for MAIN as needed based on main_sec_msg_queue					
@@ -687,11 +683,10 @@ At POR (defaults):
 				create message corresponding to the next auto data for MAIN
 				main_sec_msg_queue = auto_data_array[auto_data_cnt_MAIN]
 				//set the next auto data for MAIN for the next use
-				if auto_data_cnt_MAIN >= AUTO_DATA_LOOP_MAX_MAIN
-					auto_data_cnt_MAIN = 0
-				else
-					auto_data_cnt_MAIN++
-				endif
+				auto_MAN_data_cnt++
+				if auto_MAN_data_cnt >= sizeof(auto_MAIN_data_array)
+					auto_MAN_data_cnt = 0
+				endif	
 			end if
 			Mode: SYSTEM_ERROR
 			set next state to TX_COMMUNICATIONS						

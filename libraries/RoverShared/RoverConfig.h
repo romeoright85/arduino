@@ -361,9 +361,7 @@
 	
 	//WRITE ME LATER
 	/*
-		#define AUTO_DATA_LOOP_MAX_NAVI ?? //max number of auto data before looping over, data going to NAVI
-		#define AUTO_DATA_LOOP_MAX_AUXI ?? //max number of auto data before looping over, data going to AUXI
-		#define AUTO_DATA_LOOP_MAX_COMM ?? //max number of auto data before looping over, data going to COMM
+		
 		#define MAIN_SYSTEM_ERROR_TIMEOUT_VALUE ??//time for MAIN to wait in SYSTEM_ERROR before it should reset a hw reset from COMM
 		
 		#define SW_RESET_RESEND_TIMEOUT_VALUE		??//time to wait for AUXI's or NAVI's SW Reset Acknowledgement to MAIN before restarting the SW Reset, by sending a NAVI or AUXI SW Request again.

@@ -8,9 +8,6 @@ Note: For redirects, it assumes only one arduino will be redirected to another. 
 NOTE: MAIN will spend a lot of time redirecting data since AUXI and NAVI and COMM all need to go thru MAIN for data transfer
 
 
-#define AUTO_DATA_LOOP_MAX_NAVI ?? //max number of auto data before looping over, data going to NAVI
-#define AUTO_DATA_LOOP_MAX_AUXI ?? //max number of auto data before looping over, data going to AUXI
-#define AUTO_DATA_LOOP_MAX_COMM ?? //max number of auto data before looping over, data going to COMM
 #define MAIN_SYSTEM_ERROR_TIMEOUT_VALUE ??//time for MAIN to wait in SYSTEM_ERROR before it should reset a hw reset from COMM
 #define MAIN_SYNC_TIMEOUT_VALUE ??
 #define SW_RESET_RESEND_TIMEOUT_VALUE		??//time to wait for AUXI's or NAVI's SW Reset Acknowledgement to MAIN before restarting the SW Reset, by sending a NAVI or AUXI SW Request again.
@@ -948,6 +945,10 @@ MAIN:
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
 					endif
+					//COMM
+					if comm_msg_queue = SYSTEM_READY_STATUS
+						create system ready msg for COMM
+					endif						
 					//NAVI
 					if navi_msg_queue = SYSTEM_READY_STATUS
 						create system ready msg for NAVI
@@ -956,10 +957,11 @@ MAIN:
 					if auxi_msg_queue = SYSTEM_READY_STATUS
 						create system ready msg for AUXI
 					endif
-					//COMM
-					if comm_msg_queue = SYSTEM_READY_STATUS
-						create system ready msg for COMM
-					endif						
+					
+					
+					Clear Motor Power Status (so it can be re-read again next loop)
+					
+					
 					Mode: SYNCHRONIZATION
 					set next state to TX_COMMUNICATIONS						
 					go to RUN_HOUSEKEEPING_TASKS				
@@ -968,6 +970,18 @@ MAIN:
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
 					endif
+					//COMM
+					if comm_msg_queue != CMD_TAG_NO_MSG
+						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
+					else //since there is no custom data, then send the next auto data										
+					create message corresponding to the next auto data for COMM
+						comm_msg_queue = auto_COMM_data_array[auto_COMM_data_cnt]
+						//set the next auto data for COMM for the next loop
+						auto_COMM_data_cnt++
+						if auto_COMM_data_cnt >= sizeof(auto_COMM_data_array)
+							auto_COMM_data_cnt = 0
+						endif						
+					end if					
 					//NAVI
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for NAVI as needed based on navi_msg_queue					
@@ -975,10 +989,9 @@ MAIN:
 						create message corresponding to the next auto data for NAVI
 						navi_msg_queue = auto_NAVI_data_array[auto_NAVI_data_cnt]
 						//set the next auto data for NAVI for the next loop
-						if auto_NAVI_data_cnt >= AUTO_DATA_LOOP_MAX_NAVI
+						auto_NAVI_data_cnt++
+						if auto_NAVI_data_cnt >= sizeof(auto_NAVI_data_array)
 							auto_NAVI_data_cnt = 0
-						else
-							auto_NAVI_data_cnt++
 						endif
 					end if
 					//AUXI
@@ -986,27 +999,17 @@ MAIN:
 						create any msg(s) for AUXI as needed based on auxi_msg_queue					
 					else //since there is no custom data, then send the next auto data										
 						create message corresponding to the next auto data for AUXI
-						navi_msg_queue = auto_NAVI_data_array[auto_AUXI_data_cnt]
+						auxi_msg_queue = auto_AUXI_data_array[auto_AUXI_data_cnt]
 						//set the next auto data for AUXI for the next loop
-						if auto_AUXI_data_cnt >= AUTO_DATA_LOOP_MAX_AUXI
+						auto_AUXI_data_cnt++
+						if auto_AUXI_data_cnt >= sizeof(auto_AUXI_data_array)
 							auto_AUXI_data_cnt = 0
-						else
-							auto_AUXI_data_cnt++
-						endif
+						endif		
 					end if
-					//COMM
-					if comm_msg_queue != CMD_TAG_NO_MSG
-						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
-					else //since there is no custom data, then send the next auto data										
-					create message corresponding to the next auto data for COMM
-						comm_msg_queue = auto_COMM_data_cnt
-						//set the next auto data for COMM for the next loop
-						if auto_COMM_data_cnt >= AUTO_DATA_LOOP_MAX_COMM
-							auto_COMM_data_cnt = 0
-						else
-							auto_COMM_data_cnt++
-						endif
-					end if
+
+					
+					Clear Motor Power Status (so it can be re-read again next loop)
+					
 					Mode: NORMAL_OPERATIONS
 					set next state to TX_COMMUNICATIONS						
 					go to RUN_HOUSEKEEPING_TASKS					
@@ -1017,15 +1020,19 @@ MAIN:
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
 					endif
+					//COMM
+					Since comm_msg_queue = COMM_SLEEP_REQUEST
+						Create COMM sleep request after acknowledgements are received from both AUXI and NAVI						
 					//NAVI
 					Since navi_msg_queue = NAVI_SLEEP_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop)
 						Create NAVI sleep request msg
 					//AUXI
 					Since auxi_msg_queue = AUXI_SLEEP_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop)
 						Create AUXI sleep request msg					
-					//COMM
-					Since comm_msg_queue = COMM_SLEEP_REQUEST
-						Create COMM sleep request after acknowledgements are received from both AUXI and NAVI							
+			
+					
+					Clear Motor Power Status (so it can be re-read again next loop)
+										
 					set next state to TX_COMMUNICATIONS
 					go to RUN_HOUSEKEEPING_TASKS			
 				SYSTEM_WAKING
@@ -1035,15 +1042,19 @@ MAIN:
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
 					endif
+					//COMM
+					if comm_msg_queue = COMM_SW_RESET_REQUEST
+						Create COMM SW reset request after acknowledgements are received from both AUXI and NAVI						
 					//NAVI
 					if navi_msg_queue = NAVI_SW_RESET_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop, i.e. keeps resetting itself))
 						Create NAVI sw reset request msg
 					//AUXI
 					if auxi_msg_queue = AUXI_SW_RESET_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop, i.e. keeps resetting itself))
 						Create AUXI sw reset request msg						
-					//COMM
-					if comm_msg_queue = COMM_SW_RESET_REQUEST
-						Create COMM SW reset request after acknowledgements are received from both AUXI and NAVI							
+				
+
+					Clear Motor Power Status (so it can be re-read again next loop)
+					
 					set next state to TX_COMMUNICATIONS
 					go to RUN_HOUSEKEEPING_TASKS
 				SYSTEM_ERROR		
@@ -1057,6 +1068,17 @@ MAIN:
 						CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
 								
 					endif
+					//COMM
+					if comm_msg_queue != CMD_TAG_NO_MSG
+						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
+						//should be general or specfic error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages. skip auto data
+						
+						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
+						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
+						CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, in createDataFromQueueFor, create the message using error_origin as the message origin
+												
+						For CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
+						end if					
 					//NAVI
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for NAVI as needed based on navi_msg_queue
@@ -1073,20 +1095,13 @@ MAIN:
 						For GENERIC_SYSTEM_ERROR_STATUS,	CMD_TAG_GENERIC_HEALTH_STATUS_ERROR in createDataFromQueueFor, create the message using error_origin as the message origin
 						
 					end if
-					//COMM
-					if comm_msg_queue != CMD_TAG_NO_MSG
-						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
-						//should be general or specfic error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages. skip auto data
-						
-						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
-						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
-						CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, in createDataFromQueueFor, create the message using error_origin as the message origin
-												
-						For CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
-						end if
+
 						
 						
 					end if				
+					
+					Clear Motor Power Status (so it can be re-read again next loop)
+										
 					Mode: SYSTEM_ERROR
 					set next state to TX_COMMUNICATIONS					
 					go to RUN_HOUSEKEEPING_TASKS				
@@ -1099,6 +1114,9 @@ MAIN:
 					Note: No redirections.
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to PC_USB
+					end if		
+					if comm_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to COMM
 					end if						
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to NAVI
@@ -1106,9 +1124,7 @@ MAIN:
 					if auxi_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to AUXI
 					end if						
-					if comm_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to COMM
-					end if										
+									
 					clear message queues and redirect flags
 						pc_usb_msg_queue = CMD_TAG_NO_MSG					
 						navi_msg_queue = CMD_TAG_NO_MSG					
@@ -1128,16 +1144,17 @@ MAIN:
 						//send the first set of messages
 						if pc_usb_msg_queue != CMD_TAG_NO_MSG
 							Sends interally generated msg(s) to PC_USB
-						end if	
+						end if
+						if comm_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to COMM
+						end if						
 						if navi_msg_queue != CMD_TAG_NO_MSG
 							Sends interally generated msg(s) to NAVI
 						end if	
 						if auxi_msg_queue != CMD_TAG_NO_MSG
 							Sends interally generated msg(s) to AUXI
 						end if						
-						if comm_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to COMM
-						end if
+
 						//check to see if there are any second messages to send
 						if redirectToCOMM == true || redirectToNAVI == true || redirectToAUXI == true || redirectToPCUSB
 							first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission
@@ -1203,15 +1220,16 @@ MAIN:
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to PC_USB
 					end if	
+					if comm_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to COMM						
+					end if					
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to NAVI
 					end if	
 					if auxi_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to AUXI
 					end if						
-					if comm_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to COMM						
-					end if				
+				
 					clear message queues and redirect flags
 						pc_usb_msg_queue = CMD_TAG_NO_MSG
 						navi_msg_queue = CMD_TAG_NO_MSG					
@@ -1262,6 +1280,9 @@ MAIN:
 					Note: No redirection during sw resets					
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to PC_USB
+					end if	
+					if comm_msg_queue != CMD_TAG_NO_MSG
+						Sends interally generated msg(s) to COMM						
 					end if						
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to NAVI
@@ -1269,9 +1290,7 @@ MAIN:
 					if auxi_msg_queue != CMD_TAG_NO_MSG
 						Sends interally generated msg(s) to AUXI
 					end if						
-					if comm_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to COMM						
-					end if				
+			
 					clear message queues and redirect flags
 						navi_msg_queue = CMD_TAG_NO_MSG					
 						auxi_msg_queue = CMD_TAG_NO_MSG
@@ -1299,15 +1318,16 @@ MAIN:
 						if pc_usb_msg_queue != CMD_TAG_NO_MSG
 							Sends interally generated msg(s) to PC_USB
 						end if	
+						if comm_msg_queue != CMD_TAG_NO_MSG
+							Sends interally generated msg(s) to COMM
+						end if							
 						if navi_msg_queue != CMD_TAG_NO_MSG
 							Sends interally generated msg(s) to NAVI
 						end if	
 						if auxi_msg_queue != CMD_TAG_NO_MSG
 							Sends interally generated msg(s) to AUXI
 						end if						
-						if comm_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to COMM
-						end if						
+					
 						//check to see if there are any second messages to send
 						if redirectToCOMM == true || redirectToNAVI == true || redirectToAUXI == true || redirectToPCUSB
 							first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission

@@ -158,6 +158,9 @@ get basic state machine infrastructure up
 		work on runModeFunctions
 			[DONE]runModeFunction_SYNCHRONIZATION
 			[LEFT OFF HERE at CONTROL_OUTPUTS] runModeFunction_NORMAL_OPERATIONS
+				[DONE] write test code to test autodata algorithm
+				
+			
 			runModeFunction_HW_RESETTING
 			runModeFunction_SYSTEM_SLEEPING
 			runModeFunction_SYSTEM_WAKING
