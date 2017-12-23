@@ -161,6 +161,33 @@ byte comm_msg_queue = CMD_TAG_NO_MSG;
 byte navi_msg_queue = CMD_TAG_NO_MSG;
 byte auxi_msg_queue = CMD_TAG_NO_MSG;
 
+//Auto Data Arrays
+//Note: PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
+
+
+//COMM
+byte auto_COMM_data_array[] = {
+	//add more as needed
+};
+
+//NAVI
+byte auto_NAVI_data_array[] = {
+	CMD_TAG_MTR_PWR_STATUS,
+	CMD_TAG_ENC_STATUS_MID_LEFT,
+	CMD_TAG_ENC_STATUS_MID_RIGHT
+	//add more as needed	
+};
+//AUXI
+byte auto_AUXI_data_array[] = {
+	//add more as needed
+};
+
+//data counters. They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
+byte auto_COMM_data_cnt = 0;
+byte auto_NAVI_data_cnt = 0;
+byte auto_AUXI_data_cnt = 0;
+
+
 //Flag(s) - Rover Data Channels Status
 byte ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
 byte ch2Status = DATA_STATUS_NOT_READY;//for COMM
@@ -208,7 +235,7 @@ byte commandFilterOptionsSet2_AUXI = _BTFG_NONE_;
 
 //Counters
 unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
-//TEMPLATE//unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
+unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
 
 
 
@@ -2815,44 +2842,101 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				}//end else
 			break;		
 		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
-//WRITE ME LATER
-//LEFT OFF HERE
-
-
 
 			//Creates data for PC_USB
 			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_PC_USB);
 			}//end if
+			//PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
+			
+			
 			//Creates data for COMM
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_COMM);
 			}//end if
-			else//comm_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
+			else if(sizeof(auto_COMM_data_array) > 0 )//if there is auto data for COMM
+			//comm_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
 			{
-//WRITE ME LATER			
-			}//end else
+
+				//Assign the next auto message to the queue
+				comm_msg_queue = auto_COMM_data_array[auto_COMM_data_cnt];
+
+				//Create the message
+				createDataFromQueueFor(ROVERCOMM_COMM);
+				
+				//Loop/Increment the auto data for the next iteration
+								
+				auto_COMM_data_cnt++;
+				if (auto_COMM_data_cnt >= sizeof(auto_COMM_data_array))
+				{
+					auto_COMM_data_cnt = 0;
+				}//end if
+				
+				//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
+				
+			}//end else if
+			//else do nothing since there was no message and no auto data
+			
+			
 			//Creates data for NAVI
 			if (navi_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_NAVI);
 			}//end if
-			else//navi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
+			else if(sizeof(auto_NAVI_data_array) > 0 )//if there is auto data for NAVI
+			//navi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
 			{
-//WRITE ME LATER		
-			}//end else
+
+				//Assign the next auto message to the queue
+				navi_msg_queue = auto_NAVI_data_array[auto_NAVI_data_cnt];
+
+				//Create the message
+				createDataFromQueueFor(ROVERCOMM_COMM);
+				
+				//Loop/Increment the auto data for the next iteration
+								
+				auto_NAVI_data_cnt++;
+				if (auto_NAVI_data_cnt >= sizeof(auto_NAVI_data_array))
+				{
+					auto_NAVI_data_cnt = 0;
+				}//end if
+				
+				//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
+				
+			}//end else if
+			//else do nothing since there was no message and no auto data			
+			
+			
 			//Creates data for AUXI
 			if (auxi_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_AUXI);
-			}//end if			
-			else//auxi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
+			}//end if	
+			else if(sizeof(auto_AUXI_data_array) > 0 )//if there is auto data for AUXI
+			//auxi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
 			{
-//WRITE ME LATER			
-			}//end else
-			
+
+				//Assign the next auto message to the queue
+				auxi_msg_queue = auto_AUXI_data_array[auto_AUXI_data_cnt];
+
+				//Create the message
+				createDataFromQueueFor(ROVERCOMM_COMM);
+				
+				//Loop/Increment the auto data for the next iteration
+								
+				auto_AUXI_data_cnt++;
+				if (auto_AUXI_data_cnt >= sizeof(auto_AUXI_data_array))
+				{
+					auto_AUXI_data_cnt = 0;
+				}//end if
+				
+				//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
+				
+			}//end else if
+			//else do nothing since there was no message and no auto data			
+
 			//Clear Motor Power Status
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
 			break;
@@ -2860,8 +2944,89 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			
 			break;
 		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
-//WRITE ME LATER
-//LEFT OFF HERE
+
+		//Interweave primary transmissions and redirection, to allow the receiving end have time to process each incoming data
+	
+			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
+			{							
+				//1. Sends data to PC_USB
+				if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
+				}//end if
+				//2. Sends data to COMM
+				if (comm_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
+				}//end if				
+				//3. Sends data to NAVI
+				if (navi_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_NAVI, ROVERCOMM_NAVI);
+				}//end if					
+				//4. Sends data to AUXI
+				if (auxi_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_AUXI, ROVERCOMM_AUXI);
+				}//end if				
+				//5. Check to see if there are any second messages to send
+				if (
+					BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_)
+					|| BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_)
+					|| BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_)
+					|| BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_)
+					)		
+				{
+					BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);//clear the flag
+					//reset the counter before use
+					transmission_delay_cnt = 0;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
+				}//end if
+				else//there is no second transmission, move on
+				{					
+					//clears message queue(s) and redirect flags		
+					pc_usb_msg_queue = CMD_TAG_NO_MSG;
+					comm_msg_queue = CMD_TAG_NO_MSG;
+					navi_msg_queue = CMD_TAG_NO_MSG;
+					auxi_msg_queue = CMD_TAG_NO_MSG;
+					
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_);					
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
+				}//end else
+			}//end if	
+			else//this is not the first transmission
+			{
+			
+				if(transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY) //once the desired delay has been reached, continue with the code
+				{
+					//Send the second set of messages
+					redirectData(roverComm_Ch1);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
+					redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)	
+					redirectData(roverComm_Ch3);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)	
+					redirectData(roverComm_Ch4);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)	
+					//clears message queue(s) and redirect flags		
+					pc_usb_msg_queue = CMD_TAG_NO_MSG;
+					comm_msg_queue = CMD_TAG_NO_MSG;
+					navi_msg_queue = CMD_TAG_NO_MSG;
+					auxi_msg_queue = CMD_TAG_NO_MSG;
+					
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_);
+					
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
+				}//end if
+				else//the desired delay has not been reached yet, so just increment the count
+				{
+					transmission_delay_cnt++;
+				}//end else			
+			}//end else
 			break;				
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error

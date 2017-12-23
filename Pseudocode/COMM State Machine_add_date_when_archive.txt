@@ -866,6 +866,8 @@ COMM:
 						if cmnc_msg_queue != CMD_TAG_NO_MSG
 							Sends interally generated msg(s) to CMNC
 						end if
+						
+						
 						//check to see if there are any second messages to send
 						if redirectToMAIN == true || redirectToCMNC == true
 							first_transmission = false //clear the flag, so on the next iteration it won't process as the first transmission

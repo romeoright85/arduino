@@ -2161,6 +2161,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//clears message queue(s) and redirect flags		
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
+			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 			//reset the first transmission flag
@@ -2405,6 +2406,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
+					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 					//reset the first transmission flag
@@ -2422,6 +2424,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
+					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);					
 					//reset the first transmission flag
@@ -2643,6 +2646,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
+					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 					//reset the first transmission flag
@@ -2660,6 +2664,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
+					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);			
 					//reset the first transmission flag
@@ -2763,6 +2768,7 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			//clears message queue(s) and redirect flags		
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
+			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 			//reset the first transmission flag
@@ -2962,6 +2968,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//clears message queue(s) and redirect flags		
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
+			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 			//reset the first transmission flag
@@ -3027,6 +3034,7 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//clears message queue(s) and redirect flags		
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
+			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);	
 			//reset the first transmission flag
@@ -3596,6 +3604,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
+					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 					//reset the first transmission flag
@@ -3613,6 +3622,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
+					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);								
 					//reset the first transmission flag

@@ -5,13 +5,17 @@
 //Global Variables
 
 
-byte auto_NAVI_data_array[] = {
+byte auto_test_data_array[] = {
 	CMD_TAG_MTR_PWR_STATUS,
 	CMD_TAG_ENC_STATUS_MID_LEFT,
 	CMD_TAG_ENC_STATUS_MID_RIGHT
 };// add more as needed	
 
-unsigned int auto_NAVI_data_cnt = 0; //data counter
+
+
+
+
+byte auto_test_data_cnt = 0; //data counter, can just be byte instead of unsigned int since there aren't that many elements
 
 void setup() {
 
@@ -26,26 +30,27 @@ void setup() {
 void loop() {
 	
 	
-	_PC_USB_SERIAL_.println(F("====="));//DEBUG
+	_PC_USB_SERIAL_.println(F("====="));
 
 
-	_PC_USB_SERIAL_.print(F("Size: "));//DEBUG
-	_PC_USB_SERIAL_.println(sizeof(auto_NAVI_data_array));//DEBUG
+	_PC_USB_SERIAL_.print(F("Size: "));
+	_PC_USB_SERIAL_.println(sizeof(auto_test_data_array));
+
 
 	delay(100);
 
 	
-	_PC_USB_SERIAL_.print(F("Data: "));//DEBUG
-	_PC_USB_SERIAL_.println(auto_NAVI_data_array[auto_NAVI_data_cnt]);
+	_PC_USB_SERIAL_.print(F("Data: "));
+	_PC_USB_SERIAL_.println(auto_test_data_array[auto_test_data_cnt]);
 	
-	auto_NAVI_data_cnt++;
+	auto_test_data_cnt++;
 
-	if (auto_NAVI_data_cnt >= sizeof(auto_NAVI_data_array))
+	if (auto_test_data_cnt >= sizeof(auto_test_data_array))
 	{
-		auto_NAVI_data_cnt = 0;
+		auto_test_data_cnt = 0;
 	}//end if
 	
-	_PC_USB_SERIAL_.print(F("Cnt: "));//DEBUG
-	_PC_USB_SERIAL_.println(auto_NAVI_data_cnt);
+	_PC_USB_SERIAL_.print(F("Cnt: "));
+	_PC_USB_SERIAL_.println(auto_test_data_cnt);
 	delay(500);
 }

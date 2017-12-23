@@ -2,7 +2,7 @@ Where I left off
 ------------------------
 
 DEADLINES:
-[4 days left] 12/17, 12/23, 12/24, 12/25
+[3 days left] 12/23, 12/24, 12/25
 Rover_StateMachine_MAIN (get the complex communications going)
 	if have time go back to Rover_StateMachine_COMM and change some of the 1/3 or 3/3 brightness to blinks. need to write code to poll/time the blinks or use interrupts or something
 [13 days] 12/26, 12/27, 12/28, 12/29, 12/30, 12/31, 1/1, 1/6, 1/7, 1/12, 1/13, 1/14, 1/20
@@ -146,40 +146,46 @@ get basic state machine infrastructure up
 #LEFT OFF HERE, START HERE->Rover_StateMachine_MAIN:
 
 			
-----------------[[[[[[[LEFT OFF FIRST]]]]]]]]
-						
-			[LEFT OFF, IN PROGRESS]fix void runModeFunction_default() for COMM
-			[LEFT OFF, IN PROGRESS]fix void runModeFunction_default() for MAIN
-						
-----------------[[[[[[[END OF LEFT OFF FIRST]]]]]]]]
-
-
-
+		[DO SAT]
 		work on runModeFunctions
 			[DONE]runModeFunction_SYNCHRONIZATION
-			[LEFT OFF HERE at CONTROL_OUTPUTS] runModeFunction_NORMAL_OPERATIONS
+			[LEFT OFF HERE at TX_COMMUNICATIONS] runModeFunction_NORMAL_OPERATIONS
 				[DONE] write test code to test autodata algorithm
-				
-			
 			runModeFunction_HW_RESETTING
 			runModeFunction_SYSTEM_SLEEPING
 			runModeFunction_SYSTEM_WAKING
+			
+			
+			[DO SUN]
 			runModeFunction_SW_RESETTING
 			runModeFunction_SYSTEM_ERROR
-			[started but didn't finish. need to add and set error_origin and then maybe go into error mode?] runModeFunction_default
-				update this change for both COMM and MAIN
+				[DONE] runModeFunction_default
+				[DONE] update this change for both COMM and MAIN
 			void initializeVariables()
 			void setAllErrorFlagsTo()
 			void setAllMessageControlFlagsTo()
 			void setAllSystemStatusFlagsTo()
-		[IN PROGRESS]
+			
+			
+		[DO MON]
 			test the code so far (i.e. with at startup/power on)
 			add error, message, etc. flags created
 			add other variables needed
 				use the state machine add data when archive template to see what you might need to add in
 				
 				
-		
+	
+
+
+
+
+
+
+
+
+
+
+	
 	
 	Note: pay attention to memory use!
 	
