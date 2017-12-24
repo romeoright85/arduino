@@ -150,37 +150,34 @@ get basic state machine infrastructure up
 		work on runModeFunctions
 			
 			[DO SUN]
-#CODE1
 			[DONE]runModeFunction_HW_RESETTING
-			
-#CODE2a				
-			[IN PROGRESS, LEFT OFF at PROCESS_DATA] runModeFunction_SYSTEM_SLEEPING
-#CODE2b			
+			[DONE] runModeFunction_SYSTEM_SLEEPING
+#CODE2			
 			runModeFunction_SYSTEM_WAKING
 			runModeFunction_SW_RESETTING
 			
+			[UNLESS WHERE REDIRECTION IS NOT ALLOWED!] Go back and make sure generic system error messages and generic health errors are not filtered out for any modes from any arduino (just in case it's redirected) for COMM and MAIN state machines. They should always be allowed.
+			Make sure update data filter and process data comments as well in the state machines.
+			catch up anything i am behind in
+			chores?
 			
 #CODE3
 			runModeFunction_SYSTEM_ERROR
 				[DONE] runModeFunction_default
 				[DONE] update this change for both COMM and MAIN
+
 			void initializeVariables()
 			void setAllErrorFlagsTo()
 			void setAllMessageControlFlagsTo()
 			void setAllSystemStatusFlagsTo()			
-#CODE4?
-			[UNLESS WHERE REDIRECTION IS NOT ALLOWED!] Go back and make sure generic system error messages and generic health errors are not filtered out for any modes from any arduino (just in case it's redirected) for COMM and MAIN state machines. They should always be allowed.
-			Make sure update data filter and process data comments as well in the state machines.
-			catch up anything i am behind in
-			chores?
+
+
 	
 			
 		[DO MON]
-			test the code so far (i.e. with at startup/power on)
-			add error, message, etc. flags created
+			write any code for WRITE ME LATERs
 			add other variables needed
-				use the state machine add data when archive template to see what you might need to add in
-				
+			test the code so far (i.e. with at startup/power on)				
 				
 	
 

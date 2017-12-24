@@ -146,13 +146,13 @@ void goToSleepMAIN() {
 			   //Go to sleep
 			   //Note: Make sure to end any Software Serial here
 			   //No SW Serials used for MAIN
-	sleeperMAIN->goToSleep();//will sleep and wakeup the MAIN
+	sleeperMAIN->goToSleep();//will put MAIN to sleep (COMM will wake up MAIN externally)
 							 //sleeperMAIN->goToSleep(&InterruptDispatch1);//DEBUG
 
 }
 void wakeUpMAIN() {
 	//Wake Up
-	sleeperMAIN->hasAwoken();
+	sleeperMAIN->hasAwoken();//This updates the status and detaches the interrupt for MAIN once MAIN is awaken externally by COMM.
 	//Note: Make sure to begin (again) any Software Serial here
 	//No SW Serials used for MAIN
 

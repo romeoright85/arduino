@@ -522,7 +522,6 @@ MAIN:
 				HW_RESETTING
 					do nothing				
 				SYSTEM_SLEEPING
-
 	
 					skip encoder data
 					process motor power status
@@ -534,12 +533,15 @@ MAIN:
 					
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						All other messages are allowed from PC_USB. Use with caution.
+						
 					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
 						No redirections in SYSTEM_SLEEPING.
 						Note: Either you should get no data, generic system error, All SW Reset Requests, or All Sleep (Re-)Request from COMM/CMNC. as everything else was filtered out					
+						
 					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
 						No redirections in SYSTEM_SLEEPING.
 						Note: Either you should get no data, generic system error, or Sleeping Request Acknowledgement from NAVI. as everything else was filtered out
+						
 					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						No redirections in SYSTEM_SLEEPING.
 						Note: Either you should get no data, generic health error, or Sleeping Request Acknowledgement from AUXI. as everything else was filtered out					
@@ -554,6 +556,7 @@ MAIN:
 						//Note: If all acknowledgements were received, run_task_on_main_now would be true
 						//Regenerate the messages as needed
 						//check each arduino to see which hasn't sent a Sleeping Request Acknowledgement to MAIN yet.
+						
 						if navi_acknowledgement == false
 							navi_msg_queue = NAVI_SLEEP_REQUEST (tells NAVI to go to sleep)
 						end if
@@ -563,6 +566,7 @@ MAIN:
 						end if		
 						
 						//increment counter. Note: The counter may be incremented even though sleep acknowledgement was just received, but once it's processed below, it will override any errors if all the acknowledgements were received. So no worries increment the timeout counter and checking for timeout here.
+						
 						timeout_counter++
 						
 						//if MAIN has been stuck in SYSTEM_SLEEPING for a long time while waiting on NAVI and/or AUXI for sleep request acknowledgements
@@ -687,6 +691,12 @@ MAIN:
 						//so clear the flags
 						navi_acknowledgement = false
 						auxi_acknowledgement = false
+						
+						comm_msg_queue = COMM_SLEEP_REQUEST //MAIN sends COMM a COMM Sleep request, so COMM can go to sleep
+						
+						//initialize/reset shared counter for future use and to prevent being stuck in a loop
+						timeout_counter = 0;			
+			
 						//Note: navi_acknowledgement and auxi_acknowledgement will be cleared before use, but do it here anyways just in case
 						//Note: run_task_on_main_now will be cleared later in TX_COMMUNICATIONS when it's done being used by that state
 					end else
@@ -1047,12 +1057,12 @@ MAIN:
 					endif
 					//COMM
 					Since comm_msg_queue = COMM_SLEEP_REQUEST
-						Create COMM sleep request after acknowledgements are received from both AUXI and NAVI						
+						Create COMM sleep request after acknowledgements are received from both AUXI and NAVI (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)				
 					//NAVI
-					Since navi_msg_queue = NAVI_SLEEP_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop)
+					Since navi_msg_queue = NAVI_SLEEP_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)
 						Create NAVI sleep request msg
 					//AUXI
-					Since auxi_msg_queue = AUXI_SLEEP_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop)
+					Since auxi_msg_queue = AUXI_SLEEP_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)
 						Create AUXI sleep request msg					
 			
 					
@@ -1136,18 +1146,18 @@ MAIN:
 				INITIALIZATION
 					do nothing
 				SYNCHRONIZATION		
-					Note: No redirections.
+					Note: No redirection during SYNCHRONIZATION.
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to PC_USB
+						Sends internally generated msg(s) to PC_USB
 					end if		
 					if comm_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to COMM
+						Sends internally generated msg(s) to COMM
 					end if						
 					if navi_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to NAVI
+						Sends internally generated msg(s) to NAVI
 					end if	
 					if auxi_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to AUXI
+						Sends internally generated msg(s) to AUXI
 					end if						
 									
 					clear message queues and redirect flags
@@ -1168,16 +1178,16 @@ MAIN:
 						
 						//send the first set of messages
 						if pc_usb_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to PC_USB
+							Sends internally generated msg(s) to PC_USB
 						end if
 						if comm_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to COMM
+							Sends internally generated msg(s) to COMM
 						end if						
 						if navi_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to NAVI
+							Sends internally generated msg(s) to NAVI
 						end if	
 						if auxi_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to AUXI
+							Sends internally generated msg(s) to AUXI
 						end if						
 
 						//check to see if there are any second messages to send
@@ -1241,18 +1251,19 @@ MAIN:
 				HW_RESETTING
 					do nothing				
 				SYSTEM_SLEEPING
-					Note: No redirection during system sleeping
+					Note: No redirection during SYSTEM_SLEEPING.
+					
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to PC_USB
+						Sends internally generated msg(s) to PC_USB
 					end if	
 					if comm_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to COMM						
+						Sends internally generated msg(s) to COMM						
 					end if					
 					if navi_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to NAVI
+						Sends internally generated msg(s) to NAVI
 					end if	
 					if auxi_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to AUXI
+						Sends internally generated msg(s) to AUXI
 					end if						
 				
 					clear message queues and redirect flags
@@ -1304,16 +1315,16 @@ MAIN:
 				SW_RESETTING
 					Note: No redirection during sw resets					
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to PC_USB
+						Sends internally generated msg(s) to PC_USB
 					end if	
 					if comm_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to COMM						
+						Sends internally generated msg(s) to COMM						
 					end if						
 					if navi_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to NAVI
+						Sends internally generated msg(s) to NAVI
 					end if	
 					if auxi_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to AUXI
+						Sends internally generated msg(s) to AUXI
 					end if						
 			
 					clear message queues and redirect flags
@@ -1341,16 +1352,16 @@ MAIN:
 												
 						//send the first set of messages
 						if pc_usb_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to PC_USB
+							Sends internally generated msg(s) to PC_USB
 						end if	
 						if comm_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to COMM
+							Sends internally generated msg(s) to COMM
 						end if							
 						if navi_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to NAVI
+							Sends internally generated msg(s) to NAVI
 						end if	
 						if auxi_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to AUXI
+							Sends internally generated msg(s) to AUXI
 						end if						
 					
 						//check to see if there are any second messages to send
@@ -1683,10 +1694,7 @@ Conflicting Functions Ordered By Priority
 		end if		
 		//once MAIN gets an ack for system sleeping from both NAVI and AUXI
 		if navi_acknowledgement == true && auxi_acknowledgement = true
-			run_task_on_main_now = true
-			comm_msg_queue = COMM_SLEEP_REQUEST //MAIN sends COMM a COMM Sleep request, so COMM can go to sleep
-			//initialize/reset shared counter for future use and to prevent being stuck in a loop
-			timeout_counter = 0;			
+			run_task_on_main_now = true			
 		end if			
 		Mode: SYSTEM_SLEEPING
 	
