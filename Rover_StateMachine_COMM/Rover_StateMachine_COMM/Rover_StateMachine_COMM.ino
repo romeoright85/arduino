@@ -7,7 +7,7 @@ The best way to read this code from scratch is look at the global default values
 
 /*
 Design Notes:
-Currently the priority level is not being used to prioritize right now. It's just there as a placeholder.
+Currently the priority level is not being used to prioritize right now. It's just there as a place holder.
 */
 
 //Rover_StateMachine_COMM
@@ -147,7 +147,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
  //Uncomment to allow Ch2 (MAIN and COMM) to have redirection when in synchronization mode
 #define _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
 
-//Uncomment to output notice when redirection is occuring
+//Uncomment to output notice when redirection is occurring
 //#define _DEBUG_REDIRECTION_NOTICE
 //============End Debugging: Allow Redirect During Synchronization Mode
 
@@ -953,7 +953,7 @@ void loop() {
 void runPORTasks()
 {
 	//run POR tasks
-//PLACEHOLDER: Add things here as needed.
+//place holder: Add things here as needed.
 
 }//runPORTasks()
 void initializeVariables()
@@ -1014,12 +1014,12 @@ void initializeVariables()
 void startBackgroundTasks()
 {
 	//start background tasks
-//PLACEHOLDER: Add things here as needed.
+//place holder: Add things here as needed.
 }//end of startBackgroundTasks()
 void runBackgroundTasks()
 {
 	//run background tasks	
-//PLACEHOLDER: Add things here as needed.	
+//place holder: Add things here as needed.	
 }//end of runBackgroundTasks()
 byte rxData(RoverComm * roverComm, byte roverCommType) {
 
@@ -1874,35 +1874,35 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 			break;
 		case RX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_VALIDATION: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_FILTER: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PROCESS_DATA: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CONTROL_OUTPUTS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case TX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		default: //default state
 				 //This code should never execute, if it does, there is a logical or programming error
@@ -1927,35 +1927,35 @@ void runModeFunction_INITIALIZATION(byte currentState)
 			break;
 		case RX_COMMUNICATIONS: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_VALIDATION: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_FILTER: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PROCESS_DATA: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CONTROL_OUTPUTS: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case TX_COMMUNICATIONS: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;				
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -2076,7 +2076,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;
 		case READ_INPUTS: //Mode: SYNCHRONIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case PROCESS_DATA: //Mode: SYNCHRONIZATION
 		
@@ -2133,7 +2133,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: SYNCHRONIZATION
 			//Skip creating data for CMNC
@@ -2598,7 +2598,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
 			 //Creates data for CMNC
@@ -2693,23 +2693,23 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			break;
 		case RX_COMMUNICATIONS: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_VALIDATION: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_FILTER: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PROCESS_DATA: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case CONTROL_OUTPUTS: //Mode: HW_RESETTING
 
@@ -2878,7 +2878,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			break;
 		case READ_INPUTS: //Mode: SYSTEM_SLEEPING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case PROCESS_DATA: //Mode: SYSTEM_SLEEPING
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
@@ -2937,7 +2937,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_SLEEPING
 			 //Creates data for CMNC
@@ -2991,23 +2991,23 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case DATA_VALIDATION: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_FILTER: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PROCESS_DATA: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed)
@@ -3172,7 +3172,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			break;
 		case READ_INPUTS: //Mode: SW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case PROCESS_DATA: //Mode: SW_RESETTING
 		
@@ -3246,7 +3246,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed) (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: SW_RESETTING
 			 //Creates data for CMNC
@@ -3556,7 +3556,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			break;
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
 			//Nothing to do here. The heart LED is controlled in each of the runModeFunction functions under the RUN_HOUSEKEEPING_TASKS state. (so that it can be updated regularly an change patterns if needed) (so that it can be updated regularly an change patterns if needed)
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_ERROR
 			 //Creates data for CMNC

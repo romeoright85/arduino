@@ -1,4 +1,3 @@
-error
 Note: Make sure for any serials, use a #define serial_type. So it can be replaced with PC USB's serial if needed.
 Note: For redirects, it assumes only one arduino will be redirected to another. If by chance, two source Arduinos are being redirected to the same destination Arduino, only one will get through and the other message will be dropped.
 	The prioritization will be giving to the hard coded order of the if/else statements.
@@ -264,22 +263,29 @@ MAIN:
 					go to RUN_HOUSEKEEPING_TASKS			
 				HW_RESETTING
 					do nothing				
-				SYSTEM_SLEEPING			
+				SYSTEM_SLEEPING		
+					
+					no redirections during SYSTEM_SLEEPING				
+					
 					Allow all data from PC_USB (it's a debugging communication/backdoor to run tests, but use with caution)
 						no redirections during SYNCHRONIZATION
 					filter and throw away all COMM data except:						
+						All SW Reset Requests from COMM/CMNC			
+						generic system error message(s) from COMM/CMNC
 						All Sleep (Re-)Request from COMM/CMNC (to restart the sleep process again)
 							Note: Allow sleep (Re-)Request to override the sleep process if needed
 							Note: No need to worry about allowing HW requests to override when in SYSTEM_SLEEPING with MAIN.
 								Since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SYSTEM_SLEEPING mode anyways.
 								After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.					
 							TROUBLESHOOTING TIP: Make sure it doesn't keep getting stuck in the sleep request state.
+							Note: There is no Sleeping Request Acknowledgement from COMM, since it is the one that starts off the sleeping process then puts itself to sleep.
 					filter and throw away all NAVI data except:
-						System Is Sleeping Acknowledgement from NAVI	
+						Sleeping Request Acknowledgement from NAVI	
+						generic system error message(s) from NAVI
 					filter and throw away all AUXI data except:
-						System Is Sleeping Acknowledgement from AUXI
+						Sleeping Request Acknowledgement from AUXI
 						generic system error message(s) from AUXI
-
+						generic health errors from AUXI
 					Mode: SYSTEM_SLEEPING
 					set next state to READ_INPUTS //to read motor power status
 					go to RUN_HOUSEKEEPING_TASKS						
@@ -521,20 +527,24 @@ MAIN:
 					skip encoder data
 					process motor power status
 					
-					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-						No redirections in SYNCHRONIZATION.
-						All other messages are allowed from PC_USB. Use with caution.
-					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
-						Note: Either you should get no data, All SW Reset Requests, or All Sleep (Re-)Request from COMM/CMNC. as everything else was filtered out					
-					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
-						Note: Either you should get no data or System Is Sleeping Acknowledgement from NAVI. as everything else was filtered out
-					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-						Note: Either you should get no data, generic health error, or System Is Sleeping Acknowledgement from AUXI. as everything else was filtered out					
-											
 					Categorize all commands/data from all sources.
 					Allow for all non-conflicting commands to run.
 					Sort based on priority.
-					Then only run the highest priority for MAIN.												
+					Then only run the highest priority for MAIN.	
+					
+					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						All other messages are allowed from PC_USB. Use with caution.
+					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						No redirections in SYSTEM_SLEEPING.
+						Note: Either you should get no data, generic system error, All SW Reset Requests, or All Sleep (Re-)Request from COMM/CMNC. as everything else was filtered out					
+					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
+						No redirections in SYSTEM_SLEEPING.
+						Note: Either you should get no data, generic system error, or Sleeping Request Acknowledgement from NAVI. as everything else was filtered out
+					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						No redirections in SYSTEM_SLEEPING.
+						Note: Either you should get no data, generic health error, or Sleeping Request Acknowledgement from AUXI. as everything else was filtered out					
+											
+											
 
 													
 					//Run lower priority functions here.
@@ -894,7 +904,14 @@ MAIN:
 					go to RUN_HOUSEKEEPING_TASKS		
 				HW_RESETTING
 					HW reset COMM
-					Mode: SYNCHRONIZATION *begin* //go back to SYNCHRONIZATION once HW Reset it done
+					Mode: SYNCHRONIZATION *begin* //go back to SYNCHRONIZATION
+
+					//Queue up system ready messages
+					comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+					navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
+					auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+
+					once HW Reset it done
 					//initialize/reset shared counter before use
 					timeout_counter = 0;
 					set next state to CREATE_DATA
@@ -917,6 +934,14 @@ MAIN:
 					Wake up NAVI (toggles the wakeup pin to low, then back to high)
 					Wake up AUXI (toggles the wakeup pin to low, then back to high)
 					Set mode to SYNCHRONIZATION *begin*		
+					
+					
+					//Queue up system ready messages
+					comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+					navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
+					auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+			
+					
 					//initialize/reset shared counter before use
 					timeout_counter = 0;							
 					set next state to RX_COMMUNICATIONS				
@@ -1469,7 +1494,7 @@ Note: Since the message queues (i.e. cmnc_msg_queue, etc.) are shared between ex
 	
 Note: No synchronization timeout will be used for MAIN. COMM will timeout and let the external CMNC know it needs action. Nothing to do internally with MAIN.
 Note: With external commands, you only want to do all hw or all sw request (and not individual hw/sw requests). Else the system won't be in sync anymore. So hw/sw requests must be synced and have controlled points of entry.
-	But interally, it may call individual commands as required.
+	But internally, it may call individual commands as required.
 Note: With external commands, you only want to do all sleep requests (and not individual sleep requests). Else the system won't be in sync anymore. So sleep requests must be synced and have controlled points of entry.
 	But internally, it may call individual commands as required.
 

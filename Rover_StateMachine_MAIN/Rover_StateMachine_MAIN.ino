@@ -7,7 +7,7 @@ The best way to read this code from scratch is look at the global default values
 
 /*
 Design Notes:
-Currently the priority level is not being used to prioritize right now. It's just there as a placeholder.
+Currently the priority level is not being used to prioritize right now. It's just there as a place holder.
 */
 
 //Rover_StateMachine_MAIN
@@ -120,8 +120,26 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============End Debugging: Print Mode and/or State
 
 
+
+
+//============Debugging: Print HW Reset
+//Uncomment the flag below in order to print the HW Reset Status
+//#define _DEBUG_PRINT_HW_RESET_STATUS
+
+
+#ifdef _DEBUG_PRINT_HW_RESET_STATUS
+#define _PRINT_HW_RESET_STATUS_ _SERIAL_DEBUG_CHANNEL_.println
+#else
+#define _PRINT_HW_RESET_STATUS_ void
+#endif
+
+
+//============End Debugging: Print Mode and/or State
+
+
+
  //============Debugging: Redirection Notice
-//Uncomment to output notice when redirection is occuring
+//Uncomment to output notice when redirection is occurring
 //#define _DEBUG_REDIRECTION_NOTICE
 //============End Debugging: Redirection Notice
 
@@ -914,7 +932,7 @@ void loop() {
 void runPORTasks()
 {
 	//run POR tasks
-//PLACEHOLDER: Add things here as needed.
+//place holder: Add things here as needed.
 
 }//runPORTasks()
 void initializeVariables()
@@ -927,7 +945,7 @@ void initializeVariables()
 void startBackgroundTasks()
 {
 	//start background tasks
-//PLACEHOLDER: Add things here as needed.
+//place holder: Add things here as needed.
 }//end of startBackgroundTasks()
 void runBackgroundTasks()
 {
@@ -2029,35 +2047,35 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 			break;
 		case RX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_VALIDATION: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_FILTER: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PROCESS_DATA: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CONTROL_OUTPUTS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case TX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)	
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;			
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -2080,35 +2098,35 @@ void runModeFunction_INITIALIZATION(byte currentState)
 			break;
 		case RX_COMMUNICATIONS: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_VALIDATION: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_FILTER: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PROCESS_DATA: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CONTROL_OUTPUTS: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case CREATE_DATA: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case TX_COMMUNICATIONS: //Mode: INITIALIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)				
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)				
 			break;
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -2446,7 +2464,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;		
 		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case CREATE_DATA: //Mode: SYNCHRONIZATION
 			//Creates data for PC_USB
@@ -2627,6 +2645,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				}//end else
 			}//end if
 			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+			 
 			break;		
 		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
 
@@ -3044,34 +3063,51 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			break;
 		case RX_COMMUNICATIONS: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_VALIDATION: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_FILTER: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PROCESS_DATA: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case CONTROL_OUTPUTS: //Mode: HW_RESETTING
-//WRITE ME LATER
+
+			_PRINT_HW_RESET_STATUS_(F("Resetting COMM..."));//DEBUG
+			
+			commHwResetter->performHwReset();	
+			//NOTE: Add a delay here if needed (i.e. 1 Second)
+			_PRINT_HW_RESET_STATUS_(F("Reset Complete!"));//DEBUG
+			
+			currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
+						
+			//Queue up system ready messages
+			comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+			navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
+			auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+			//Note: The state machine should go to CREATE_DATA next.
+			
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+		
 			break;		
 		case CREATE_DATA: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case TX_COMMUNICATIONS: //Mode: HW_RESETTING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)						
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)						
 			break;
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -3084,23 +3120,260 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 	_PRINT_MODE_(F("MODE: SYSTEM_SLEEPING"));
 	switch (currentState)
 	{
+	
+//LEFT OFF HERE
+	
 		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_SLEEPING
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
-//WRITE ME LATER
+
+			//rxData() from PC_USB
+			//1. Reset status flag
+			ch1Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch1->clearRxData();
+			//3. Receive data
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_PC_USB);//Note: this is a local .ino function
+
+			//rxData() from COMM
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_COMM);//Note: this is a local .ino function
+			
+			//rxData() from NAVI
+			//1. Reset status flag
+			ch3Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch3->clearRxData();
+			//3. Receive data
+			ch3Status = rxData(roverComm_Ch3, ROVERCOMM_NAVI);//Note: this is a local .ino function
+
+			//rxData() from AUXI
+			//1. Reset status flag
+			ch4Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch4->clearRxData();
+			//3. Receive data
+			ch4Status = rxData(roverComm_Ch4, ROVERCOMM_AUXI);//Note: this is a local .ino function
+		
 			break;
 		case DATA_VALIDATION: //Mode: SYSTEM_SLEEPING
-//WRITE ME LATER
+		
+			//parseAndValidateData() from PC_USB
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+
+			//parseAndValidateData() from COMM
+			//Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+			 //parseAndValidateData() from NAVI
+			//Process/validate the data that was received
+			if (ch3Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch3->parseAndValidateData())
+				{
+					ch3Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch3Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+			//parseAndValidateData() from AUXI
+			//Process/validate the data that was received
+			if (ch4Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch4->parseAndValidateData())
+				{
+					ch4Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch4Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY		
+		
 			break;		
 		case DATA_FILTER: //Mode: SYSTEM_SLEEPING
-//WRITE ME LATER
+		
+			//Reset/clear flags (no data was for MAIN)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);
+			
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_);
+			
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_PC_USB);//for PC_USB
+			setAllCommandFiltersTo(false, ROVERCOMM_COMM);//for COMM
+			setAllCommandFiltersTo(false, ROVERCOMM_NAVI);//for NAVI
+			setAllCommandFiltersTo(false, ROVERCOMM_AUXI);//for AUXI
+			//Then enable the allowed commands for this mode:
+			//For PC_USB
+			//No filter on PC_USB data. (Allow all data from PC_USB)
+			//No commands from PC_USB are filtered, so set all to true.
+			setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);			
+			//For COMM
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSLEEPREQUEST_);
+			//For NAVI			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_);	
+			//For AUXI
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SLEEPREQUESTACKNOWLEDGEMENT_);	
+
+			
+			//Transmit data and/or execute command
+						
+			//For data from PC_USB, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+
+				/*
+				Allow all data from PC_USB.
+				*/
+
+			}//end if
+
+			//For data from COMM, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all COMM data except:
+				All SW Reset Requests from COMM/CMNC				
+				generic system error message(s) from COMM/CMNC
+				All Sleep (Re-)Request from COMM/CMNC (to restart the sleep process again)
+					Note: Allow sleep (Re-)Request to override the sleep process if needed
+					Note: No need to worry about allowing HW requests to override when in SYSTEM_SLEEPING with MAIN.
+						Since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SYSTEM_SLEEPING mode anyways.
+						After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.					
+					TROUBLESHOOTING TIP: Make sure it doesn't keep getting stuck in the sleep request state.
+				Note: There is no Sleeping Request Acknowledgement from COMM, since it is the one that starts off the sleeping process then puts itself to sleep.							
+				*/				
+
+			}//end if
+			
+			//For data from NAVI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch3Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh3_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all NAVI data except:
+				Sleeping Request Acknowledgement from NAVI	
+				generic system error message(s) from NAVI
+				*/		
+				
+			}//end if
+			
+			
+			//For data from AUXI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch4Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh4_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all AUXI data except:
+				System Is Sleeping Acknowledgement from AUXI
+				generic system error message(s) from AUXI
+				generic health errors from AUXI
+				*/			
+				
+			}//end if	
+		
 			break;	
 		case READ_INPUTS: //Mode: SYSTEM_SLEEPING
-//WRITE ME LATER
+		
+			//Skip Encoders
+			//Read Motor Power Status
+			if (mtrPowerCtrlr->motorIsOn())//if motor is currently on
+			{
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+				//Note: The motor power status flag will be cleared after the CREATE_DATA state.
+			}//end if
+			else
+			{
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+			}//end else
+			
 			break;	
 		case PROCESS_DATA: //Mode: SYSTEM_SLEEPING
-//WRITE ME LATER
+//LEFT OFF HERE
 			break;		
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
 //WRITE ME LATER
@@ -3127,34 +3400,34 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_VALIDATION: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case DATA_FILTER: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PROCESS_DATA: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
 //WRITE ME LATER
 			break;		
 		case CREATE_DATA: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
-			//Keep as a placeholder. (also to define the state so it doesn't go into default and then error out)				
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)				
 			break;			
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error

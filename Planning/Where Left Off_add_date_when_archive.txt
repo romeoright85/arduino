@@ -45,13 +45,13 @@ LAST THING DONE: (see #LEFT OFF HERE below)
 		The less delay the better, since it will not stall up the rest of the code on the rover.
 		
 		
-	Retest with more decimal precison.
-	Then plot and analyze the data.
+	Retest with more decimal precision.
+	Then plot and analyse the data.
 		NavigationTester_AUXI
 		NavigationTester_MAIN
 		NavigationTester_NAVI
 		
-	Retest RoverGPSTester and RoverIMUTester since I shurnk my buffer size from 128 to 100 to save RAM
+	Retest RoverGPSTester and RoverIMUTester since I shrunk my buffer size from 128 to 100 to save RAM
 		
 ANALYZE DATA FOR NAVIGATION TESTER
 	Review the true bearing, distance, etc. calculation.
@@ -146,26 +146,34 @@ get basic state machine infrastructure up
 #LEFT OFF HERE, START HERE->Rover_StateMachine_MAIN:
 
 			
-		[DO SAT]
+
 		work on runModeFunctions
-			[DONE]runModeFunction_SYNCHRONIZATION
-			[LEFT OFF HERE at TX_COMMUNICATIONS] runModeFunction_NORMAL_OPERATIONS
-				[DONE] write test code to test autodata algorithm
-			runModeFunction_HW_RESETTING
-			runModeFunction_SYSTEM_SLEEPING
-			runModeFunction_SYSTEM_WAKING
-			
 			
 			[DO SUN]
+#CODE1
+			[DONE]runModeFunction_HW_RESETTING
+			
+#CODE2a				
+			[IN PROGRESS, LEFT OFF at PROCESS_DATA] runModeFunction_SYSTEM_SLEEPING
+#CODE2b			
+			runModeFunction_SYSTEM_WAKING
 			runModeFunction_SW_RESETTING
+			
+			
+#CODE3
 			runModeFunction_SYSTEM_ERROR
 				[DONE] runModeFunction_default
 				[DONE] update this change for both COMM and MAIN
 			void initializeVariables()
 			void setAllErrorFlagsTo()
 			void setAllMessageControlFlagsTo()
-			void setAllSystemStatusFlagsTo()
-			
+			void setAllSystemStatusFlagsTo()			
+#CODE4?
+			[UNLESS WHERE REDIRECTION IS NOT ALLOWED!] Go back and make sure generic system error messages and generic health errors are not filtered out for any modes from any arduino (just in case it's redirected) for COMM and MAIN state machines. They should always be allowed.
+			Make sure update data filter and process data comments as well in the state machines.
+			catch up anything i am behind in
+			chores?
+	
 			
 		[DO MON]
 			test the code so far (i.e. with at startup/power on)
@@ -1791,3 +1799,11 @@ Note: The last thing I did before stopping was:
 			
 			[DONE]Add INVALID_STATE_OR_MODE_ERROR_STATUS to createDataFromQueueFor for MAIN. Use error_origin as origin and CMNC as destination. Note: A Received INVALID_STATE_OR_MODE_ERROR_STATUS is not needed. It can just be re-routed directly to CMNC.
 											
+											
+			[DONE]runModeFunction_SYNCHRONIZATION
+			[DONE] runModeFunction_NORMAL_OPERATIONS
+				[DONE] write test code to test autodata algorithm
+			
+
+			
+			Note: When redirect is disabled in the DATA_FILTER this may also mean the redirect logic was not put in for that mode, so if later it's decided redirect should be allowed (i.e. for PC_USB) at some stage, then the logic may have to be put in other areas of the code as well.			

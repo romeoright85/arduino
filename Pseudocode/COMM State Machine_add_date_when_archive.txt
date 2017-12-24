@@ -10,8 +10,8 @@ Note: Some of these defines share names between Arduinos, so make sure you use t
 
 
 
-#define COMM_SYNC_TIMEOUT_VALUE 50//arbitrariliy chosen value for now
-#define SECURE_LINK_TIMEOUT_VALUE 50//arbitrariliy chosen value for now
+#define COMM_SYNC_TIMEOUT_VALUE 50//arbitrarily chosen value for now
+#define SECURE_LINK_TIMEOUT_VALUE 50//arbitrarily chosen value for now
 #define CONCURRENT_TRANSMISSION_DELAY		??//delay for about 1-5ms or so between potentially sending messages out again to the same arduino
 #define SW_RESET_RESEND_TIMEOUT_VALUE		??//time to wait for the COMM SW Reset Request from MAIN before restarting the All SW Reset , by sending the All SW Reset Request to MAIN again.
 #define SW_RESET_ERROR_TIMEOUT_VALUE ??//time to waiting and resend the All SW Reset (Re-)Requests to MAIN before COMM should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
@@ -648,24 +648,24 @@ COMM:
 			CONTROL_OUTPUTS			
 				POWER_ON_AND_HW_RESET
 					do nothing
-					Note: Keep  as placeholder.
+					Note: Keep  as place holder.
 				INITIALIZATION
 					do nothing
 				SYNCHRONIZATION
 					do nothing
-					Note: Keep  as placeholder.
+					Note: Keep  as place holder.
 					Mode: SYNCHRONIZATION
 					set next state to CREATE_DATA
 					go to RUN_HOUSEKEEPING_TASKS						
 				SECURING_LINK	
 					do nothing				
-					Note: Keep  as placeholder.
+					Note: Keep  as place holder.
 					Mode: SECURING_LINK
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS						
 				NORMAL_OPERATIONS			
 					do nothing				
-					Note: Keep  as placeholder.
+					Note: Keep  as place holder.
 					Mode: NORMAL_OPERATIONS					
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS						
@@ -678,26 +678,26 @@ COMM:
 					go to RUN_HOUSEKEEPING_TASKS	
 				SYSTEM_SLEEPING					
 					do nothing				
-					Note: Keep  as placeholder.
+					Note: Keep  as place holder.
 					Mode: SYSTEM_SLEEPING					
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS						
 				SYSTEM_WAKING		
 					do nothing				
-					Note: Keep  as placeholder.
+					Note: Keep  as place holder.
 					Wake up MAIN (toggles the wakeup pin to low, then back to high)
 					Mode: SYSTEM_WAKING					
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS							
 				SW_RESETTING					
 					do nothing				
-					Note: Keep  as placeholder.
+					Note: Keep  as place holder.
 					Mode: SW_RESETTING			
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS						
 				SYSTEM_ERROR										
 					do nothing				
-					Note: Keep  as placeholder.
+					Note: Keep  as place holder.
 					Mode: SYSTEM_ERROR					
 					set next state to CREATE_DATA					
 					go to RUN_HOUSEKEEPING_TASKS					
@@ -793,7 +793,7 @@ COMM:
 				SYNCHRONIZATION		
 					skips for CMNC
 					if main_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to MAIN
+						Sends internally generated msg(s) to MAIN
 					end if
 					clear message queues and redirect flags
 						cmnc_msg_queue = CMD_TAG_NO_MSG
@@ -808,10 +808,10 @@ COMM:
 					if first_transmission == true						
 						//send the first set of messages
 						if main_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to MAIN
+							Sends internally generated msg(s) to MAIN
 						end if					
 						if cmnc_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to CMNC
+							Sends internally generated msg(s) to CMNC
 						end if
 						//check to see if there are any second messages to send
 						if redirectToMAIN == true || redirectToCMNC == true
@@ -861,10 +861,10 @@ COMM:
 					if first_transmission == true						
 						//send the first set of messages
 						if main_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to MAIN
+							Sends internally generated msg(s) to MAIN
 						end if					
 						if cmnc_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to CMNC
+							Sends internally generated msg(s) to CMNC
 						end if
 						
 						
@@ -915,12 +915,12 @@ COMM:
 				HW_RESETTING
 					Note: No redirection during hw resets
 					if main_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to MAIN (i.e. COMM HW Reset Requests to let MAIN know to reset the COMM)
+						Sends internally generated msg(s) to MAIN (i.e. COMM HW Reset Requests to let MAIN know to reset the COMM)
 					end if
 					if cmnc_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to CMNC
+						Sends internally generated msg(s) to CMNC
 					end if
-					//do not clear message queues. Keep sending the hw reset requests/status. This is because you already did a HW reset on MAIN, AUXI, and NAVI, so you don't want to go through the loop and keep hw resetting those Arduinos. You jsut want to sit and wait here until MAIN will hw reset you (the COMM)
+					//do not clear message queues. Keep sending the hw reset requests/status. This is because you already did a HW reset on MAIN, AUXI, and NAVI, so you don't want to go through the loop and keep hw resetting those Arduinos. You just want to sit and wait here until MAIN will hw reset you (the COMM)
 					can clear the redirect flags
 						redirectToCMNC = false
 						redirectToMAIN = false		
@@ -931,10 +931,10 @@ COMM:
 				SYSTEM_SLEEPING
 					Note: No redirection during system sleeping
 					if main_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to MAIN
+						Sends internally generated msg(s) to MAIN
 					end if
 					if cmnc_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to CMNC
+						Sends internally generated msg(s) to CMNC
 					end if
 					clear message queues and redirect flags
 						cmnc_msg_queue = CMD_TAG_NO_MSG
@@ -950,7 +950,7 @@ COMM:
 					Note: No redirection during system waking
 					skip for MAIN
 					if cmnc_msg_queue == SYSTEM_IS_WAKING
-						Sends interally generated msg(s) to CMNC
+						Sends internally generated msg(s) to CMNC
 					end if
 					clear message queues and redirect flags
 						cmnc_msg_queue = CMD_TAG_NO_MSG
@@ -965,10 +965,10 @@ COMM:
 				SW_RESETTING
 					Note: No redirection during sw resets
 					if main_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to MAIN
+						Sends internally generated msg(s) to MAIN
 					end if
 					if cmnc_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to CMNC
+						Sends internally generated msg(s) to CMNC
 					end if
 					clear message queues and redirect flags
 						cmnc_msg_queue = CMD_TAG_NO_MSG
@@ -985,10 +985,10 @@ COMM:
 					if first_transmission == true						
 						//send the first set of messages
 						if main_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to MAIN
+							Sends internally generated msg(s) to MAIN
 						end if					
 						if cmnc_msg_queue != CMD_TAG_NO_MSG
-							Sends interally generated msg(s) to CMNC
+							Sends internally generated msg(s) to CMNC
 						end if
 						//check to see if there are any second messages to send
 						if redirectToMAIN == true || redirectToCMNC == true
@@ -1108,7 +1108,7 @@ Note: Since the message queues (i.e. cmnc_msg_queue, etc.) are shared between ex
 	Note: If these messages don't work, the other (but less desirable option) is have all commands/requests/data sent to MAIN and it will arbitrate everything.
 					
 Note: With external commands, you only want to do all hw or all sw request (and not individual hw/sw requests). Else the system won't be in sync anymore. So hw/sw requests must be synced and have controlled points of entry.
-	But interally, it may call individual commands as required.
+	But internally, it may call individual commands as required.
 Note: With external commands, you only want to do all sleep requests (and not individual sleep requests). Else the system won't be in sync anymore. So sleep requests must be synced and have controlled points of entry.
 	But internally, it may call individual commands as required.
 
