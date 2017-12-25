@@ -270,6 +270,7 @@ RoverData * roverDataCh2_COMM = new RoverData();
 RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 
 //Rover Data Pointers for use with either internal processing or outgoing messages
+//Note: These pointers will be (re-)initialized by the function clearRoverDataPointers()
 RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data incoming to COMM
 RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
 RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data outgoing to MAIN
@@ -1746,6 +1747,8 @@ void createDataFromQueueFor(byte roverCommDestination)
 }//end of createDataFromQueueFor()
 void setAllErrorFlagsTo(boolean choice)
 {
+	//Note: During (re-)initialization this function doesn't need to be called since the flag variable gets a direct assigned it an initial value. (ex: someFlag = _BTFG_NONE_; )
+	
 	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_SYNC_ERROR_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_SECURE_LINK_ERROR_, choice);
@@ -1756,6 +1759,8 @@ void setAllErrorFlagsTo(boolean choice)
 }//end of setAllErrorFlagsTo()
 void setAllMessageControlFlagsTo(boolean choice)
 {
+	//Note: During (re-)initialization this function doesn't need to be called since the flag variable gets a direct assigned it an initial value. (ex: someFlag = _BTFG_NONE_; )
+	
 	BooleanBitFlags::assignFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_, choice);
@@ -1763,11 +1768,18 @@ void setAllMessageControlFlagsTo(boolean choice)
 }//end of setAllMessageControlFlagsTo()
 void setAllSystemStatusFlagsTo(boolean choice)
 {
+	
+	//Note: During (re-)initialization this function doesn't need to be called since the flag variable gets a direct assigned it an initial value. (ex: someFlag = _BTFG_NONE_; )
+	
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_, choice);
 	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_, choice);
+	
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus2, _BTFG_COMM_SLEEP_REQUESTED_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus2, _BTFG_COMM_SW_RESET_REQUESTED_, choice);
+	
 }//end of setAllSystemStatusFlagsTo()
 void setAllCommandFiltersTo(boolean choice, byte roverComm)
 {

@@ -30,6 +30,7 @@ Debug Operation
 To test locally with only one Arduino (best to test the MEGA to make sure it can handle the memory needs for the COMM), first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
 Can send:
 //WRITE ME LATER
+//LEFT OFF HERE
 */
 
 
@@ -216,28 +217,8 @@ byte comm_msg_queue = CMD_TAG_NO_MSG;
 byte navi_msg_queue = CMD_TAG_NO_MSG;
 byte auxi_msg_queue = CMD_TAG_NO_MSG;
 
-//Auto Data Arrays
-//Note: PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
-
-
-//COMM
-byte auto_COMM_data_array[] = {
-	//add more as needed
-};
-
-//NAVI
-byte auto_NAVI_data_array[] = {
-	CMD_TAG_MTR_PWR_STATUS,
-	CMD_TAG_ENC_STATUS_MID_LEFT,
-	CMD_TAG_ENC_STATUS_MID_RIGHT
-	//add more as needed	
-};
-//AUXI
-byte auto_AUXI_data_array[] = {
-	//add more as needed
-};
-
-//data counters. They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
+//Auto Data Counters
+//They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
 byte auto_COMM_data_cnt = 0;
 byte auto_NAVI_data_cnt = 0;
 byte auto_AUXI_data_cnt = 0;
@@ -310,6 +291,7 @@ RoverData * roverDataCh4_COMM = new RoverData();
 RoverComm * roverComm_Ch4 = new RoverComm(roverDataCh4_COMM);
 
 //Rover Data Pointers for use with either internal processing or outgoing messages
+//Note: These pointers will be (re-)initialized by the function clearRoverDataPointers()
 RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data incoming to MAIN
 RoverData * roverDataForPC_USB;//pointer used access the RoverData which has the command data outgoing to PC_USB
 RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data outgoing to COMM
@@ -342,19 +324,19 @@ GlobalDelayTimer * midRightSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms,
 WheelEncoderSensor * wheelEncoder_MidLeft = new WheelEncoderSensor(ENCODER_A_MID_LEFT, ENCODER_B_MID_LEFT, LEFT_MOUNTED, &InterruptDispatch_wheelEncoder_MidLeft, midLeftSyncCounter);
 WheelEncoderSensor * wheelEncoder_MidRight = new WheelEncoderSensor(ENCODER_A_MID_RIGHT, ENCODER_B_MID_RIGHT, RIGHT_MOUNTED, &InterruptDispatch_wheelEncoder_MidRight, midRightSyncCounter);
 
-//Variables used to latch and save encoder values druring the READ_INPUT state
+//Variables used to latch and save encoder values during the READ_INPUT state
 //Note: Having each of these sets of variables (5 bytes for each encoder, where a byte is 1 byte and an int is 2 bytes)  is still less bytes than storing two char arrays of packaged data of length _MAX_ROVER_COMMAND_DATA_LEN_ (which is about 14 bytes)
 //MidLeft Encoder
-byte wheelEncoder_MidLeft_Direction;
-int wheelEncoder_MidLeft_Speed;
-int wheelEncoder_MidLeft_Footage;
+byte wheelEncoder_MidLeft_Direction = MOTOR_STOPPED;
+int wheelEncoder_MidLeft_Speed = 0;
+int wheelEncoder_MidLeft_Footage = 0;
 //MidRight Encoder
-byte  wheelEncoder_MidRight_Direction;
-int wheelEncoder_MidRight_Speed;
-int wheelEncoder_MidRight_Footage;
+byte  wheelEncoder_MidRight_Direction = MOTOR_STOPPED;
+int wheelEncoder_MidRight_Speed = 0;
+int wheelEncoder_MidRight_Footage = 0;
 
 
-//WRITE ME LATER, ADD MORE LATER
+
 
 
 
@@ -379,8 +361,7 @@ RoverReset * resetArray[] = {
 	midRightSyncCounter,
 	midRightSyncTimer,
 	wheelEncoder_MidLeft,
-	wheelEncoder_MidRight
-//WRITE ME LATER	
+	wheelEncoder_MidRight	
 };//for pointers, pass them directly, for objects pass the address
 
 
@@ -390,6 +371,27 @@ RoverReset * resetArray[] = {
 
 
 //=====Non-SW Resettable Variables (do not reinitialize these variables on software reset)
+
+
+//Auto Data Arrays
+//Note: PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
+
+//COMM
+byte auto_COMM_data_array[] = {
+	//add more as needed
+};
+
+//NAVI
+byte auto_NAVI_data_array[] = {
+	CMD_TAG_MTR_PWR_STATUS,
+	CMD_TAG_ENC_STATUS_MID_LEFT,
+	CMD_TAG_ENC_STATUS_MID_RIGHT
+	//add more as needed	
+};
+//AUXI
+byte auto_AUXI_data_array[] = {
+	//add more as needed
+};
 
 
 //Message Char Array
@@ -497,7 +499,6 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 	//Timer(s)
 	midLeftSyncTimer->Running();
 	midRightSyncTimer->Running();
-//WRITE ME LATER
 
 }
 
@@ -1001,7 +1002,92 @@ void initializeVariables()
 {
 	//(re)initialize most global variables (i.e. for software reset)
 
-//WRITE ME LATER
+	//Message Queues
+	pc_usb_msg_queue = CMD_TAG_NO_MSG;
+	comm_msg_queue = CMD_TAG_NO_MSG;
+	navi_msg_queue = CMD_TAG_NO_MSG;
+	auxi_msg_queue = CMD_TAG_NO_MSG;
+
+
+	//Auto Data Counters
+	//They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
+	auto_COMM_data_cnt = 0;
+	auto_NAVI_data_cnt = 0;
+	auto_AUXI_data_cnt = 0;
+
+
+	//Flag(s) - Rover Data Channels Status
+	ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
+	ch2Status = DATA_STATUS_NOT_READY;//for COMM
+	ch3Status = DATA_STATUS_NOT_READY;//for NAVI
+	ch4Status = DATA_STATUS_NOT_READY;//for AUXI
+
+
+	//Error Origin (used to send out the origin of the error with the error message)
+	error_origin = ROVERCOMM_NONE;
+
+	//Flag(s) - Error
+	flagSet_Error1 = _BTFG_NONE_;
+	//Flag(s) - Message Controls
+	flagSet_MessageControl1 = _BTFG_NONE_;
+	//Flag(s) - System Status 1
+	flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
+	//Flag(s) - System Status 2
+	flagSet_SystemStatus2 = _BTFG_NONE_;
+	//Flag(s) - System Controls
+	flagSet_SystemControls1 = _BTFG_NONE_;
+	//Flag(s) - Command Filter Options - MAIN and CMNC each have their own set since they have separate data filters
+
+	//Command Filter Options for PC_USB: Set 1
+	commandFilterOptionsSet1_PC_USB = _BTFG_NONE_;
+	//Command Filter Options for PC_USB: Set 2
+	commandFilterOptionsSet2_PC_USB = _BTFG_NONE_;
+
+	//Command Filter Options for COMM: Set 1
+	commandFilterOptionsSet1_COMM = _BTFG_NONE_;
+	//Command Filter Options for COMM: Set 2
+	commandFilterOptionsSet2_COMM = _BTFG_NONE_;
+
+	//Command Filter Options for NAVI: Set 1
+	commandFilterOptionsSet1_NAVI = _BTFG_NONE_;
+	//Command Filter Options for NAVI: Set 2
+	commandFilterOptionsSet2_NAVI = _BTFG_NONE_;
+
+	//Command Filter Options for AUXI: Set 1
+	commandFilterOptionsSet1_AUXI = _BTFG_NONE_;
+	//Command Filter Options for AUXI: Set 2
+	commandFilterOptionsSet2_AUXI = _BTFG_NONE_;
+
+
+
+
+	//Counters
+	timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
+	transmission_delay_cnt = 0;//concurrent transmission delay counter
+
+
+	//Variables used to latch and save encoder values during the READ_INPUT state
+	//Note: Having each of these sets of variables (5 bytes for each encoder, where a byte is 1 byte and an int is 2 bytes)  is still less bytes than storing two char arrays of packaged data of length _MAX_ROVER_COMMAND_DATA_LEN_ (which is about 14 bytes)
+	//MidLeft Encoder
+	wheelEncoder_MidLeft_Direction = MOTOR_STOPPED;
+	wheelEncoder_MidLeft_Speed = 0;
+	wheelEncoder_MidLeft_Footage = 0;
+	//MidRight Encoder
+	wheelEncoder_MidRight_Direction = MOTOR_STOPPED;
+	wheelEncoder_MidRight_Speed = 0;
+	wheelEncoder_MidRight_Footage = 0;
+
+	
+	//resetting all objects in this sketch
+	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
+	{
+		if (!resetArray[i] == NULL)//if the object isn't null
+		{
+			resetArray[i]->reset();//reset the object	
+		}//end if
+	}//end for
+
+	clearRoverDataPointers();
 
 } //end of initializeVariables()
 void startBackgroundTasks()
@@ -1937,16 +2023,57 @@ void createDataFromQueueFor(byte roverCommDestination)
 }//end of createDataFromQueueFor()
 void setAllErrorFlagsTo(boolean choice)
 {
-//WRITE ME LATER
+
+	//Note: During (re-)initialization this function doesn't need to be called since the flag variable gets a direct assigned it an initial value. (ex: someFlag = _BTFG_NONE_; )
+
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_SYNC_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_SW_RESET_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_SLEEPING_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_, choice);
+
 }//end of setAllErrorFlagsTo()
 void setAllMessageControlFlagsTo(boolean choice)
 {
-//WRITE ME LATER
+
+	//Note: During (re-)initialization this function doesn't need to be called since the flag variable gets a direct assigned it an initial value. (ex: someFlag = _BTFG_NONE_; )
+	
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_, choice);
+	
 }//end of setAllMessageControlFlagsTo()
 void setAllSystemStatusFlagsTo(boolean choice)
 {
-//WRITE ME LATER
+
+	//Note: During (re-)initialization this function doesn't need to be called since the flag variable gets a direct assigned it an initial value. (ex: someFlag = _BTFG_NONE_; )
+
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_, choice);
+	
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_, choice);
+
 }//end of setAllSystemStatusFlagsTo()
+void setAllSystetmControlsFlagsTo(boolean choice)
+{
+	//Note: During (re-)initialization this function doesn't need to be called since the flag variable gets a direct assigned it an initial value. (ex: someFlag = _BTFG_NONE_; )
+	
+	BooleanBitFlags::assignFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_, choice);
+	BooleanBitFlags::assignFlagBit(flagSet_SystemControls1, _BTFG_MTR_PREV_STATE_, choice);
+
+}//end of setAllSystetmControlsFlagsTo()
 void setAllCommandFiltersTo(boolean choice, byte roverComm)
 {
 	//Note: Right now this function doesn't discriminate where the commands are coming from. So if they're all set to true, in theory, for example CMNC can "inject" or "spoof" a command that looks like it's coming from somewhere else.
