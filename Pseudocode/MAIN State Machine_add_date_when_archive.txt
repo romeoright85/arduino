@@ -295,6 +295,7 @@ MAIN:
 					Allow all data from PC_USB (it's a debugging communication/backdoor to run tests, but use with caution)
 						no redirections during SW_RESETTING
 					filter and throw away all COMM data except:
+						generic system error message(s) from COMM/CMNC
 						All SW Reset (Re-)Request from COMM/CMNC (to restart the SW reset process again)
 							Note: Allow All SW Reset (Re-)Request to override the sw reset process if needed
 							Note: No need to worry about allowing HW requests to override when in SW_RESETTING with MAIN.
@@ -303,8 +304,11 @@ MAIN:
 							TROUBLESHOOTING TIP: Make sure it doesn't keep getting stuck in the re-resetting state.
 					filter and throw away all NAVI data except:
 						SW Reset Acknowledgement from NAVI
+						generic system error message(s) from NAVI
 					filter and throw away all AUXI data except:
 						SW Reset Acknowledgement from AUXI						
+						generic system error message(s) from AUXI
+						generic health errors from AUXI
 					Mode: SW_RESETTING
 					set next state to READ_INPUTS
 					go to RUN_HOUSEKEEPING_TASKS						
@@ -553,6 +557,7 @@ MAIN:
 	
 					
 					if run_task_on_main_now = false//aka navi_acknowledgement == false or auxi_acknowledgement == false
+						//One or more of the System Sleeping Acknowledgements have not been received yet
 						//Note: If all acknowledgements were received, run_task_on_main_now would be true
 						//Regenerate the messages as needed
 						//check each arduino to see which hasn't sent a Sleeping Request Acknowledgement to MAIN yet.
@@ -574,6 +579,7 @@ MAIN:
 							Set mode to SYSTEM_ERROR *begin*
 							Set error_origin = ROVERCOMM_MAIN
 							set enable_mtr_pwr = false //shut down motor when in error for safety
+							//Create the error message for the message queues for the first time
 							pc_usb_msg_queue = SLEEP_ERROR_STATUS //send error out through the PC_USB for debugging
 							comm_msg_queue == SLEEP_ERROR_STATUS
 							set sleeping_error = true
@@ -582,11 +588,21 @@ MAIN:
 							timeout_counter = 0;
 						end if			
 					end if
-					else//run_task_on_main_now = true and navi_acknowledgement and auxi_acknowledgement flags are true
+					else//run_task_on_main_now = true and navi_acknowledgement and auxi_acknowledgement flags are true, all the System Sleeping Acknowledgements have been received
 						//so clear the flags
 						navi_acknowledgement = false
-						auxi_acknowledgement = false						
+						auxi_acknowledgement = false			
 						//Note: navi_acknowledgement and auxi_acknowledgement will be cleared before use, but do it here anyways just in case
+						
+								
+						//If both acknowledgements are received, allow the Sleep Request Acknowledgement command to have the highest priority on the message queues, modes, and states (over error messages). It will override it since run_task_on_main_now = true and the else block of code here will run.
+						
+						comm_msg_queue = COMM_SLEEP_REQUEST //MAIN sends COMM a COMM Sleep request, so COMM can go to sleep
+						
+						//initialize/reset shared counter for future use and to prevent being stuck in a loop
+						timeout_counter = 0;
+						
+						
 						//Note: run_task_on_main_now will be cleared later in TX_COMMUNICATIONS when it's done being used by that state
 					end else
 
@@ -622,14 +638,18 @@ MAIN:
 					Then only run the highest priority for MAIN.												
 
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-						No redirections in SYNCHRONIZATION.
+						No redirections in SW_RESETTING.
 						All other messages are allowed from PC_USB. Use with caution.
+						
 					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
-						Note: Either you should get no data or All SW Reset (Re-)Request from COMM/CMNC. as everything else was filtered out										
+						Note: Either you should get no data, generic system error, or All SW Reset (Re-)Request from COMM/CMNC. as everything else was filtered out.							
+						
 					Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
-						Note: Either you should get no data or SW Reset Acknowledgement from NAVI. as everything else was filtered out
+						Note: Either you should get no data, generic system error, or SW Reset Acknowledgement from NAVI. as everything else was filtered out.
+						
 					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-						Note: Either you should get no data or SW Reset Acknowledgement from AUXI. as everything else was filtered out					
+						Note: Either you should get no data, generic system error, generic health error, or SW Reset Acknowledgement from AUXI. as everything else was filtered out.
+																
 																
 					//Run lower priority functions here.
 
@@ -644,19 +664,11 @@ MAIN:
 					
 					
 					if run_task_on_main_now = false//aka navi_acknowledgement == false or auxi_acknowledgement == false
+						//One or more of the SW Reset Acknowledgements have not been received yet
 						//Note: If all acknowledgements were received, run_task_on_main_now would be true
 						//increment the loop count while waiting wait for AUXI or NAVI SW Reset Acknowledgement to MAIN
-												
-						//check each arduino to see which hasn't sent a Sleeping Request Acknowledgement to MAIN yet.
-						if navi_acknowledgement == false
-							navi_msg_queue = NAVI_SLEEP_REQUEST (tells NAVI to go to sleep)
-						end if
-						
-						if auxi_acknowledgement == false
-							auxi_msg_queue = AUXI_SLEEP_REQUEST (tells AUXI to go to sleep)
-						end if		
-						
-						//increment counter. Note: The counter may be incremented even though sleep acknowledgement was just received, but once it's processed below, it will override any errors if all the acknowledgements were received. So no worries increment the timeout counter and checking for timeout here.
+					
+						//increment counter. Note: The counter may be incremented even though SW Reset Acknowledgement was just received, but once it's processed below, it will override any errors if all the acknowledgements were received. So no worries increment the timeout counter and checking for timeout here.
 						timeout_counter++
 						
 						//if MAIN has been stuck in SW_RESETTING for a long time while waiting on NAVI and/or AUXI for SW Request acknowledgements
@@ -666,9 +678,9 @@ MAIN:
 							set enable_mtr_pwr = false //shut down motor when in error for safety
 							//Create the error message for the message queues for the first time
 							pc_usb_msg_queue = SW_RESET_ERROR_STATUS //send error out through the PC_USB for debugging
-							navi_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.
-							auxi_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.
 							comm_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+							navi_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+							auxi_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.							
 							sw_reset_error = true
 								(Note: the sw_reset_error flag can only be cleared with a hw reset)
 							//initialize/reset shared counter before use
@@ -677,6 +689,9 @@ MAIN:
 						//else if it just waited a little bit, it should try resending the SW reset request to AUXI or NAVI from MAIN
 						else if timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE
 							//Regenerate the messages as needed
+							
+							//Note: It should send the request periodically and not continuously so the system has time to process the request and it doesn't get stuck in a loop. it will get cleared out in TX_COMMUNICATIONS after the messages are sent.
+							
 							//check each arduino to see which hasn't sent a SW Reset Acknowledgement to MAIN yet.
 							if navi_acknowledgement == false
 								navi_msg_queue = NAVI_SW_RESET_REQUEST (tells NAVI to do a SW reset)
@@ -687,17 +702,20 @@ MAIN:
 							//Don't reset timeout_counter, keep counting and see if it will reach the SW_RESET_ERROR_TIMEOUT_VALUE
 						end if
 					end if
-					else//run_task_on_main_now = true and navi_acknowledgement and auxi_acknowledgement flags are true
+					else//run_task_on_main_now = true aka navi_acknowledgement and auxi_acknowledgement flags are true, all the SW Reset Acknowledgements have been received
 						//so clear the flags
 						navi_acknowledgement = false
 						auxi_acknowledgement = false
-						
-						comm_msg_queue = COMM_SLEEP_REQUEST //MAIN sends COMM a COMM Sleep request, so COMM can go to sleep
+						//Note: navi_acknowledgement and auxi_acknowledgement will be cleared before use, but do it here anyways just in case
+								
+						//If both acknowledgements are received, allow the SW Reset Acknowledgement command to have the highest priority on the message queues, modes, and states (over error messages). It will override it since run_task_on_main_now = true and the else block of code here will run.
+				
+						comm_msg_queue = COMM_SW_RESET_REQUEST //MAIN sends COMM a COMM SW request, so COMM can do a SW reset
 						
 						//initialize/reset shared counter for future use and to prevent being stuck in a loop
 						timeout_counter = 0;			
-			
-						//Note: navi_acknowledgement and auxi_acknowledgement will be cleared before use, but do it here anyways just in case
+				
+
 						//Note: run_task_on_main_now will be cleared later in TX_COMMUNICATIONS when it's done being used by that state
 					end else
 					
@@ -917,6 +935,7 @@ MAIN:
 					Mode: SYNCHRONIZATION *begin* //go back to SYNCHRONIZATION
 
 					//Queue up system ready messages
+					pc_usb_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 					comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 					navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
 					auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
@@ -935,18 +954,21 @@ MAIN:
 					set next state to CREATE_DATA
 					go to RUN_HOUSEKEEPING_TASKS						
 				SYSTEM_WAKING
+					
+					Wake up NAVI (toggles the wakeup pin to low, then back to high)
+					Wake up AUXI (toggles the wakeup pin to low, then back to high)
+					
 					Control MotorPowerControl
 					if enable_mtr_pwr
 						enable motor power mosfet
 					else
 						disable motor power mosfet
 					end if			
-					Wake up NAVI (toggles the wakeup pin to low, then back to high)
-					Wake up AUXI (toggles the wakeup pin to low, then back to high)
+					
 					Set mode to SYNCHRONIZATION *begin*		
 					
-					
 					//Queue up system ready messages
+					pc_usb_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 					comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 					navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
 					auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
@@ -954,7 +976,8 @@ MAIN:
 					
 					//initialize/reset shared counter before use
 					timeout_counter = 0;							
-					set next state to RX_COMMUNICATIONS				
+					
+					set next state to CREATE_DATA
 					go to RUN_HOUSEKEEPING_TASKS				
 				SW_RESETTING
 					Control MotorPowerControl					
@@ -1547,10 +1570,7 @@ Conflicting Functions Ordered By Priority
 		end if		
 		//once MAIN gets an ack for sw reset from both NAVI and AUXI
 		if navi_acknowledgement == true && auxi_acknowledgement = true
-			run_task_on_main_now = true
-			comm_msg_queue = COMM_SW_RESET_REQUEST //MAIN sends COMM a COMM SW request, so COMM can do a SW reset
-			//initialize/reset shared counter for future use and to prevent being stuck in a loop
-			timeout_counter = 0;			
+			run_task_on_main_now = true			
 		end if
 		Mode: SW_RESETTING
 	
@@ -1687,10 +1707,12 @@ Conflicting Functions Ordered By Priority
 		//Check to see where the command was from
 		If command was from NAVI
 			navi_acknowledgement = true
-			Put NAVI to sleep (actually NAVI puts itself to sleep after sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of NAVI before going to sleep itself, so it can wake up NAVI correctly)
+			Put NAVI to sleep
+				//(actually NAVI puts itself to sleep after receiving a sleep request command and sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of NAVI before going to sleep itself, so it can wake up NAVI correctly)
 		else if command was from AUXI
 			auxi_acknowledgement = true
-			Put AUXI to sleep (actually AUXI puts itself to sleep after sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of AUXI before going to sleep itself, so it can wake up AUXI correctly)
+			Put AUXI to sleep
+				//(actually AUXI puts itself to sleep after receiving a sleep request command and sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of AUXI before going to sleep itself, so it can wake up AUXI correctly)
 		end if		
 		//once MAIN gets an ack for system sleeping from both NAVI and AUXI
 		if navi_acknowledgement == true && auxi_acknowledgement = true

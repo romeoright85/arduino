@@ -198,10 +198,20 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 #define _DEBUG_OUTPUT_HW_RESET_STATUS_
 //============End Debugging: HW Reset Status Message
 
-//============Debugging: Print Sleep/Wake Status
-//Uncomment in order to print out the Sleep/Wake Status
-#define _DEBUG_OUTPUT_SLEEP_WAKE_STATUS_
-//============End Debugging: Print Sleep/Wake Status
+
+//============Debugging: Print Wakeup Status
+//Uncomment the flag below in order to print the HW Reset Status
+//#define _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS
+
+
+#ifdef _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS
+#define _PRINT_SLEEPING_AND_WAKEUP_STATUS_ _SERIAL_DEBUG_CHANNEL_.println
+#else
+#define _PRINT_SLEEPING_AND_WAKEUP_STATUS_ void
+#endif
+
+
+//============End Debugging: Print Wakeup Status
 
 
 
@@ -1442,10 +1452,9 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		cmnc_msg_queue = CMD_TAG_SYSTEM_IS_WAKING;
 		timeout_counter = 0; //reset for future use				
 
-		#ifdef _DEBUG_OUTPUT_SLEEP_WAKE_STATUS_
-			_SERIAL_DEBUG_CHANNEL_.println(F("COMM sleeping..."));
-			delay(100);//add some delay to allow the serial print to finish before going to sleep
-		#endif
+		_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("COMM_SLEEP"));
+		
+		delay(100);//add some delay to allow the serial print to finish before going to sleep
 		
 		//Run other pre-sleep tasks. (i.e. end software serial, as needed)		
 		_MAIN_SWSERIAL_.end();// IMPORTANT! You have to stop the software serial function before sleep, or it won't sleep!
@@ -1462,10 +1471,10 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		_MAIN_SWSERIAL_.begin(MAIN_BAUD_RATE);//Turn on SW Serial again
 
 		//Post Wake Up tasks
-		#ifdef _DEBUG_OUTPUT_SLEEP_WAKE_STATUS_
-			delay(100);// let everybody get up and running for a sec
-			_PC_USB_SERIAL_.println(F("COMM Awoken!"));		
-		#endif
+		delay(100);// let everybody get up and running for a sec
+		
+		_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("COMM_WAKE"));		
+		
 		
 	}//end else if		
 	 //All Sleep Request

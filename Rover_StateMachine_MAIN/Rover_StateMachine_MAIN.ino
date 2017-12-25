@@ -173,6 +173,17 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============End Debugging: Disable Sleep Error Timeout
 
 
+//============Debugging: SW Reset Error Timeout
+//Uncomment in order to disable the SW Reset Error and SW Reset Resent timeout
+//Note since this uses a dual timeout design, it uses one flag to disable both of the timeouts
+//#define _DEBUG_DISABLE_SW_RESET_ERROR_AND_RESEND_TIMEOUT
+//============End Debugging: SW Reset Error Timeout
+
+
+
+
+
+
 //============Debugging: Turn off System Ready Status During Synchronization Mode
 //Uncomment in order to allow other data to be in the comm_msg_queue, navi_msg_queue, and/or auxi_msg_queue instead of just System Status
 #define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS
@@ -186,10 +197,8 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============End Debugging: Print timeout counter value
 
 
-//============Debugging: Print Sleep/Wake Status
-//Uncomment in order to print out the Sleep/Wake Status
-#define _DEBUG_OUTPUT_SLEEP_WAKE_STATUS_
-//============End Debugging: Print Sleep/Wake Status
+
+
 
 
 //============Global Declarations
@@ -817,7 +826,7 @@ void loop() {
 				case SYSTEM_WAKING:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = RX_COMMUNICATIONS;
-					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*				
+					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
 					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;
 				case SW_RESETTING:
@@ -1267,14 +1276,12 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//else do nothing
 		
 		
-		//once MAIN gets an ack for sw reset from both NAVI and AUXI
+		//once MAIN gets a SW Reset Acknowledgement from both NAVI and AUXI
 		if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_) )
 		{
 			//run_task_on_main_now = true
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_);
-			comm_msg_queue = CMD_TAG_COMM_SW_RESET_REQUEST;//MAIN sends COMM a COMM SW request, so COMM can do a SW reset
-			//initialize/reset shared counter for future use and to prevent being stuck in a loop
-			timeout_counter = 0;	
+			
 		}//end if
 		
 	}//end else if
@@ -1458,13 +1465,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		{
 			//navi_acknowledgement = true
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_);
-			//Put NAVI to sleep (actually NAVI puts itself to sleep after sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of NAVI before going to sleep itself, so it can wake up NAVI correctly)
+			//Put NAVI to sleep
+			_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("NAVI_SLEEP"));//output to PC for debug
+			sleeperNAVI->goToSleep();//update awake flag status			
+				//(actually NAVI puts itself to sleep after receiving a sleep request command and sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of NAVI before going to sleep itself, so it can wake up NAVI correctly)
+				
 		}//end if
 		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
 		{
 			//auxi_acknowledgement = true
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_);
-			//Put AUXI to sleep (actually AUXI puts itself to sleep after sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of AUXI before going to sleep itself, so it can wake up AUXI correctly)			
+			//Put AUXI to sleep
+			_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("AUXI_SLEEP"));//output to PC for debug
+			sleeperAUXI->goToSleep();//update awake flag status
+				//(actually AUXI puts itself to sleep after receiving a sleep request command and sending the Sleep Request Acknowledgement, but MAIN still needs to update the sleep status of AUXI before going to sleep itself, so it can wake up AUXI correctly)
+			
+			
 		}//end else if	
 		//else do nothing
 		
@@ -2510,6 +2526,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			
 			//Clear Motor Power Status
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+			
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
 		
@@ -2833,7 +2850,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			
 			//Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				//All other messages are allowed from PC_USB. Use with caution.
-				//No redirections in SYNCHRONIZATION.
+				
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
 			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
@@ -2842,7 +2859,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				//Note: If system ready msg, hw reset request, or All SW Reset Request from COMM/CMNC, see "Command Options" below for more info.
 				//Note: Either you should get HW or SW reset, or system ready messages from COMM. as everything else was filtered out
-				//No redirections in SYNCHRONIZATION.
+				
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
 			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
@@ -2851,7 +2868,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				//Note: If system ready msg received from NAVI, see "Command Options" below for more info.
 				//Note: Either you should get system ready messages from NAVI. as everything else was filtered out
-				//No redirections in SYNCHRONIZATION.
+				
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
 			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
@@ -2860,7 +2877,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				//Note: If system ready msg received from AUXI, see "Command Options" below for more info.
 				//Note: Either you should get system ready messages or generic health errors from AUXI. as everything else was filtered out
-				//No redirections in SYNCHRONIZATION.
+				
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
 			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
@@ -3114,14 +3131,16 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			
 			currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
 						
-			//Queue up system ready messages
+			//Queue up system ready messages			
+			pc_usb_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 			comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 			navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
 			auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
-			//Note: The state machine should go to CREATE_DATA next.
-			
+						
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
+			
+			//Note: The state machine should go to CREATE_DATA next.
 		
 			break;		
 		case CREATE_DATA: //Mode: HW_RESETTING
@@ -3407,13 +3426,15 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//Run lower priority functions here.
 			//These messages and flags may be overrided with commandDirector()			
 			
-				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_))
+			
+			//if run_task_on_main_now = false, one or more of the System Sleeping Acknowledgements have not been received yet
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_))
 			//aka navi_acknowledgement == false or auxi_acknowledgement == false
 			{
 				//Note: If all acknowledgements were received, run_task_on_main_now would be true
 				//Regenerate the messages as needed
 				//check each arduino to see which hasn't sent a Sleeping Request Acknowledgement to MAIN yet.
-								
+
 				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_) )
 				{
 					navi_msg_queue = CMD_TAG_NAVI_SLEEP_REQUEST;//(tells NAVI to go to sleep)
@@ -3450,12 +3471,13 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 					}//end if
 				#endif				
 			}//end if
-			else//run_task_on_main_now = true and navi_acknowledgement and auxi_acknowledgement flags are true
+			else//run_task_on_main_now = true and navi_acknowledgement and auxi_acknowledgement flags are true, all the System Sleeping Acknowledgements have been received
 			{
 				//so clear the flags
 				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_);
 				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_);
-		
+				//Note: navi_acknowledgement and auxi_acknowledgement will be cleared before use, but do it here anyways just in case
+						
 				//If both acknowledgements are received, allow the Sleep Request Acknowledgement command to have the highest priority on the message queues, modes, and states (over error messages). It will override it since run_task_on_main_now = true and the else block of code here will run.
 					
 				comm_msg_queue = CMD_TAG_COMM_SLEEP_REQUEST;//MAIN sends COMM a COMM Sleep request, so COMM can 
@@ -3463,7 +3485,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				//initialize/reset shared counter for future use and to prevent being stuck in a loop
 				timeout_counter = 0;	
 		
-				//Note: navi_acknowledgement and auxi_acknowledgement will be cleared before use, but do it here anyways just in case
+				
 				//Note: run_task_on_main_now will be cleared later in TX_COMMUNICATIONS when it's done being used by that state
 			}//end else
 	
@@ -3606,7 +3628,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				//setup this mode ahead of time before going to sleep
 				currentMode = SYSTEM_WAKING;//Set mode to SYSTEM_WAKING *begin*			
 				
-				queuedState = CONTROL_OUTPUTS;//Go to CONTROL_OUTPUTS in order to wake NAVI and AUXI from sleep and to restore the motor prev state
+				queuedState = CONTROL_OUTPUTS;//Go to CONTROL_OUTPUTS in order to wake NAVI and AUXI from sleep and to restore the motor prev state. Overriding the default next state, which was RX_COMMUNICATIONS.
 
 				//Restore previous motor state: enable_mtr_pwr = motor_power_prev_state
 				if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_MTR_PREV_STATE_) )
@@ -3627,7 +3649,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 					//No SW Serials used for MAIN
 					//Do nothing for now. Place holder.
 	
-					_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("Sleep"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
+					_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("MAIN_Sleep"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
 				
 	
 				delay(100);//add some delay to allow the serial print to finish before going to sleep
@@ -3654,7 +3676,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 					//Do nothing for now. Place holder.
 				
 				
-				_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("Wake"));//output to PC for debug
+				_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("MAIN_Wake"));//output to PC for debug
 									
 									
 				//While in the SYSTEM_WAKING mode, after going to RUN_HOUSEKEEPING_TASKS, it will go to the next state, which is set to CONTROL_OUTPUTS
@@ -3666,7 +3688,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				
 				Just keep the default.
 				Mode: SYSTEM_SLEEPING
-				set next state to RX_COMMUNICATIONS
+				The next state is RX_COMMUNICATIONS
 				
 			*/
 			
@@ -3706,8 +3728,65 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
-//LEFT OFF HERE
-//WRITE ME LATER
+
+			//Wake up NAVI (toggles the wakeup pin to low, then back to high)
+					
+			if ( ! sleeperNAVI->isAwake() )
+			{
+				//Wake Up
+				sleeperNAVI->wakeUp();//Toggles the wakeup pin to low (then back to high). The low level on the interrupt pin wakes up NAVI.
+				//Post Wake Up tasks
+				_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("NAVI_WAKE"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
+			}//end if
+			else
+			{
+				_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("NAVI_WOKE"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
+			}//end else
+	
+	
+	
+			//Wake up AUXI (toggles the wakeup pin to low, then back to high)
+			if ( ! sleeperAUXI->isAwake() )
+			{
+				//Wake Up
+				sleeperAUXI->wakeUp();//Toggles the wakeup pin to low (then back to high). The low level on the interrupt pin wakes up AUXI.
+				//Post Wake Up tasks
+				_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("AUXI_WAKE"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
+			}//end if
+			else
+			{
+				_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("AUXI_WOKE"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
+			}//end else
+
+			
+			
+			//if motor enable is on
+			if(BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_))
+			{
+				//Turn motor MOSFET on
+				mtrPowerCtrlr->setMotorPower(MTR_ENABLED);
+			}//end if
+			else//else motor enable is off
+			{
+				//Turn motor MOSFET off
+				mtrPowerCtrlr->setMotorPower(MTR_DISABLED);
+			}//end else
+						
+						
+						
+			currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
+			
+			//Queue up system ready messages
+			pc_usb_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+			comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+			navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
+			auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+		
+			//initialize/reset shared counter before use
+			timeout_counter = 0;						
+			
+			//Note: The state machine should go to CREATE_DATA next.
+			
 			break;		
 		case CREATE_DATA: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
@@ -3726,8 +3805,6 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 void runModeFunction_SW_RESETTING(byte currentState)
 {
 
-//LEFT OFF HERE
-
 	_PRINT_MODE_(F("MODE: SW_RESETTING"));
 	switch (currentState)
 	{
@@ -3735,28 +3812,491 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SW_RESETTING
-//WRITE ME LATER
+
+			//rxData() from PC_USB
+			//1. Reset status flag
+			ch1Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch1->clearRxData();
+			//3. Receive data
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_PC_USB);//Note: this is a local .ino function
+
+			//rxData() from COMM
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_COMM);//Note: this is a local .ino function
+			
+			//rxData() from NAVI
+			//1. Reset status flag
+			ch3Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch3->clearRxData();
+			//3. Receive data
+			ch3Status = rxData(roverComm_Ch3, ROVERCOMM_NAVI);//Note: this is a local .ino function
+
+			//rxData() from AUXI
+			//1. Reset status flag
+			ch4Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch4->clearRxData();
+			//3. Receive data
+			ch4Status = rxData(roverComm_Ch4, ROVERCOMM_AUXI);//Note: this is a local .ino function
+			
 			break;
 		case DATA_VALIDATION: //Mode: SW_RESETTING
-//WRITE ME LATER
+
+			//parseAndValidateData() from PC_USB
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+
+			//parseAndValidateData() from COMM
+			//Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+			 //parseAndValidateData() from NAVI
+			//Process/validate the data that was received
+			if (ch3Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch3->parseAndValidateData())
+				{
+					ch3Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch3Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+			//parseAndValidateData() from AUXI
+			//Process/validate the data that was received
+			if (ch4Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch4->parseAndValidateData())
+				{
+					ch4Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch4Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+				
+		
 			break;		
 		case DATA_FILTER: //Mode: SW_RESETTING
-//WRITE ME LATER
+		
+			//Reset/clear flags (no data was for MAIN)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);
+			
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_);
+			
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_PC_USB);//for PC_USB
+			setAllCommandFiltersTo(false, ROVERCOMM_COMM);//for COMM
+			setAllCommandFiltersTo(false, ROVERCOMM_NAVI);//for NAVI
+			setAllCommandFiltersTo(false, ROVERCOMM_AUXI);//for AUXI
+			//Then enable the allowed commands for this mode:
+			//For PC_USB
+			//No filter on PC_USB data. (Allow all data from PC_USB)
+			//No commands from PC_USB are filtered, so set all to true.
+			setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);			
+			//For COMM
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);	
+			//For NAVI			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);	
+			//For AUXI
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SWRESETACKNOWLEDGMENT_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);	
+
+			
+			//Transmit data and/or execute command
+						
+			//For data from PC_USB, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SW_RESETTING.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+
+				/*
+				Allow all data from PC_USB.
+				*/
+
+			}//end if
+
+			//For data from COMM, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SW_RESETTING.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all COMM data except:
+				generic system error message(s) from COMM/CMNC
+				All SW Reset (Re-)Request from COMM/CMNC (to restart the SW reset process again)
+					Note: Allow All SW Reset (Re-)Request to override the sw reset process if needed
+					Note: No need to worry about allowing HW requests to override when in SW_RESETTING with MAIN.
+							Since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SW_RESETTING mode anyways.
+							After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.					
+					TROUBLESHOOTING TIP: Make sure it doesn't keep getting stuck in the re-resetting state.
+				*/				
+
+			}//end if
+			
+			//For data from NAVI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch3Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SW_RESETTING.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh3_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all NAVI data except:
+				SW Reset Acknowledgement from NAVI
+				generic system error message(s) from NAVI
+				*/		
+				
+			}//end if
+			
+			
+			//For data from AUXI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch4Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SW_RESETTING.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh4_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all AUXI data except:
+				SW Reset Acknowledgement from AUXI						
+				generic system error message(s) from AUXI
+				generic health errors from AUXI
+				*/			
+				
+			}//end if			
+		
+		
 			break;	
 		case READ_INPUTS: //Mode: SW_RESETTING
-//WRITE ME LATER
+			//Skip Encoders
+			//Read Motor Power Status
+			if (mtrPowerCtrlr->motorIsOn())//if motor is currently on
+			{
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+				//Note: The motor power status flag will be cleared after the CREATE_DATA state.
+			}//end if
+			else
+			{
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+			}//end else
+
 			break;	
 		case PROCESS_DATA: //Mode: SW_RESETTING
-//WRITE ME LATER
+
+		
+		
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			
+			//Skip Encoders
+			//Read Motor Status
+				//Motor Power Status: When applicable, the Motor Power Status is captured in READ_INPUTS with a flag, the message is queued up by commandDirector of PROCESS_DATA, and then processed in CREATE_DATA with createDataFromQueueFor, then the flag is cleared.
+						
+			
+			//Run lower priority functions here.
+			//These messages and flags may be overrided with commandDirector()			
+	
+			
+			//Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//All other messages are allowed from PC_USB. Use with caution.
+				//No redirections in SW_RESETTING.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh1_COMM, ROVERCOMM_PC_USB);
+			}//end if			
+			//Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//Note: Either you should get no data, generic system error, or All SW Reset (Re-)Request from COMM/CMNC. as everything else was filtered out.	
+				//No redirections in SW_RESETTING.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh2_COMM, ROVERCOMM_COMM);
+			}//end if				
+			//Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//Note: Either you should get no data, generic system error, or SW Reset Acknowledgement from NAVI. as everything else was filtered out.
+				//No redirections in SW_RESETTING.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh3_COMM, ROVERCOMM_NAVI);
+			}//end if				
+			//Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//Note: Either you should get no data, generic system error, generic health error, or SW Reset Acknowledgement from AUXI. as everything else was filtered out.
+				//No redirections in SW_RESETTING.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_))//If there was data from MAIN (Ch2), and it was for COMM
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh4_COMM, ROVERCOMM_AUXI);
+			}//end if
+
+							
+			//Run highest priority functions here. //this will override any lower priority messages
+
+			//For SW_RESETTING, it uses a dual timeout design
+			//Note: SW_RESET_ERROR_TIMEOUT_VALUE should be greater than SW_RESET_RESEND_TIMEOUT_VALUE
+			
+
+			//if run_task_on_main_now = false, one or more of the SW Reset Acknowledgements have not been received yet
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_))
+			//aka navi_acknowledgement == false or auxi_acknowledgement == false
+			{				
+				
+				
+				//Note: If all acknowledgements were received, run_task_on_main_now would be true
+					//increment the loop count while waiting wait for AUXI or NAVI SW Reset Acknowledgement to MAIN
+				
+							
+				//increment counter. Note: The counter may be incremented even though SW Reset Acknowledgement was just received, but once it's processed below, it will override any errors if all the acknowledgements were received. So no worries increment the timeout counter and checking for timeout here.
+				
+				timeout_counter++;
+				
+												
+				#ifndef _DEBUG_DISABLE_SW_RESET_ERROR_AND_RESEND_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes.
+					//if MAIN has been stuck in SW_RESETTING for a long time while waiting on NAVI and/or AUXI for SW Request acknowledgements
+					//Note since this uses a dual timeout design, it uses one flag to disable both of the timeouts
+					if(timeout_counter >= SW_RESET_ERROR_TIMEOUT_VALUE)
+					{
+					
+						//Set mode to SYSTEM_ERROR
+						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+						error_origin = ROVERCOMM_MAIN;
+						//enable_mtr_pwr = false
+						BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//shut down motor when in error for safety						
+						//Create the error message for the message queues for the first time
+						pc_usb_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//send error out through the PC_USB for debugging
+						comm_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+						navi_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+						auxi_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+						//set sleeping_error = true
+						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SW_RESET_ERROR_);						
+						//(Note: the sw_reset_error flag can only be cleared with a hw reset)
+						//initialize/reset shared counter before use
+						timeout_counter = 0;					
+					}//end if
+					//else if it just waited a little bit, it should try resending the SW reset request to AUXI or NAVI from MAIN
+					else if(timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE)
+					{
+						//Regenerate the messages as needed
+							
+						//Note: It should send the request periodically and not continuously so the system has time to process the request and it doesn't get stuck in a loop. it will get cleared out in TX_COMMUNICATIONS after the messages are sent.
+							
+						//check each arduino to see which hasn't sent a SW Reset Acknowledgement to MAIN yet.
+						
+						
+						if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_) )
+						{
+							navi_msg_queue = CMD_TAG_NAVI_SW_RESET_REQUEST;//(tells NAVI to do a SW reset)
+						}//end if
+
+						
+						if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_) )
+						{
+							auxi_msg_queue = CMD_TAG_AUXI_SW_RESET_REQUEST;//(tells AUXI to do a SW reset)
+						}//end if
+												
+						//Don't reset timeout_counter, keep counting and see if it will reach the SW_RESET_ERROR_TIMEOUT_VALUE
+						
+							
+					}//end else if
+				#endif				
+			}//end if			
+			else//run_task_on_main_now = true aka navi_acknowledgement and auxi_acknowledgement flags are true, all the SW Reset Acknowledgements have been received
+			{
+				//so clear the flags
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_);
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_);
+						
+				//Note: navi_acknowledgement and auxi_acknowledgement will be cleared before use, but do it here anyways just in case
+				
+				
+				//If both acknowledgements are received, allow the SW Reset Acknowledgement command to have the highest priority on the message queues, modes, and states (over error messages). It will override it since run_task_on_main_now = true and the else block of code here will run.
+				
+				comm_msg_queue = CMD_TAG_COMM_SW_RESET_REQUEST;//MAIN sends COMM a COMM SW request, so COMM can do a SW reset
+				
+				//initialize/reset shared counter for future use and to prevent being stuck in a loop
+				timeout_counter = 0;			
+				
+				//Note: run_task_on_main_now will be cleared later in TX_COMMUNICATIONS when it's done being used by that state
+			}//end else
+	
 			break;		
 		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
-//WRITE ME LATER
+
+
+			//enable_mtr_pwr should be false. It is set in All SW Reset Request of commandDirector.
+
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_))
+			{	
+				//Turn motor MOSFET off
+				mtrPowerCtrlr->setMotorPower(MTR_DISABLED);
+			}//end if
+			else//there is an error in the code logic
+			{
+				_SERIAL_DEBUG_CHANNEL_.println(F("MtrPwrCtrlErr"));//Motor Power Controller Error
+			}//end else				
+
 			break;		
 		case CREATE_DATA: //Mode: SW_RESETTING
-//WRITE ME LATER
+			//Creates data for PC_USB
+			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_PC_USB);
+			}//end if
+			//Creates data for COMM
+			if (comm_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_COMM);
+			}//end if
+			//Creates data for NAVI
+			if (navi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_NAVI);
+			}//end if
+			//Creates data for AUXI
+			if (auxi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_AUXI);
+			}//end if			
+			
+			//Clear Motor Power Status
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+			
 			break;
 		case TX_COMMUNICATIONS: //Mode: SW_RESETTING
-//WRITE ME LATER
+
+
+			//Note: No redirection during SW_RESETTING.
+			
+			//Sends data to PC_USB
+			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
+			}//end if
+			//Sends data to COMM
+			if (comm_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
+			}//end if
+			//Sends data to NAVI
+			if (navi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_NAVI, ROVERCOMM_NAVI);
+			}//end if
+			//Sends data to AUXI
+			if (auxi_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_AUXI, ROVERCOMM_AUXI);
+			}//end if
+			//clears message queue(s) and redirect flags		
+			pc_usb_msg_queue = CMD_TAG_NO_MSG;
+			comm_msg_queue = CMD_TAG_NO_MSG;
+			navi_msg_queue = CMD_TAG_NO_MSG;
+			auxi_msg_queue = CMD_TAG_NO_MSG;
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_);
+			//reset the first transmission flag
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
+
+
+
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_) )//run_task_on_main_now == true
+			{
+				//run_task_on_main_now = false
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus2, _BTFG_RUN_TASKS_ON_MAIN_NOW_);//clear the flag
+				
+				//MAIN SW resets itself once the request from MAIN to COMM for COMM to sw reset itself has been sent
+				//TROUBLESHOOT TIP: If this COMM sw reset request is missed by COMM, then COMM will need to start the All SW Reset Request process again since MAIN already SW resetted and should be waiting in the SYNCHRONIZATION mode
+				currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*		
+				//By Default: The next state is RX_COMMUNICATIONS
+				
+			}//end if
+			/*
+			else the system is not ready to sw reset yet as all the acknowledgements haven't been received (i.e. run_task_on_main_now == false)
+				
+				Just keep the default.
+				Mode: SW_RESETTING
+				The next state is RX_COMMUNICATIONS
+				
+			*/		
+		
 			break;				
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error
