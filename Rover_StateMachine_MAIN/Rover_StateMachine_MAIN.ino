@@ -572,7 +572,9 @@ void loop() {
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					error_origin = ROVERCOMM_COMM;
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+					error_origin = ROVERCOMM_MAIN;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch
@@ -620,7 +622,9 @@ void loop() {
 					 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					error_origin = ROVERCOMM_COMM;
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+					error_origin = ROVERCOMM_MAIN;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch			
@@ -664,7 +668,9 @@ void loop() {
 					 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					error_origin = ROVERCOMM_COMM;
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+					error_origin = ROVERCOMM_MAIN;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -708,7 +714,9 @@ void loop() {
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					error_origin = ROVERCOMM_COMM;
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+					error_origin = ROVERCOMM_MAIN;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -752,7 +760,9 @@ void loop() {
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					error_origin = ROVERCOMM_COMM;
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+					error_origin = ROVERCOMM_MAIN;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -796,6 +806,9 @@ void loop() {
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+					error_origin = ROVERCOMM_MAIN;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -845,6 +858,9 @@ void loop() {
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
+					error_origin = ROVERCOMM_MAIN;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -888,6 +904,9 @@ void loop() {
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
+					error_origin = ROVERCOMM_MAIN;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -931,6 +950,9 @@ void loop() {
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CONTROL_OUTPUTS;
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
+					error_origin = ROVERCOMM_MAIN;
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -943,6 +965,9 @@ void loop() {
 			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes							
 			queuedState = CONTROL_OUTPUTS;
 			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+			//shut down motor when in error for safety
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
+			error_origin = ROVERCOMM_MAIN;
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -1319,7 +1344,9 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		timeout_counter = 0;
 		
 		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*	
-		
+		//shut down motor when in error for safety
+		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
+					
 	}//end else if
 	
 	
@@ -2488,6 +2515,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				if(timeout_counter >= MAIN_SYNC_TIMEOUT_VALUE)
 				{
 					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+					//shut down motor when in error for safety
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
 					comm_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;							
 					pc_usb_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;											
 					//set sync_error = true
@@ -2738,7 +2767,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			if (ch1Status == DATA_STATUS_VALID)
 			{
 				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-				//Alow redirections for PC_USB
+				//Allow redirections for PC_USB
 				//Note: this is a local .ino function
 
 				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
@@ -2755,7 +2784,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			{
 			
 				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-				//Alow redirections for COMM
+				//Allow redirections for COMM
 				//Note: this is a local .ino function
 
 				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
@@ -2774,7 +2803,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			{
 			
 				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-				//Alow redirections for NAVI
+				//Allow redirections for NAVI
 				//Note: this is a local .ino function
 
 				dataDirector(roverDataCh3_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
@@ -2793,7 +2822,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			{
 			
 				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
-				//Alow redirections for AUXI
+				//Allow redirections for AUXI
 				//Note: this is a local .ino function
 
 				dataDirector(roverDataCh4_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
@@ -3458,9 +3487,9 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 					{
 						//Set mode to SYSTEM_ERROR
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+						BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//shut down motor when in error for safety
 						error_origin = ROVERCOMM_MAIN;						
-						//enable_mtr_pwr = false
-						BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//shut down motor when in error for safety						
+						//enable_mtr_pwr = false							
 						pc_usb_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;
 						comm_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;
 						//set sleeping_error = true
@@ -4132,12 +4161,11 @@ void runModeFunction_SW_RESETTING(byte currentState)
 					//Note since this uses a dual timeout design, it uses one flag to disable both of the timeouts
 					if(timeout_counter >= SW_RESET_ERROR_TIMEOUT_VALUE)
 					{
-					
 						//Set mode to SYSTEM_ERROR
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
-						error_origin = ROVERCOMM_MAIN;
 						//enable_mtr_pwr = false
-						BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//shut down motor when in error for safety						
+						BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//shut down motor when in error for safety		
+						error_origin = ROVERCOMM_MAIN;						
 						//Create the error message for the message queues for the first time
 						pc_usb_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//send error out through the PC_USB for debugging
 						comm_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//To let the Arduino know MAIN is in error and the motor will be shut off, etc.
@@ -4313,28 +4341,308 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
-//WRITE ME LATER
+
+			//rxData() from PC_USB
+			//1. Reset status flag
+			ch1Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch1->clearRxData();
+			//3. Receive data
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_PC_USB);//Note: this is a local .ino function
+
+			//rxData() from COMM
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_COMM);//Note: this is a local .ino function
+			
+			//rxData() from NAVI
+			//1. Reset status flag
+			ch3Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch3->clearRxData();
+			//3. Receive data
+			ch3Status = rxData(roverComm_Ch3, ROVERCOMM_NAVI);//Note: this is a local .ino function
+
+			//rxData() from AUXI
+			//1. Reset status flag
+			ch4Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch4->clearRxData();
+			//3. Receive data
+			ch4Status = rxData(roverComm_Ch4, ROVERCOMM_AUXI);//Note: this is a local .ino function
+					
 			break;
 		case DATA_VALIDATION: //Mode: SYSTEM_ERROR
-//WRITE ME LATER
+
+			//parseAndValidateData() from PC_USB
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+			//parseAndValidateData() from COMM
+			//Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+			 //parseAndValidateData() from NAVI
+			//Process/validate the data that was received
+			if (ch3Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch3->parseAndValidateData())
+				{
+					ch3Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch3Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+			//parseAndValidateData() from AUXI
+			//Process/validate the data that was received
+			if (ch4Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch4->parseAndValidateData())
+				{
+					ch4Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch4Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+		
 			break;		
 		case DATA_FILTER: //Mode: SYSTEM_ERROR
-//WRITE ME LATER
+
+		
+			//Reset/clear flags (no data was for MAIN)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);
+			
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_AUXI_);
+			
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_PC_USB);//for PC_USB
+			setAllCommandFiltersTo(false, ROVERCOMM_COMM);//for COMM
+			setAllCommandFiltersTo(false, ROVERCOMM_NAVI);//for NAVI
+			setAllCommandFiltersTo(false, ROVERCOMM_AUXI);//for AUXI
+			//Then enable the allowed commands for this mode:
+			//For PC_USB
+			//No filter on PC_USB data. (Allow all data from PC_USB)
+			//No commands from PC_USB are filtered, so set all to true.
+			setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);			
+			//For COMM
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_COMM, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_);
+			//For NAVI			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_NAVI, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_);	
+			//For AUXI
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MOTORPOWERSTATUS_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_AUXI, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_);	
+
+			
+			//Transmit data and/or execute command
+						
+			//For data from PC_USB, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Allow redirections for PC_USB
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+
+				/*
+				Allow all data from PC_USB.
+				*/
+
+			}//end if
+
+			//For data from COMM, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Allow redirections for COMM
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+					
+
+				/*
+				Set filter to throw away all COMM data except:
+					generic system error message(s) from COMM/CMNC
+					all sw reset request message(s) from COMM
+					mid left encoder requests (used for debugging)
+					mid right encoder requests (used for debugging)
+					motor power status requests (used for debugging)
+					Note: Allow all COMM/CMNC data to be redirected so AUXI/NAVI can send requested data back. Each Arduino will filter out what it will allow in error mode.						
+					Note: There is no need for HW requests here, since when there is a HW reset, it will first start by the COMM resetting MAIN, which will take MAIN out of the SYSTEM_ERROR mode anyways.
+						After POR, MAIN will be able to HW reset COMM when MAIN is in the SYNCHRONIZATION mode.		
+				*/				
+
+				
+			}//end if
+			
+			//For data from NAVI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch3Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Allow redirections for NAVI
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh3_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all NAVI data except:
+				generic system error message(s) from NAVI
+				mid left encoder requests (used for debugging)
+				mid right encoder requests (used for debugging)
+				motor power status requests (used for debugging)
+				//NOTE: Allow system data to be passed/redirected from NAVI to MAIN, AUXI or COMM or CMNC
+				//Note: All SW and HW requests should be initiated originally from COMM (and not NAVI or AUXI)
+				*/	
+
+				
+			}//end if
+			
+			
+			//For data from AUXI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch4Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Allow redirections for AUXI
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh4_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all AUXI data except:
+				mid left encoder requests (used for debugging)
+				mid right encoder requests (used for debugging)
+				motor power status requests (used for debugging)
+				generic system error message(s) from AUXI
+				generic health errors from AUXI
+				//NOTE: Allow system data to be passed/redirected from AUXI to MAIN, NAVI or COMM or CMNC
+				//Note: All SW and HW requests should be initiated originally from COMM (and not NAVI or AUXI)
+				*/		
+
+				
+			}//end if		
+		
+		
+		
 			break;	
 		case READ_INPUTS: //Mode: SYSTEM_ERROR
-//WRITE ME LATER
+
+			//Read Encoder - MidLeft
+			wheelEncoder_MidLeft_Direction = wheelEncoder_MidLeft->getDirection();
+			wheelEncoder_MidLeft_Speed = wheelEncoder_MidLeft->getSpeed();
+			wheelEncoder_MidLeft_Footage = wheelEncoder_MidLeft->getFootage();
+			//Read Encoder - MidRight
+			wheelEncoder_MidRight_Direction = wheelEncoder_MidRight->getDirection();
+			wheelEncoder_MidRight_Speed = wheelEncoder_MidRight->getSpeed();
+			wheelEncoder_MidRight_Footage = wheelEncoder_MidRight->getFootage();		
+		
+			//Read Motor Power Status
+			if (mtrPowerCtrlr->motorIsOn())//if motor is currently on
+			{
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+				//Note: The motor power status flag will be cleared after the CREATE_DATA state.
+			}//end if
+			else
+			{
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
+			}//end else		
+		
 			break;	
 		case PROCESS_DATA: //Mode: SYSTEM_ERROR
 //WRITE ME LATER
+//LEFT OFF HERE
+//TEMPLATE: start off similar to NORMAL_OPERATIONS until reach:
+	//Recreate/regenerate any error messages, then write custom
+	//get the timeout from SYSTEM_SLEEPING
+
 			break;		
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
-//WRITE ME LATER
+
+			//enable_mtr_pwr should be false. It is set when the mode was just switched to SYSTEM_ERROR, i.e. SYSTEM_ERROR *begin*		
+
+			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_))
+			{	
+				//Turn motor MOSFET off
+				mtrPowerCtrlr->setMotorPower(MTR_DISABLED);
+			}//end if
+			else//there is an error in the code logic
+			{
+				_SERIAL_DEBUG_CHANNEL_.println(F("MtrPwrCtrlErr"));//Motor Power Controller Error
+			}//end else				
+
 			break;		
 		case CREATE_DATA: //Mode: SYSTEM_ERROR
 //WRITE ME LATER
+//LEFT OFF HERE
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
 //WRITE ME LATER
+//LEFT OFF HERE
 			break;				
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -4355,8 +4663,12 @@ void runModeFunction_default()
 	error_origin = ROVERCOMM_MAIN;
 
 	//Set the mode to SYSTEM_ERROR (though it might already be set to that in certain circumstances)
-	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*	
+	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
 	//Note: For now don't set the queuedState. But if it doesn't work as expected (i.e. there is a programming logic error), set it to CONTROL_OUTPUTS.
+	//shut down motor when in error for safety
+	BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);		
+	
+	
 		
 	//Set Invalid State Error Flag
 	//Note: The Invalid State Error Flag cann only be cleared with a sw reset or hw reset
