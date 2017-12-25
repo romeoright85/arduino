@@ -429,6 +429,9 @@ MAIN:
 					Sort based on priority.
 					Then only run the highest priority for MAIN.												
 
+					
+					//Run lower priority functions here. (i.e. system ready msgs)
+										
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						No redirections in SYNCHRONIZATION.
 						All other messages are allowed from PC_USB. Use with caution.						
@@ -449,7 +452,7 @@ MAIN:
 						Note: Either you should get system ready messages or generic health errors from AUXI. as everything else was filtered out
 	
 					
-					//Run lower priority functions here. (i.e. system ready msgs)
+
 
 					//check each arduino to see which isn't ready yet and keep having it send out system ready status from MAIN
 					if comm_system_ready == false
@@ -513,6 +516,9 @@ MAIN:
 					Sort based on priority.
 					Then only run the highest priority for MAIN.												
 
+					//Run lower priority functions here.
+										
+										
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						All messages are allowed from PC_USB. Use with caution.
 					Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
@@ -522,7 +528,7 @@ MAIN:
 					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						All messages are allowed from AUXI.
 																
-					//Run lower priority functions here.
+
 															
 					//Run highest priority functions here. //this will override any lower priority messages
 						
@@ -545,6 +551,11 @@ MAIN:
 					Sort based on priority.
 					Then only run the highest priority for MAIN.	
 					
+					
+																		
+					//Run lower priority functions here.
+					
+					
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						All other messages are allowed from PC_USB. Use with caution.
 						
@@ -562,8 +573,7 @@ MAIN:
 											
 											
 
-													
-					//Run lower priority functions here.
+
 	
 					
 					if run_task_on_main_now = false//aka navi_acknowledgement == false or auxi_acknowledgement == false
@@ -647,6 +657,12 @@ MAIN:
 					Sort based on priority.
 					Then only run the highest priority for MAIN.												
 
+					
+																					
+					//Run lower priority functions here.
+
+
+					
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						No redirections in SW_RESETTING.
 						All other messages are allowed from PC_USB. Use with caution.
@@ -660,9 +676,6 @@ MAIN:
 					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						Note: Either you should get no data, generic system error, generic health error, or SW Reset Acknowledgement from AUXI. as everything else was filtered out.
 																
-																
-					//Run lower priority functions here.
-
 
 					
 					//Run highest priority functions here. //this will override any lower priority messages
@@ -739,7 +752,7 @@ MAIN:
 					go to RUN_HOUSEKEEPING_TASKS	
 
 			SYSTEM_ERROR	
-				//send error to comm which will send a copy to cmnc as well
+				
 				
 					process encoder data					
 					process motor power status
@@ -750,6 +763,8 @@ MAIN:
 					Then only run the highest priority for MAIN.
 
 					
+					//Run lower priority functions here. (i.e. error status)
+	
 					
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						All messages are allowed from PC_USB. Use with caution.
@@ -760,10 +775,7 @@ MAIN:
 					Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						Note: Either you should get generic system errors, motor power status, mid left or mid right encoder status requests, redirections and generic health errors from AUXI. as everything else was filtered out
 								
-					
-					//Run lower priority functions here. (i.e. error status)
-
-					
+				
 					
 					//Recreate/regenerate any error messages (but allow them to be overwritten by higher priority messages)
 					Improvement Tip: Maybe can send NAVI and AUXI the error messages as well so they can react to it. But for now good enough.
@@ -776,7 +788,7 @@ MAIN:
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = SYNC_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
-						}						
+						}//end if						
 						if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to AUXI so every Arduino will know of the error
@@ -786,6 +798,7 @@ MAIN:
 							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
 						}//end if							
 						
+						(Note: the sync_error flag can only be cleared with a sw reset or hw reset)		
 						
 						
 					else if sw_reset_error
@@ -795,7 +808,7 @@ MAIN:
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = SW_RESET_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
-						}																		
+						}//end if																			
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
@@ -815,7 +828,7 @@ MAIN:
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = SLEEP_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
-						}						
+						}//end if							
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
@@ -834,7 +847,7 @@ MAIN:
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;//with CMNC as the destination						
-						}						
+						}//end if							
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
@@ -845,13 +858,14 @@ MAIN:
 						}//end if			
 						
 						(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
+						
 					else if generic_health_error
 						pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
 
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send error to comm which will send a copy to cmnc as well
-						}						
+						}//end if							
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							navi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to NAVI so every Arduino will know of the error
@@ -860,9 +874,7 @@ MAIN:
 						{
 							auxi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to AUXI so every Arduino will know of the error
 						}//end if		
-						
-
-						
+												
 						(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)				
 					else if generic_system_error
 					
@@ -871,7 +883,7 @@ MAIN:
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = GENERIC_SYSTEM_ERROR;//send error to comm which will send a copy to cmnc as well
-						}						
+						}//end if							
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
@@ -881,15 +893,19 @@ MAIN:
 							auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to AUXI so every Arduino will know of the error
 						}//end if							
 						
+						(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+
 					else//default: set to generic_system_error
 						Set generic_system_error = true
+						
+						(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
 						
 						pc_usb_msg_queue = GENERIC_SYSTEM_ERROR //send error out through the PC_USB for debugging
 						
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = GENERIC_SYSTEM_ERROR;//send error to comm which will send a copy to cmnc as well
-						}							
+						}//end if								
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to NAVI so every Arduino will know of the error
@@ -1014,18 +1030,30 @@ MAIN:
 					//PC_USB
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
+						
+						//skip auto data						
+						
 					endif
 					//COMM
 					if comm_msg_queue = SYSTEM_READY_STATUS
 						create system ready msg for COMM
+						
+						//skip auto data						
+						
 					endif						
 					//NAVI
 					if navi_msg_queue = SYSTEM_READY_STATUS
 						create system ready msg for NAVI
+						
+						//skip auto data						
+						
 					endif
 					//AUXI
 					if auxi_msg_queue = SYSTEM_READY_STATUS
 						create system ready msg for AUXI
+						
+						//skip auto data
+						
 					endif
 					
 					
@@ -1089,17 +1117,27 @@ MAIN:
 					//PC_USB
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
+						
+						//skip auto data
+						
 					endif
 					//COMM
 					Since comm_msg_queue = COMM_SLEEP_REQUEST
 						Create COMM sleep request after acknowledgements are received from both AUXI and NAVI (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)				
+						
+						//skip auto data
+						
 					//NAVI
 					Since navi_msg_queue = NAVI_SLEEP_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)
 						Create NAVI sleep request msg
+						
+						//skip auto data
+						
 					//AUXI
 					Since auxi_msg_queue = AUXI_SLEEP_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)
 						Create AUXI sleep request msg					
-			
+						
+						//skip auto data
 					
 					Clear Motor Power Status (so it can be re-read again next loop)
 										
@@ -1111,17 +1149,28 @@ MAIN:
 					//PC_USB
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
+						
+						//skip auto data
+						
+						
 					endif
 					//COMM
 					if comm_msg_queue = COMM_SW_RESET_REQUEST
 						Create COMM SW reset request after acknowledgements are received from both AUXI and NAVI						
+						
+						//skip auto data
+						
 					//NAVI
 					if navi_msg_queue = NAVI_SW_RESET_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop, i.e. keeps resetting itself))
 						Create NAVI sw reset request msg
+						
+						//skip auto data
+						
 					//AUXI
 					if auxi_msg_queue = AUXI_SW_RESET_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop, i.e. keeps resetting itself))
 						Create AUXI sw reset request msg						
 				
+						//skip auto data
 
 					Clear Motor Power Status (so it can be re-read again next loop)
 					
@@ -1132,16 +1181,19 @@ MAIN:
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
 						
-		
 						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
 						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
 						CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, INVALID_STATE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin
-								
+							
+						//skip auto data
+						
 					endif
 					//COMM
 					if comm_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
-						//should be general or specfic error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages. skip auto data
+						//should be general or specific error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages.
+						
+						//skip auto data
 						
 						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
 						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
@@ -1152,17 +1204,21 @@ MAIN:
 					//NAVI
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for NAVI as needed based on navi_msg_queue
-						//should be general or specfic error messages if no other has priority, skip auto data
+						//should be general or specific error messages if no other has priority, skip auto data
 						
-						For GENERIC_SYSTEM_ERROR_STATUS,	CMD_TAG_GENERIC_HEALTH_STATUS_ERROR in createDataFromQueueFor, create the message using error_origin as the message origin
+						//skip auto data
+						
+						For GENERIC_SYSTEM_ERROR_STATUS, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR in createDataFromQueueFor, create the message using error_origin as the message origin
 						
 					end if
 					//AUXI
 					if auxi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for AUXI as needed based on auxi_msg_queue					
-						//should be general or specfic error messages if no other has priority, skip auto data
+						//should be general or specific error messages if no other has priority, skip auto data
 						
-						For GENERIC_SYSTEM_ERROR_STATUS,	CMD_TAG_GENERIC_HEALTH_STATUS_ERROR in createDataFromQueueFor, create the message using error_origin as the message origin
+						//skip auto data
+						
+						For GENERIC_SYSTEM_ERROR_STATUS, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR in createDataFromQueueFor, create the message using error_origin as the message origin
 						
 					end if
 
