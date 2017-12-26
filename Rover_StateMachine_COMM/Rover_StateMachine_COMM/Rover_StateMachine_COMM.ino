@@ -35,7 +35,12 @@ Debug Operation
 //To test code and allow redirection in SYNCHRONIZATION, uncomment _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE and _DEBUG_REDIRECTION_NOTICE
 
 
+Note: You may want to uncomment #define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT in the code below in order to prevent sync timeout during debugging.
+
 To test locally with only one Arduino (best to test the UNO to make sure it can handle the memory needs for the COMM), first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
+
+Note: Can see RoverComm.h for data format.
+
 Can send:
 Hi Command
 /4c5--*002<any data up to 14 chars>
@@ -110,7 +115,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============Debugging: Serial Channel Selection
 //Used to output debugging messages only when the _DEBUG_COMM_BROADCAST flag is defined
 //Uncomment the flag below in order to output debugging messages
-//#define _DEBUG_COMM_BROADCAST
+//#define _DEBUG_COMM_BROADCAST //Normally commented out during normal operations.
 
 //Flag Logic, no need to edit this below
 //Reference the "Where Left Off...txt" at: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Planning
@@ -124,8 +129,8 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //============Debugging: Print Mode and/or State
 //Uncomment the flag below in order to print the current state and/or mode
-//#define _DEBUG_PRINT_CURRENT_STATE
-//#define _DEBUG_PRINT_CURRENT_MODE
+//#define _DEBUG_PRINT_CURRENT_STATE //Normally commented out during normal operations.
+//#define _DEBUG_PRINT_CURRENT_MODE //Normally commented out during normal operations.
 
 
 						  //Flag Logic, no need to edit this below
@@ -145,63 +150,63 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
  //============Debugging: Allow Redirect During Synchronization Mode
  //Uncomment to allow Ch2 (MAIN and COMM) to have redirection when in synchronization mode
-#define _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
+#define _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE //Normally commented out during normal operations.
 
 //Uncomment to output notice when redirection is occurring
-//#define _DEBUG_REDIRECTION_NOTICE
+//#define _DEBUG_REDIRECTION_NOTICE //Normally commented out during normal operations.
 //============End Debugging: Allow Redirect During Synchronization Mode
 
 
 //============Debugging: All Data Filtering Off
 //Uncomment in order to allow all data to pass (turn off all data filters) for debugging)
-#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
+#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS //Normally commented out during normal operations.
 //============End Debugging: All Data Filtering Off
 
 
 //============Debugging: Turn off System Ready Status During Synchronization Mode
 //Uncomment in order to allow other data to be in the main_msg_queue instead of just System Status
-#define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS
+//#define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS //Normally commented out during normal operations.
 //============End Debugging: All Data Filtering Off
 
 
 //============Debugging: Print timeout counter value
 //Uncomment in order to print timeout counter value
-//#define _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+//#define _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_ //Normally commented out during normal operations.
 //============End Debugging: Print timeout counter value
 
 
 //============Debugging: Disable Comm Sync Timeout
 //Uncomment in order to disable the COMM Sync timeout
-#define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT
+//#define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT //Normally commented out during normal operations.
 //============End Debugging: Disable Comm Sync Timeout
 
 
 //============Debugging: Disable Sleep Error Timeout
 //Uncomment in order to disable the Sleep Error timeout
-//#define _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT
+//#define _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT //Normally commented out during normal operations.
 //============End Debugging: Disable Sleep Error Timeout
 
 //============Debugging: Disable Secure Link Timeout
 //Uncomment in order to disable the Secure Link timeout
-#define _DEBUG_DISABLE_SECURE_LINK_TIMEOUT
+#define _DEBUG_DISABLE_SECURE_LINK_TIMEOUT //Normally commented out during normal operations.
 //============End Debugging: Print timeout counter value
 
 //============Debugging: SW Reset Error Timeout
 //Uncomment in order to disable the SW Reset Error and SW Reset Resent timeout
 //Note since this uses a dual timeout design, it uses one flag to disable both of the timeouts
-//#define _DEBUG_DISABLE_SW_RESET_ERROR_AND_RESEND_TIMEOUT
+//#define _DEBUG_DISABLE_SW_RESET_ERROR_AND_RESEND_TIMEOUT //Normally commented out during normal operations.
 //============End Debugging: SW Reset Error Timeout
 
 
 //============Debugging: HW Reset Status Message
 //Uncomment in order to print out the hardware reset status messages
-#define _DEBUG_OUTPUT_HW_RESET_STATUS_
+#define _DEBUG_OUTPUT_HW_RESET_STATUS_ //Normally commented out during normal operations.
 //============End Debugging: HW Reset Status Message
 
 
 //============Debugging: Print Wakeup Status
 //Uncomment the flag below in order to print the HW Reset Status
-//#define _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS
+//#define _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS //Normally commented out during normal operations.
 
 
 #ifdef _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS
@@ -421,7 +426,7 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 	//ADD TIMERS
 	heartLedTimer->Running();
 
-}
+}//end of interrupt service routine
 
 
 

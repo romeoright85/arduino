@@ -25,12 +25,34 @@ Regular Operation
 Debug Operation
 --------------------------------
 //To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
+//To see states and mode, and uncomment #define _DEBUG_PRINT_CURRENT_STATE and #define _DEBUG_PRINT_CURRENT_MODE in the code below.
 
 
-To test locally with only one Arduino (best to test the MEGA to make sure it can handle the memory needs for the COMM), first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
-Can send:
-//WRITE ME LATER
-//LEFT OFF HERE
+To test locally with only one Arduino , first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
+
+On Power On, MAIN is waiting for Systems Ready from COMM, NAVI, and AUXI, before it processes the Systems Go code. It has a timeout on how long it will wait for Systems Go though. This timeout is determined by MAIN_SYNC_TIMEOUT_VALUE.
+To disable this timeout, uncomment #define _DEBUG_DISABLE_MAIN_SYNC_TIMEOUT in the code below.
+
+Note: If _DEBUG_DISABLE_MAIN_SYNC_TIMEOUT is not turned on (i.e. disabled) eventually it will timeout and the system will send:
+	/4c600*039nodata = Sync Error Status to PC_USB
+	/4c500*012nodata = HW Reset Request to COMM
+	/4c200*041nodata = Generic System Error to NAVI
+	/4c300*041nodata = Generic System Error to AUXI
+
+Note: Can see RoverComm.h for data format.
+
+Can send a systems ready (where the command is 005 according to RoverCommandDefs.h) from each of the Arduinos:
+Simulate from COMM:
+	/5c400*005
+Simulate from NAVI:
+	/2c400*005
+Simulate from AUXI:
+	/3c400*005
+
+Note: Uncomment #define _DEBUG_PRINT_SYSTEMS_READY_ACKNOWLEDGEMENTS below to see the system ready acknowledgements
+
+Note: It seems to require the system ready command from some of the Arduinos to be sent more than once as the data probably gets lost in the mix or something.
+
 */
 
 
@@ -85,7 +107,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============Debugging: Serial Channel Selection
 //Used to output debugging messages only when the _DEBUG_COMM_BROADCAST flag is defined
 //Uncomment the flag below in order to output debugging messages
-//#define _DEBUG_COMM_BROADCAST
+//#define _DEBUG_COMM_BROADCAST //Normally commented out during normal operations.
 
 //Flag Logic, no need to edit this below
 //Reference the "Where Left Off...txt" at: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Planning
@@ -102,8 +124,8 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //============Debugging: Print Mode and/or State
 //Uncomment the flag below in order to print the current state and/or mode
-//#define _DEBUG_PRINT_CURRENT_STATE
-//#define _DEBUG_PRINT_CURRENT_MODE
+//#define _DEBUG_PRINT_CURRENT_STATE //Normally commented out during normal operations.
+//#define _DEBUG_PRINT_CURRENT_MODE //Normally commented out during normal operations.
 
 
 //Flag Logic, no need to edit this below
@@ -123,9 +145,27 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 
 
+
+
+
+//============Debugging: Print System Ready Status
+//Uncomment the flag below in order to print the System Ready Status
+//#define _DEBUG_PRINT_SYSTEMS_READY_ACKNOWLEDGEMENTS //Normally commented out during normal operations.
+
+
+#ifdef _DEBUG_PRINT_SYSTEMS_READY_ACKNOWLEDGEMENTS
+#define _PRINT_SYSTEM_READY_ _SERIAL_DEBUG_CHANNEL_.println
+#else
+#define _PRINT_SYSTEM_READY_ void
+#endif
+
+//============End Debugging: Print System Ready Status
+
+
+
 //============Debugging: Print HW Reset
 //Uncomment the flag below in order to print the HW Reset Status
-//#define _DEBUG_PRINT_HW_RESET_STATUS
+//#define _DEBUG_PRINT_HW_RESET_STATUS //Normally commented out during normal operations.
 
 
 #ifdef _DEBUG_PRINT_HW_RESET_STATUS
@@ -141,7 +181,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //============Debugging: Print Wakeup Status
 //Uncomment the flag below in order to print the HW Reset Status
-//#define _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS
+//#define _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS //Normally commented out during normal operations.
 
 
 #ifdef _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS
@@ -158,47 +198,58 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
  //============Debugging: Redirection Notice
 //Uncomment to output notice when redirection is occurring
-//#define _DEBUG_REDIRECTION_NOTICE
+//#define _DEBUG_REDIRECTION_NOTICE //Normally commented out during normal operations.
 //============End Debugging: Redirection Notice
 
 
 //============Debugging: All Data Filtering Off
 //Uncomment in order to allow all data to pass (turn off all data filters) for debugging)
-#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
+#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS //Normally commented out during normal operations.
 //============End Debugging: All Data Filtering Off
+
+
+
+
+
+
+//============Debugging: Disable MAIN Sync Timeout
+//Uncomment in order to disable MAIN Sync Timeout (when waiting for Systems Go on startup/power on)
+//#define _DEBUG_DISABLE_MAIN_SYNC_TIMEOUT //Normally commented out during normal operations.
+//============End Debugging: Disable MAIN Sync Timeout
+
 
 
 //============Debugging: Disable Sleep Error Timeout
 //Uncomment in order to disable the Sleep Error timeout
-//#define _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT
+//#define _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT //Normally commented out during normal operations.
 //============End Debugging: Disable Sleep Error Timeout
 
 
 //============Debugging: SW Reset Error Timeout
 //Uncomment in order to disable the SW Reset Error and SW Reset Resent timeout
 //Note since this uses a dual timeout design, it uses one flag to disable both of the timeouts
-//#define _DEBUG_DISABLE_SW_RESET_ERROR_AND_RESEND_TIMEOUT
+//#define _DEBUG_DISABLE_SW_RESET_ERROR_AND_RESEND_TIMEOUT //Normally commented out during normal operations.
 //============End Debugging: SW Reset Error Timeout
 
 
 
 //============Debugging: Disable System Error Timeout
 //Uncomment in order to disable the Sleep Error timeout
-//#define _DEBUG_DISABLE_SYSTEM_ERROR_TIMEOUT
+//#define _DEBUG_DISABLE_SYSTEM_ERROR_TIMEOUT //Normally commented out during normal operations.
 //============End Debugging: Disable System Error Timeout
 
 
 
 //============Debugging: Turn off System Ready Status During Synchronization Mode
 //Uncomment in order to allow other data to be in the comm_msg_queue, navi_msg_queue, and/or auxi_msg_queue instead of just System Status
-#define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS
+#define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS //Normally commented out during normal operations.
 //============End Debugging: All Data Filtering Off
 
 
 
 //============Debugging: Print timeout counter value
 //Uncomment in order to print timeout counter value
-//#define _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+//#define _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_ //Normally commented out during normal operations.
 //============End Debugging: Print timeout counter value
 
 
@@ -500,7 +551,7 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 	midLeftSyncTimer->Running();
 	midRightSyncTimer->Running();
 
-}
+}//end of interrupt service routine
 
 
 
@@ -1498,22 +1549,25 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//Check to see where the command was from
 		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
 		{
+			_PRINT_SYSTEM_READY_(F("COMM Rdy"));
 			//set comm_system_ready = true
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_);
 		}//end if
 		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
 		{
+			_PRINT_SYSTEM_READY_(F("NAVI Rdy"));
 			//set navi_system_ready = true	
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_);
 		}//end else if
 		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
 		{
+			_PRINT_SYSTEM_READY_(F("AUXI Rdy"));
 			//set auxi_system_ready = true	
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_);			
 		}//end else if
 		//else do nothing
 		
-		//Check to see if all systems are ready for systems go		
+		//Check to see if all systems are ready, so MAIN and start the systems go code/process
 		//the status for a particular arduino (i.e. navi_system_ready fpr NAVI) would be set true when the system ready msg was received for that arduino
 		if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_) )
 		{
@@ -2649,26 +2703,31 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 							
 			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 	
-			//If all systems are not ready, and it's not yet a systems go
-			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_) )
-			{
-				//increment counter
-				timeout_counter++;
-				//if MAIN has been stuck in SYNCHRONIZATION for a long time while waiting on NAVI, AUXI, or COMM, it will send a sync error status
-				if(timeout_counter >= MAIN_SYNC_TIMEOUT_VALUE)
+	
+	
+			#ifndef _DEBUG_DISABLE_MAIN_SYNC_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes
+				//If all systems are not ready, and it's not yet a systems go
+				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_) )
 				{
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
-					comm_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;							
-					pc_usb_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;											
-					//set sync_error = true
-					BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SYNC_ERROR_);			
-					//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
-					//initialize/reset shared counter before use
-					timeout_counter = 0;	
-				}//end if
-			}//end if		
+					//increment counter
+					timeout_counter++;
+					//if MAIN has been stuck in SYNCHRONIZATION for a long time while waiting on NAVI, AUXI, or COMM, it will send a sync error status
+					if(timeout_counter >= MAIN_SYNC_TIMEOUT_VALUE)
+					{
+						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+						//shut down motor when in error for safety
+						error_origin = ROVERCOMM_MAIN;
+						BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
+						comm_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;							
+						pc_usb_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;											
+						//set sync_error = true
+						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SYNC_ERROR_);			
+						//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
+						//initialize/reset shared counter before use
+						timeout_counter = 0;	
+					}//end if
+				}//end if		
+			#endif
 			break;		
 		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
 			//Nothing to do here.

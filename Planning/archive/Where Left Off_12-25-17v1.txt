@@ -2,7 +2,9 @@ Where I left off
 ------------------------
 
 DEADLINES:
-
+[1 days left] 12/25
+Rover_StateMachine_MAIN (get the complex communications going)
+	if have time go back to Rover_StateMachine_COMM and change some of the 1/3 or 3/3 brightness to blinks. need to write code to poll/time the blinks or use interrupts or something
 [13 days] (take 12/26 off) 12/27, 12/28, 12/29, 12/30, 12/31, 1/1, 1/6, 1/7, 1/12, 1/13, 1/14, 1/20, 1/21
 Rover_StateMachine_NAVI (get the rover rolling)
 [13 days]  /26, 1/27, 1/28, 2/3, 2/4, 2/9, 2/10, 2/11, 2/17, 2/18, 2/23, 2/24, 2/25
@@ -11,7 +13,7 @@ Rover_StateMachine_AUXI (then get the leds and sensors working)
 Test code
 Do a quick screen record with audo walking through roughly how to you would read one of the codes (i.e. MAIN) for documentation.
 Go through and clean up the "//PLACEHOLDER"s in Rover_StateMachine_COMM
-	if have time go back to Rover_StateMachine_COMM and change some of the 1/3 or 3/3 brightness to blinks. need to write code to poll/time the blinks or use interrupts or something	
+	
 	
 =================1 weekend===================				
 
@@ -78,52 +80,140 @@ Test code as you go!!!
 PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER DOWN THE CODE A LOT (i.e. remove secured comms, etc.)
 
 
-				
+
+
+Starting on Rover_StateMachine_COMM.ino at:
+	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Rover_StateMachine_COMM\Rover_StateMachine_COMM
+
+while referencing:
+	COMM State Machine_add_date_when_archive
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Pseudocode
+	RoverCommandDefs.h
+	RoverStatesAndModes.h
+		K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\libraries\RoverShared
+
+
+
+get basic state machine infrastructure up		
+	
+	
+	
+	
+	
+	
+	
+	getting all the state and mode transitions created so the framework is there for a particular "mode loop"
+	{
+			
+			
+				[WHERE LEFT OFF 0] With Rover_StateMachine_COMM
+							-Remember to uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ in RoverConfig. only MAIN is allowed to chat in the beginning and CMNC is shut off until the unit is sychronized. Then CMNC can send to COMM but wil lget no response until links are secured.
+							-When debugging, check the boolean bit flag as well as the bit flag set. As you might forgot to update both when copying and pasting and using templates.
+								-Also make sure not to confuse Status Flags vs. filter option flags
+					
+					
+					
+					
+					
+					To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
+					Then send (using the PC, which is simulating MAIN's serial connection to the COMM, since the link isn't secure yet and no real communication should be coming from the PC when not in this debugging state)
+						/4c5--*002//hi
+						/4c5--*003//bye
+						/4c5--*005//Sys ready. no output will show in the command line. it's all behind the scenes.
+						/4c5--*006//Sys go. no output will show in the command line. it's all behind the scenes. You can monitor the states and modes though. And ocne in this state, hi, bye, etc. will be filtered out.
+						/4c5--*012//All HW reset. not yet implemented
+						/4c5--*014//COMM SW reset. not yet implemented
+						/4c5--*018//All SW reset. not yet implemented
+						/4c5--*026//COMM sleep request. not yet implemented
+						/4c5--*031//All sleep request. not yet implemented						
+						/4c5--*023//PIR Status. not yet implemented
+						/4c5--*031//All sleep request. not yet implemented						
+						/4c5--*041//Generic health error. not yet implemented
+						/4c5--*021//Break secure link. not yet implemented						
+						/4c5--*021//Establish secure link. temporary disabled since this command should be filtered out in the sync mode and not be available at that stage
+						/4c5--*(anything else)
+					to test (as long as the flags commandEnableOption_Hi and commandEnableOption_Bye are set true in the filter in runModeFunction_SYNCHRONIZATION()
+					
+					
 					
 					
 [WHERE LEFT OFF 1 --- IN PROGRESS]
-	
-	
 
-		[DO TUES]
+
+
+
+
+	
+#LEFT OFF HERE, START HERE->Rover_StateMachine_MAIN:
+
 			
+
+			
+			
+
+		[DO MON]
+		
+				
+#CODE3
+
+			
+			clean out this where left off list of tasks i already done
+				
 			[UNLESS WHERE REDIRECTION IS NOT ALLOWED!] Go back and make sure generic system error messages and generic health errors are not filtered out for any modes from any arduino (just in case it's redirected) for COMM and MAIN state machines. They should always be allowed.
 			Make sure update data filter and process data comments as well in the state machines.
 			catch up anything i am behind in
 			chores?
 
-			
-			[LEFT OFF] Start on NAVI code from scratch. Use the code template.
+			if finish early start on NAVI since taking tomorrow off
 
 
 			
-			
-#LEFT OFF HERE, START HERE->Rover_StateMachine_NAVI:
-		
-
-Starting on Rover_StateMachine_NAVI.ino at:
-	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Rover_StateMachine_NAVI
-
-while referencing State Machine Plans from:
-	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Pseudocode
-
-			
-
-
 
 
 	
 	
 	Note: pay attention to memory use!
 	
-			
+	
+	
+	now I have to write some of the functions
+									
+						[NEED TO DO]need to write the message going out to CMNC with the CMD_TAG_SECURE_LINK_REQUEST, see commandDirector for sysgo									
+						[NEED TO DO]Also update //Flag(s) - Command Filter Options and setAllCommandsTo()
+						[NEED TO DO]Then update the PROCESS_DATA state for the SYNCHRONIZATION mode, with what happens once the commandDirector does it's tasks. (i.e. once a system ready or system go message has been received, then what is the next thing that should happen like main_msg_queue = SYSTEM_READY_STATUS, etc.)						
+						
+									[NEED TO DO]write the code/algorithm for all other commands in commandDirector
+									
+			left off at //LEFT OFF HERE...
+				[WHERE LEFT OFF 2 --- IN PROGRESS. Already done one loop/template for MAIN data to/from COMM, need to do the same for CMNC data to/from COMM] add in the rxData function... aka lay the groundwork for serial communications
+					[NEED TO DO]Finish writing the other code for PROCESS_DATA in runModeFunction_SYNCHRONIZATION
+					[NEED TO DO]I started SECURING_LINK for RX_COMMUNICATIONS in order to write rxData() from CMNC since SYNCHRONIZATION only has it for MAIN
+					[NEED TO DO]I just finished writing DATA_FILTER for runModeFunction_SECURING_LINK()
+					[NEED TO DO]So write READ_INPUTS for runModeFunction_SECURING_LINK() next until you go through all the states down the to TX_COMMUNICATIONS and send out any data from CMNC
+									[DONE]then go back and write the DATA_VALIDATION state in the SYNCHRONIZATION mode
+									[DONE]write the data filter for the data
+					[NEED TO DO] Write other message for createDataFromQueueFor()
+				[WHERE LEFT OFF 3]
+					[HOLD, actually write all of COMM first, to deal with any memory issues. you may have to change the state machines]Once the sync mode code is done for the COMM, write all other state machines for other Arduinos, and try to get it to sync up.
+					Then write the hardware reset code and try to get it to sync up after a hardware reset.
+					Then write the software reset code and try to get it to sync up after SW reset.
+					Then focus on other algorithms, states, and modes.
+	}
 
 
 
 
 
-			
+
+
+
+	
+	
 put code to measure loop time, then use it as the message delay between a message and a redirect
+
+
+
+
 When debugging the state machines, make sure things that shouldn't be filtered out aren't, vice versa.
 Watch out for glitches with missed acknowledgements and one system going ahead or behind another.
 Watch for vicious loops, or messages overtaking all lower priority ones causes the lower priority stuff to never run.
@@ -151,7 +241,7 @@ then put other objects in
 		For controller hack proof validator, see "#Tamper Proof" below.
 
 		
-=================3 WEEKENDS===================			
+=================8 WEEKENDS===================			
 
 Test code and fix
 About 2 weekend each arduino
