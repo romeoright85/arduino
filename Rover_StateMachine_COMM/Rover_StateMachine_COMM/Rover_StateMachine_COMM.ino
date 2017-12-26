@@ -2055,7 +2055,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);			
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
 
 
 			//Transmit data and/or execute command(s)
@@ -2114,7 +2114,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				//Note: PIR Status is filtered out for SYNCHRONIZATION.
 			//Skip Process CMNC command/data
 			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-			//Note: Either you should get no data, hw reset, sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
+			//Note: Either you should get no data, generic system error message(s), hw reset, comm sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
 			//Remember, only  hw reset, sw reset, generic health status error, or system ready or system go message(s) can pass the data filter.
 
 			
@@ -2344,7 +2344,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			//PIR Status: When applicable, PIR Status is captured in READ_INPUTS with a flag, the message is queued up by commandDirector of PROCESS_DATA, and then processed in CREATE_DATA with createDataFromQueueFor, then the flag is cleared.
 				//Note: PIR Status is used in SECURING_LINK.
 			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-			//Note: Either you should get no data, generic health status errors, or secure link data. as everything else was filtered out
+			//Note: Either you should get no data, generic health status errors, generic system error message(s), or secure link data. as everything else was filtered out
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
 				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
@@ -2869,7 +2869,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);			
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSLEEPREQUEST_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
 			
 		
 
@@ -2914,7 +2914,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//Note: PIR Status is filtered out for SYSTEM_SLEEPING.			
 			//Skip Process CMNC command/data
 			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-			//Note: Either you should get no data, hw reset, sw reset, generic health status errors, or COMM sleep request message(s) from MAIN. as everything else was filtered out.
+			//Note: Either you should get no data, hw reset, comm sw reset, generic health status errors, generic system error message(s), or COMM sleep request message(s) from MAIN. as everything else was filtered out.
 			//Remember, only hw reset, sw reset, generic health status errors, or COMM sleep request message(s) can pass the data filter.
 
 			
@@ -3152,9 +3152,11 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//For CMNC
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_CMNC, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);
-			//For MAIN
+			//For MAIN			
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
 			
 			//Transmit data and/or execute command
 			//For data from CMNC, transmit the data to it's proper destination if it was meant for another Arduino
@@ -3209,7 +3211,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//PIR Status: When applicable, PIR Status is captured in READ_INPUTS with a flag, the message is queued up by commandDirector of PROCESS_DATA, and then processed in CREATE_DATA with createDataFromQueueFor, then the flag is cleared.
 			//Note: PIR Status is filtered out for SW_RESETTING.			
 			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-			//Note: Either you should get no data or hw or All SW Reset (Re-)Request from CMNC. as everything else was filtered out
+			//Note: Either you should get no data, generic health status errors, generic system error message(s), or hw or All SW Reset (Re-)Request from CMNC. as everything else was filtered out									
 			//Note: If hw/sw reset requests from CMNC, see "Command Options" below for more info.						
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
@@ -3403,7 +3405,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HWRESETREQUEST_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_COMMSWRESETREQUEST_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);//MAYBE NEED TO FIX, not sure if this should be a flag for a command or should be a redirect instead. generic status error message(s) from MAIN (redirected from AUXI)
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
 			
 			
 			//Transmit data and/or execute command

@@ -2536,13 +2536,17 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//No commands from PC_USB are filtered, so set all to true.
 			setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);			
 			//For COMM
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);	
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);				
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
 			//For NAVI			
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_NAVI, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
 			//For AUXI
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_AUXI, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
 
 			
 			//Transmit data and/or execute command
@@ -2673,8 +2677,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				commandDirector(roverDataCh1_COMM, ROVERCOMM_PC_USB);
 			}//end if			
 			//Process COMM command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-				//Note: If system ready msg, hw reset request, or All SW Reset Request from COMM/CMNC, see "Command Options" below for more info.
-				//Note: Either you should get HW or SW reset, or system ready messages from COMM. as everything else was filtered out
+				//Note: If system ready msg, hw reset request, generic system error, or All SW Reset Request from COMM/CMNC, see "Command Options" below for more info.
+				//Note: Either you should get HW or SW reset, generic system error, or system ready messages from COMM. as everything else was filtered out
 				//No redirections in SYNCHRONIZATION.
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
@@ -2682,8 +2686,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				commandDirector(roverDataCh2_COMM, ROVERCOMM_COMM);
 			}//end if				
 			//Process NAVI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-				//Note: If system ready msg received from NAVI, see "Command Options" below for more info.
-				//Note: Either you should get system ready messages from NAVI. as everything else was filtered out
+				//Note: If system ready msg, or generic system error received from NAVI, see "Command Options" below for more info.
+				//Note: Either you should get system ready messages, or generic system error from NAVI. as everything else was filtered out
 				//No redirections in SYNCHRONIZATION.
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
@@ -2691,8 +2695,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				commandDirector(roverDataCh3_COMM, ROVERCOMM_NAVI);
 			}//end if				
 			//Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-				//Note: If system ready msg received from AUXI, see "Command Options" below for more info.
-				//Note: Either you should get system ready messages or generic health errors from AUXI. as everything else was filtered out
+				//Note: If system ready msg, generic system error, or generic health error received from AUXI, see "Command Options" below for more info.
+				//Note: Either you should get system ready messages, generic system error, or generic health error from AUXI. as everything else was filtered out	
 				//No redirections in SYNCHRONIZATION.
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_))//If there was data from MAIN (Ch2), and it was for COMM
 			{
@@ -3764,7 +3768,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				commandDirector(roverDataCh3_COMM, ROVERCOMM_NAVI);
 			}//end if				
 			//Process AUXI command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-				//Note: Either you should get no data, generic health error, or Sleeping Request Acknowledgement from AUXI. as everything else was filtered out	
+				//Note: Either you should get no data, generic system error, generic health error, or Sleeping Request Acknowledgement from AUXI. as everything else was filtered out		
 				//No redirections in SYSTEM_SLEEPING.
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_))//If there was data from MAIN (Ch2), and it was for COMM
 			{

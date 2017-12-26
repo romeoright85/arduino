@@ -31,7 +31,7 @@
 	
 		//Note: By design, the reset will clear any current calibration values and go back to the 	MC_CENTER_POSITION_AFTER_POR and MC_NO_THROTTLE_AFTER_POR values as defined in RoverConfig.h
 		void motorControllerReset();//software resets the motor controller		
-		void motorControllerPowerOnCalibration(BufferSelect *);//calibrates the motor controller upon start up by exercising the full range of the channels. Will only work when Rover is in Auto Mode
+		void motorControllerPowerOnCalibration(BufferSelect *);//calibrates the motor controller upon start up by exercising the full range of the channels. Will only work when Rover is in Auto Mode and the Motor Power Control is enabled in software in the MAIN code, or the HW switch for Motor Power Control is on
 		void motorControllerSetPins(byte, byte);//(steering pin, throttle pin) sets the pinouts for the steering and throttle channels
 		//Note: The int type has to be used since the calibration values may be positive or negative
 		void motorControllerSetSteering(int);//sets the current steering (ideal steering amount), automatically includes the motorControllerSteeringCalibrationOffset in its calculations so you can just give it ideal numbers (180 max right, 90 center,  0 max left)

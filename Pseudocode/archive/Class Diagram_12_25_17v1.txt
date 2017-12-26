@@ -1,0 +1,179 @@
+UPDATE 11-05-17
+This document is out of date. Code has been changed since.
+
+i.e. 
+[REPLACED BY Rover_StateMachine_AUXI] RoverProgram_AUXI.ino 
+
+etc.
+
+
+Keep this file around for reference, since it shows what program need what classes.
+
+Note: You can review this file as well as the command functions at the bottom of each of these files to get a summary of what each unit is doing.
+COMM State Machine_add_date_when_archive
+AUXI State Machine_add_date_when_archive
+NAVI State Machine_add_date_when_archive
+MAIN State Machine_add_date_when_archive
+	
+===========================================
+State Machine - AUXI
+===========================================
+
+
+
+[REPLACED BY Rover_StateMachine_AUXI] RoverProgram_AUXI.ino 
+	RoverHeathAndStatus (takes in temp, voltage, photo, and current data and determines if the system needs to shut down or can continue) - Finite State Machine
+		Use a State Design Pattern for the hold state. When there is reading on one of the sensors that require attention.
+		
+[IFNISH CODING OBJECTS BELOW, unless noted]
+
+CurrentSensorFault
+
+RoverAnalogSignals
+>UpTime (needs to be used along with the Gas Sensor on AUXI's mux channels. tracks the time since the last software reset, the time since it was turned on/last hardware reset)
+>>DelayCounter
+>>>GlobalDelayTimer
+
+IrDistanceSensor
+
+ImuSensor (not really a class but functions)
+>StopWatch
+>>GlobalDelayTimer (also used above)
+>>DelayCounter (also used above)
+
+LaserControl
+
+
+RoverData
+>RoverComm
+>RoverCommand
+RoverCommandCreator
+
+
+[DONE, TESTED GOOD] RoverSleeperServer
+
+
+
+
+===========================================
+State Machine - MAIN
+===========================================
+
+
+[REPLACED BY Rover_StateMachine_MAIN] RoverProgram_MAIN.ino
+	RoverCaptain - Finite State Machine (considers and prioritizes input from the RoverNavigator and RoutePlanner, and RoverHeathAndStatus and decides which heading the rover should go and for how long, then it sends commands to RoverNavigator_NAVI)
+
+[IFNISH CODING OBJECTS BELOW]	
+
+RoverHwReset	(for COMM)
+
+MotorPowerControl
+	
+WheelEncoderSensor
+>DelayCounter
+>>GlobalDelayTimer
+
+	
+RoverData
+>RoverComm
+>RoverCommand
+RoverCommandCreator
+		
+RoverSleeperServer
+
+RoverSleeperClient
+
+
+		
+
+
+===========================================
+State Machine - NAVI
+===========================================
+
+[REPLACED BY Rover_StateMachine_NAVI] RoverProgram_NAVI.ino 		
+		RoverNavigator (takes in sensor data and plans a course to prevent a collision. Then navigates by sending actions to RoverDriver) - Finite State Machine
+			RoverDriver - State Design Pattern (controls the motor controller and gimbal) 
+		RoutePlanner (takes current position via gps data and compass heading and next waypoint via longitude and latitude and recommends heading and distance)
+			Waypoint
+			
+
+BufferSelect
+
+MotorController
+
+GimbalController
+			
+UltrasonicSensor
+
+WheelEncoderSensor
+>DelayCounter
+>>GlobalDelayTimer
+	
+	
+RoverData
+>RoverComm
+>RoverCommand
+RoverCommandCreator
+
+RoverGpsSensor		
+
+			
+UnderglowLeds
+SideSignalLight
+BeaconLightAssembly
+HeadLightAssembly
+TailLightAssembly
+			
+
+RoverSleeperServer
+
+		
+
+RoverNavigation
+
+
+
+===========================================
+State Machine - COMM
+===========================================
+
+[REPLACED BY Rover_StateMachine_COMM] RoverProgram_COMM.ino
+
+
+RoverHwReset (for NAVI, AUXI, MAIN)
+	
+HeartLed
+>GlobalDelayTimer
+>DelayCounter
+
+
+RoverData
+>RoverComm
+>RoverCommand
+RoverCommandCreator
+
+PirSensor
+
+RoverSleeperServer
+RoverSleeperClient
+
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

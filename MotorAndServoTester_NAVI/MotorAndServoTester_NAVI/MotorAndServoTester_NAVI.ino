@@ -119,12 +119,13 @@ void setup() {
 	
 
 	//Run motor controller calibration
-	motorControllerPowerOnCalibration(roverBuffer);//calibrate if buffer select is in auto mode, else do nothing
+	motorControllerPowerOnCalibration(roverBuffer);//calibrate if buffer select is in auto mode, else do nothing (defined in MotorController.h - where MotorController.h/MotorController.cpp are not classes)
 	
 	delay(1000);
 
 	//Run Gimbal Functional Demo
-	gimbalFunctionalDemo();
+	gimbalFunctionalDemo();//defined in GimbalController.h - where GimbalController.h/GimbalController.cpp are not classes)
+	
 
 
 	//Setting Up Timer Interrupt
