@@ -274,8 +274,20 @@ int distanceMeasured = 0;
 
 
 //------------------From NavigationTester_NAVI
-
 //LEFT OFF HERE
+/*
+RoverNavigation * roverNavigation = new RoverNavigation();
+RoverGpsSensor * roverGps = new RoverGpsSensor();
+double value = 0.0;
+double rxdHeading = 0.0;
+//flags and counters for GPS data
+byte gpsDataCounter = 0;//counts the number of GPS data collected
+//array to hold the GPS samples
+double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
+double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
+double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
+*/
+
 
 
 

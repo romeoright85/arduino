@@ -11,7 +11,10 @@ RoverNavigationTester_NAVI
 
 
 Troubleshooting:
-If you get all 0.0000 or something weird for heading constantly, you might have forgotten to upload NavigationTes and NavigationTester_MAIN taht is required in order to pass heading data over to NavigationTester_NAVI.
+If you get all 0.0000 or something weird for heading constantly, you might have forgotten to upload NavigationTes and NavigationTester_MAIN that is required in order to pass heading data over to NavigationTester_NAVI.
+
+
+Also make sure #define _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is commented out in RoverConfig.h 
 */
 
 //Used for NAVI - 1
@@ -39,8 +42,30 @@ Desired Lat/Long in Degrees (Hersh's Pizza in South Baltimore)
 //Uncomment to use fixed test data, else if left uncommented, it will use actual the GPS Module's and IMU Compass's data
 //#define _DEBUG_USE_FIXED_TEST_DATA
 
+
+
+
+
 //Uncomment to hide the output when GPS data isn't ready
-//#define _HIDE_DATA_WHEN_GPS_NOT_READY
+//Note: For the most part IMU data is always there. (sometimes if a data is bad this code might filter out some). But for GPS data since it needs satellite signals, then have the option to print the data only when the data is ready.
+//Uncomment to hide the output when GPS data isn't ready
+#define _HIDE_DATA_WHEN_GPS_NOT_READY
+
+
+//Uncomment to print IMU Data Valid Status
+#define _PRINT_IMU_DATA_VALID_STATUS
+
+
+//Uncomment to print GPS Data Valid Status
+#define _PRINT_GPS_DATA_VALID_STATUS
+
+
+//Uncomment to print IMU Median Completed Status
+#define _PRINT_IMU_MEDIAN_COMPLETED_STATUS
+
+//Uncomment to print GPS Median Completed Status
+#define _PRINT_GPS_MEDIAN_COMPLETED_STATUS
+
 
 
 /*
@@ -200,18 +225,18 @@ Rover Nav Status: Still Navigating
 RoverNavigation * roverNavigation = new RoverNavigation();
 RoverGpsSensor * roverGps = new RoverGpsSensor();
 double value = 0.0;
-double rxdHeading = 0.0;
 
 
 
 //flags and counters for GPS data
-boolean gpsDataReady = false;//tracks when one gps data is received
-boolean allGPSDataGathered = false;//tracks when all 7 gps data is gathered and median is performed. Note 7 is hardcoded in the getMedian function due to the need for a fixed array size
+
+byte headingDataCounter = 0;//counts the number of heading data collected
 byte gpsDataCounter = 0;//counts the number of GPS data collected
 //array to hold the GPS samples
-double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
-double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
-double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
+double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It won't get assigned to the headingArray unless it's valid.
+double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 
 RoverReset * resetArray[] = {
 	roverNavigation,
@@ -231,6 +256,14 @@ void setup() {
 	_GPS_SERIAL_.begin(GPS_BAUD_RATE);
 
 	delay(1000);
+	
+	
+	
+	//Preset desired point
+	roverNavigation->setLatitudeDeg(DESIRED_LATITUDE_COORDINATE, TYPE_DESIRED);
+	roverNavigation->setLongitudeDeg(DESIRED_LONGITUDE_COORDINATE, TYPE_DESIRED);
+	
+	
 }
 
 
@@ -240,9 +273,6 @@ void loop() {
 	
 	
 
-	//Preset desired point
-	roverNavigation->setLatitudeDeg(DESIRED_LATITUDE_COORDINATE, TYPE_DESIRED);
-	roverNavigation->setLongitudeDeg(DESIRED_LONGITUDE_COORDINATE, TYPE_DESIRED);
 
 #ifdef _DEBUG_USE_FIXED_TEST_DATA
 	roverNavigation->setHeadingDeg(4.28);
@@ -253,39 +283,44 @@ void loop() {
 
 	//=====Get Heading (from AUXI)========
 	//Get samples of actual heading from the IMU's Compass for sort and median
-	for (byte headingDataCounter = 0; headingDataCounter < 7; headingDataCounter++)
-	{
-		headingArray[headingDataCounter] = rxCompassData();
+	 if(rxCompassData(tempHeadingData))//receive data from the IMU (from AUXI) and check to see if the heading data received is valid
+	 {
+		#ifdef _PRINT_IMU_DATA_VALID_STATUS
+			_SERIAL_DEBUG_CHANNEL_.println(F("IMU Data Valid"));
+		#endif
 		
-	}
-			
-	rxdHeading = BubbleSort::getMedian(headingArray[0], headingArray[1], headingArray[2], headingArray[3], headingArray[4], headingArray[5], headingArray[6]);
-	
-	if(rxdHeading != 999.9)
-	{
-		roverNavigation->setHeadingDeg(rxdHeading);
-	}
-	//else do nothing and keep the last set value as is
-
-
+		headingArray[headingDataCounter] = tempHeadingData;//assign the temp value to the array
+		headingDataCounter++;//increment the global counter
+		if( headingDataCounter >= 7)//once 7 samples have been collected for the median
+		{
+			headingDataCounter = 0;//reset the global counter
+			double avgHeading = BubbleSort::getMedian(headingArray[0], headingArray[1], headingArray[2], headingArray[3], headingArray[4], headingArray[5], headingArray[6]);
+			if(avgHeading >= 0.0 && avgHeading <= 360.0)//check to see that the heading value is within valid range
+			{
+				roverNavigation->setHeadingDeg(avgHeading);
+				
+				#ifdef _PRINT_IMU_MEDIAN_COMPLETED_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("IMU Median Completed"));
+				#endif
+			}
+			//else do nothing and keep the last set value as is
+		}//end if
+	 }//end if
+	 else//Else notify that the IMU data isn't ready
+	 {
+		_SERIAL_DEBUG_CHANNEL_.println(F("IMU Data Not Ready"));
+	 }//end else
+		
 
 	//=====Get Actual (GPS) Coordinates========
-	//Get Sample of Actual GPS coordinates
-	//reset the counter and flag if the last data was completed from the last iteration of the loop
-	if (allGPSDataGathered)
+	//Get samples of actual GPS coordinates
+	
+	if(rxGPSData(roverGps))//Receive (via serial) and process gps data
 	{
-		gpsDataCounter = 0;
-		allGPSDataGathered = false;
-	}
-
-
-	//Collect a sample of GPS data
-	gpsDataReady = false;//reset the flag with every iteration of the loop
-	gpsDataReady = rxGPSData(roverGps);//Receive (via serial) and process gps data
-	//If the data is ready, process it
-	if (gpsDataReady)
-	{
-		_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Ready"));
+		#ifdef _PRINT_GPS_DATA_VALID_STATUS
+			_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Valid"));
+		#endif
+		
 		//save the lat and long data into the array, which will later be sorted and the median will be extracted
 		latitudeArray[gpsDataCounter] = roverGps->getGpsLatitude(DEC_DEG);
 		longitudeArray[gpsDataCounter] = roverGps->getGpsLongitude(DEC_DEG);
@@ -293,51 +328,87 @@ void loop() {
 
 		if (gpsDataCounter >= 7)//once 7 samples have been collected for the median
 		{
-			roverNavigation->setLatitudeDeg(BubbleSort::getMedian(latitudeArray[0], latitudeArray[1], latitudeArray[2], latitudeArray[3], latitudeArray[4], latitudeArray[5], latitudeArray[6]), TYPE_ACTUAL);//take the median value and set it to the actual latitude value
-			roverNavigation->setLongitudeDeg(BubbleSort::getMedian(longitudeArray[0], longitudeArray[1], longitudeArray[2], longitudeArray[3], longitudeArray[4], longitudeArray[5], longitudeArray[6]), TYPE_ACTUAL);//take the median value and set it to the actual longitude value
-			allGPSDataGathered = true;//set the flag to done since 7 samples have been collected and the median was taken
-			_SERIAL_DEBUG_CHANNEL_.println(F("GPS Median Completed"));
-		}//end if
-	}//end if
-	//Else notify that the data isn't ready
-	else
+			
+			gpsDataCounter = 0;//reset the global counter			
+			
+			double avgLatitude = BubbleSort::getMedian(latitudeArray[0], latitudeArray[1], latitudeArray[2], latitudeArray[3], latitudeArray[4], latitudeArray[5], latitudeArray[6]);//take the median value
+			
+			double avgLongitude = BubbleSort::getMedian(longitudeArray[0], longitudeArray[1], longitudeArray[2], longitudeArray[3], longitudeArray[4], longitudeArray[5], longitudeArray[6]);//take the median
+			
+			//check to see if both lat and long are within valid range
+			if(( avgLatitude >= 0.0 && avgLatitude <= 90.0) && (avgLongitude >= -180.0 && avgLongitude <= 180.0 ))
+			{
+				roverNavigation->setLatitudeDeg(avgLatitude , TYPE_ACTUAL);//set it to the actual latitude value
+				roverNavigation->setLongitudeDeg(avgLongitude, TYPE_ACTUAL);//set it to the actual longitude value
+				
+				
+				#ifdef _PRINT_GPS_MEDIAN_COMPLETED_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("GPS Median Completed"));
+				#endif
+				
+				
+				
+
+				#ifdef _HIDE_DATA_WHEN_GPS_NOT_READY //print data only when the GPS data is ready (i.e. when _HIDE_DATA_WHEN_GPS_NOT_READY is active and defined)
+				
+					_SERIAL_DEBUG_CHANNEL_.println(F("========"));
+					_SERIAL_DEBUG_CHANNEL_.print(F("Desired Lat: "));
+					_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_DESIRED, UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
+					_SERIAL_DEBUG_CHANNEL_.print(F("Desired Lon: "));
+					_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_DESIRED, UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
+					_SERIAL_DEBUG_CHANNEL_.print(F("Actual Lat: "));
+					_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_ACTUAL, UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
+					_SERIAL_DEBUG_CHANNEL_.print(F("Actual Lon: "));
+					_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLongitude(TYPE_ACTUAL, UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
+					_SERIAL_DEBUG_CHANNEL_.print(F("Rover Heading: "));
+					_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getHeading(UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
+
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Distance: "));
+					value = roverNavigation->getDistance(UNIT_M);
+					_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision
+					_SERIAL_DEBUG_CHANNEL_.print(F("True Bearing: "));
+					value = roverNavigation->getTrueBearing();
+					_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision	
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Relative Bearing: "));
+					value = roverNavigation->getRelativeBearing();
+					_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision	
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Steering: "));
+					value = roverNavigation->getCalculatedMotorSteering();
+					translateMotorSteering(roverNavigation->getCalculatedMotorSteering());
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Throttle: "));
+					translateMotorThrottle(roverNavigation->getCalculatedMotorThrottle());
+
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Rover Nav Status: "));
+					if (roverNavigation->hasReachedDestination())
+					{
+					_SERIAL_DEBUG_CHANNEL_.println(F("Destination Reached"));
+					}
+					else
+					{
+					_SERIAL_DEBUG_CHANNEL_.println(F("Still Navigating"));
+					}
+				#endif
+				
+				
+			}//end if
+			//else throw the whole lat/long pair away and keep the previous value
+		
+			
+			
+		}//end if	
+	 }//end if
+	else//Else notify that the GPS data isn't ready
 	{
 		_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Not Ready"));
-	}
+		
+		
+		#ifndef _HIDE_DATA_WHEN_GPS_NOT_READY //print data even when the GPS data is not ready (i.e. when _HIDE_DATA_WHEN_GPS_NOT_READY is commented out and not defined)
 
-
-
-
-
-
-
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#ifdef _HIDE_DATA_WHEN_GPS_NOT_READY
-	if (allGPSDataGathered)
-	{
-#endif
 		_SERIAL_DEBUG_CHANNEL_.println(F("========"));
 		_SERIAL_DEBUG_CHANNEL_.print(F("Desired Lat: "));
 		_SERIAL_DEBUG_CHANNEL_.println(roverNavigation->getLatitude(TYPE_DESIRED, UNIT_DEGREES), DECIMAL_PRECISION);//print with the define decimal precision
@@ -373,18 +444,23 @@ void loop() {
 		_SERIAL_DEBUG_CHANNEL_.print(F("Rover Nav Status: "));
 		if (roverNavigation->hasReachedDestination())
 		{
-			_SERIAL_DEBUG_CHANNEL_.println(F("Destination Reached"));
+		_SERIAL_DEBUG_CHANNEL_.println(F("Destination Reached"));
 		}
 		else
 		{
-			_SERIAL_DEBUG_CHANNEL_.println(F("Still Navigating"));
+		_SERIAL_DEBUG_CHANNEL_.println(F("Still Navigating"));
 		}
-
-
-
-#ifdef _HIDE_DATA_WHEN_GPS_NOT_READY
-	}//end if	
+		#endif
+					
+									
+									
+	}
+	 
+	
 #endif
+
+
+
 
 	
 	_SERIAL_DEBUG_CHANNEL_.println();//print a newline
@@ -441,17 +517,16 @@ void translateMotorThrottle(byte value)
 }
 
 
-double rxCompassData() {
+boolean rxCompassData(double &headingValue) {
 
 	byte rxdCharacterIndex = 0;//initialize the cursor to the beginning of the array
 	byte charsToRxdBeforeTimeout;//counts the number of characters received while waiting for the start of the compass data (i.e. $) before timing out
 	char rxData[COMPASS_DATA_CHAR_BUFFER_SIZE];
-	char defaultData[] = "999.9";//a default error/invalid heading data since the range is 0 to 360
 	char tempChar;
 	boolean foundStart = false;
 
 
-	//Check availabiltiy of serial data
+	//Check availability of serial data
 	if (_MAIN_SERIAL_.available())
 	{
 		do
@@ -482,23 +557,29 @@ double rxCompassData() {
 				else
 				{
 					_PC_USB_SERIAL_.println(F("CmpBuffOvrFlw"));
-					break;//exit out of while loop
+					headingValue = 999.9;//default error value
+					return false;//return false since buffer overflow
 				}//end else
 			}//end while
 		}
-		//else if no start character was found and time out has occurred, do nothing
-
-		
-
+		else//if no start character was found and time out has occurred, do nothing
+		{
+			headingValue = 999.9;//default error value
+			return false;//return false since did not receive the start of data
+		}//end else
 	}//end if
-	else//if no data found, copy in the default error data
+	else//if no data received over serial
 	{
-		strncpy(rxData, defaultData, sizeof(defaultData));
-	}
+		headingValue = 999.9;//default error value
+		return false;//return true since using default data
+	}//end else
 
 	CharArray::Trim(rxData);//truim any white spaces in the character array
 		
-	return atof(rxData);
+	headingValue = atof(rxData);
+	
+	return true;//return true once all data is received properly
+	
 
 }
 

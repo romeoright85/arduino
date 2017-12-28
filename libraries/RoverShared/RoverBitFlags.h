@@ -179,7 +179,8 @@
 		//System Status: flagSet_SystemStatus1
 //TEMPLATE//				#define _BTFG_FIRST_TRANSMISSION_								0x01
 				#define _BTFG_GPS_DATA_READY_								0x02
-
+				#define _BTFG_ALL_GPS_DATA_GATHERED_								0x04
+				#define _BTFG_ALL_HEADING_DATA_GATHERED_								0x08
 		//System Control: flagSet_SystemControls1
 //TEMPLATE//		#define _BTFG_ENABLE_MTR_POWER_								0x01		
 //TEMPLATE//		#define _BTFG_MTR_PREV_STATE_								0x02
