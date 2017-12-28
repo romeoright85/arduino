@@ -57,23 +57,25 @@ At POR (defaults):
 	pc_usb_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // PC_USB won't get autodata, as it would make the code really complex with a lot of duplication. If needed, you can always reroute the serial channels using #ifdef
 	main_pri_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // primary message queue
 	main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
+	
+	//Note: Since all messages go through MAIN, the destination has to be provided/preset/predetermined. If it needs to go to multiple places, then you need to send the message out multiple times separately.
 	auto_MAIN_data_array[] = {
-		ENC_STATUS_FRT_LEFT,
-		ENC_STATUS_FRT_RIGHT,
-		ENC_STATUS_REAR_LEFT,
-		ENC_STATUS_REAR_RIGHT,
-		MOTOR_TURN_STATUS,
-		MOTOR_SPEED_STATUS,
-		GIMBAL_PAN_STATUS,
-		GIMBAL_TILT_STATUS,
-		LONGITUDE_STATUS,
-		LATITUDE_STATUS,
-		ULTSNC_DISTANCE_FWD_LT_STATUS,
-		ULTSNC_DISTANCE_FWD_CTR_STATUS,
-		ULTSNC_DISTANCE_FWD_RT_STATUS,
-		ULTSNC_DISTANCE_SIDE_RT_STATUS,
-		ULTSNC_DISTANCE_SIDE_LT_STATUS,
-		ULTSNC_DISTANCE_REAR_CTR_STATUS
+		ENC_STATUS_FRT_LEFT, //To CMNC
+		ENC_STATUS_FRT_RIGHT, //To CMNC
+		ENC_STATUS_REAR_LEFT, //To CMNC
+		ENC_STATUS_REAR_RIGHT, //To CMNC
+		MOTOR_TURN_STATUS, //To CMNC
+		MOTOR_SPEED_STATUS, //To CMNC
+		GIMBAL_PAN_STATUS, //To CMNC
+		GIMBAL_TILT_STATUS, //To CMNC
+		LONGITUDE_STATUS, //To CMNC
+		LATITUDE_STATUS, //To CMNC
+		ULTSNC_DISTANCE_FWD_LT_STATUS, //To CMNC
+		ULTSNC_DISTANCE_FWD_CTR_STATUS, //To CMNC
+		ULTSNC_DISTANCE_FWD_RT_STATUS, //To CMNC
+		ULTSNC_DISTANCE_SIDE_RT_STATUS, //To CMNC
+		ULTSNC_DISTANCE_SIDE_LT_STATUS, //To CMNC
+		ULTSNC_DISTANCE_REAR_CTR_STATUS //To CMNC
 	}
 	auto_MAN_data_cnt = 0 //data counter
 	generic_health_error = false
@@ -462,7 +464,7 @@ At POR (defaults):
 			Then only run the highest priority functions for NAVI last, so it will overwrite anything else, right before state transition.
 			
 			skip ultrasonic sensors
-			skip wheel encoders
+			skip wheel encoders (for MAIN-external and for NAVI-internal)
 			skip GPS
 			
 			Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
@@ -520,7 +522,7 @@ At POR (defaults):
 		NORMAL_OPERATIONS
 	
 			Process ultrasonic sensors
-			Process wheel encoders
+			Process wheel encoders (for MAIN-external and for NAVI-internal)			
 			Process GPS
 
 			Categorize all commands/data from all sources.
@@ -551,7 +553,7 @@ At POR (defaults):
 		SYSTEM_ERROR
 	
 			Process ultrasonic sensors
-			Process wheel encoders
+			Process wheel encoders (for MAIN-external and for NAVI-internal)
 			Process GPS
 
 			Categorize all commands/data from all sources.
@@ -686,6 +688,13 @@ At POR (defaults):
 				buffer_remote_ctrl_selected = true //the rover is either fully manual, or semi-auto
 				//Note: No need to plan any route for SEMI_AUTO_DRIVE or MANUAL_DRIVE
 			end if
+			
+			Unless overridden,
+				set next state to OBJECT_AVOIDANCE			
+			Unless overridden,						
+				Mode: NORMAL_OPERATIONS
+			go to RUN_HOUSEKEEPING_TASKS	
+			
 		SYSTEM_SLEEPING	
 			do nothing
 		SYSTEM_WAKING
@@ -710,7 +719,15 @@ At POR (defaults):
 					calculate and override the corresponding LED patterns
 				end if
 				//Else, no need to calculate a different path when in MANUAL_DRIVE or when there are no objects in the way
-			end if		
+			end if	
+
+
+			Unless overridden,
+				set next state to CONTROL_OUTPUTS			
+			Unless overridden,						
+				Mode: NORMAL_OPERATIONS
+			go to RUN_HOUSEKEEPING_TASKS	
+			
 		SYSTEM_SLEEPING	
 			do nothing
 		SYSTEM_WAKING
@@ -1198,7 +1215,6 @@ POWER_ON_AND_HW_RESET
 INITIALIZATION
 SYNCHRONIZATION					
 NORMAL_OPERATIONS						
-
 SYSTEM_SLEEPING
 SYSTEM_WAKING
 SW_RESETTING
@@ -1479,11 +1495,21 @@ Conflicting Functions Ordered By Priority
 		Process motor power save status
 			Set mtrPowerIsOn value;
 	Set Mid Right Encoder Status (Status Received from MAIN)
-		Parse encoder message and save encoder values
+		Unpack, parse encoder message, and save encoder values
 			Set values for wheelEncoder_MidRight_Direction, wheelEncoder_MidRight_Speed, wheelEncoder_MidRight_Footage
 	Set Mid Left Encoder Status (Status Received from MAIN)
-		Parse encoder message and save encoder values
+		Unpack, parse encoder message, and save encoder values
 			Set values for wheelEncoder_MidLeft_Direction, wheelEncoder_MidLeft_Speed, wheelEncoder_MidLeft_Footage
+	Set Heading (from AUXI) i.e. HEADING_STATUS
+		Saves the heading value from AUXI's message	
+	Set IR Distance Forward Center (from AUXI) i.e. IR_DISTANCE_FWD_CTR_STATUS
+		Saves the ir distance status from AUXI's message			
+	Set IR Distance Side Right (from AUXI) i.e. IR_DISTANCE_SIDE_RT_STATUS
+		Saves the ir distance status from AUXI's message					
+	Set IR Distance Side Left (from AUXI) i.e. IR_DISTANCE_SIDE_LT_STATUS
+		Saves the ir distance status from AUXI's message				
+	Set IR Distance Rear Center (from AUXI) i.e. IR_DISTANCE_REAR_CTR_STATUS
+		Saves the ir distance status from AUXI's message					
 	Get Gimbal Pan Status
 		main_pri_msg_queue = GIMBAL_PAN_STATUS
 	Get Gimbal Tilt Status
@@ -1492,12 +1518,16 @@ Conflicting Functions Ordered By Priority
 		main_pri_msg_queue = LONGITUDE_STATUS
 	Get Latitude
 		main_pri_msg_queue = LATITUDE_STATUS
-	Set Latitude
+	Get GPS Fix Quality
+		main_pri_msg_queue = GPS_FIX_QUALITY_STATUS
+	Get GPS Satellites Tracked
+		main_pri_msg_queue = GPS_SATELLITES_STATUS
+	Set Latitude Destination
 		validate user_value
 		if user_value_valid == true
 			latitude = user_value
 		end if		
-	Set Longitude
+	Set Longitude Destination
 		validate user_value
 		if user_value_valid == true
 			longitude = user_value

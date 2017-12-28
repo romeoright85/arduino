@@ -57,7 +57,9 @@
 
 	//Buffer Sizes
 	#define UNIV_BUFFER_SIZE 75//universal buffer size of characters and strings for input/output messages. This was made universal so different messages can be processed with the same function.
-	#define _MAX_PROGMEM_BUFF_STR_LEN_ 15//Buffer Size to use for Command and Message Strings in flash, this should be the max string length allowed for any of the string in the cmd_str_table[] array. Note: Allow the last element of the array to hold the null character. So you will always have n-1 elements for the actual message.
+	#define _MAX_PROGMEM_BUFF_STR_LEN_ 22//Buffer Size to use for Command and Message Strings in flash, this should be the max string length allowed for any of the string in the cmd_str_table[] array. Note: Allow the last element of the array to hold the null character. So you will always have n-1 elements for the actual message.
+	//Note: Set this to 22 characters since IMU data is about 20 characters and you need 21 for the null character. Also add one more for spare, so 22 total.
+	//Example IMU Data: !ANG:0.27,1.56,16.47
 
 	
 	//Arduino Types
@@ -364,13 +366,32 @@
 		#define SW_RESET_RESEND_TIMEOUT_VALUE		50//time to wait for AUXI's or NAVI's SW Reset Acknowledgement to MAIN before restarting the SW Reset, by sending a NAVI or AUXI SW Request again.
 		#define MAIN_SYSTEM_ERROR_TIMEOUT_VALUE 50//time for MAIN to wait in SYSTEM_ERROR before it should reset a hw reset from COMM			
 	#endif
-	
-	#ifdef _AUXI_STATE_MACHINE_VARIABLES_
-		//WRITE ME LATER
-	#endif
+
+
 	#ifdef _NAVI_STATE_MACHINE_VARIABLES_
 		//WRITE ME LATER
+		
+//TEMPLATE//		#define MAIN_SYNC_TIMEOUT_VALUE 50//arbitrarily chosen value for now
+//TEMPLATE//		#define CONCURRENT_TRANSMISSION_DELAY		50//delay for about 1-5ms or so between potentially sending messages out again to the same arduino, //DEBUG arbitrarily chosen value for now
+//TEMPLATE//		#define SLEEPING_ERROR_TIMEOUT_VALUE 50//time to waiting and keep resending the AUXI's or NAVI's Sleep Requests from MAIN (since unlike SW requests, if it's already asleep and you send it another request, there is no hard) before MAIN should just error out itself.
+//TEMPLATE//		#define SW_RESET_ERROR_TIMEOUT_VALUE 50//time to waiting and resend the AUXI's or NAVI's SW Reset (Re-)Requests from MAIN before MAIN should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
+//TEMPLATE//		#define SW_RESET_RESEND_TIMEOUT_VALUE		50//time to wait for AUXI's or NAVI's SW Reset Acknowledgement to MAIN before restarting the SW Reset, by sending a NAVI or AUXI SW Request again.
+//TEMPLATE//		#define MAIN_SYSTEM_ERROR_TIMEOUT_VALUE 50//time for MAIN to wait in SYSTEM_ERROR before it should reset a hw reset from COMM			
+		
 	#endif
+
+	#ifdef _AUXI_STATE_MACHINE_VARIABLES_
+
+		
+//TEMPLATE//		#define MAIN_SYNC_TIMEOUT_VALUE 50//arbitrarily chosen value for now
+//TEMPLATE//		#define CONCURRENT_TRANSMISSION_DELAY		50//delay for about 1-5ms or so between potentially sending messages out again to the same arduino, //DEBUG arbitrarily chosen value for now
+//TEMPLATE//		#define SLEEPING_ERROR_TIMEOUT_VALUE 50//time to waiting and keep resending the AUXI's or NAVI's Sleep Requests from MAIN (since unlike SW requests, if it's already asleep and you send it another request, there is no hard) before MAIN should just error out itself.
+//TEMPLATE//		#define SW_RESET_ERROR_TIMEOUT_VALUE 50//time to waiting and resend the AUXI's or NAVI's SW Reset (Re-)Requests from MAIN before MAIN should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
+//TEMPLATE//		#define SW_RESET_RESEND_TIMEOUT_VALUE		50//time to wait for AUXI's or NAVI's SW Reset Acknowledgement to MAIN before restarting the SW Reset, by sending a NAVI or AUXI SW Request again.
+//TEMPLATE//		#define MAIN_SYSTEM_ERROR_TIMEOUT_VALUE 50//time for MAIN to wait in SYSTEM_ERROR before it should reset a hw reset from COMM			
+
+	
+	#endif	
 	
 	//definition for AnalogMuxSensor Channels
 	#ifdef _ROVERAMUXCHANNELS

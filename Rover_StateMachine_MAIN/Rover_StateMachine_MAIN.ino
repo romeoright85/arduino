@@ -100,6 +100,7 @@ Note: It seems to require the system ready command from some of the Arduinos to 
 //============Function Prototypes
 void InterruptDispatch_wheelEncoder_MidLeft();
 void InterruptDispatch_wheelEncoder_MidRight();
+
 void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============End of Function Prototypes
 
@@ -262,11 +263,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //=====SW Resettable Variables (reinitialize these variables on software reset)
 
-//Message Queues
-byte pc_usb_msg_queue = CMD_TAG_NO_MSG;
-byte comm_msg_queue = CMD_TAG_NO_MSG;
-byte navi_msg_queue = CMD_TAG_NO_MSG;
-byte auxi_msg_queue = CMD_TAG_NO_MSG;
+
 
 //Auto Data Counters
 //They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
@@ -274,12 +271,6 @@ byte auto_COMM_data_cnt = 0;
 byte auto_NAVI_data_cnt = 0;
 byte auto_AUXI_data_cnt = 0;
 
-
-//Flag(s) - Rover Data Channels Status
-byte ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
-byte ch2Status = DATA_STATUS_NOT_READY;//for COMM
-byte ch3Status = DATA_STATUS_NOT_READY;//for NAVI
-byte ch4Status = DATA_STATUS_NOT_READY;//for AUXI
 
 
 //Error Origin (used to send out the origin of the error with the error message)
@@ -295,7 +286,8 @@ byte flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first 
 byte flagSet_SystemStatus2 = _BTFG_NONE_;
 //Flag(s) - System Controls
 byte flagSet_SystemControls1 = _BTFG_NONE_;
-//Flag(s) - Command Filter Options - MAIN and CMNC each have their own set since they have separate data filters
+
+//Flag(s) - Command Filter Options - PC_USB, COMM, NAVI, and AUXI each have their own set since they have separate data filters
 
 //Command Filter Options for PC_USB: Set 1
 byte commandFilterOptionsSet1_PC_USB = _BTFG_NONE_;
@@ -321,12 +313,29 @@ byte commandFilterOptionsSet2_AUXI = _BTFG_NONE_;
 
 
 //Counters
-unsigned int timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
+unsigned int timeout_counter = 0; //shared counter, used to detect timeout of AUXI and NAVI responding back to MAIN for any reason (i.e. system go or system ready responses), used to track how long MAIN has been waiting for Sleep Requests, SW Resets Acknowledgements, System Error Timeouts, etc.
+
+
+
 unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
 
 
 
 //------------------From CommTester_MAIN
+
+//Message Queues
+// (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+byte pc_usb_msg_queue = CMD_TAG_NO_MSG;
+byte comm_msg_queue = CMD_TAG_NO_MSG;
+byte navi_msg_queue = CMD_TAG_NO_MSG;
+byte auxi_msg_queue = CMD_TAG_NO_MSG;
+
+//Flag(s) - Rover Data Channels Status
+byte ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
+byte ch2Status = DATA_STATUS_NOT_READY;//for COMM
+byte ch3Status = DATA_STATUS_NOT_READY;//for NAVI
+byte ch4Status = DATA_STATUS_NOT_READY;//for AUXI
+
 //RoverData and RoverComms
 //Ch1 is between MAIN and PC_USB
 RoverData * roverDataCh1_COMM = new RoverData();
@@ -441,7 +450,7 @@ byte auto_NAVI_data_array[] = {
 };
 //AUXI
 byte auto_AUXI_data_array[] = {
-	//add more as needed
+	CMD_TAG_MTR_PWR_STATUS
 };
 
 
@@ -604,7 +613,7 @@ void loop() {
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
 					//Keep the queuedState the same (unchanged)
 					//Keep the currentMode the same (unchanged)
-					runModeFunction_SYSTEM_SLEEPING(currentState);					
+					runModeFunction_SYSTEM_SLEEPING(currentState);			
 					break;
 				case SYSTEM_WAKING:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
@@ -1053,26 +1062,14 @@ void initializeVariables()
 {
 	//(re)initialize most global variables (i.e. for software reset)
 
-	//Message Queues
-	pc_usb_msg_queue = CMD_TAG_NO_MSG;
-	comm_msg_queue = CMD_TAG_NO_MSG;
-	navi_msg_queue = CMD_TAG_NO_MSG;
-	auxi_msg_queue = CMD_TAG_NO_MSG;
-
 
 	//Auto Data Counters
 	//They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
 	auto_COMM_data_cnt = 0;
 	auto_NAVI_data_cnt = 0;
 	auto_AUXI_data_cnt = 0;
-
-
-	//Flag(s) - Rover Data Channels Status
-	ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
-	ch2Status = DATA_STATUS_NOT_READY;//for COMM
-	ch3Status = DATA_STATUS_NOT_READY;//for NAVI
-	ch4Status = DATA_STATUS_NOT_READY;//for AUXI
-
+	
+	
 
 	//Error Origin (used to send out the origin of the error with the error message)
 	error_origin = ROVERCOMM_NONE;
@@ -1117,6 +1114,23 @@ void initializeVariables()
 	transmission_delay_cnt = 0;//concurrent transmission delay counter
 
 
+	
+	//Message Queues
+	pc_usb_msg_queue = CMD_TAG_NO_MSG;
+	comm_msg_queue = CMD_TAG_NO_MSG;
+	navi_msg_queue = CMD_TAG_NO_MSG;
+	auxi_msg_queue = CMD_TAG_NO_MSG;
+
+
+
+	//Flag(s) - Rover Data Channels Status
+	ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
+	ch2Status = DATA_STATUS_NOT_READY;//for COMM
+	ch3Status = DATA_STATUS_NOT_READY;//for NAVI
+	ch4Status = DATA_STATUS_NOT_READY;//for AUXI
+
+	
+	
 	//Variables used to latch and save encoder values during the READ_INPUT state
 	//Note: Having each of these sets of variables (5 bytes for each encoder, where a byte is 1 byte and an int is 2 bytes)  is still less bytes than storing two char arrays of packaged data of length _MAX_ROVER_COMMAND_DATA_LEN_ (which is about 14 bytes)
 	//MidLeft Encoder

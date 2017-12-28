@@ -41,6 +41,11 @@ ImuSensor (not really a class but functions)
 >>GlobalDelayTimer (also used above)
 >>DelayCounter (also used above)
 
+
+Note: IMU AHRS Data will be forwarded straight to CMNC. It won't get used by NAVI at this point to keep the code simple.
+	
+IMD data like roll, pitch, and yaw can be requested by any Arduino or CMNC. (NAVI currently doesn't use any IMU data EXCEPT for heading, in it's algorithms for simplicity)
+	
 LaserControl
 
 
@@ -53,7 +58,8 @@ RoverCommandCreator
 [DONE, TESTED GOOD] RoverSleeperServer
 
 
-
+RoverMessagePackager (See RvrMsgePckgrTester.ino)
+	For IMU AHRS Data to CMNC
 
 ===========================================
 State Machine - MAIN
@@ -84,8 +90,8 @@ RoverSleeperServer
 RoverSleeperClient
 
 
-		
-
+RoverMessagePackager	 (See RvrMsgePckgrTester.ino)
+	For Encoder Data to NAVI
 
 ===========================================
 State Machine - NAVI
@@ -104,7 +110,7 @@ MotorController
 
 GimbalController
 			
-UltrasonicSensor
+UltrasonicSensor (See UltrasonicSensorTest.ino)
 
 WheelEncoderSensor
 >DelayCounter
@@ -116,9 +122,7 @@ RoverData
 >RoverCommand
 RoverCommandCreator
 
-RoverGpsSensor		
-
-			
+		
 UnderglowLeds
 SideSignalLight
 BeaconLightAssembly
@@ -130,10 +134,13 @@ RoverSleeperServer
 
 		
 
-RoverNavigation
-
-
-
+RoverNavigation (See NavigationTester_NAVI.ino)
+	Note: No need to use RoverGpsSensor (See RoverGPSTester.ino). NavigationTester_NAVI accounts for the GPS already.
+	
+	
+RoverMessagePackager (See RvrMsgePckgrTester.ino)
+	For Encoder Data from MAIN
+	
 ===========================================
 State Machine - COMM
 ===========================================

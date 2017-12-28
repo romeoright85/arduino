@@ -33,9 +33,9 @@ Debug Operation
 //To test code, in RoverConfig uncomment _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_
 //To test code while in SYNCHRONIZATION mode, make sure to uncomment _DEBUG_TURN_OFF_ALL_DATA_FILTERS
 //To test code and allow redirection in SYNCHRONIZATION, uncomment _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE and _DEBUG_REDIRECTION_NOTICE
+//To test code you may want to uncomment #define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT in the code below in order to prevent sync timeout during debugging.
+//To test code ou may want to uncomment #define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS in the code below in order not to keep sending system ready statuses
 
-
-Note: You may want to uncomment #define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT in the code below in order to prevent sync timeout during debugging.
 
 To test locally with only one Arduino (best to test the UNO to make sure it can handle the memory needs for the COMM), first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
 
@@ -225,13 +225,6 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //=====SW Resettable Variables (reinitialize these variables on software reset)
 
-//Message Queues
-byte cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-byte main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-
-//Flag(s) - Rover Data Channels Status
-byte ch1Status = DATA_STATUS_NOT_READY;//for PC USB/CNMC
-byte ch2Status = DATA_STATUS_NOT_READY;//for MAIN
 
 //Error Origin (used to send out the origin of the error with the error message)
 byte error_origin = ROVERCOMM_NONE;
@@ -266,6 +259,15 @@ PirSensor * pirSensor = new PirSensor(PIR_PIN, &InterruptDispatch_PIRSensor);//N
 
 
 //------------------From CommTester_COMM
+//Message Queues
+// (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+byte cmnc_msg_queue = CMD_TAG_NO_MSG;
+byte main_msg_queue = CMD_TAG_NO_MSG;
+
+//Flag(s) - Rover Data Channels Status
+byte ch1Status = DATA_STATUS_NOT_READY;//for PC USB/CNMC
+byte ch2Status = DATA_STATUS_NOT_READY;//for MAIN
+
 //RoverData and RoverComms
 //Ch1 is between CMNC and COMM
 RoverData * roverDataCh1_COMM = new RoverData();
@@ -978,13 +980,6 @@ void initializeVariables()
 
 
 
-	//Message Queues
-	cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-	main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-									 //Flag(s) - Rover Data Channels Status
-	ch1Status = DATA_STATUS_NOT_READY;
-	ch2Status = DATA_STATUS_NOT_READY;
-
 	//Error Origin (used to send out the origin of the error with the error message)
 	error_origin = ROVERCOMM_NONE;
 	
@@ -1011,7 +1006,13 @@ void initializeVariables()
 	timeout_counter = 0; //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), used to track how long COMM has been waiting for a COMM SW Request back from MAIN, after it sent a ALL_SW_RESET_REQUEST to MAIN (which MAIN might have missed, since it's sent only once), etc. Make sure to clear it out before use and only use it for one purpose at a time.
 	transmission_delay_cnt = 0;//concurrent transmission delay counter
 
-
+	//Message Queues
+	cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+	main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+									 //Flag(s) - Rover Data Channels Status
+	ch1Status = DATA_STATUS_NOT_READY;
+	ch2Status = DATA_STATUS_NOT_READY;
+	
 	//resetting all objects in this sketch
 	for (byte i = 0; i < sizeof(resetArray) / sizeof(resetArray[0]); i++)
 	{

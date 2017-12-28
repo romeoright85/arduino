@@ -3,13 +3,38 @@ Where I left off
 
 DEADLINES:
 
-[13 days] (take 12/26 off) 12/27, 12/28, 12/29, 12/30, 12/31, 1/1, 1/6, 1/7, 1/12, 1/13, 1/14, 1/20, 1/21
+[19 days] 
 Rover_StateMachine_NAVI (get the rover rolling)
-[13 days]  /26, 1/27, 1/28, 2/3, 2/4, 2/9, 2/10, 2/11, 2/17, 2/18, 2/23, 2/24, 2/25
+	Get Framework up
+	12/27, 12/28
+	Write States and Modes (on average 1 day per mode ,except default)
+	12/29, 12/30, 12/31, 1/1, 1/6, 1/7, 1/12, 1/13
+	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE)
+	1/14, 1/20, 1/21, 1/26, 1/27, 1/28, 2/3, 2/4
+
+
+
+
+
+[14 days]
 Rover_StateMachine_AUXI (then get the leds and sensors working)
-[6 days] 3/3, 3/4, 3/9, 3/10, 3/11, 3/17 [Note: The rest of March 2018 is also free. Allow it for buffer just in case I fall behind or hang out somewhere]
+	Get Framework up
+	2/9, 2/10
+	Write States and Modes (on average 1 day per mode ,except default)
+	2/11, 2/17, 2/18, 2/23, 2/24, 2/25, 3/3, 3/4
+	Develop Axillary Code (i.e. SYSTEM_HEALTH)
+	3/9, 3/10, 3/11, 3/17
+	
+	[NEED TO DO FOR AUXI]Update and add to RoverMessagePackager for IMU data
+	Have a way for IMU data to get packaged and pass from AUXI to CMNC.
+	[NEED TO DO FOR AUXI] Add a command to receive Motor Power Status from MAIN's auto data
+
+
+
+[5 days] 3/18, 3/23, 3/24, 3/25, 3/31
 Test code
-Do a quick screen record with audo walking through roughly how to you would read one of the codes (i.e. MAIN) for documentation.
+	Update the timeouts (especially the sync ones) as needed to get the rover arduinos to all sync up.
+Do a quick screen record with audio walking through roughly how to you would read one of the codes (i.e. MAIN) for documentation.
 Go through and clean up the "//PLACEHOLDER"s in Rover_StateMachine_COMM
 	if have time go back to Rover_StateMachine_COMM and change some of the 1/3 or 3/3 brightness to blinks. need to write code to poll/time the blinks or use interrupts or something	
 	
@@ -24,9 +49,6 @@ Go through and clean up the "//PLACEHOLDER"s in Rover_StateMachine_COMM
 LAST THING DONE: (see #LEFT OFF HERE below)
 
 	
-	Then See below for	
-		"START HERE"
-		
 	
 	
 	
@@ -75,6 +97,11 @@ Test code as you go!!!
 
 
 
+
+
+====================================================================
+
+
 PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER DOWN THE CODE A LOT (i.e. remove secured comms, etc.)
 
 
@@ -83,8 +110,20 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 	
 			
 #LEFT OFF HERE, START HERE->Rover_StateMachine_NAVI:
-			[LEFT OFF] Start from scratch with the template.
+			[IN PROGRESS] Setting up framework for Rover_StateMachine_NAVI
+				[LEFT OFF] Adding objects used in NavigationTester_NAVI into the NAVI State Machine
+				[NEED TO DO] Add other variables used in NAVI State Machine Planning into the code
 
+				
+				[NEED TO DO] Create any predicted Bit Flags for NAVI based on the commands list
+					[DONE] gpsDataReady
+					//ADD MORE LATER
+					
+				[NEED TO DO] Add Wheel Encoder data from MAIN auto data, IR Distance Data from AUXI auto data, and Heading from AUXI auto data, to NAVI's PROCESS_DATA and in the commands NAVI can receive.
+			
+
+			
+			
 Starting on Rover_StateMachine_NAVI.ino at:
 	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Rover_StateMachine_NAVI
 

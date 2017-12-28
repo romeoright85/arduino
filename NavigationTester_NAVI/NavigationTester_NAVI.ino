@@ -251,7 +251,7 @@ void loop() {
 	allGPSDataGathered = true;
 #else
 
-	//=====Get Heading========
+	//=====Get Heading (from AUXI)========
 	//Get samples of actual heading from the IMU's Compass for sort and median
 	for (byte headingDataCounter = 0; headingDataCounter < 7; headingDataCounter++)
 	{

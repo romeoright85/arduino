@@ -45,7 +45,9 @@ At POR (defaults):
 	}// add more as needed	
 	auto_NAVI_data_cnt = 0 //data counter
 	//AUXI
-	auto_AUXI_data_array[] = {}// add more as needed
+	auto_AUXI_data_array[] = {
+		CMD_TAG_MTR_PWR_STATUS
+		}// add more as needed
 	auto_AUXI_data_cnt = 0 //data counter
 	//COMM
 	auto_COMM_data_array[] = {}// add more as needed

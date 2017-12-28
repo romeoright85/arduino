@@ -19,7 +19,7 @@ UltrasonicSensor * uSon_RearCenter = new UltrasonicSensor(REAR_CENTER_ULTSNC_TRI
 UltrasonicSensor * uSon_SideLeft = new UltrasonicSensor(SIDE_LEFT_ULTSNC_TRIG_PIN, SIDE_LEFT_ULTSNC_ECHO_PIN);
 
 
-int distanceMeasured;
+int distanceMeasured = 0;
 
 //Alternate the ultrasonics to prevent interference
 UltrasonicSensor * uSonSensors[6] =
