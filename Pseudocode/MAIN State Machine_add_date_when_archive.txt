@@ -37,21 +37,37 @@ At POR (defaults):
 	comm_system_ready = false	
 	enable_mtr_pwr = false
 	run_task_on_main_now = false //a shared status flag, used for sw resets, sleep requests, etc. Make sure to clear it out before use and only use it for one purpose at a time. It's used to track if auxi_acknowledgement and auxi_acknowledgement are true (i.e. they have given acknowledgements) before the system runs it's tasks for main.
+	
 	//NAVI
-	auto_NAVI_data_array[] = {
+	auto_MAIN_to_NAVI_data_array[] = {
 		MTR_PWR_STATUS,
 		ENC_STATUS_MID_LEFT,
 		ENC_STATUS_MID_RIGHT
 	}// add more as needed	
-	auto_NAVI_data_cnt = 0 //data counter
+	auto_MAIN_to_NAVI_data_cnt = 0 //data counter
+	
 	//AUXI
-	auto_AUXI_data_array[] = {
+	auto_MAIN_to_AUXI_data_array[] = {
 		CMD_TAG_MTR_PWR_STATUS
 		}// add more as needed
-	auto_AUXI_data_cnt = 0 //data counter
+	auto_MAIN_to_AUXI_data_cnt = 0 //data counter
+	
 	//COMM
-	auto_COMM_data_array[] = {}// add more as needed
-	auto_COMM_data_cnt = 0 //data counter
+	auto_MAIN_to_COMM_data_array[] = {
+	}// add more as needed
+	auto_MAIN_to_COMM_data_cnt = 0 //data counter
+	
+	//CMNC
+	auto_MAIN_to_CMNC_data_array[] = {
+	}// add more as needed
+	auto_MAIN_to_CMNC_data_cnt = 0 //data counter
+	
+	
+	
+	
+	
+	
+	
 	timeout_counter = 0 //shared counter, used to track how long MAIN has been waiting in the SYSTEM_ERROR state before requesting a hw reset from COMM, etc. Make sure to clear it out before use and only use it for one purpose at a time.
 		Note: It could go to sw reset after waiting in the SYSTEM_ERROR state for a long time, but go ahead and go with a hw reset as that's known to work more reliability than the sw reset
 	motor_power_prev_state = false //used to save the last state the motor power was on before turning it off to go to sleep
@@ -1071,29 +1087,48 @@ MAIN:
 					//PC_USB
 					if pc_usb_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for PC_USB as needed based on pc_usb_msg_queue		
-					endif
+					end if
 					//COMM
 					if comm_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
-					else //since there is no custom data, then send the next auto data										
-					create message corresponding to the next auto data for COMM
-						comm_msg_queue = auto_COMM_data_array[auto_COMM_data_cnt]
+					end if
+					//Since this is a shared data channel, create message corresponding to the next auto data for COMM, then for CMNC
+					else if( sizeof(auto_MAIN_to_COMM_data_array) > 0 && auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array))
+					//if the array has data and the count is less than the size of the array
+					
+						comm_msg_queue = auto_MAIN_to_COMM_data_array[auto_MAIN_to_COMM_data_cnt]
 						//set the next auto data for COMM for the next loop
-						auto_COMM_data_cnt++
-						if auto_COMM_data_cnt >= sizeof(auto_COMM_data_array)
-							auto_COMM_data_cnt = 0
-						endif						
+						auto_MAIN_to_COMM_data_cnt++
+					end else if
+					else if( sizeof(auto_MAIN_to_CMNC_data_array) > 0 && auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array))
+					//if the array has data and the count is less than the size of the array
+					
+						comm_msg_queue = auto_MAIN_to_CMNC_data_array[auto_MAIN_to_CMNC_data_cnt]
+						//set the next auto data for CMNC for the next loop
+						auto_MAIN_to_CMNC_data_cnt++
+					end else if
+					else if( auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) && auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array))
+					//if all auto data has already been sent out
+					
+						//reset their counters
+						auto_MAIN_to_COMM_data_cnt = 0
+						auto_MAIN_to_CMNC_data_cnt = 0
+					end else if
+					//else do nothing since there was no message and no auto data		
+						
+						
+						
 					end if					
 					//NAVI
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for NAVI as needed based on navi_msg_queue					
 					else //since there is no custom data, then send the next auto data										
 						create message corresponding to the next auto data for NAVI
-						navi_msg_queue = auto_NAVI_data_array[auto_NAVI_data_cnt]
+						navi_msg_queue = auto_MAIN_to_NAVI_data_array[auto_MAIN_to_NAVI_data_cnt]
 						//set the next auto data for NAVI for the next loop
-						auto_NAVI_data_cnt++
-						if auto_NAVI_data_cnt >= sizeof(auto_NAVI_data_array)
-							auto_NAVI_data_cnt = 0
+						auto_MAIN_to_NAVI_data_cnt++
+						if auto_MAIN_to_NAVI_data_cnt >= sizeof(auto_MAIN_to_NAVI_data_array)
+							auto_MAIN_to_NAVI_data_cnt = 0
 						endif
 					end if
 					//AUXI
@@ -1101,11 +1136,11 @@ MAIN:
 						create any msg(s) for AUXI as needed based on auxi_msg_queue					
 					else //since there is no custom data, then send the next auto data										
 						create message corresponding to the next auto data for AUXI
-						auxi_msg_queue = auto_AUXI_data_array[auto_AUXI_data_cnt]
+						auxi_msg_queue = auto_MAIN_to_AUXI_data_array[auto_MAIN_to_AUXI_data_cnt]
 						//set the next auto data for AUXI for the next loop
-						auto_AUXI_data_cnt++
-						if auto_AUXI_data_cnt >= sizeof(auto_AUXI_data_array)
-							auto_AUXI_data_cnt = 0
+						auto_MAIN_to_AUXI_data_cnt++
+						if auto_MAIN_to_AUXI_data_cnt >= sizeof(auto_MAIN_to_AUXI_data_array)
+							auto_MAIN_to_AUXI_data_cnt = 0
 						endif		
 					end if
 

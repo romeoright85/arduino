@@ -267,9 +267,10 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //Auto Data Counters
 //They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
-byte auto_COMM_data_cnt = 0;
-byte auto_NAVI_data_cnt = 0;
-byte auto_AUXI_data_cnt = 0;
+byte auto_MAIN_to_COMM_data_cnt = 0;
+byte auto_MAIN_to_CMNC_data_cnt = 0;
+byte auto_MAIN_to_NAVI_data_cnt = 0;
+byte auto_MAIN_to_AUXI_data_cnt = 0;
 
 
 
@@ -436,20 +437,26 @@ RoverReset * resetArray[] = {
 //Auto Data Arrays
 //Note: PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
 
-//COMM
-byte auto_COMM_data_array[] = {
+//COMM (will have to send data through a shared channel with CMNC)
+byte auto_MAIN_to_COMM_data_array[] = {
 	//add more as needed
 };
 
+//CMNC (will have to send data through a shared channel with COMM)
+byte auto_MAIN_to_CMNC_data_array[] = {
+	//add more as needed
+};
+
+
 //NAVI
-byte auto_NAVI_data_array[] = {
+byte auto_MAIN_to_NAVI_data_array[] = {
 	CMD_TAG_MTR_PWR_STATUS,
 	CMD_TAG_ENC_STATUS_MID_LEFT,
 	CMD_TAG_ENC_STATUS_MID_RIGHT
 	//add more as needed	
 };
 //AUXI
-byte auto_AUXI_data_array[] = {
+byte auto_MAIN_to_AUXI_data_array[] = {
 	CMD_TAG_MTR_PWR_STATUS
 };
 
@@ -1065,9 +1072,10 @@ void initializeVariables()
 
 	//Auto Data Counters
 	//They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
-	auto_COMM_data_cnt = 0;
-	auto_NAVI_data_cnt = 0;
-	auto_AUXI_data_cnt = 0;
+	auto_MAIN_to_COMM_data_cnt = 0;
+	auto_MAIN_to_CMNC_data_cnt = 0;
+	auto_MAIN_to_NAVI_data_cnt = 0;
+	auto_MAIN_to_AUXI_data_cnt = 0;
 	
 	
 
@@ -1902,6 +1910,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 		}//end else		
 	}//end if
 	else if (roverCommDestination == ROVERCOMM_COMM)
+//FIX ME, add CMNC option
 	{
 		queueOfInterest = comm_msg_queue;
 		if (roverDataForCOMM != NULL)//make sure the roverDataPointer is not NULL
@@ -2763,7 +2772,16 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Creates data for COMM
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
-				createDataFromQueueFor(ROVERCOMM_COMM);
+//FIX ME, add an override flag
+				if()//data is for COMM
+				{
+					createDataFromQueueFor(ROVERCOMM_COMM);
+				}
+				else //data is for CMNC
+				{
+					createDataFromQueueFor(ROVERCOMM_COMM);
+				}
+				
 				
 				//skip auto data	
 								
@@ -2793,13 +2811,14 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		case TX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
 		
 			//Note: No redirection during SYNCHRONIZATION.
-			
+
 			//Sends data to PC_USB
 			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
 			{
 				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 			}//end if
 			//Sends data to COMM
+//FIX ME, add CMNC option	
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
 				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
@@ -3176,56 +3195,75 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
 			
 			
-			//Creates data for COMM
-			if (comm_msg_queue != CMD_TAG_NO_MSG)
+			if (comm_msg_queue != CMD_TAG_NO_MSG)//if there is normal (non auto) data to send out through COMM
 			{
 				createDataFromQueueFor(ROVERCOMM_COMM);
-			}//end if
-			else if(sizeof(auto_COMM_data_array) > 0 )//if there is auto data for COMM
-			//comm_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
+			}//end if	
+			//Since this is a shared data channel, create message corresponding to the next auto data for COMM, then for CMNC			
+			else if( sizeof(auto_MAIN_to_COMM_data_array) > 0 && auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array) )//if all COMM auto data in the array has not been sent yet and there is any data in the auto data COMM array
 			{
+				//Then since comm_msg_queue == CMD_TAG_NO_MSG, then there is no requested data, so go ahead and create and send out auto data for this channel
 
-				//Assign the next auto message to the queue
-				comm_msg_queue = auto_COMM_data_array[auto_COMM_data_cnt];
+					//Assign the next auto message to the queue
+					comm_msg_queue = auto_MAIN_to_COMM_data_array[auto_MAIN_to_COMM_data_cnt];
+//LEFT OFF HERE
+//FIX ME, need to add destination override
+					//Create the message
+					createDataFromQueueFor(ROVERCOMM_COMM);
+					
+					//Loop/Increment the auto data for the next iteration
+					auto_MAIN_to_COMM_data_cnt++;
 
-				//Create the message
-				createDataFromQueueFor(ROVERCOMM_COMM);
-				
-				//Loop/Increment the auto data for the next iteration
-								
-				auto_COMM_data_cnt++;
-				if (auto_COMM_data_cnt >= sizeof(auto_COMM_data_array))
-				{
-					auto_COMM_data_cnt = 0;
-				}//end if
-				
-				//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
-				
+					//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
+
 			}//end else if
+			else if ( sizeof(auto_MAIN_to_CMNC_data_array) > 0 && auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array) )//if all COMM auto data in the array has not been sent yet and there is any data in the auto data CMNC array
+			{
+					//Then since comm_msg_queue == CMD_TAG_NO_MSG, then there is no requested data, so go ahead and create and send out auto data for this channel
+//FIX ME, need to add destination override
+					//Assign the next auto message to the queue
+					comm_msg_queue = auto_MAIN_to_CMNC_data_array[auto_MAIN_to_CMNC_data_cnt];
+
+					//Create the message
+					createDataFromQueueFor(ROVERCOMM_COMM);
+					
+					//Loop/Increment the auto data for the next iteration
+					auto_MAIN_to_CMNC_data_cnt++;
+
+					//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
+
+			}//end else if
+			else if ( auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) && auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array) )//once both COMM and CMNC data has been sent
+			{
+//FIX ME, need to clear destination override			
+				//reset their counters
+				auto_MAIN_to_COMM_data_cnt = 0;
+				auto_MAIN_to_CMNC_data_cnt = 0;
+			}//end if else
 			//else do nothing since there was no message and no auto data
-			
+		
 			
 			//Creates data for NAVI
 			if (navi_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_NAVI);
 			}//end if
-			else if(sizeof(auto_NAVI_data_array) > 0 )//if there is auto data for NAVI
+			else if(sizeof(auto_MAIN_to_NAVI_data_array) > 0 )//if there is auto data for NAVI
 			//navi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
 			{
 
 				//Assign the next auto message to the queue
-				navi_msg_queue = auto_NAVI_data_array[auto_NAVI_data_cnt];
+				navi_msg_queue = auto_MAIN_to_NAVI_data_array[auto_MAIN_to_NAVI_data_cnt];
 
 				//Create the message
 				createDataFromQueueFor(ROVERCOMM_COMM);
 				
 				//Loop/Increment the auto data for the next iteration
 								
-				auto_NAVI_data_cnt++;
-				if (auto_NAVI_data_cnt >= sizeof(auto_NAVI_data_array))
+				auto_MAIN_to_NAVI_data_cnt++;
+				if (auto_MAIN_to_NAVI_data_cnt >= sizeof(auto_MAIN_to_NAVI_data_array))
 				{
-					auto_NAVI_data_cnt = 0;
+					auto_MAIN_to_NAVI_data_cnt = 0;
 				}//end if
 				
 				//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
@@ -3239,22 +3277,22 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			{
 				createDataFromQueueFor(ROVERCOMM_AUXI);
 			}//end if	
-			else if(sizeof(auto_AUXI_data_array) > 0 )//if there is auto data for AUXI
+			else if(sizeof(auto_MAIN_to_AUXI_data_array) > 0 )//if there is auto data for AUXI
 			//auxi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
 			{
 
 				//Assign the next auto message to the queue
-				auxi_msg_queue = auto_AUXI_data_array[auto_AUXI_data_cnt];
+				auxi_msg_queue = auto_MAIN_to_AUXI_data_array[auto_MAIN_to_AUXI_data_cnt];
 
 				//Create the message
 				createDataFromQueueFor(ROVERCOMM_COMM);
 				
 				//Loop/Increment the auto data for the next iteration
 								
-				auto_AUXI_data_cnt++;
-				if (auto_AUXI_data_cnt >= sizeof(auto_AUXI_data_array))
+				auto_MAIN_to_AUXI_data_cnt++;
+				if (auto_MAIN_to_AUXI_data_cnt >= sizeof(auto_MAIN_to_AUXI_data_array))
 				{
-					auto_AUXI_data_cnt = 0;
+					auto_MAIN_to_AUXI_data_cnt = 0;
 				}//end if
 				
 				//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
@@ -3280,6 +3318,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 				}//end if
 				//2. Sends data to COMM
+//FIX ME, add CMNC option
 				if (comm_msg_queue != CMD_TAG_NO_MSG)
 				{
 					txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
@@ -3862,6 +3901,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 			}//end if
 			//Sends data to COMM
+//FIX ME, add CMNC option
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
 				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
@@ -4538,6 +4578,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 			}//end if
 			//Sends data to COMM
+//FIX ME, add CMNC option
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
 				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
@@ -5191,6 +5232,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 					txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 				}//end if
 				//2. Sends data to COMM
+//FIX ME, add CMNC option
 				if (comm_msg_queue != CMD_TAG_NO_MSG)
 				{
 					txData(txMsgBuffer_COMM, ROVERCOMM_COMM);

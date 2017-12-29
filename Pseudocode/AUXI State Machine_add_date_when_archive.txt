@@ -24,6 +24,8 @@ At POR (defaults):
 	main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
 	
 	//Note: Since all messages go through MAIN, the destination has to be provided/preset/predetermined. If it needs to go to multiple places, then you need to send the message out multiple times separately.
+	
+	
 	auto_data_array[] = {
 		VOLTAGE_7D2_ACTUAL_STATUS, //To CMNC
 		CURRENT_7D2_PRESW25A_ACTUAL_STATUS, //To CMNC
@@ -66,7 +68,6 @@ At POR (defaults):
 		CURRENT_FAULT_5_7D2_12D5A_SW_STATUS //To CMNC
 	}// add more as needed
 	auto_data_cnt_MAIN = 0 //data counter
-	auto_data_cnt_PC_USB = 0 //data counter
 	transmission_delay_cnt = 0;//concurrent transmission delay counter
 	first_transmission = true
 	main_system_ready = false
@@ -607,6 +608,13 @@ At POR (defaults):
 				create any msg(s) for MAIN as needed based on main_pri_msg_queue					
 			else //since there is no custom data for the primary queue, then send the next auto data										
 				create message corresponding to the next auto data for MAIN
+				
+				
+				
+				
+				
+				
+				
 				main_pri_msg_queue = auto_data_array[auto_data_cnt_MAIN]
 				//set the next auto data for MAIN for the next use
 				auto_MAN_data_cnt++
@@ -804,11 +812,11 @@ At POR (defaults):
 		SYSTEM_SLEEPING
 			//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary				
 			if pc_usb_msg_queue != CMD_TAG_NO_MSG
-				Sends interally generated msg(s) to PC_USB
+				Sends internally generated msg(s) to PC_USB
 			end if	
 			//Only the primary message queue is sent (the sleeping acknowledgement to MAIN), and everything else can be ignored since the system is going to sleep anyways.
 			If main_pri_msg_queue != CMD_TAG_NO_MSG
-				Sends interally generated msg(s) to MAIN//Sends the sleeping acknowledgement
+				Sends internally generated msg(s) to MAIN//Sends the sleeping acknowledgement
 			end if			
 			clear message queues
 				pc_usb_msg_queue = CMD_TAG_NO_MSG					
@@ -851,10 +859,10 @@ At POR (defaults):
 		SW_RESETTING
 			//AUXI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary			
 			if pc_usb_msg_queue != CMD_TAG_NO_MSG
-				Sends interally generated msg(s) to PC_USB
+				Sends internally generated msg(s) to PC_USB
 			end if				
 			If main_pri_msg_queue != CMD_TAG_NO_MSG
-				Sends interally generated msg(s) to MAIN//Sends the SW reset acknowledgement
+				Sends internally generated msg(s) to MAIN//Sends the SW reset acknowledgement
 			end if				
 			clear message queues
 				pc_usb_msg_queue = CMD_TAG_NO_MSG	
@@ -876,10 +884,10 @@ At POR (defaults):
 				transmission_delay_cnt = 0
 				//send the first set of messages
 				if pc_usb_msg_queue != CMD_TAG_NO_MSG
-					Sends interally generated msg(s) to PC_USB
+					Sends internally generated msg(s) to PC_USB
 				end if					
 				if main_pri_msg_queue != CMD_TAG_NO_MSG
-					Sends interally generated msg(s) to MAIN
+					Sends internally generated msg(s) to MAIN
 				end if						
 				//check to see if there are any second messages to send
 				if main_sec_msg_queue != CMD_TAG_NO_MSG
@@ -903,7 +911,7 @@ At POR (defaults):
 				if transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY //once the desired delay has been reached, continue with the code							
 					//Send the second set of messages
 					if main_sec_msg_queue != CMD_TAG_NO_MSG
-						Sends interally generated msg(s) to MAIN
+						Sends internally generated msg(s) to MAIN
 					end if			
 					clear message queues
 						pc_usb_msg_queue = CMD_TAG_NO_MSG	
@@ -982,9 +990,9 @@ DEFAULT
 Command Options (i.e. used in the PROCESS_DATA state. Typically from the NORMAL_OPERATIONS mode, but not always)
 ==================	
 Note: With external commands, you only want to do all hw or all sw request (and not individual hw/sw requests). Else the system won't be in sync anymore. So hw/sw requests must be synced and have controlled points of entry.
-	But interally, it may call individual commands as required.
+	But internally, it may call individual commands as required.
 Note: With external commands, you only want to do all sleep requests (and not individual sleep requests). Else the system won't be in sync anymore. So sleep requests must be synced and have controlled points of entry.
-	But interally, it may call individual commands as required.
+	But internally, it may call individual commands as required.
 
 --------------	
 

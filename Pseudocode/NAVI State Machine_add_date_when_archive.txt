@@ -54,30 +54,46 @@ At POR (defaults):
 	Next State: RUN_HOUSEKEEPING_TASKS
 	Current Mode: POWER_ON_AND_HW_RESET *begin*
 	Next Mode: POWER_ON_AND_HW_RESET 
+	
 	pc_usb_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // PC_USB won't get autodata, as it would make the code really complex with a lot of duplication. If needed, you can always reroute the serial channels using #ifdef
+	
 	main_pri_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // primary message queue
+	
 	main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
 	
-	//Note: Since all messages go through MAIN, the destination has to be provided/preset/predetermined. If it needs to go to multiple places, then you need to send the message out multiple times separately.
-	auto_MAIN_data_array[] = {
-		ENC_STATUS_FRT_LEFT, //To CMNC
-		ENC_STATUS_FRT_RIGHT, //To CMNC
-		ENC_STATUS_REAR_LEFT, //To CMNC
-		ENC_STATUS_REAR_RIGHT, //To CMNC
-		MOTOR_TURN_STATUS, //To CMNC
-		MOTOR_SPEED_STATUS, //To CMNC
-		GIMBAL_PAN_STATUS, //To CMNC
-		GIMBAL_TILT_STATUS, //To CMNC
-		LONGITUDE_STATUS, //To CMNC
-		LATITUDE_STATUS, //To CMNC
-		ULTSNC_DISTANCE_FWD_LT_STATUS, //To CMNC
-		ULTSNC_DISTANCE_FWD_CTR_STATUS, //To CMNC
-		ULTSNC_DISTANCE_FWD_RT_STATUS, //To CMNC
-		ULTSNC_DISTANCE_SIDE_RT_STATUS, //To CMNC
-		ULTSNC_DISTANCE_SIDE_LT_STATUS, //To CMNC
-		ULTSNC_DISTANCE_REAR_CTR_STATUS //To CMNC
+
+	
+	auto_NAVI_to_CMNC_data_array[] = {
+		ENC_STATUS_FRT_LEFT,
+		ENC_STATUS_FRT_RIGHT,
+		ENC_STATUS_REAR_LEFT,
+		ENC_STATUS_REAR_RIGHT,
+		MOTOR_TURN_STATUS,
+		MOTOR_SPEED_STATUS,
+		GIMBAL_PAN_STATUS,
+		GIMBAL_TILT_STATUS,
+		LONGITUDE_STATUS,
+		LATITUDE_STATUS,
+		ULTSNC_DISTANCE_FWD_LT_STATUS,
+		ULTSNC_DISTANCE_FWD_CTR_STATUS,
+		ULTSNC_DISTANCE_FWD_RT_STATUS,
+		ULTSNC_DISTANCE_SIDE_RT_STATUS,
+		ULTSNC_DISTANCE_SIDE_LT_STATUS,
+		ULTSNC_DISTANCE_REAR_CTR_STATUS
 	}
-	auto_MAN_data_cnt = 0 //data counter
+	auto_NAVI_to_CNMC_data_cnt = 0 //data counter
+	auto_NAVI_to_MAIN_data_array[] = {
+	}
+	auto_NAVI_to_MAIN_data_cnt = 0 //data counter
+	auto_NAVI_to_AUXI_data_array[] = {
+	}
+	auto_NAVI_to_AUXI_data_cnt = 0 //data counter
+	auto_NAVI_to_COMM_data_array[] = {
+	}
+	auto_NAVI_to_COMM_data_cnt = 0 //data counter
+	
+
+	
 	generic_health_error = false
 	generic_system_error = false
 	transmission_delay_cnt = 0;//concurrent transmission delay counter
@@ -858,23 +874,23 @@ At POR (defaults):
 			if main_pri_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for MAIN as needed based on main_pri_msg_queue					
 			else //since there is no custom data for the primary queue, then send the next auto data										
-				create message corresponding to the next auto data for MAIN
-				main_pri_msg_queue = auto_MAIN_data_array[auto_MAN_data_cnt]
-				//set the next auto data for MAIN for the next use				
-				auto_MAN_data_cnt++
-				if auto_MAN_data_cnt >= sizeof(auto_MAIN_data_array)
-					auto_MAN_data_cnt = 0
+				create message corresponding to the next auto data for MAIN (to CMNC, MAIN,AUXI,)
+				main_pri_msg_queue = auto_NAVI_to_CMNC_data_array[auto_NAVI_to_CNMC_data_cnt]
+				//set the next auto data for  MAIN (to CMNC) for the next use				
+				auto_NAVI_to_CNMC_data_cnt++
+				if auto_NAVI_to_CNMC_data_cnt >= sizeof(auto_NAVI_to_CMNC_data_array)
+					auto_NAVI_to_CNMC_data_cnt = 0
 				endif														
 			end if
 			if main_sec_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for MAIN as needed based on main_sec_msg_queue					
 			else //since there is no custom data for the secondary queue, then send the next auto data										
 				create message corresponding to the next auto data for MAIN
-				main_sec_msg_queue = auto_MAIN_data_array[auto_MAN_data_cnt]
+				main_sec_msg_queue = auto_NAVI_to_CMNC_data_array[auto_NAVI_to_CNMC_data_cnt]
 				//set the next auto data for MAIN for the next use
-				auto_MAN_data_cnt++
-				if auto_MAN_data_cnt >= sizeof(auto_MAIN_data_array)
-					auto_MAN_data_cnt = 0
+				auto_NAVI_to_CNMC_data_cnt++
+				if auto_NAVI_to_CNMC_data_cnt >= sizeof(auto_NAVI_to_CMNC_data_array)
+					auto_NAVI_to_CNMC_data_cnt = 0
 				endif	
 			end if
 			Mode: NORMAL_OPERATIONS
@@ -916,22 +932,22 @@ At POR (defaults):
 						
 			else //since there is no custom data for the primary queue, then send the next auto data										
 				create message corresponding to the next auto data for MAIN
-				main_pri_msg_queue = auto_MAIN_data_array[auto_MAN_data_cnt]
+				main_pri_msg_queue = auto_NAVI_to_CMNC_data_array[auto_NAVI_to_CNMC_data_cnt]
 				//set the next auto data for MAIN for the next use
-				auto_MAN_data_cnt++
-				if auto_MAN_data_cnt >= sizeof(auto_MAIN_data_array)
-					auto_MAN_data_cnt = 0
+				auto_NAVI_to_CNMC_data_cnt++
+				if auto_NAVI_to_CNMC_data_cnt >= sizeof(auto_NAVI_to_CMNC_data_array)
+					auto_NAVI_to_CNMC_data_cnt = 0
 				endif	
 			end if
 			if main_sec_msg_queue != CMD_TAG_NO_MSG
 				create any msg(s) for MAIN as needed based on main_sec_msg_queue					
 			else //since there is no custom data for the secondary queue, then send the next auto data										
 				create message corresponding to the next auto data for MAIN
-				main_sec_msg_queue = auto_MAIN_data_array[auto_MAN_data_cnt]
+				main_sec_msg_queue = auto_NAVI_to_CMNC_data_array[auto_NAVI_to_CNMC_data_cnt]
 				//set the next auto data for MAIN for the next use
-				auto_MAN_data_cnt++
-				if auto_MAN_data_cnt >= sizeof(auto_MAIN_data_array)
-					auto_MAN_data_cnt = 0
+				auto_NAVI_to_CNMC_data_cnt++
+				if auto_NAVI_to_CNMC_data_cnt >= sizeof(auto_NAVI_to_CMNC_data_array)
+					auto_NAVI_to_CNMC_data_cnt = 0
 				endif	
 			end if
 			Mode: SYSTEM_ERROR

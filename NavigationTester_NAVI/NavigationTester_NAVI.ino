@@ -169,43 +169,15 @@ Example Output:
 
 GPS Data Ready
 ========
-Desired Lat: 39.2686
-Desired Lon: -76.6117
-Actual Lat: 39.2683
-Actual Lon: -76.6111
-Rover Heading: 158.8700
-Distance: 63.2529
-True Bearing: 299.3965
-Relative Bearing: 140.5265
-Get Motor Steering: Sharp Right
-Get Motor Throttle: Normal Speed
-Rover Nav Status: Still Navigating
-
-GPS Data Ready
-========
-Desired Lat: 39.2686
-Desired Lon: -76.6117
-Actual Lat: 39.2683
-Actual Lon: -76.6111
-Rover Heading: 157.6800
-Distance: 63.2529
-True Bearing: 299.3965
-Relative Bearing: 141.7165
-Get Motor Steering: Sharp Right
-Get Motor Throttle: Normal Speed
-Rover Nav Status: Still Navigating
-
-GPS Data Ready
-========
-Desired Lat: 39.2686
-Desired Lon: -76.6117
-Actual Lat: 39.2683
-Actual Lon: -76.6111
-Rover Heading: 160.5600
-Distance: 63.2529
-True Bearing: 299.3965
-Relative Bearing: 138.8365
-Get Motor Steering: Sharp Right
+Desired Lat: 39.26860
+Desired Lon: -76.61170
+Actual Lat: 39.27120
+Actual Lon: -76.61065
+Rover Heading: 251.97000
+Distance: 302.83666
+True Bearing: 197.43000
+Relative Bearing: -54.53999
+Get Motor Steering: Wide Left
 Get Motor Throttle: Normal Speed
 Rover Nav Status: Still Navigating
 

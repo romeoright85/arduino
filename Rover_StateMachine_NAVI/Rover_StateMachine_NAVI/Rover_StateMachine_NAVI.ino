@@ -83,6 +83,11 @@ Can send:
 #include <RoverGpsSensor.h>
 #include <CharArray.h>
 #include <BubbleSort.h>
+#include <UnderglowLeds.h>
+#include <SideSignalLight.h>
+#include <BeaconLightAssembly.h>
+#include <HeadLightAssembly.h>
+#include <TailLightAssembly.h>
 //WRITE MORE LATER
 //ADD MORE LATER
 
@@ -216,8 +221,34 @@ byte error_origin = ROVERCOMM_NONE;
 //------------------From CommTester_MAIN
 //Message Queues
 // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-byte pc_usb_msg_queue = CMD_TAG_NO_MSG;
-byte main_msg_queue = CMD_TAG_NO_MSG;
+byte pc_usb_msg_queue = CMD_TAG_NO_MSG;// PC_USB won't get autodata, as it would make the code really complex with a lot of duplication. If needed, you can always reroute the serial channels using #ifdef
+byte main_pri_msg_queue = CMD_TAG_NO_MSG;// primary message queue
+byte main_sec_msg_queue = CMD_TAG_NO_MSG;//secondary message queue
+	
+//Note: Since all messages go through MAIN, the destination has to be provided/preset/predetermined. If it needs to go to multiple places, then you need to send the message out multiple times separately.
+
+//LEFT OFF HERE
+/*FIX ME
+byte auto_MAIN_data_array[] = {
+	ENC_STATUS_FRT_LEFT, //To CMNC
+	ENC_STATUS_FRT_RIGHT, //To CMNC
+	ENC_STATUS_REAR_LEFT, //To CMNC
+	ENC_STATUS_REAR_RIGHT, //To CMNC
+	MOTOR_TURN_STATUS, //To CMNC
+	MOTOR_SPEED_STATUS, //To CMNC
+	GIMBAL_PAN_STATUS, //To CMNC
+	GIMBAL_TILT_STATUS, //To CMNC
+	LONGITUDE_STATUS, //To CMNC
+	LATITUDE_STATUS, //To CMNC
+	ULTSNC_DISTANCE_FWD_LT_STATUS, //To CMNC
+	ULTSNC_DISTANCE_FWD_CTR_STATUS, //To CMNC
+	ULTSNC_DISTANCE_FWD_RT_STATUS, //To CMNC
+	ULTSNC_DISTANCE_SIDE_RT_STATUS, //To CMNC
+	ULTSNC_DISTANCE_SIDE_LT_STATUS, //To CMNC
+	ULTSNC_DISTANCE_REAR_CTR_STATUS //To CMNC
+}//end of auto_MAIN_data_array[]
+*/
+	
 
 //Flag(s) - Rover Data Channels Status
 byte ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
@@ -307,6 +338,23 @@ double headingArray[7];//stores heading samples for sort and median, size is fix
 
 
 
+//------------------From DigitalLedTester.ino
+//using a counter to create delays while still allowing the loop() to run (i.e. for messages, etc.)
+//TEMPLATE//unsigned long modesToggleDelay = 0;
+//A counter use to increment through the different modes
+//TEMPLATE//byte modesTester = 0;
+
+
+UnderglowLeds * underglowLight = new UnderglowLeds(UNDERGLOW_PIN);
+SideSignalLight * leftSideSignal = new SideSignalLight(SIDE_LEFT_SIGNAL_PIN);
+SideSignalLight * rightSideSignal = new SideSignalLight(SIDE_RIGHT_SIGNAL_PIN);
+BeaconLightAssembly * beaconLightAssy = new BeaconLightAssembly(FRONT_LEFT_BEACON_IR_PIN, BACK_LEFT_BEACON_IR_PIN, BACK_RIGHT_BEACON_IR_PIN, FRONT_RIGHT_BEACON_IR_PIN, LEFT_BEACON_BLUE_PIN, BACK_BEACON_BLUE_PIN, RIGHT_BEACON_BLUE_PIN, FRONT_BEACON_BLUE_PIN);
+HeadLightAssembly * leftHeadLightAssy = new HeadLightAssembly(LEFT_HIGHBEAM_HEADLIGHT_PIN, LEFT_SIGNAL_HEADLIGHT_PIN, LEFT_FOG_HEADLIGHT_PIN);
+HeadLightAssembly * rightHeadLightAssy = new HeadLightAssembly(RIGHT_HIGHBEAM_HEADLIGHT_PIN, RIGHT_SIGNAL_HEADLIGHT_PIN, RIGHT_FOG_HEADLIGHT_PIN); 
+TailLightAssembly * leftTailLightAssy = new TailLightAssembly(LEFT_RED_TAILLIGHT_1_PIN, LEFT_RED_TAILLIGHT_2_PIN, LEFT_RED_TAILLIGHT_3_PIN, LEFT_RED_TAILLIGHT_4_PIN, LEFT_RED_TAILLIGHT_5_PIN, LEFT_WHITE_TAILLIGHT_PIN);
+TailLightAssembly * rightTailLightAssy = new TailLightAssembly(RIGHT_RED_TAILLIGHT_1_PIN, RIGHT_RED_TAILLIGHT_2_PIN, RIGHT_RED_TAILLIGHT_3_PIN, RIGHT_RED_TAILLIGHT_4_PIN, RIGHT_RED_TAILLIGHT_5_PIN, RIGHT_WHITE_TAILLIGHT_PIN);
+
+
 
 
 
@@ -341,7 +389,16 @@ RoverReset * resetArray[] = {
 	uSon_RearCenter,
 	uSon_SideLeft,
 	roverNavigation,
-	roverGps
+	roverGps,
+	underglowLight,
+	leftSideSignal,
+	rightSideSignal,
+	beaconLightAssy,
+	leftHeadLightAssy,
+	rightHeadLightAssy,
+	leftTailLightAssy,
+	rightTailLightAssy
+	
 };//for pointers, pass them directly, for objects pass the address
 
 

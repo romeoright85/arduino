@@ -1,16 +1,18 @@
 Where I left off
 ------------------------
 
+Note: If behind can/may catch up with later non programming months with vacations, holidays, etc.
+
 DEADLINES:
 
 [19 days] 
 Rover_StateMachine_NAVI (get the rover rolling)
 	Get Framework up
-	12/27, 12/28 (slacked off a bit), 12/29
+	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31
 	Write States and Modes (on average 1 day per mode ,except default)
-	12/30, 12/31, 1/1, 1/6, 1/7, 1/12, 1/13, 1/14
+	1/1, 1/6, 1/7, 1/12, 1/13, 1/14, 1/20, 1/21
 	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE)
-	1/20, 1/21, 1/26, 1/27, 1/28, 2/3, 2/4, 2/9
+	1/26, 1/27, 1/28, 2/3, 2/4, 2/9, 2/10, 2/11
 
 
 
@@ -19,13 +21,13 @@ Rover_StateMachine_NAVI (get the rover rolling)
 [14 days]
 Rover_StateMachine_AUXI (then get the leds and sensors working)
 	Get Framework up
-	2/10, 2/11
+	2/17, 2/18
 	Write States and Modes (on average 1 day per mode, except default)
-	2/17, 2/18, 2/23, 2/24, 2/25, 3/3, 3/4, 3/9
+	2/23, 2/24, 2/25, 3/3, 3/4, 3/9, 3/10, 3/11
 	ALSO NEED TO DO TAXES, so may have to delay some more.
 	
 	Develop Axillary Code (i.e. SYSTEM_HEALTH)
-	3/10, 3/11, 3/17, 3/18
+	3/17, 3/18, 3/23, 3/24
 	
 	[NEED TO DO FOR AUXI]Update and add to RoverMessagePackager for IMU data
 	Have a way for IMU data to get packaged and pass from AUXI to CMNC.
@@ -33,7 +35,7 @@ Rover_StateMachine_AUXI (then get the leds and sensors working)
 
 
 
-[6 days] 3/23, 3/24, 3/25, 3/31, STILL NEED 2 more days
+[6 days] 3/25, 3/31, STILL NEED 4 more days
 Test code
 	Update the timeouts (especially the sync ones) as needed to get the rover arduinos to all sync up.
 Do a quick screen record with audio walking through roughly how to you would read one of the codes (i.e. MAIN) for documentation.
@@ -114,12 +116,65 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 #LEFT OFF HERE, START HERE->Rover_StateMachine_NAVI:
 			[IN PROGRESS] Setting up framework for Rover_StateMachine_NAVI
 			
-			
-			[DONE]rewriting NavigationTester_NAVI to integrate better with the state machine before adding it to the state machine code
-			
-				[DONE Adding objects used in NavigationTester_NAVI into the NAVI State Machine
-				[LEFT OFF, from scratch] Add other variables used in NAVI State Machine Planning into the code
 
+
+			
+===================
+FOIUND LOGICAL BUG 12-29-17
+===================			
+			Reference: P:\Code Overview Videos\Bugs\bugs_found_129217v1.webm
+			
+			
+//MAIN			
+				[IN PROGRESS] redesign autodata for MAIN to be able to send to different destinations for state machine
+				
+				
+				
+					[NEED TO DO] Make sure to have an override flag to be able to override the destination to something
+					[IN PROGRESS, SEE FIX ME/LEFT OFF HERE]update MAIN code as well. make sure there is a hardcoded destination
+					[IN PROGRESS SEE FIX ME/LEFT OFF HERE]fix createdatafromqueue to be able to send data to different destinations that share the same channel (COMM/CMNC) for MAIN Arduino in code
+					[NEED TO DO]fix createdatafromqueue to be able to send data to different destinations that share the same channel (COMM/CMNC) for MAIN Arduino in state machine
+					[IN PROGRESS]add to all TX_COMMUNICATIONS and CREATE_DATA to be able to send data to CMNC as well (which still sends to COMM, but with the destination as CMNC) in code
+					[NEED TO DO]add to all TX_COMMUNICATIONS and CREATE_DATA to be able to send data to CMNC as well (which still sends to COMM, but with the destination as CMNC) in state machine
+					
+//NAVI			
+				[IN PROGRESS] redesign autodata for NAVI to be able to send to different destinations for state machine
+					update NAVI code as well. make sure there is a hardcoded destination
+					
+					[NEED TO DO] Make sure to have an override flag to be able to override the destination to something
+					[NEED TO DO]fix createdatafromqueue to be able to send data to different destinations that share the same channel (AUXI/MAIN/COMM/CMNC) for NAVI Arduino in code
+					[NEED TO DO]fix createdatafromqueue to be able to send data to different destinations that share the same channel (AUXI/MAIN/COMM/CMNC) for NAVI Arduino in state machine
+					[IN PROGRESS]add to all TX_COMMUNICATIONS and CREATE_DATA to be able to send data to AUXI/COMM/CMNC as well (which still sends to MAIN, but with the destination as AUXI/COMM/CMNC) in code
+					[NEED TO DO]add to all TX_COMMUNICATIONS and CREATE_DATA to be able to send data  to AUXI/COMM/CMNC as well (which still sends to MAIN, but with the destination as AUXI/COMM/CMNC) in code in state machine
+					
+
+//AUXI					
+				[NEED TO DO] redesign autodata for AUXI to be able to send to different destinations for state machine
+					update AUXI code as well. make sure there is a hardcoded destination
+					
+					[NEED TO DO] Make sure to have an override flag to be able to override the destination to something
+					[NEED TO DO]fix createdatafromqueue to be able to send data to different destinations that share the same channel (NAVI/MAIN/COMM/CMNC) for AUXI Arduino in code
+					[NEED TO DO]fix createdatafromqueue to be able to send data to different destinations that share the same channel (NAVI/MAIN/COMM/CMNC) for AUXI Arduino in state machine
+					[IN PROGRESS]add to all TX_COMMUNICATIONS and CREATE_DATA to be able to send data to NAVI/COMM/CMNC as well (which still sends to MAIN, but with the destination as NAVI/COMM/CMNC) in code
+					[NEED TO DO]add to all TX_COMMUNICATIONS and CREATE_DATA to be able to send data  to NAVI/COMM/CMNC as well (which still sends to MAIN, but with the destination as NAVI/COMM/CMNC) in code in state machine
+					
+					
+					
+//COMM					
+				[NEED TO DO]fix createdatafromqueue to be able to send data to different destinations that share the same channel for COMM
+					
+					
+					
+===================					
+
+
+					
+				
+				[LEFT OFF, adding auto data from the NAVI state machine plans into the NAVI code] Add other objects/variables planned in the class diagram plans into NAVI
+				
+				
+				[LEFT OFF, from scratch] Add other variables used in NAVI State Machine Planning into the code
+				
 				
 				[NEED TO DO] Create any predicted Bit Flags for NAVI based on the commands list
 					[DONE] gpsDataReady
@@ -1751,3 +1806,8 @@ Note: The last thing I did before stopping was:
 			[DONE]Go back and make sure generic system error messages and generic health errors are not filtered out for any modes (see DATA_FILTER) from any arduino (just in case it's redirected) for COMM and MAIN state machines. They should always be allowed.
 			Note: If redirection isn't, that's okay for now. If the data can't get to the Arduino, then you don't have to worry about it anyways.
 			Make sure update data filter and process data comments as well in the state machines.
+
+			
+			[DONE]rewriting NavigationTester_NAVI to integrate better with the state machine before adding it to the state machine code
+			
+				[DONE] Adding objects used in NavigationTester_NAVI into the NAVI State Machine
