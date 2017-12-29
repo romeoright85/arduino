@@ -20,8 +20,10 @@ Rover_StateMachine_NAVI (get the rover rolling)
 Rover_StateMachine_AUXI (then get the leds and sensors working)
 	Get Framework up
 	2/10, 2/11
-	Write States and Modes (on average 1 day per mode ,except default)
+	Write States and Modes (on average 1 day per mode, except default)
 	2/17, 2/18, 2/23, 2/24, 2/25, 3/3, 3/4, 3/9
+	ALSO NEED TO DO TAXES, so may have to delay some more.
+	
 	Develop Axillary Code (i.e. SYSTEM_HEALTH)
 	3/10, 3/11, 3/17, 3/18
 	
@@ -115,8 +117,8 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 			
 			[DONE]rewriting NavigationTester_NAVI to integrate better with the state machine before adding it to the state machine code
 			
-				[LEFT OFF] Adding objects used in NavigationTester_NAVI into the NAVI State Machine
-				[NEED TO DO] Add other variables used in NAVI State Machine Planning into the code
+				[DONE Adding objects used in NavigationTester_NAVI into the NAVI State Machine
+				[LEFT OFF, from scratch] Add other variables used in NAVI State Machine Planning into the code
 
 				
 				[NEED TO DO] Create any predicted Bit Flags for NAVI based on the commands list

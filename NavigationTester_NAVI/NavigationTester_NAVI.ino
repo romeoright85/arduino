@@ -224,7 +224,7 @@ Rover Nav Status: Still Navigating
 //Global Variables
 RoverNavigation * roverNavigation = new RoverNavigation();
 RoverGpsSensor * roverGps = new RoverGpsSensor();
-double value = 0.0;
+double tempValue = 0.0;//temporary variable that is shared and used to print values, etc.
 
 
 
@@ -235,7 +235,7 @@ byte gpsDataCounter = 0;//counts the number of GPS data collected
 //array to hold the GPS samples
 double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
-double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It won't get assigned to the headingArray unless it's valid.
+double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
 double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 
 RoverReset * resetArray[] = {
@@ -365,18 +365,18 @@ void loop() {
 
 
 					_SERIAL_DEBUG_CHANNEL_.print(F("Distance: "));
-					value = roverNavigation->getDistance(UNIT_M);
-					_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision
+					tempValue = roverNavigation->getDistance(UNIT_M);
+					_SERIAL_DEBUG_CHANNEL_.println(tempValue, DECIMAL_PRECISION);//print with the define decimal precision
 					_SERIAL_DEBUG_CHANNEL_.print(F("True Bearing: "));
-					value = roverNavigation->getTrueBearing();
-					_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision	
+					tempValue = roverNavigation->getTrueBearing();
+					_SERIAL_DEBUG_CHANNEL_.println(tempValue, DECIMAL_PRECISION);//print with the define decimal precision	
 
 					_SERIAL_DEBUG_CHANNEL_.print(F("Relative Bearing: "));
-					value = roverNavigation->getRelativeBearing();
-					_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision	
+					tempValue = roverNavigation->getRelativeBearing();
+					_SERIAL_DEBUG_CHANNEL_.println(tempValue, DECIMAL_PRECISION);//print with the define decimal precision	
 
 					_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Steering: "));
-					value = roverNavigation->getCalculatedMotorSteering();
+					tempValue = roverNavigation->getCalculatedMotorSteering();
 					translateMotorSteering(roverNavigation->getCalculatedMotorSteering());
 
 					_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Throttle: "));
@@ -423,18 +423,18 @@ void loop() {
 
 
 		_SERIAL_DEBUG_CHANNEL_.print(F("Distance: "));
-		value = roverNavigation->getDistance(UNIT_M);
-		_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision
+		tempValue = roverNavigation->getDistance(UNIT_M);
+		_SERIAL_DEBUG_CHANNEL_.println(tempValue, DECIMAL_PRECISION);//print with the define decimal precision
 		_SERIAL_DEBUG_CHANNEL_.print(F("True Bearing: "));
-		value = roverNavigation->getTrueBearing();
-		_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision	
+		tempValue = roverNavigation->getTrueBearing();
+		_SERIAL_DEBUG_CHANNEL_.println(tempValue, DECIMAL_PRECISION);//print with the define decimal precision	
 
 		_SERIAL_DEBUG_CHANNEL_.print(F("Relative Bearing: "));
-		value = roverNavigation->getRelativeBearing();
-		_SERIAL_DEBUG_CHANNEL_.println(value, DECIMAL_PRECISION);//print with the define decimal precision	
+		tempValue = roverNavigation->getRelativeBearing();
+		_SERIAL_DEBUG_CHANNEL_.println(tempValue, DECIMAL_PRECISION);//print with the define decimal precision	
 
 		_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Steering: "));
-		value = roverNavigation->getCalculatedMotorSteering();
+		tempValue = roverNavigation->getCalculatedMotorSteering();
 		translateMotorSteering(roverNavigation->getCalculatedMotorSteering());
 
 		_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Throttle: "));
@@ -472,9 +472,9 @@ void loop() {
 
 
 
-void translateMotorSteering(byte value)
+void translateMotorSteering(byte motorSteeringValue)
 {
-	switch (value)
+	switch (motorSteeringValue)
 	{
 	case 150:
 		_SERIAL_DEBUG_CHANNEL_.println(F("Sharp Right"));
@@ -496,9 +496,9 @@ void translateMotorSteering(byte value)
 		break;
 	}//end switch
 }
-void translateMotorThrottle(byte value)
+void translateMotorThrottle(byte motorThrottleValue)
 {
-	switch (value)
+	switch (motorThrottleValue)
 	{
 	case 90:
 		_SERIAL_DEBUG_CHANNEL_.println(F("Stopped"));

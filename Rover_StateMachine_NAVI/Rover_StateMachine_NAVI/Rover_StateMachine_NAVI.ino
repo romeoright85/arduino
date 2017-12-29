@@ -66,6 +66,7 @@ Can send:
 #include <GlobalDelayTimer.h>
 #include <DelayCounter.h>
 #include <DelayCounter.h>
+#include <WheelEncoderSensor.h>
 #include <BufferSelect.h>
 #include <MotorController.h>
 #include <GimbalController.h>
@@ -78,6 +79,10 @@ Can send:
 #include <avr/pgmspace.h> //To store certain variables in Flash
 #include <BooleanBitFlags.h>	
 #include <RoverBitFlags.h>	
+#include <RoverNavigation.h>
+#include <RoverGpsSensor.h>
+#include <CharArray.h>
+#include <BubbleSort.h>
 //WRITE MORE LATER
 //ADD MORE LATER
 
@@ -164,6 +169,21 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //=====SW Resettable Variables (reinitialize these variables on software reset)
 
 
+//LEFT OFF HERE
+
+//Auto Data Counters
+//They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
+//TEMPLATE//byte auto_COMM_data_cnt = 0;
+//TEMPLATE//byte auto_NAVI_data_cnt = 0;
+//TEMPLATE//byte auto_AUXI_data_cnt = 0;
+
+
+
+
+
+//Error Origin (used to send out the origin of the error with the error message)
+byte error_origin = ROVERCOMM_NONE;
+
 
 //Flag(s) - Error
 //TEMPLATE//byte flagSet_Error1 = _BTFG_NONE_;
@@ -226,7 +246,7 @@ RoverData * roverDataForMAIN;//pointer used access the RoverData which has the c
 
 
 //------------------From WakeUpTester_NAVI
-RoverSleeperServer * sleeperNAVI = new RoverSleeperServer(NAVI_WAKEUP_CTRL_PIN, &InterruptDispatch1);//NAVI Wakeup Pin Control
+RoverSleeperServer * sleeperNAVI = new RoverSleeperServer(NAVI_WAKEUP_CTRL_PIN, &InterruptDispatch_WakeUpArduino);//NAVI Wakeup Pin Control
 
 
 
@@ -274,20 +294,16 @@ int distanceMeasured = 0;
 
 
 //------------------From NavigationTester_NAVI
-//LEFT OFF HERE
-/*
 RoverNavigation * roverNavigation = new RoverNavigation();
 RoverGpsSensor * roverGps = new RoverGpsSensor();
-double value = 0.0;
-double rxdHeading = 0.0;
 //flags and counters for GPS data
+byte headingDataCounter = 0;//counts the number of heading data collected
 byte gpsDataCounter = 0;//counts the number of GPS data collected
 //array to hold the GPS samples
-double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
-double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
-double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed size of the getMedian function
-*/
-
+double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+double tempHeadingData;//holds the temp heading data. It will get verified for validity before it's assigned to the headingArray.
+double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 
 
 
@@ -324,6 +340,7 @@ RoverReset * resetArray[] = {
 	uSon_SideRight,
 	uSon_RearCenter,
 	uSon_SideLeft,
+	roverNavigation,
 	roverGps
 };//for pointers, pass them directly, for objects pass the address
 
@@ -979,14 +996,18 @@ void runModeFunction_default()
 
 
 
-void InterruptDispatch_wheelEncoder_MidLeft() {
-//WRITE ME LATER
-}//emd of InterruptDispatch_wheelEncoder_MidLeft()
-
-void InterruptDispatch_wheelEncoder_MidRight() {
-//WRITE ME LATER
-}//end of InterruptDispatch_wheelEncoder_MidRight()
-
+void InterruptDispatch_wheelEncoder_FrontLeft() {
+	wheelEncoder_FrontLeft->isrUpdate();
+}//end of InterruptDispatch_wheelEncoder_FrontLeft()
+void InterruptDispatch_wheelEncoder_FrontRight() {
+	wheelEncoder_FrontRight->isrUpdate();
+}//end of InterruptDispatch_wheelEncoder_FrontRight()
+void InterruptDispatch_wheelEncoder_RearLeft() {
+	wheelEncoder_RearLeft->isrUpdate();
+}//end of InterruptDispatch_wheelEncoder_RearLeft()
+void InterruptDispatch_wheelEncoder_RearRight() {
+	wheelEncoder_RearRight->isrUpdate();
+}//end of InterruptDispatch_wheelEncoder_RearRight()
 void InterruptDispatch_WakeUpArduino() {
 	//Have to keep the ISR short else the program won't work
 	sleeperNAVI->isrUpdate();//update the awake flag to reflect current status
