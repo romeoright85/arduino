@@ -33,7 +33,8 @@ To test locally with only one Arduino , first make sure if _DEBUG_ALL_SERIALS_WI
 On Power On, MAIN is waiting for Systems Ready from COMM, NAVI, and AUXI, before it processes the Systems Go code. It has a timeout on how long it will wait for Systems Go though. This timeout is determined by MAIN_SYNC_TIMEOUT_VALUE.
 To disable this timeout, uncomment #define _DEBUG_DISABLE_MAIN_SYNC_TIMEOUT in the code below.
 
-Note: If _DEBUG_DISABLE_MAIN_SYNC_TIMEOUT is not turned on (i.e. disabled) eventually it will timeout and the system will send:
+Note: If _DEBUG_DISABLE_MAIN_SYNC_TIMEOUT is not turned on (i.e. disabled) eventually it will timeout and the system will send the following,
+Example OUTPUT:
 	/4c600*039nodata = Sync Error Status to PC_USB
 	/4c500*012nodata = HW Reset Request to COMM
 	/4c200*041nodata = Generic System Error to NAVI
@@ -331,6 +332,9 @@ byte comm_msg_queue = CMD_TAG_NO_MSG;
 byte navi_msg_queue = CMD_TAG_NO_MSG;
 byte auxi_msg_queue = CMD_TAG_NO_MSG;
 
+//Data Destination Selections
+byte comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
+
 //Flag(s) - Rover Data Channels Status
 byte ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
 byte ch2Status = DATA_STATUS_NOT_READY;//for COMM
@@ -443,6 +447,12 @@ byte auto_MAIN_to_COMM_data_array[] = {
 };
 
 //CMNC (will have to send data through a shared channel with COMM)
+/*
+You will have to code in the destination of each command manually if it has to go through a specific channel.
+
+
+
+*/
 byte auto_MAIN_to_CMNC_data_array[] = {
 	//add more as needed
 };
@@ -1085,7 +1095,7 @@ void initializeVariables()
 	//Flag(s) - Error
 	flagSet_Error1 = _BTFG_NONE_;
 	//Flag(s) - Message Controls
-	flagSet_MessageControl1 = _BTFG_NONE_;
+	flagSet_MessageControl1 = _BTFG_NONE_;	
 	//Flag(s) - System Status 1
 	flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
 	//Flag(s) - System Status 2
@@ -1129,7 +1139,8 @@ void initializeVariables()
 	navi_msg_queue = CMD_TAG_NO_MSG;
 	auxi_msg_queue = CMD_TAG_NO_MSG;
 
-
+	//Data Destination Selections
+	comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
 
 	//Flag(s) - Rover Data Channels Status
 	ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
@@ -1880,7 +1891,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	return;	
 			
 }//end of commandDirector()
-void createDataFromQueueFor(byte roverCommDestination)
+void createDataFromQueueFor(byte roverCommType)
 {
 
 
@@ -1893,13 +1904,14 @@ void createDataFromQueueFor(byte roverCommDestination)
 	//Create variables needed for the data packaging (i.e. encoder status)
 	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];
 	byte commandDataCharArraySize;
+	byte roverCommActualDestination;//holds the actual/final destination of the data
 				
 				
-				
-	//Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
-	if (roverCommDestination == ROVERCOMM_PC_USB)
+	//Based on the roverCommType of interest, set which queue and rover data the outgoing message should be based on
+	if (roverCommType == ROVERCOMM_PC_USB)
 	{
 		queueOfInterest = pc_usb_msg_queue;
+		roverCommActualDestination = roverCommType;//the rover comm type will be the actual destination for ROVERCOMM_PC_USB since it's the only destination for that data channel.
 		if (roverDataForPC_USB != NULL)//make sure the roverDataPointer is not NULL
 		{
 			commandDataOfInterest = roverDataForPC_USB->getCommandData();
@@ -1909,10 +1921,20 @@ void createDataFromQueueFor(byte roverCommDestination)
 			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
 		}//end else		
 	}//end if
-	else if (roverCommDestination == ROVERCOMM_COMM)
-//FIX ME, add CMNC option
+	else if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC)
 	{
 		queueOfInterest = comm_msg_queue;
+
+		//Check to see that the destination for the COMM channel is either COMM or CMNC. Anything else is invalid.
+		if(comm_cmnc_destination_selection == ROVERCOMM_COMM || comm_cmnc_destination_selection == ROVERCOMM_CMNC)
+		{
+			roverCommActualDestination = comm_cmnc_destination_selection;//let the actual destination be determined by comm_cmnc_destination_selection
+		}//end if
+		else//invalid state, error out
+		{
+			_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+		}//end else
+		
 		if (roverDataForCOMM != NULL)//make sure the roverDataPointer is not NULL
 		{
 			commandDataOfInterest = roverDataForCOMM->getCommandData();
@@ -1922,9 +1944,10 @@ void createDataFromQueueFor(byte roverCommDestination)
 			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
 		}//end else
 	}//end else if
-	else if (roverCommDestination == ROVERCOMM_NAVI)
+	else if (roverCommType == ROVERCOMM_NAVI)
 	{
 		queueOfInterest = navi_msg_queue;
+		roverCommActualDestination = roverCommType;//the rover comm type will be the actual destination for ROVERCOMM_NAVI since it's the only destination for that data channel.
 		if (roverDataForNAVI != NULL)//make sure the roverDataPointer is not NULL
 		{
 			commandDataOfInterest = roverDataForNAVI->getCommandData();
@@ -1934,9 +1957,10 @@ void createDataFromQueueFor(byte roverCommDestination)
 			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
 		}//end else
 	}//end else if	
-	else if (roverCommDestination == ROVERCOMM_AUXI)
+	else if (roverCommType == ROVERCOMM_AUXI)
 	{
 		queueOfInterest = auxi_msg_queue;
+		roverCommActualDestination = roverCommType;//the rover comm type will be the actual destination for ROVERCOMM_AUXI since it's the only destination for that data channel.
 		if (roverDataForAUXI != NULL)//make sure the roverDataPointer is not NULL
 		{
 			commandDataOfInterest = roverDataForAUXI->getCommandData();
@@ -1959,41 +1983,41 @@ void createDataFromQueueFor(byte roverCommDestination)
 
 		//Externally Received Commands	
 		case CMD_TAG_COMM_HW_RESET_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_ALL_SW_RESET_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SW_RESET_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;	
 		case CMD_TAG_SW_IS_RESETTING_ACK:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:		
-				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:		
-				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(0), createdCommand);
 			break;			
 		case CMD_TAG_SYSTEM_READY_STATUS:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_READY_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_READY_STATUS, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_ALL_SLEEP_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SLEEP_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SLEEP_REQUEST, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SYSTEM_IS_SLEEPING_ACK:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SET_MOTOR_POWER_ENABLE:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SET_MOTOR_POWER_ENABLE, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SET_MOTOR_POWER_ENABLE, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_MTR_PWR_STATUS:
 				//if the motor power is on
 				if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_) )
 				{
-					RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_MTR_PWR_STATUS, getMsgString(3), createdCommand);
+					RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MTR_PWR_STATUS, getMsgString(3), createdCommand);
 				}//end if
 				else//the motor power is off
 				{
-					RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_MTR_PWR_STATUS, getMsgString(4), createdCommand);
+					RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MTR_PWR_STATUS, getMsgString(4), createdCommand);
 				}
 			break;			
 		case CMD_TAG_ENC_STATUS_MID_RIGHT:				
@@ -2001,7 +2025,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 				RoverMessagePackager::packEncoderStatus(wheelEncoder_MidRight_Direction, wheelEncoder_MidRight_Speed, wheelEncoder_MidRight_Footage, commandDataCharArray, commandDataCharArraySize);
 				
 				//Create the rover command message with the packaged encoder status
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_RIGHT, commandDataCharArray, createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_RIGHT, commandDataCharArray, createdCommand);
 			
 			break;					
 		case CMD_TAG_ENC_STATUS_MID_LEFT:
@@ -2010,91 +2034,89 @@ void createDataFromQueueFor(byte roverCommDestination)
 				RoverMessagePackager::packEncoderStatus(wheelEncoder_MidLeft_Direction, wheelEncoder_MidLeft_Speed, wheelEncoder_MidLeft_Footage, commandDataCharArray, commandDataCharArraySize);
 			
 				//Create the rover command message with the packaged encoder status
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_LEFT, commandDataCharArray, createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_LEFT, commandDataCharArray, createdCommand);
 				
 			break;					
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);
 			break;
 		case CMD_TAG_DEBUG_BYE_TEST_MSG:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest, createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest, createdCommand);
 			break;
 		case CMD_TAG_INVALID_CMD:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);
 			break;
 			
 			
 			
 		//Internally Generated Commands - Internally Generated by this Arduino. So there are no received command for these types of commands.
 		case CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS: //The error message will be redirected out through all the Arduinos and out to CMNC
-				//When it's PC_USB, have the destination be set to PC_USB
-				if(roverCommDestination == ROVERCOMM_PC_USB)
+				//Only allow destination of ROVERCOMM_PC_USB (to go to PC_USB) and ROVERCOMM_CMNC (to go to CMNC, through COMM)
+				if(roverCommActualDestination == ROVERCOMM_PC_USB || roverCommActualDestination == ROVERCOMM_CMNC)
 				{
-					//Fixed destination of ROVERCOMM_PC_USB, for debugging
-					RoverCommandCreator::createCmd(error_origin, ROVERCOMM_PC_USB, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(0), createdCommand);
-				}//end if
-				else//when it's any other Arduino (including itself) i.e. COMM, CMNC, MAIN, NAVI, or AUXI have the destination be set to CMNC. Send the error back to the ground/base station.
-				{
-					//Fixed destination of ROVERCOMM_CMNC
-					RoverCommandCreator::createCmd(error_origin, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(0), createdCommand);
-				}//end else
+					RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(0), createdCommand);
+				}//end if				
+				//else do nothing. CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS should not be sent to other Arduino channels other than ROVERCOMM_PC_USB and ROVERCOMM_CMNC (through COMM) as other Arduinos are not currently programmed to handle that type of message.
 			break;	
 		case CMD_TAG_NAVI_SW_RESET_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_NAVI_SW_RESET_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_NAVI_SW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_COMM_SW_RESET_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_SW_RESET_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_SW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SYSTEM_GO_STATUS:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_GO_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_GO_STATUS, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_NAVI_SLEEP_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_NAVI_SLEEP_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_NAVI_SLEEP_REQUEST, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_COMM_SLEEP_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_SLEEP_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_SLEEP_REQUEST, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_ENABLING_MTR_PWR:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ENABLING_MTR_PWR, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ENABLING_MTR_PWR, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_DISABLING_MTR_PWR:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DISABLING_MTR_PWR, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DISABLING_MTR_PWR, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SYNC_ERROR_STATUS:
-				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYNC_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYNC_ERROR_STATUS, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SLEEP_ERROR_STATUS:
-				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SLEEP_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SLEEP_ERROR_STATUS, getMsgString(0), createdCommand);
 			break;			
 		case CMD_TAG_SW_RESET_ERROR_STATUS:
-				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_RESET_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SW_RESET_ERROR_STATUS, getMsgString(0), createdCommand);
 			break;	
 		case CMD_TAG_ALL_HW_RESET_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_HW_RESET_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_HW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;			
 		default:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);//output invalid command
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);//output invalid command
 			break;
 	}//end switch	
 	
-	if (roverCommDestination == ROVERCOMM_PC_USB)
+	if (roverCommActualDestination == ROVERCOMM_PC_USB)
 	{
 		sprintf(txMsgBuffer_PC_USB, createdCommand);
 	}//end if
-	else if (roverCommDestination == ROVERCOMM_COMM)
+	else if (roverCommActualDestination == ROVERCOMM_COMM || roverCommActualDestination == ROVERCOMM_CMNC)
 	{
 		sprintf(txMsgBuffer_COMM, createdCommand);
 	}//end else if
-	else if (roverCommDestination == ROVERCOMM_NAVI)
+	else if (roverCommActualDestination == ROVERCOMM_NAVI)
 	{
 		sprintf(txMsgBuffer_NAVI, createdCommand);
 	}//end else if
-	else if (roverCommDestination == ROVERCOMM_AUXI)
+	else if (roverCommActualDestination == ROVERCOMM_AUXI)
 	{
 		sprintf(txMsgBuffer_AUXI, createdCommand);
 	}//end else if
 	 //else
 
+	 
+	 comm_cmnc_destination_selection = ROVERCOMM_COMM;//once done with creating the data, reset the comm_cmnc_destination_selection variable to default
+	 
 	return;
 
 }//end of createDataFromQueueFor()
@@ -2240,7 +2262,8 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 }//end of setAllCommands()
 void redirectData(RoverComm * roverComm)
 {
-
+	//Note: The redirect data function get its destination from the received data itself and not these flags. And it calls txData on it's own so it's not affected by createDataFromQueueFor() either.
+	
 	/*
 	Notes:
 	For program efficiency, instead of sending all redirect messages, it sends only one per channel.
@@ -2772,18 +2795,21 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Creates data for COMM
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
-//FIX ME, add an override flag
-				if()//data is for COMM
+			
+				if(comm_cmnc_destination_selection == ROVERCOMM_COMM)//data is for COMM
 				{
 					createDataFromQueueFor(ROVERCOMM_COMM);
-				}
-				else //data is for CMNC
+				}//end if
+				else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC) //data is for CMNC
 				{
-					createDataFromQueueFor(ROVERCOMM_COMM);
-				}
+					createDataFromQueueFor(ROVERCOMM_CMNC);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else
 				
-				
-				//skip auto data	
+				//skip auto data
 								
 			}//end if
 			//Creates data for NAVI
@@ -2818,10 +2844,9 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 			}//end if
 			//Sends data to COMM
-//FIX ME, add CMNC option	
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
-				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
+				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);//Note: This just sends the data as created through the COMM channel. Whether it goes to CMNC or COMM, that would be determined in the createDataFromQueueFor().
 			}//end if
 			//Sends data to NAVI
 			if (navi_msg_queue != CMD_TAG_NO_MSG)
@@ -3193,11 +3218,20 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				
 			}//end if
 			//PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
-			
-			
 			if (comm_msg_queue != CMD_TAG_NO_MSG)//if there is normal (non auto) data to send out through COMM
 			{
-				createDataFromQueueFor(ROVERCOMM_COMM);
+				if(comm_cmnc_destination_selection == ROVERCOMM_COMM)//data is for COMM
+				{
+					createDataFromQueueFor(ROVERCOMM_COMM);
+				}//end if
+				else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC) //data is for CMNC
+				{
+					createDataFromQueueFor(ROVERCOMM_CMNC);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else
 			}//end if	
 			//Since this is a shared data channel, create message corresponding to the next auto data for COMM, then for CMNC			
 			else if( sizeof(auto_MAIN_to_COMM_data_array) > 0 && auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array) )//if all COMM auto data in the array has not been sent yet and there is any data in the auto data COMM array
@@ -3206,8 +3240,9 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 
 					//Assign the next auto message to the queue
 					comm_msg_queue = auto_MAIN_to_COMM_data_array[auto_MAIN_to_COMM_data_cnt];
-//LEFT OFF HERE
-//FIX ME, need to add destination override
+
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;
+					
 					//Create the message
 					createDataFromQueueFor(ROVERCOMM_COMM);
 					
@@ -3220,12 +3255,14 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			else if ( sizeof(auto_MAIN_to_CMNC_data_array) > 0 && auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array) )//if all COMM auto data in the array has not been sent yet and there is any data in the auto data CMNC array
 			{
 					//Then since comm_msg_queue == CMD_TAG_NO_MSG, then there is no requested data, so go ahead and create and send out auto data for this channel
-//FIX ME, need to add destination override
+
 					//Assign the next auto message to the queue
 					comm_msg_queue = auto_MAIN_to_CMNC_data_array[auto_MAIN_to_CMNC_data_cnt];
 
+					comm_cmnc_destination_selection = ROVERCOMM_CMNC;
+					
 					//Create the message
-					createDataFromQueueFor(ROVERCOMM_COMM);
+					createDataFromQueueFor(ROVERCOMM_CMNC);
 					
 					//Loop/Increment the auto data for the next iteration
 					auto_MAIN_to_CMNC_data_cnt++;
@@ -3235,7 +3272,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			}//end else if
 			else if ( auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) && auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array) )//once both COMM and CMNC data has been sent
 			{
-//FIX ME, need to clear destination override			
+
 				//reset their counters
 				auto_MAIN_to_COMM_data_cnt = 0;
 				auto_MAIN_to_CMNC_data_cnt = 0;
@@ -3318,10 +3355,9 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 				}//end if
 				//2. Sends data to COMM
-//FIX ME, add CMNC option
 				if (comm_msg_queue != CMD_TAG_NO_MSG)
 				{
-					txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
+					txData(txMsgBuffer_COMM, ROVERCOMM_COMM);//Note: This just sends the data as created through the COMM channel. Whether it goes to CMNC or COMM, that would be determined in the createDataFromQueueFor().
 				}//end if				
 				//3. Sends data to NAVI
 				if (navi_msg_queue != CMD_TAG_NO_MSG)
@@ -3862,11 +3898,22 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			{
 				//Note: The data should be COMM_SLEEP_REQUEST.
 				//Create COMM sleep request after acknowledgements are received from both AUXI and NAVI (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)
-				createDataFromQueueFor(ROVERCOMM_COMM);
+
+				if(comm_cmnc_destination_selection == ROVERCOMM_COMM)//data is for COMM
+				{
+					createDataFromQueueFor(ROVERCOMM_COMM);
+				}//end if
+				else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC) //data is for CMNC
+				{
+					createDataFromQueueFor(ROVERCOMM_CMNC);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else
 				
-				//skip auto data	
-				
-				
+				//skip auto data
+
 			}//end if
 			//Creates data for NAVI
 			if (navi_msg_queue != CMD_TAG_NO_MSG)
@@ -3901,10 +3948,9 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 			}//end if
 			//Sends data to COMM
-//FIX ME, add CMNC option
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
-				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
+				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);//Note: This just sends the data as created through the COMM channel. Whether it goes to CMNC or COMM, that would be determined in the createDataFromQueueFor().
 			}//end if
 			//Sends data to NAVI
 			if (navi_msg_queue != CMD_TAG_NO_MSG)
@@ -4540,11 +4586,22 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//Creates data for COMM
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
-				createDataFromQueueFor(ROVERCOMM_COMM);
+			
+				if(comm_cmnc_destination_selection == ROVERCOMM_COMM)//data is for COMM
+				{
+					createDataFromQueueFor(ROVERCOMM_COMM);
+				}//end if
+				else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC) //data is for CMNC
+				{
+					createDataFromQueueFor(ROVERCOMM_CMNC);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else
 				
-				//skip auto data	
-				
-				
+				//skip auto data
+								
 			}//end if
 			//Creates data for NAVI
 			if (navi_msg_queue != CMD_TAG_NO_MSG)
@@ -4578,10 +4635,9 @@ void runModeFunction_SW_RESETTING(byte currentState)
 				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 			}//end if
 			//Sends data to COMM
-//FIX ME, add CMNC option
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
-				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
+				txData(txMsgBuffer_COMM, ROVERCOMM_COMM);//Note: This just sends the data as created through the COMM channel. Whether it goes to CMNC or COMM, that would be determined in the createDataFromQueueFor().
 			}//end if
 			//Sends data to NAVI
 			if (navi_msg_queue != CMD_TAG_NO_MSG)
@@ -5177,18 +5233,29 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			//Creates data for COMM
 			if (comm_msg_queue != CMD_TAG_NO_MSG)
 			{
-				createDataFromQueueFor(ROVERCOMM_COMM);
-				
-				
+			
 				/*
 					For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
 					SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
 					CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, in createDataFromQueueFor, create the message using error_origin as the message origin
 				*/
 				
-				//skip auto data	
+				if(comm_cmnc_destination_selection == ROVERCOMM_COMM)//data is for COMM
+				{
+					createDataFromQueueFor(ROVERCOMM_COMM);
+				}//end if
+				else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC) //data is for CMNC
+				{
+					createDataFromQueueFor(ROVERCOMM_CMNC);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else
+				
+				//skip auto data
 								
-			}//end if
+			}//end if			
 			//Creates data for NAVI
 			if (navi_msg_queue != CMD_TAG_NO_MSG)
 			{
@@ -5232,10 +5299,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 					txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
 				}//end if
 				//2. Sends data to COMM
-//FIX ME, add CMNC option
 				if (comm_msg_queue != CMD_TAG_NO_MSG)
 				{
-					txData(txMsgBuffer_COMM, ROVERCOMM_COMM);
+					txData(txMsgBuffer_COMM, ROVERCOMM_COMM);//Note: This just sends the data as created through the COMM channel. Whether it goes to CMNC or COMM, that would be determined in the createDataFromQueueFor().
 				}//end if				
 				//3. Sends data to NAVI
 				if (navi_msg_queue != CMD_TAG_NO_MSG)
@@ -5319,7 +5385,7 @@ void runModeFunction_default()
 	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
 	//No switch case needed for the states, all states do the same thing
 	comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
-	pc_usb_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+	pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
 	navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 	auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 				

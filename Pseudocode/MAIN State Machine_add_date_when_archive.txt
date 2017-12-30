@@ -38,6 +38,8 @@ At POR (defaults):
 	enable_mtr_pwr = false
 	run_task_on_main_now = false //a shared status flag, used for sw resets, sleep requests, etc. Make sure to clear it out before use and only use it for one purpose at a time. It's used to track if auxi_acknowledgement and auxi_acknowledgement are true (i.e. they have given acknowledgements) before the system runs it's tasks for main.
 	
+	comm_cmnc_destination_selection = ROVERCOMM_COMM //default is COMM.
+	
 	//NAVI
 	auto_MAIN_to_NAVI_data_array[] = {
 		MTR_PWR_STATUS,
@@ -451,7 +453,10 @@ MAIN:
 
 					
 					//Run lower priority functions here. (i.e. system ready msgs)
-										
+							
+
+					//Set comm_cmnc_destination_selection as needed if the destination needs to be CMNC instead of the default COMM.
+					
 					Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						No redirections in SYNCHRONIZATION.
 						All other messages are allowed from PC_USB. Use with caution.						
@@ -1055,8 +1060,14 @@ MAIN:
 						
 					endif
 					//COMM
-					if comm_msg_queue = SYSTEM_READY_STATUS
-						create system ready msg for COMM
+					if (since) comm_msg_queue = SYSTEM_READY_STATUS
+					
+						//And since comm_cmnc_destination_selection = ROVERCOMM_COMM
+						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)
+							
+							create system ready msg for COMM
+							comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
+						end if
 						
 						//skip auto data						
 						
@@ -1090,7 +1101,16 @@ MAIN:
 					end if
 					//COMM
 					if comm_msg_queue != CMD_TAG_NO_MSG
-						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
+					//create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue	
+						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)
+								create system ready msg for COMM
+						else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC)
+								create system ready msg for CMNC
+						end if						
+						//else do nothing (as it may be set to ROVERCOMM_NONE or something
+						
+						comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created		
+					
 					end if
 					//Since this is a shared data channel, create message corresponding to the next auto data for COMM, then for CMNC
 					else if( sizeof(auto_MAIN_to_COMM_data_array) > 0 && auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array))
@@ -1099,6 +1119,10 @@ MAIN:
 						comm_msg_queue = auto_MAIN_to_COMM_data_array[auto_MAIN_to_COMM_data_cnt]
 						//set the next auto data for COMM for the next loop
 						auto_MAIN_to_COMM_data_cnt++
+						
+						comm_cmnc_destination_selection = ROVERCOMM_COMM//set destination to COMM
+						
+						
 					end else if
 					else if( sizeof(auto_MAIN_to_CMNC_data_array) > 0 && auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array))
 					//if the array has data and the count is less than the size of the array
@@ -1106,6 +1130,10 @@ MAIN:
 						comm_msg_queue = auto_MAIN_to_CMNC_data_array[auto_MAIN_to_CMNC_data_cnt]
 						//set the next auto data for CMNC for the next loop
 						auto_MAIN_to_CMNC_data_cnt++
+						
+						comm_cmnc_destination_selection = ROVERCOMM_CMNC//set destination to CMNC
+						
+						
 					end else if
 					else if( auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) && auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array))
 					//if all auto data has already been sent out
@@ -1161,11 +1189,19 @@ MAIN:
 						
 					endif
 					//COMM
-					Since comm_msg_queue = COMM_SLEEP_REQUEST
-						Create COMM sleep request after acknowledgements are received from both AUXI and NAVI (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)				
+					if (since) comm_msg_queue = COMM_SLEEP_REQUEST	
+					
+						//And since comm_cmnc_destination_selection = ROVERCOMM_COMM
+						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)
+							
+							Create COMM sleep request after acknowledgements are received from both AUXI and NAVI (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)				
 						
-						//skip auto data
-						
+							comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
+							
+						end if
+					
+						//skip auto data												
+					endif
 					//NAVI
 					Since navi_msg_queue = NAVI_SLEEP_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)
 						Create NAVI sleep request msg
@@ -1193,12 +1229,22 @@ MAIN:
 						
 						
 					endif
+					
 					//COMM
-					if comm_msg_queue = COMM_SW_RESET_REQUEST
-						Create COMM SW reset request after acknowledgements are received from both AUXI and NAVI						
+					if (since) comm_msg_queue = COMM_SW_RESET_REQUEST	
+					
+						//And since comm_cmnc_destination_selection = ROVERCOMM_COMM
+						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)
+							
+							Create COMM SW reset request after acknowledgements are received from both AUXI and NAVI		
 						
-						//skip auto data
-						
+							comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
+							
+						end if
+					
+						//skip auto data												
+					endif						
+
 					//NAVI
 					if navi_msg_queue = NAVI_SW_RESET_REQUEST (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, so it doesn't get stuck in a loop, i.e. keeps resetting itself))
 						Create NAVI sw reset request msg
@@ -1228,18 +1274,31 @@ MAIN:
 						
 					endif
 					//COMM
+
 					if comm_msg_queue != CMD_TAG_NO_MSG
-						create any msg(s) for COMM or CMNC (since they all go through COMM) as needed based on comm_msg_queue						
-						//should be general or specific error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages.
-						
-						//skip auto data
 						
 						For SYNC_ERROR_STATUS, SLEEP_ERROR_STATUS,
 						SW_RESET_ERROR_STATUS, GENERIC_SYSTEM_ERROR_STATUS,
 						CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, in createDataFromQueueFor, create the message using error_origin as the message origin
 												
 						For CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, in createDataFromQueueFor, create the message using error_origin as the message origin and cmnc as the destination
-						end if					
+					
+					
+						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)
+							create any msg(s) for COMM as needed based on comm_msg_queue						
+							//should be general or specific error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages.						
+						else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC)
+							create any msg(s) for CMNC (through COMM) as needed based on comm_msg_queue						
+							//should be general or specific error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages.
+						end if						
+						//else do nothing (as it may be set to ROVERCOMM_NONE or something
+						
+						
+						//skip auto data						
+						
+					endif			
+					
+
 					//NAVI
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for NAVI as needed based on navi_msg_queue
@@ -1556,7 +1615,7 @@ MAIN:
 				Set mode to SYSTEM_ERROR *begin*
 				set enable_mtr_pwr = false //shut down motor when in error for safety
 				comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS//with CMNC as the destination
-				pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+				pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS
 				navi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
 				auxi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
 				

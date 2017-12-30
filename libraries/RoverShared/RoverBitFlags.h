@@ -91,7 +91,6 @@
 		#define _BTFG_DATA_WAS_FOR_MAIN_CH3_				0x40
 		#define _BTFG_DATA_WAS_FOR_MAIN_CH4_				0x80
 		//DEBUG//Message Controls: flagSet_MessageControl2//the variable has not yet been created
-		//None Yet. Placeholder.
 		
 		
 		 //---------------------------------------------------	
