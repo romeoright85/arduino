@@ -54,6 +54,13 @@ Note: Uncomment #define _DEBUG_PRINT_SYSTEMS_READY_ACKNOWLEDGEMENTS below to see
 
 Note: It seems to require the system ready command from some of the Arduinos to be sent more than once as the data probably gets lost in the mix or something.
 
+Note: Uncomment #define _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_ below to jump straight to normal operations and test the auto data, etc.
+Example OUTPUT:
+	/4c200*0480000000 = ENC_STATUS_MID_LEFT data to NAVI
+	/4c300*045off = MTR_PWR_STATUS data to AUXI
+	/4c200*0490000000 = ENC_STATUS_MID_RIGHT data to NAVI
+
+
 */
 
 
@@ -146,8 +153,12 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 
 
+//============Debugging: Skip to Normal Operations
+//Uncomment the flag below to jump straight to normal operations and test the auto data, etc.
 
+//#define _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_ //Normally commented out during normal operations.
 
+//============End Debugging: Skip to Normal Operations
 
 
 //============Debugging: Print System Ready Status
@@ -445,14 +456,6 @@ RoverReset * resetArray[] = {
 byte auto_MAIN_to_COMM_data_array[] = {
 	//add more as needed
 };
-
-//CMNC (will have to send data through a shared channel with COMM)
-/*
-You will have to code in the destination of each command manually if it has to go through a specific channel.
-
-
-
-*/
 byte auto_MAIN_to_CMNC_data_array[] = {
 	//add more as needed
 };
@@ -500,13 +503,31 @@ const char* const msg_str_table[] PROGMEM = {
 
 
 
-//States //(these states will not be re-initalized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
-byte currentState = RUN_HOUSEKEEPING_TASKS;
-byte nextState = RUN_HOUSEKEEPING_TASKS;
-byte queuedState = RUN_HOUSEKEEPING_TASKS;
+//States //(these states will not be re-initialized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
+	
+	//Current State
+	byte currentState = RUN_HOUSEKEEPING_TASKS;
+	//Next State
+	byte nextState = RUN_HOUSEKEEPING_TASKS;
 
-//Modes //(this mode will not be re-initalized in initializeVariables() as they're set by the state machine when being SW resetted)
-byte currentMode = POWER_ON_AND_HW_RESET;
+
+	//Queued State
+	#ifdef _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_//the debug case (i.e. to test auto data)
+		byte queuedState = RX_COMMUNICATIONS;//DEBUG
+	#else //The normal case
+		byte queuedState = RUN_HOUSEKEEPING_TASKS;
+	#endif
+
+
+	
+//Modes //(this mode will not be re-initialized in initializeVariables() as they're set by the state machine when being SW resetted)
+
+#ifdef _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_//the debug case (i.e. to test auto data)
+	byte currentMode = NORMAL_OPERATIONS;//DEBUG
+#else //The normal case
+	byte currentMode = POWER_ON_AND_HW_RESET;
+#endif
+
 
 
 
@@ -1992,10 +2013,10 @@ void createDataFromQueueFor(byte roverCommType)
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:		
-				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(2), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:		
-				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;			
 		case CMD_TAG_SYSTEM_READY_STATUS:
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_READY_STATUS, getMsgString(0), createdCommand);
@@ -2054,7 +2075,7 @@ void createDataFromQueueFor(byte roverCommType)
 				//Only allow destination of ROVERCOMM_PC_USB (to go to PC_USB) and ROVERCOMM_CMNC (to go to CMNC, through COMM)
 				if(roverCommActualDestination == ROVERCOMM_PC_USB || roverCommActualDestination == ROVERCOMM_CMNC)
 				{
-					RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(0), createdCommand);
+					RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(2), createdCommand);
 				}//end if				
 				//else do nothing. CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS should not be sent to other Arduino channels other than ROVERCOMM_PC_USB and ROVERCOMM_CMNC (through COMM) as other Arduinos are not currently programmed to handle that type of message.
 			break;	
@@ -2080,19 +2101,19 @@ void createDataFromQueueFor(byte roverCommType)
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DISABLING_MTR_PWR, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SYNC_ERROR_STATUS:
-				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYNC_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYNC_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;
 		case CMD_TAG_SLEEP_ERROR_STATUS:
-				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SLEEP_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SLEEP_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;			
 		case CMD_TAG_SW_RESET_ERROR_STATUS:
-				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SW_RESET_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SW_RESET_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;	
 		case CMD_TAG_ALL_HW_RESET_REQUEST:
 				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_HW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;			
 		default:
-				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);//output invalid command
+				RoverCommandCreator::createCmd(ROVERCOMM_MAIN, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1), createdCommand);//output invalid command
 			break;
 	}//end switch	
 	
@@ -3234,9 +3255,12 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				}//end else
 			}//end if	
 			//Since this is a shared data channel, create message corresponding to the next auto data for COMM, then for CMNC			
-			else if( sizeof(auto_MAIN_to_COMM_data_array) > 0 && auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array) )//if all COMM auto data in the array has not been sent yet and there is any data in the auto data COMM array
+			else if( auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array) )
+				//if there is auto data for COMM and it has not been all sent yet
+				//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.
 			{
-				//Then since comm_msg_queue == CMD_TAG_NO_MSG, then there is no requested data, so go ahead and create and send out auto data for this channel
+				//since there is no custom data, then send the next auto data.
+					//create message corresponding to the next auto data for COMM.
 
 					//Assign the next auto message to the queue
 					comm_msg_queue = auto_MAIN_to_COMM_data_array[auto_MAIN_to_COMM_data_cnt];
@@ -3252,9 +3276,11 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
 
 			}//end else if
-			else if ( sizeof(auto_MAIN_to_CMNC_data_array) > 0 && auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array) )//if all COMM auto data in the array has not been sent yet and there is any data in the auto data CMNC array
+			else if ( auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array) )		//if there is auto data for CMNC and it has not been all sent yet
+				//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.			
 			{
-					//Then since comm_msg_queue == CMD_TAG_NO_MSG, then there is no requested data, so go ahead and create and send out auto data for this channel
+					//since there is no custom data, then send the next auto data.
+					//create message corresponding to the next auto data for CMNC.
 
 					//Assign the next auto message to the queue
 					comm_msg_queue = auto_MAIN_to_CMNC_data_array[auto_MAIN_to_CMNC_data_cnt];
@@ -3270,14 +3296,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
 
 			}//end else if
-			else if ( auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) && auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array) )//once both COMM and CMNC data has been sent
-			{
-
-				//reset their counters
-				auto_MAIN_to_COMM_data_cnt = 0;
-				auto_MAIN_to_CMNC_data_cnt = 0;
-			}//end if else
-			//else do nothing since there was no message and no auto data
+			//else do nothing since there was no message and no auto data to send
 		
 			
 			//Creates data for NAVI
@@ -3285,62 +3304,88 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			{
 				createDataFromQueueFor(ROVERCOMM_NAVI);
 			}//end if
-			else if(sizeof(auto_MAIN_to_NAVI_data_array) > 0 )//if there is auto data for NAVI
-			//navi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
-			{
-
+			else if( auto_MAIN_to_NAVI_data_cnt < sizeof(auto_MAIN_to_NAVI_data_array) )		//if there is auto data for NAVI and it has not been all sent yet
+					//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.
+			{					
+			
+				//since there is no custom data, then send the next auto data.
+				//create message corresponding to the next auto data for NAVI.
+				
 				//Assign the next auto message to the queue
 				navi_msg_queue = auto_MAIN_to_NAVI_data_array[auto_MAIN_to_NAVI_data_cnt];
 
 				//Create the message
-				createDataFromQueueFor(ROVERCOMM_COMM);
+				createDataFromQueueFor(ROVERCOMM_NAVI);
 				
 				//Loop/Increment the auto data for the next iteration
 								
 				auto_MAIN_to_NAVI_data_cnt++;
-				if (auto_MAIN_to_NAVI_data_cnt >= sizeof(auto_MAIN_to_NAVI_data_array))
-				{
-					auto_MAIN_to_NAVI_data_cnt = 0;
-				}//end if
-				
+					
 				//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
 				
 			}//end else if
 			//else do nothing since there was no message and no auto data			
-			
 			
 			//Creates data for AUXI
 			if (auxi_msg_queue != CMD_TAG_NO_MSG)
 			{
 				createDataFromQueueFor(ROVERCOMM_AUXI);
 			}//end if	
-			else if(sizeof(auto_MAIN_to_AUXI_data_array) > 0 )//if there is auto data for AUXI
-			//auxi_msg_queue == CMD_TAG_NO_MSG. So since there is no requested data, go ahead and create and send out auto data
-			{
+			else if( auto_MAIN_to_AUXI_data_cnt < sizeof(auto_MAIN_to_AUXI_data_array) )		//if there is auto data for AUXI and it has not been all sent yet
+					//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.
+			{			
 
+				//since there is no custom data, then send the next auto data.
+				//create message corresponding to the next auto data for AUXI.
+
+							
 				//Assign the next auto message to the queue
 				auxi_msg_queue = auto_MAIN_to_AUXI_data_array[auto_MAIN_to_AUXI_data_cnt];
 
 				//Create the message
-				createDataFromQueueFor(ROVERCOMM_COMM);
+				createDataFromQueueFor(ROVERCOMM_AUXI);
 				
 				//Loop/Increment the auto data for the next iteration
 								
 				auto_MAIN_to_AUXI_data_cnt++;
-				if (auto_MAIN_to_AUXI_data_cnt >= sizeof(auto_MAIN_to_AUXI_data_array))
-				{
-					auto_MAIN_to_AUXI_data_cnt = 0;
-				}//end if
-				
+								
 				//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
 				
 			}//end else if
 			//else do nothing since there was no message and no auto data			
 
+				
+			//reset the auto data counters as needed
+			if ( auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) && sizeof(auto_MAIN_to_COMM_data_array) > 0)
+			//if the counter is equal to or greater than the size of the array and the array isn't empty
+			{
+				//reset the counter
+				auto_MAIN_to_COMM_data_cnt = 0;
+			}//end if
+			if (auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array) && sizeof(auto_MAIN_to_CMNC_data_array) > 0)
+			//if the counter is equal to or greater than the size of the array and the array isn't empty
+			{
+				//reset the counter
+				auto_MAIN_to_CMNC_data_cnt = 0;
+			}//end if	
+			if ( auto_MAIN_to_NAVI_data_cnt >= sizeof(auto_MAIN_to_NAVI_data_array) && sizeof(auto_MAIN_to_NAVI_data_array) > 0)
+			//if the counter is equal to or greater than the size of the array and the array isn't empty
+			{
+				//reset the counter
+				auto_MAIN_to_NAVI_data_cnt = 0;
+			}//end if		
+			if ( auto_MAIN_to_AUXI_data_cnt >= sizeof(auto_MAIN_to_AUXI_data_array) && sizeof(auto_MAIN_to_AUXI_data_array) > 0)
+			//if the counter is equal to or greater than the size of the array and the array isn't empty
+			{
+				//reset the counter
+				auto_MAIN_to_AUXI_data_cnt = 0;
+			}//end if
+
+			
+				
 			//Clear Motor Power Status
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
-			break;
-			
+	
 			
 			break;
 		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS

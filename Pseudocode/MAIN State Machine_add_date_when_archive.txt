@@ -25,6 +25,7 @@ At POR (defaults):
 	comm_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 	navi_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 	auxi_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
+	comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
 	redirectToPCUSB = false
 	redirectToNAVI = false
 	redirectToAUXI = false
@@ -1064,10 +1065,15 @@ MAIN:
 					
 						//And since comm_cmnc_destination_selection = ROVERCOMM_COMM
 						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)
-							
 							create system ready msg for COMM
-							comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
-						end if
+						else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+								create system ready msg for CMNC		
+						else
+							Send error message. As it's an unknown destination.
+						end else
+						
+						
+						comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
 						
 						//skip auto data						
 						
@@ -1105,18 +1111,21 @@ MAIN:
 						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)
 								create system ready msg for COMM
 						else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC)
-								create system ready msg for CMNC
-						end if						
-						//else do nothing (as it may be set to ROVERCOMM_NONE or something
-						
+								create system ready msg for CMNC		
+						else
+							Send error message. As it's an unknown destination.
+						end else
+
 						comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created		
 					
 					end if
 					//Since this is a shared data channel, create message corresponding to the next auto data for COMM, then for CMNC
-					else if( sizeof(auto_MAIN_to_COMM_data_array) > 0 && auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array))
-					//if the array has data and the count is less than the size of the array
+					else if( auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array) )
+						//if there is auto data for COMM and it has not been all sent yet
+						//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.
 					
 						comm_msg_queue = auto_MAIN_to_COMM_data_array[auto_MAIN_to_COMM_data_cnt]
+						
 						//set the next auto data for COMM for the next loop
 						auto_MAIN_to_COMM_data_cnt++
 						
@@ -1124,10 +1133,15 @@ MAIN:
 						
 						
 					end else if
-					else if( sizeof(auto_MAIN_to_CMNC_data_array) > 0 && auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array))
-					//if the array has data and the count is less than the size of the array
+					else if( auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array))
+						//if there is auto data for CMNC and it has not been all sent yet
+						//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.
 					
+						//since there is no custom data, then send the next auto data.
+						//create message corresponding to the next auto data for COMM.
+						
 						comm_msg_queue = auto_MAIN_to_CMNC_data_array[auto_MAIN_to_CMNC_data_cnt]
+						
 						//set the next auto data for CMNC for the next loop
 						auto_MAIN_to_CMNC_data_cnt++
 						
@@ -1135,42 +1149,61 @@ MAIN:
 						
 						
 					end else if
-					else if( auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) && auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array))
-					//if all auto data has already been sent out
-					
-						//reset their counters
-						auto_MAIN_to_COMM_data_cnt = 0
-						auto_MAIN_to_CMNC_data_cnt = 0
-					end else if
-					//else do nothing since there was no message and no auto data		
+					//else do nothing since there was no message and no auto data to send
 						
-						
+	
 						
 					end if					
 					//NAVI
 					if navi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for NAVI as needed based on navi_msg_queue					
-					else //since there is no custom data, then send the next auto data										
-						create message corresponding to the next auto data for NAVI
+					else if( auto_MAIN_to_NAVI_data_cnt < sizeof(auto_MAIN_to_NAVI_data_array))
+						//if there is auto data for NAVI and it has not been all sent yet
+						//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.
+					
+													
+						//since there is no custom data, then send the next auto data.
+						//create message corresponding to the next auto data for NAVI.
+						
 						navi_msg_queue = auto_MAIN_to_NAVI_data_array[auto_MAIN_to_NAVI_data_cnt]
 						//set the next auto data for NAVI for the next loop
 						auto_MAIN_to_NAVI_data_cnt++
-						if auto_MAIN_to_NAVI_data_cnt >= sizeof(auto_MAIN_to_NAVI_data_array)
-							auto_MAIN_to_NAVI_data_cnt = 0
-						endif
+		
 					end if
 					//AUXI
 					if auxi_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for AUXI as needed based on auxi_msg_queue					
-					else //since there is no custom data, then send the next auto data										
-						create message corresponding to the next auto data for AUXI
+					else if( auto_MAIN_to_AUXI_data_cnt < sizeof(auto_MAIN_to_AUXI_data_cnt))
+						//if there is auto data for AUXI and it has not been all sent yet
+						//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.
+					
+													
+						//since there is no custom data, then send the next auto data.
+						//create message corresponding to the next auto data for AUXI.
+						
 						auxi_msg_queue = auto_MAIN_to_AUXI_data_array[auto_MAIN_to_AUXI_data_cnt]
 						//set the next auto data for AUXI for the next loop
 						auto_MAIN_to_AUXI_data_cnt++
-						if auto_MAIN_to_AUXI_data_cnt >= sizeof(auto_MAIN_to_AUXI_data_array)
-							auto_MAIN_to_AUXI_data_cnt = 0
-						endif		
+
 					end if
+
+					
+					if ( auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) && sizeof(auto_MAIN_to_COMM_data_array) > 0)
+						//if the counter is equal to or greater than the size of the array and the array isn't empty
+						auto_MAIN_to_COMM_data_cnt = 0;
+					endif
+					if ( auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array) && sizeof(auto_MAIN_to_CMNC_data_array) > 0)
+						//if the counter is equal to or greater than the size of the array and the array isn't empty
+						auto_MAIN_to_CMNC_data_cnt = 0;
+					endif
+					if ( auto_MAIN_to_NAVI_data_cnt >= sizeof(auto_MAIN_to_NAVI_data_array) && sizeof(auto_MAIN_to_NAVI_data_array) > 0)
+						//if the counter is equal to or greater than the size of the array and the array isn't empty
+						auto_MAIN_to_COMM_data_cnt = 0;
+					endif
+					if ( auto_MAIN_to_AUXI_data_cnt >= sizeof(auto_MAIN_to_AUXI_data_array) && sizeof(auto_MAIN_to_AUXI_data_array) > 0)
+						//if the counter is equal to or greater than the size of the array and the array isn't empty
+						auto_MAIN_to_AUXI_data_cnt = 0;
+					endif
 
 					
 					Clear Motor Power Status (so it can be re-read again next loop)
@@ -1192,13 +1225,15 @@ MAIN:
 					if (since) comm_msg_queue = COMM_SLEEP_REQUEST	
 					
 						//And since comm_cmnc_destination_selection = ROVERCOMM_COMM
-						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)
-							
-							Create COMM sleep request after acknowledgements are received from both AUXI and NAVI (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)				
+						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)							
+							Create COMM sleep request after acknowledgements are received from both AUXI and NAVI (it should be cleared out to CMD_TAG_NO_MSG after the request has been sent, in TX_COMMUNICATIONS, so it doesn't get stuck in a loop)							
+						else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC)//This code should not execute when in SYSTEM_SLEEPING. Just have it there for consistency.
+								create system ready msg for CMNC		
+						else
+							Send error message. As it's an unknown destination.
+						end else		
 						
-							comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
-							
-						end if
+						comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
 					
 						//skip auto data												
 					endif
@@ -1237,10 +1272,13 @@ MAIN:
 						if(comm_cmnc_destination_selection == ROVERCOMM_COMM)
 							
 							Create COMM SW reset request after acknowledgements are received from both AUXI and NAVI		
+						else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC)//This code should not execute when in SW_RESETTING. Just have it there for consistency.
+								create system ready msg for CMNC		
+						else
+							Send error message. As it's an unknown destination.
+						end else	
 						
-							comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
-							
-						end if
+						comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
 					
 						//skip auto data												
 					endif						
@@ -1290,9 +1328,11 @@ MAIN:
 						else if(comm_cmnc_destination_selection == ROVERCOMM_CMNC)
 							create any msg(s) for CMNC (through COMM) as needed based on comm_msg_queue						
 							//should be general or specific error messages, unless ALL_HW_RESET_REQUEST is in the queue, then it has priority over system error messages.
-						end if						
-						//else do nothing (as it may be set to ROVERCOMM_NONE or something
+						else
+							Send error message. As it's an unknown destination.
+						end else
 						
+						comm_cmnc_destination_selection = ROVERCOMM_COMM//reset to default once the data is created
 						
 						//skip auto data						
 						
