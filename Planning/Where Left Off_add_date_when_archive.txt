@@ -138,7 +138,8 @@ FOIUND LOGICAL BUG 12-29-17
 		[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
 		[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
 	
-	
+		[DONE]Update MAIN code so that it sends internally created tommand to either CMNC or COMM as desired. (pretty much everywhere where comm_msg_queue is called, comm_cmnc_destination_selection should be set.
+		Update MAIN state machine  so that it sends internally created tommand to either CMNC or COMM as desired.
 	
 	
 				
@@ -148,16 +149,20 @@ FOIUND LOGICAL BUG 12-29-17
 				
 
 //COMM				
+				
+				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x
+				
 				[IN PROGRESS]update COMM code for shared data fixes
 					monitor memory use
 				[IN PROGRESS]update COMM state machine for shared data fixes
 
 				[NEED TO DO]Add #define debug flag to test auto data by starting up in normal operations
 				[NEED TO DO]Test auto data with that flag
-				[NEED TO DO]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
-				[NEED TO DO]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
+				[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
+				[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
 					
-//NAVI			
+//NAVI		
+				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x	
 				[NEED TO DO]update NAVI code for shared data fixes
 				[NEED TO DO]update NAVI state machine for shared data fixes
 
@@ -167,6 +172,7 @@ FOIUND LOGICAL BUG 12-29-17
 				[NEED TO DO]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
 		
 //AUXI					
+				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x
 				[NEED TO DO]update AUXI code for shared data fixes
 				[NEED TO DO]update AUXI state machine for shared data fixes	
 					
@@ -1827,8 +1833,13 @@ Note: The last thing I did before stopping was:
 	[DONE]double check to see how I determined the destination for normal data in the past
 	
 
-	
+	General Design Note for All Arduinos: For some messages that need to be redirected, if the receiving Arduino has redirection turned off, then those messages reaching that Arduino may be dropped (by design).
 		
+		
+	General Design Note for All Arduinos: For now all errors (besides health errors) will be sent to COMM as generic system errors so it will process it and send a copy to CMNC.
+		IMPROVEMENT TIP: Maybe in the future add in command data with the generic system errors to describe the errors or have COMM be able to process errors of every type.
+		Until then, for now, to know what the error is you have to read from the PC_USB.
+	
 ----------------------
 TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 ----------------------

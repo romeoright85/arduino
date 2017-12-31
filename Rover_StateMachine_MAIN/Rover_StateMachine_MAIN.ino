@@ -452,6 +452,10 @@ RoverReset * resetArray[] = {
 //Auto Data Arrays
 //Note: PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
 
+
+//Note: Remember COMM currently only receives and processes generic system error and generic health errors. Also it can't redirect in some modes (i.e. SYNCHRONIZATION) so sending it an error (i.e. sync error) won't do any good.
+
+
 //COMM (will have to send data through a shared channel with CMNC)
 byte auto_MAIN_to_COMM_data_array[] = {
 	//add more as needed
@@ -1493,7 +1497,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			//auxi_acknowledgement = true
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_);
 		}//end else if	
-		//else do nothing
+		//else do nothing (as it should not come from COMM, CMNC, MAIN-self, or PC_USB)
 		
 		
 		//once MAIN gets a SW Reset Acknowledgement from both NAVI and AUXI
@@ -1527,9 +1531,12 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 				
 		//Create first message here and regenerate later on as needed
 		pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send error out through the PC_USB for debugging
-		comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+		comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+		//When MAIN receives a generic health error, send it to COMM, which will then create a message to send it to CMNC so the base station knows there's an error		
 		navi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
 		auxi_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
+		
+		comm_cmnc_destination_selection = ROVERCOMM_COMM;
 		
 		//set generic_health_error = true
 		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);			
@@ -1567,8 +1574,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		error_origin = originRoverCommType;
 				
 		//Create first message here and regenerate later on as needed
-		comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//When COMM receives and error, always send it out to the CMNC so the base station knows there's an error	
+		comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+		//When MAIN receives a generic system error, send it to COMM, which will then create a message to send it to CMNC so the base station knows there's an error		
 		pc_usb_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+		
+		comm_cmnc_destination_selection = ROVERCOMM_COMM;
 		
 		
 
@@ -1619,15 +1629,17 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			//set auxi_system_ready = true	
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_);			
 		}//end else if
-		//else do nothing
+		//else do nothing (as it should not come from CMNC, MAIN-self, or PC_USB)
 		
 		//Check to see if all systems are ready, so MAIN and start the systems go code/process
 		//the status for a particular arduino (i.e. navi_system_ready fpr NAVI) would be set true when the system ready msg was received for that arduino
 		if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_AUXI_SYSTEM_READY_) )
 		{
-			comm_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
+			comm_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;//to be sent to COMM
 			navi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;				
 			auxi_msg_queue = CMD_TAG_SYSTEM_GO_STATUS;
+			
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;
 			//reset the timeout counter
 			timeout_counter = 0;
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_);
@@ -1707,7 +1719,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			
 			
 		}//end else if	
-		//else do nothing
+		//else do nothing (as it should not come from COMM, CMNC, MAIN-self, or PC_USB)
 		
 		//once MAIN gets an ack for system sleeping from both NAVI and AUXI
 		if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_NAVI_ACKNOWLEDGEMENT_) && BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_AUXI_ACKNOWLEDGEMENT_) )
@@ -1731,17 +1743,21 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		{
 			//turn on the motor	enable
 			BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//enable_mtr_pwr = true
-			comm_msg_queue = CMD_TAG_ENABLING_MTR_PWR;
+			comm_msg_queue = CMD_TAG_ENABLING_MTR_PWR;//to be sent to CMNC
 			navi_msg_queue = CMD_TAG_ENABLING_MTR_PWR;
-			auxi_msg_queue = CMD_TAG_ENABLING_MTR_PWR;//to be redirected to CMNC
+			auxi_msg_queue = CMD_TAG_ENABLING_MTR_PWR;
+			
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
 		}//end if
 		else//else disable motor power
 		{
 			//turn off the motor enable		
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//enable_mtr_pwr = false
-			comm_msg_queue = CMD_TAG_DISABLING_MTR_PWR;
+			comm_msg_queue = CMD_TAG_DISABLING_MTR_PWR;//to be sent to CMNC
 			navi_msg_queue = CMD_TAG_DISABLING_MTR_PWR;
-			auxi_msg_queue = CMD_TAG_DISABLING_MTR_PWR;//to be redirected to CMNC
+			auxi_msg_queue = CMD_TAG_DISABLING_MTR_PWR;
+			
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
 		}//end else		
 			
 	}//end else if
@@ -1757,10 +1773,20 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 
 		//Check to see where the command was from
-		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
 		{
-			comm_msg_queue = CMD_TAG_MTR_PWR_STATUS;
+			 pc_usb_msg_queue = CMD_TAG_MTR_PWR_STATUS;
+		}//end else if		
+		else if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_MTR_PWR_STATUS;//to be sent to COMM
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;
 		}//end if
+		else if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
+		{
+			comm_msg_queue = CMD_TAG_MTR_PWR_STATUS;//to be sent to CMNC
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
+		}//end else if		
 		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
 		{
 			navi_msg_queue = CMD_TAG_MTR_PWR_STATUS;
@@ -1784,10 +1810,20 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 
 		//Check to see where the command was from
-		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
 		{
-			comm_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;
+			 pc_usb_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;
+		}//end else if	
+		else if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;//to be sent to COMM
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;
 		}//end if
+		else if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
+		{
+			comm_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;//to be sent to CMNC
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
+		}//end if		
 		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
 		{
 			navi_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;
@@ -1811,9 +1847,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 	
 		//Check to see where the command was from
-		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
 		{
-			comm_msg_queue = CMD_TAG_ENC_STATUS_MID_LEFT;
+			 pc_usb_msg_queue = CMD_TAG_ENC_STATUS_MID_LEFT;
+		}//end else if				
+		else if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_ENC_STATUS_MID_LEFT;//to be sent to COMM
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
+		{
+			comm_msg_queue = CMD_TAG_ENC_STATUS_MID_LEFT;//to be sent to CMNC
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
 		}//end if
 		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
 		{
@@ -1838,9 +1884,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 
 		//Check to see where the command was from
-		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
 		{
-			comm_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
+			 pc_usb_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
+		}//end else if				
+		else if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;//to be sent to COMM
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;
+		}//end if		
+		else if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
+		{
+			comm_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;//to be sent to CMNC
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
 		}//end if
 		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
 		{
@@ -1865,9 +1921,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 
 		//Check to see where the command was from
-		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
 		{
-			comm_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
+			 pc_usb_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
+		}//end else if		
+		else if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;//to be sent to COMM
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;
+		}//end if		
+		else if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
+		{
+			comm_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG//to be sent to CMNC
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
 		}//end if
 		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
 		{
@@ -1892,9 +1958,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{
 	
 		//Check to see where the command was from
-		if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
 		{
-			comm_msg_queue = CMD_TAG_INVALID_CMD;
+			 pc_usb_msg_queue = CMD_TAG_INVALID_CMD;
+		}//end else if		
+		else if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
+		{
+			comm_msg_queue = CMD_TAG_INVALID_CMD;//to be sent to COMM
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;
+		}//end if		
+		else if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
+		{
+			comm_msg_queue = CMD_TAG_INVALID_CMD;//to be sent to CMNC
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
 		}//end if
 		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
 		{
@@ -2723,7 +2799,9 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				//check each arduino to see which isn't ready yet and keep having it send out system ready status from MAIN
 				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMM_SYSTEM_READY_))
 				{
-					comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
+					comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;//to be sent to COMM
+					
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				}//end if
 				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_NAVI_SYSTEM_READY_))
 				{
@@ -2789,8 +2867,9 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 						//shut down motor when in error for safety
 						error_origin = ROVERCOMM_MAIN;
 						BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
-						comm_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;							
-						pc_usb_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;											
+						comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+						pc_usb_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
 						//set sync_error = true
 						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SYNC_ERROR_);			
 						//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)
@@ -2884,6 +2963,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			comm_msg_queue = CMD_TAG_NO_MSG;
 			navi_msg_queue = CMD_TAG_NO_MSG;
 			auxi_msg_queue = CMD_TAG_NO_MSG;
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
@@ -3434,7 +3514,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					comm_msg_queue = CMD_TAG_NO_MSG;
 					navi_msg_queue = CMD_TAG_NO_MSG;
 					auxi_msg_queue = CMD_TAG_NO_MSG;
-					
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
@@ -3458,7 +3538,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					comm_msg_queue = CMD_TAG_NO_MSG;
 					navi_msg_queue = CMD_TAG_NO_MSG;
 					auxi_msg_queue = CMD_TAG_NO_MSG;
-					
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
@@ -3522,7 +3602,9 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			comm_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 			navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
 			auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
-						
+			
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;
+			
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 			
@@ -3848,7 +3930,8 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 						BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);//shut down motor when in error for safety
 						error_origin = ROVERCOMM_MAIN;						
 						pc_usb_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;
-						comm_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;
+						comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
 						//set sleeping_error = true
 						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SLEEPING_ERROR_);
 						//(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)					
@@ -3867,6 +3950,9 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				//If both acknowledgements are received, allow the Sleep Request Acknowledgement command to have the highest priority on the message queues, modes, and states (over error messages). It will override it since run_task_on_main_now = true and the else block of code here will run.
 					
 				comm_msg_queue = CMD_TAG_COMM_SLEEP_REQUEST;//MAIN sends COMM a COMM Sleep request, so COMM can 
+				
+				comm_cmnc_destination_selection = ROVERCOMM_COMM;
+				
 				//go to sleep
 				//initialize/reset shared counter for future use and to prevent being stuck in a loop
 				timeout_counter = 0;	
@@ -4012,6 +4098,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			comm_msg_queue = CMD_TAG_NO_MSG;
 			navi_msg_queue = CMD_TAG_NO_MSG;
 			auxi_msg_queue = CMD_TAG_NO_MSG;
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM//default to COMM
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
@@ -4189,6 +4276,8 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
 			auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 		
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
+			
 			//initialize/reset shared counter before use
 			timeout_counter = 0;						
 			
@@ -4546,9 +4635,10 @@ void runModeFunction_SW_RESETTING(byte currentState)
 						error_origin = ROVERCOMM_MAIN;						
 						//Create the error message for the message queues for the first time
 						pc_usb_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//send error out through the PC_USB for debugging
-						comm_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+						comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
 						navi_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//To let the Arduino know MAIN is in error and the motor will be shut off, etc.
 						auxi_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
 						//set sw_reset_error = true
 						BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_SW_RESET_ERROR_);						
 						//(Note: the sw_reset_error flag can only be cleared with a hw reset)
@@ -4594,6 +4684,8 @@ void runModeFunction_SW_RESETTING(byte currentState)
 				//If both acknowledgements are received, allow the SW Reset Acknowledgement command to have the highest priority on the message queues, modes, and states (over error messages). It will override it since run_task_on_main_now = true and the else block of code here will run.
 				
 				comm_msg_queue = CMD_TAG_COMM_SW_RESET_REQUEST;//MAIN sends COMM a COMM SW request, so COMM can do a SW reset
+				
+				comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				
 				//initialize/reset shared counter for future use and to prevent being stuck in a loop
 				timeout_counter = 0;			
@@ -4699,6 +4791,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			comm_msg_queue = CMD_TAG_NO_MSG;
 			navi_msg_queue = CMD_TAG_NO_MSG;
 			auxi_msg_queue = CMD_TAG_NO_MSG;
+			comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
@@ -5081,7 +5174,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 
 				if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					comm_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
+					 comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					 
+					 comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				}//end if			
 				if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
 				{
@@ -5101,7 +5196,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				
 				if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					comm_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
+					 comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					 
+					 comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				}																		
 				if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 				{
@@ -5124,7 +5221,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 
 				if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					comm_msg_queue = CMD_TAG_SLEEP_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
+					 comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+ 
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				}						
 				if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 				{
@@ -5145,7 +5244,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				
 				if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;//with CMNC as the destination						
+					 comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					 
+					 comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				}						
 				if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 				{
@@ -5165,7 +5266,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 
 				if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send error to comm which will send a copy to cmnc as well
+					comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				}						
 				if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 				{
@@ -5185,7 +5288,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				
 				if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
+					comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				}						
 				if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 				{
@@ -5209,7 +5314,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				
 				if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
+					comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				}							
 				if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 				{
@@ -5240,6 +5347,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				{
 					comm_msg_queue = CMD_TAG_ALL_HW_RESET_REQUEST;
 					//do not clear the counter. allow it to keep sending ALL_HW_RESET_REQUEST to COMM until a HW reset is done by COMM to MAIN
+					
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;
+					
 				}//end if
 			#endif	
 			
@@ -5378,7 +5488,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 					comm_msg_queue = CMD_TAG_NO_MSG;
 					navi_msg_queue = CMD_TAG_NO_MSG;
 					auxi_msg_queue = CMD_TAG_NO_MSG;
-					
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
@@ -5402,7 +5512,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 					comm_msg_queue = CMD_TAG_NO_MSG;
 					navi_msg_queue = CMD_TAG_NO_MSG;
 					auxi_msg_queue = CMD_TAG_NO_MSG;
-					
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;//default to COMM
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_COMM_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_NAVI_);
@@ -5429,10 +5539,12 @@ void runModeFunction_default()
 	_PRINT_MODE_(F("MODE: default"));
 	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
 	//No switch case needed for the states, all states do the same thing
-	comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
-	pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
+	comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+ 	pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
 	navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 	auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+	
+	comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				
 	error_origin = ROVERCOMM_MAIN;
 

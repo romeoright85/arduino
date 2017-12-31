@@ -1673,7 +1673,7 @@ void createDataFromQueueFor(byte roverCommDestination)
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:
-				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(0), createdCommand);		
+				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(2), createdCommand);		
 			break;			
 		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:
 				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(2), createdCommand);
@@ -1718,17 +1718,17 @@ void createDataFromQueueFor(byte roverCommDestination)
 				//Since for COMM, PC_USB is the same as CMNC, then when it's any Arduino (including itself) i.e. COMM, CMNC, MAIN, NAVI, PC_USB, or AUXI have the destination be set to CMNC. Send the error back to the ground/base station.
 			
 				//Fixed destination of ROVERCOMM_CMNC
-				RoverCommandCreator::createCmd(error_origin, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(0), createdCommand);			
+				RoverCommandCreator::createCmd(error_origin, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(2), createdCommand);			
 
 			break;
 		case CMD_TAG_SYSTEM_IS_SLEEPING_ACK:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SECURE_LINK_ERROR_STATUS:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SECURE_LINK_ERROR_STATUS, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SECURE_LINK_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;			
 		default:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);//output invalid command
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1), createdCommand);//output invalid command
 			break;
 	}//end switch
 	

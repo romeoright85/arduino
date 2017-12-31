@@ -55,6 +55,9 @@ At POR (defaults):
 		}// add more as needed
 	auto_MAIN_to_AUXI_data_cnt = 0 //data counter
 	
+	
+	//Note: Remember COMM currently only receives and processes generic system error and generic health errors. Also it can't redirect in some modes (i.e. SYNCHRONIZATION) so sending it an error (i.e. sync error) won't do any good.
+	
 	//COMM
 	auto_MAIN_to_COMM_data_array[] = {
 	}// add more as needed
@@ -482,7 +485,8 @@ MAIN:
 
 					//check each arduino to see which isn't ready yet and keep having it send out system ready status from MAIN
 					if comm_system_ready == false
-						comm_msg_queue = SYSTEM_READY_STATUS (tells COMM it's ready to synchronize)						
+						comm_msg_queue = SYSTEM_READY_STATUS (tells COMM it's ready to synchronize)					
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;						
 					end if
 					if navi_msg_queue == false
 						navi_msg_queue = SYSTEM_READY_STATUS (tells NAVI it's ready to synchronize)						
@@ -503,7 +507,10 @@ MAIN:
 					if navi_system_ready = true && auxi_system_ready = true && comm_system_ready = true //the status for a particular arduino (i.e. navi_system_ready fpr NAVI) would be set true when the system ready msg was received for that arduino
 						comm_msg_queue = SYSTEM_GO_STATUS
 						navi_msg_queue = SYSTEM_GO_STATUS
-						auxi_msg_queue = SYSTEM_GO_STATUS						
+						auxi_msg_queue = SYSTEM_GO_STATUS	
+						
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;						
+						
 						Mode: NORMAL_OPERATIONS *begin*						
 					else		
 						//increment counter
@@ -513,8 +520,10 @@ MAIN:
 						Set mode to SYSTEM_ERROR *begin*
 						set enable_mtr_pwr = false //shut down motor when in error for safety
 						Set error_origin = ROVERCOMM_MAIN						
-						pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
-						comm_msg_queue == SYNC_ERROR_STATUS
+						pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging						
+						comm_msg_queue = GENERIC_SYSTEM_ERROR//send COMM a generic system error for now since COMM doesn't handle other errors yet (besides generic health errors). And though you can try to send it to CMNC, sometimes redirection may be off in certain modes. So it's better for COMM to receive a generic error and do what it has to do (i.e. put the LED indicator to error pattern and send a generic system error to CMNC)
+						 
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
 						set sync_error = true
 							(Note: the sync_error flag can only be cleared with a sw reset or hw reset)			
 						//initialize/reset shared counter before use
@@ -627,7 +636,8 @@ MAIN:
 							set enable_mtr_pwr = false //shut down motor when in error for safety
 							//Create the error message for the message queues for the first time
 							pc_usb_msg_queue = SLEEP_ERROR_STATUS //send error out through the PC_USB for debugging
-							comm_msg_queue == SLEEP_ERROR_STATUS
+							comm_msg_queue = GENERIC_SYSTEM_ERROR//send COMM a generic system error for now since COMM doesn't handle other errors yet (besides generic health errors). And though you can try to send it to CMNC, sometimes redirection may be off in certain modes. So it's better for COMM to receive a generic error and do what it has to do (i.e. put the LED indicator to error pattern and send a generic system error to CMNC)
+							comm_cmnc_destination_selection = ROVERCOMM_COMM;							
 							set sleeping_error = true
 							(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)					
 							//initialize/reset shared counter before use
@@ -644,6 +654,9 @@ MAIN:
 						//If both acknowledgements are received, allow the Sleep Request Acknowledgement command to have the highest priority on the message queues, modes, and states (over error messages). It will override it since run_task_on_main_now = true and the else block of code here will run.
 						
 						comm_msg_queue = COMM_SLEEP_REQUEST //MAIN sends COMM a COMM Sleep request, so COMM can go to sleep
+						
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
+						
 						
 						//initialize/reset shared counter for future use and to prevent being stuck in a loop
 						timeout_counter = 0;
@@ -727,9 +740,13 @@ MAIN:
 							set enable_mtr_pwr = false //shut down motor when in error for safety
 							//Create the error message for the message queues for the first time
 							pc_usb_msg_queue = SW_RESET_ERROR_STATUS //send error out through the PC_USB for debugging
-							comm_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.
+							comm_msg_queue = GENERIC_SYSTEM_ERROR//send COMM a generic system error for now since COMM doesn't handle other errors yet (besides generic health errors). And though you can try to send it to CMNC, sometimes redirection may be off in certain modes. So it's better for COMM to receive a generic error and do what it has to do (i.e. put the LED indicator to error pattern and send a generic system error to CMNC)
 							navi_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.
 							auxi_msg_queue = SW_RESET_ERROR_STATUS //To let the Arduino know MAIN is in error and the motor will be shut off, etc.							
+							
+							comm_cmnc_destination_selection = ROVERCOMM_COMM;
+							
+							
 							sw_reset_error = true
 								(Note: the sw_reset_error flag can only be cleared with a hw reset)
 							//initialize/reset shared counter before use
@@ -760,6 +777,8 @@ MAIN:
 						//If both acknowledgements are received, allow the SW Reset Acknowledgement command to have the highest priority on the message queues, modes, and states (over error messages). It will override it since run_task_on_main_now = true and the else block of code here will run.
 				
 						comm_msg_queue = COMM_SW_RESET_REQUEST //MAIN sends COMM a COMM SW request, so COMM can do a SW reset
+						
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
 						
 						//initialize/reset shared counter for future use and to prevent being stuck in a loop
 						timeout_counter = 0;			
@@ -813,7 +832,10 @@ MAIN:
 
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
-							comm_msg_queue = SYNC_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
+							comm_msg_queue = GENERIC_SYSTEM_ERROR//send COMM a generic system error for now since COMM doesn't handle other errors yet (besides generic health errors). And though you can try to send it to CMNC, sometimes redirection may be off in certain modes. So it's better for COMM to receive a generic error and do what it has to do (i.e. put the LED indicator to error pattern and send a generic system error to CMNC)
+							
+							comm_cmnc_destination_selection = ROVERCOMM_COMM;
+							
 						}//end if						
 						if( error_origin != ROVERCOMM_AUXI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
@@ -833,7 +855,10 @@ MAIN:
 						
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
-							comm_msg_queue = SW_RESET_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
+							comm_msg_queue = GENERIC_SYSTEM_ERROR//send COMM a generic system error for now since COMM doesn't handle other errors yet (besides generic health errors). And though you can try to send it to CMNC, sometimes redirection may be off in certain modes. So it's better for COMM to receive a generic error and do what it has to do (i.e. put the LED indicator to error pattern and send a generic system error to CMNC)
+							
+							comm_cmnc_destination_selection = ROVERCOMM_COMM;
+							
 						}//end if																			
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
@@ -853,7 +878,10 @@ MAIN:
 
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
-							comm_msg_queue = SLEEP_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
+							comm_msg_queue = GENERIC_SYSTEM_ERROR//send COMM a generic system error for now since COMM doesn't handle other errors yet (besides generic health errors). And though you can try to send it to CMNC, sometimes redirection may be off in certain modes. So it's better for COMM to receive a generic error and do what it has to do (i.e. put the LED indicator to error pattern and send a generic system error to CMNC)
+							
+							comm_cmnc_destination_selection = ROVERCOMM_COMM;
+							
 						}//end if							
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
@@ -872,7 +900,10 @@ MAIN:
 						
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
-							comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;//with CMNC as the destination						
+							comm_msg_queue = GENERIC_SYSTEM_ERROR//send COMM a generic system error for now since COMM doesn't handle other errors yet (besides generic health errors). And though you can try to send it to CMNC, sometimes redirection may be off in certain modes. So it's better for COMM to receive a generic error and do what it has to do (i.e. put the LED indicator to error pattern and send a generic system error to CMNC)
+
+							comm_cmnc_destination_selection = ROVERCOMM_COMM;
+							
 						}//end if							
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
@@ -891,6 +922,9 @@ MAIN:
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send error to comm which will send a copy to cmnc as well
+							
+							comm_cmnc_destination_selection = ROVERCOMM_COMM;
+							
 						}//end if							
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
@@ -909,6 +943,9 @@ MAIN:
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = GENERIC_SYSTEM_ERROR;//send error to comm which will send a copy to cmnc as well
+							
+							comm_cmnc_destination_selection = ROVERCOMM_COMM;
+							
 						}//end if							
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
@@ -931,6 +968,9 @@ MAIN:
 						if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 						{
 							comm_msg_queue = GENERIC_SYSTEM_ERROR;//send error to comm which will send a copy to cmnc as well
+							
+							comm_cmnc_destination_selection = ROVERCOMM_COMM;
+							
 						}//end if								
 						if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 						{
@@ -958,6 +998,7 @@ MAIN:
 					//if MAIN has been stuck in SYSTEM_ERROR for a long time, request for COMM to do a hw reset
 					if timeout_counter >= MAIN_SYSTEM_ERROR_TIMEOUT_VALUE						
 						comm_msg_queue = ALL_HW_RESET_REQUEST
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
 						//do not clear the counter. allow it to keep sending ALL_HW_RESET_REQUEST to COMM until a HW reset is done by COMM to MAIN
 					end if
 					
@@ -994,6 +1035,8 @@ MAIN:
 					navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
 					auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;
+					
 					once HW Reset it done
 					//initialize/reset shared counter before use
 					timeout_counter = 0;
@@ -1027,6 +1070,7 @@ MAIN:
 					navi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;				
 					auxi_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;
 			
+					comm_cmnc_destination_selection = ROVERCOMM_COMM;
 					
 					//initialize/reset shared counter before use
 					timeout_counter = 0;							
@@ -1394,6 +1438,7 @@ MAIN:
 						navi_msg_queue = CMD_TAG_NO_MSG					
 						auxi_msg_queue = CMD_TAG_NO_MSG
 						comm_msg_queue = CMD_TAG_NO_MSG
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
 						redirectToPCUSB = false
 						redirectToNAVI = false
 						redirectToAUXI = false
@@ -1433,6 +1478,7 @@ MAIN:
 								navi_msg_queue = CMD_TAG_NO_MSG					
 								auxi_msg_queue = CMD_TAG_NO_MSG
 								comm_msg_queue = CMD_TAG_NO_MSG
+								comm_cmnc_destination_selection = ROVERCOMM_COMM;
 								redirectToPCUSB = false
 								redirectToNAVI = false
 								redirectToAUXI = false
@@ -1462,6 +1508,7 @@ MAIN:
 								navi_msg_queue = CMD_TAG_NO_MSG					
 								auxi_msg_queue = CMD_TAG_NO_MSG
 								comm_msg_queue = CMD_TAG_NO_MSG
+								comm_cmnc_destination_selection = ROVERCOMM_COMM;
 								redirectToPCUSB = false
 								redirectToNAVI = false
 								redirectToAUXI = false
@@ -1500,6 +1547,7 @@ MAIN:
 						navi_msg_queue = CMD_TAG_NO_MSG					
 						auxi_msg_queue = CMD_TAG_NO_MSG
 						comm_msg_queue = CMD_TAG_NO_MSG
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
 						redirectToPCUSB = false
 						redirectToNAVI = false
 						redirectToAUXI = false
@@ -1560,6 +1608,7 @@ MAIN:
 						navi_msg_queue = CMD_TAG_NO_MSG					
 						auxi_msg_queue = CMD_TAG_NO_MSG
 						comm_msg_queue = CMD_TAG_NO_MSG
+						comm_cmnc_destination_selection = ROVERCOMM_COMM;
 						pc_usb_msg_queue = CMD_TAG_NO_MSG
 						redirectToPCUSB = false
 						redirectToNAVI = false
@@ -1607,6 +1656,7 @@ MAIN:
 								navi_msg_queue = CMD_TAG_NO_MSG					
 								auxi_msg_queue = CMD_TAG_NO_MSG
 								comm_msg_queue = CMD_TAG_NO_MSG
+								comm_cmnc_destination_selection = ROVERCOMM_COMM;
 								redirectToPCUSB = false
 								redirectToNAVI = false
 								redirectToAUXI = false
@@ -1636,6 +1686,7 @@ MAIN:
 								navi_msg_queue = CMD_TAG_NO_MSG					
 								auxi_msg_queue = CMD_TAG_NO_MSG
 								comm_msg_queue = CMD_TAG_NO_MSG
+								comm_cmnc_destination_selection = ROVERCOMM_COMM;
 								redirectToPCUSB = false
 								redirectToNAVI = false
 								redirectToAUXI = false
@@ -1654,10 +1705,11 @@ MAIN:
 			DEFAULT:
 				Set mode to SYSTEM_ERROR *begin*
 				set enable_mtr_pwr = false //shut down motor when in error for safety
-				comm_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS//with CMNC as the destination
+				comm_msg_queue = GENERIC_SYSTEM_ERROR//send COMM a generic system error for now since COMM doesn't handle other errors yet (besides generic health errors). And though you can try to send it to CMNC, sometimes redirection may be off in certain modes. So it's better for COMM to receive a generic error and do what it has to do (i.e. put the LED indicator to error pattern and send a generic system error to CMNC)
 				pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS
 				navi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
 				auxi_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+				comm_cmnc_destination_selection = ROVERCOMM_COMM;
 				
 				Set error_origin = ROVERCOMM_MAIN				
 				set invalid_state_or_mode_error = true
@@ -1790,7 +1842,7 @@ Conflicting Functions Ordered By Priority
 
 		if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 		{
-			comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send error to comm which will send a copy to cmnc as well
+			comm_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send error to comm which will process it, then send a copy to cmnc as well
 		}					
 		if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 		{
@@ -1843,7 +1895,7 @@ Conflicting Functions Ordered By Priority
 		
 		if( error_origin != ROVERCOMM_COMM)//Make sure don't send it back to itself to avoid an infinite loop
 		{
-			comm_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;//send error to comm which will send a copy to cmnc as well
+			comm_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;//send error to comm which will process it, then send a copy to cmnc as well
 		}						
 		if( error_origin != ROVERCOMM_NAVI)//Make sure don't send it back to itself to avoid an infinite loop
 		{
@@ -1939,12 +1991,14 @@ Conflicting Functions Ordered By Priority
 			navi_msg_queue = ENABLING_MTR_PWR
 			auxi_msg_queue = ENABLING_MTR_PWR
 			comm_msg_queue = ENABLING_MTR_PWR//to be redirected to CMNC
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
 		Else//Disable Motor Power
 			//if enable is not called, the disable motor power by default			
 			enable_mtr_pwr = false
 			navi_msg_queue = DISABLING_MTR_PWR
 			auxi_msg_queue = DISABLING_MTR_PWR
 			comm_msg_queue = DISABLING_MTR_PWR//to be redirected to CMNC		
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
 		End If
 			
 	
@@ -1957,7 +2011,13 @@ Conflicting Functions Ordered By Priority
 		else if command was from AUXI
 			auxi_msg_queue = MTR_PWR_STATUS
 		else if command was from COMM
+			comm_msg_queue = MTR_PWR_STATUS		
+			comm_cmnc_destination_selection = ROVERCOMM_COMM
+		else if command was from CMNC
 			comm_msg_queue = MTR_PWR_STATUS
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC
+		else if command was from PC_USB
+			pc_usb_msg_queue = MTR_PWR_STATUS	
 		end if	
 	
 	Get Mid Right Encoder Status
@@ -1968,6 +2028,12 @@ Conflicting Functions Ordered By Priority
 			auxi_msg_queue = ENC_STATUS_MID_RIGHT
 		else if command was from COMM
 			comm_msg_queue = ENC_STATUS_MID_RIGHT
+			comm_cmnc_destination_selection = ROVERCOMM_COMM
+		else if command was from CMNC
+			comm_msg_queue = ENC_STATUS_MID_RIGHT
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC
+		else if command was from PC_USB
+			pc_usb_msg_queue = ENC_STATUS_MID_RIGHT				
 		end if	
 	Get Mid Left Encoder Status
 		//Check to see where the command was from
@@ -1977,6 +2043,12 @@ Conflicting Functions Ordered By Priority
 			auxi_msg_queue = ENC_STATUS_MID_LEFT
 		else if command was from COMM
 			comm_msg_queue = ENC_STATUS_MID_LEFT
+			comm_cmnc_destination_selection = ROVERCOMM_COMM
+		else if command was from CMNC
+			comm_msg_queue = ENC_STATUS_MID_LEFT
+			comm_cmnc_destination_selection = ROVERCOMM_CMNC
+		else if command was from PC_USB
+			pc_usb_msg_queue = ENC_STATUS_MID_LEFT					
 		end if
 	
 	
