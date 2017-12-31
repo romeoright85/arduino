@@ -58,6 +58,27 @@ to test redirection from NAVI (MAIN) to CMNC through COMM
 and
 /4c4--*hithere
 to test redirection from MAIN to MAIN (loopback) through COMM
+
+
+
+
+Note: Uncomment #define _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_ below to jump straight to normal operations to test things that happen after SYNCHRONIZATION.
+
+
+You can test it with: /4c5--*023 = PIR Status (Request) from MAIN to COMM
+
+You should get in return: /5c400*023nm = PIR Status with no motion from COMM to MAIN
+
+
+
+
+
+[[This _DEBUG_MANUALLY_ESTABILISH_SECURE_LINK_ flag and code has not need tested yet because it has not been needed yet.]]
+(Optionally) Note: Uncomment #define _DEBUG_MANUALLY_ESTABILISH_SECURE_LINK_ below to manually/forcefully establish secure link so you can communicate to the COMM without actually having to secure link.
+
+Else if you don't, you might get a /5c100*022nodata message = From COMM to CMNC, SECURE_LINK_REQUEST
+
+
 */
 
 
@@ -146,6 +167,26 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 #define _PRINT_MODE_ void
 #endif
 //============End Debugging: Print Mode and/or State
+
+
+//============Debugging: Skip to Normal Operations
+//Uncomment the flag below to jump straight to normal operations to test things that happen after SYNCHRONIZATION.
+
+//#define _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_ //Normally commented out during normal operations.
+
+//============End Debugging: Skip to Normal Operations
+
+//============Debugging: Manually Establish Secure Link
+//Uncomment the flag below to manually/forcefully establish secure link so you can communicate to the COMM without actually having to secure link.
+
+//#define _DEBUG_MANUALLY_ESTABILISH_SECURE_LINK_ //Normally commented out during normal operations.
+
+//============End Debugging: Manually Establish Secure Link
+
+
+
+
+
 
 
  //============Debugging: Allow Redirect During Synchronization Mode
@@ -264,6 +305,10 @@ PirSensor * pirSensor = new PirSensor(PIR_PIN, &InterruptDispatch_PIRSensor);//N
 byte cmnc_msg_queue = CMD_TAG_NO_MSG;
 byte main_msg_queue = CMD_TAG_NO_MSG;
 
+//Data Destination Selections
+byte main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+
+
 //Flag(s) - Rover Data Channels Status
 byte ch1Status = DATA_STATUS_NOT_READY;//for PC USB/CNMC
 byte ch2Status = DATA_STATUS_NOT_READY;//for MAIN
@@ -330,6 +375,9 @@ RoverReset * resetArray[] = {
 
 //=====Non-SW Resettable Variables (do not reinitialize these variables on software reset)
 
+//Note: Remember MAIN currently only receives and processes generic system error and generic health errors. Also it can't redirect in some modes (i.e. SYNCHRONIZATION) so sending it an error (i.e. sync error) won't do any good.
+
+
 //Software Serial
 #ifndef _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ //where this debug flag is controlled in RoverConfig.h
 SoftwareSerial _MAIN_SWSERIAL_(COMM_SW_UART_RX_PIN, COMM_SW_UART_TX_PIN);
@@ -361,14 +409,32 @@ const char* const msg_str_table[] PROGMEM = {
 
 
 
-//States //(these states will not be re-initalized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
-byte currentState = RUN_HOUSEKEEPING_TASKS;
-byte nextState = RUN_HOUSEKEEPING_TASKS;
-byte queuedState = RUN_HOUSEKEEPING_TASKS;
+//States //(these states will not be re-initialized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
+	
+	//Current State
+	byte currentState = RUN_HOUSEKEEPING_TASKS;
+	//Next State
+	byte nextState = RUN_HOUSEKEEPING_TASKS;
 
-//Modes //(this mode will not be re-initalized in initializeVariables() as they're set by the state machine when being SW resetted)
-byte currentMode = POWER_ON_AND_HW_RESET;
 
+	//Queued State
+	#ifdef _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_//the debug case (i.e. to test auto data)
+		byte queuedState = RX_COMMUNICATIONS;//DEBUG
+	#else //The normal case
+		byte queuedState = RUN_HOUSEKEEPING_TASKS;
+	#endif
+	
+	
+//Modes //(this mode will not be re-initialized in initializeVariables() as they're set by the state machine when being SW resetted)
+
+#ifdef _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_//the debug case (i.e. to test auto data)
+	byte currentMode = NORMAL_OPERATIONS;//DEBUG
+#else //The normal case
+	byte currentMode = POWER_ON_AND_HW_RESET;
+#endif
+
+
+	
 
 
 
@@ -415,6 +481,10 @@ void setup() {
 						  */
 
 
+	#ifdef _DEBUG_MANUALLY_ESTABILISH_SECURE_LINK_						  
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_);//force establishment of secure link manually for debug
+	#endif
+
 }//end of setup()
 
 
@@ -437,7 +507,7 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 void loop() {
 
 
-	
+
 
 	//State Machine
 	switch (currentState)
@@ -1009,7 +1079,10 @@ void initializeVariables()
 	//Message Queues
 	cmnc_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
 	main_msg_queue = CMD_TAG_NO_MSG; // (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag)
-									 //Flag(s) - Rover Data Channels Status
+	
+	main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+	
+	//Flag(s) - Rover Data Channels Status
 	ch1Status = DATA_STATUS_NOT_READY;
 	ch2Status = DATA_STATUS_NOT_READY;
 	
@@ -1217,7 +1290,9 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = HW_RESETTING;//Set mode to HW_RESETTING *begin*				
 		cmnc_msg_queue = CMD_TAG_COMM_HW_RESET_REQUEST;
-		main_msg_queue = CMD_TAG_HW_IS_RESETTING;
+		main_msg_queue = CMD_TAG_HW_IS_RESETTING;//to be sent to MAIN, //Note: currently this message won't get processed by MAIN. So it will just be ignored.
+		
+		main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
 	}//end else if
 	 //COMM SW Request
 	else if (commandTag == CMD_TAG_COMM_SW_RESET_REQUEST &&
@@ -1247,7 +1322,10 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = SW_RESETTING;//Set mode to SW_RESETTING *begin*				
 		cmnc_msg_queue = CMD_TAG_SW_IS_RESETTING_ACK;
-		main_msg_queue = CMD_TAG_ALL_SW_RESET_REQUEST;
+		main_msg_queue = CMD_TAG_ALL_SW_RESET_REQUEST;//to be sent to MAIN
+		
+		main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+		
 		timeout_counter = 0;//reset counter (for future use)
 	}//end else if
 	//Received Generic Health Error
@@ -1271,7 +1349,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		
 		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 		{
-			main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+			main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+		
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+		
+		
 		}//end if
 		
 		
@@ -1311,7 +1393,10 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 		{
-			main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+			main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+			
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+			
 		}//end if
 		
 		
@@ -1352,7 +1437,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_);
 		}//end if
 
-		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_))//it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it justs needs to sync up again
+		if (!BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_COMMUNICATIONS_SECURE_))//it may have been true, but it went into sleep mode then woke up, so the communications should still be secure, it just needs to sync up again
 		{
 
 			currentMode = SECURING_LINK;//Set mode to SECURING_LINK *begin*				
@@ -1496,8 +1581,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft		
 		currentMode = SYSTEM_SLEEPING;//Set mode to SYSTEM_SLEEPING *begin*
 		//Create first message here and regenerate later on as needed
-		main_msg_queue = CMD_TAG_ALL_SLEEP_REQUEST;
+		main_msg_queue = CMD_TAG_ALL_SLEEP_REQUEST;//to be sent to MAIN
 		cmnc_msg_queue = CMD_TAG_SYSTEM_IS_SLEEPING_ACK;
+		
+		main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+		
 		timeout_counter = 0; //reset for future use				
 	}//end else if			
 	 //PIR Status
@@ -1517,10 +1605,21 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		{
 			cmnc_msg_queue = CMD_TAG_PIR_STATUS;
 		}//end if
-		else if (originRoverCommType == ROVERCOMM_NAVI || originRoverCommType == ROVERCOMM_AUXI || originRoverCommType == ROVERCOMM_MAIN)
+		else if (originRoverCommType == ROVERCOMM_MAIN)
 		{
-			main_msg_queue = CMD_TAG_PIR_STATUS;
+			main_msg_queue = CMD_TAG_PIR_STATUS;//to be sent to MAIN
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
 		}//end else if	
+		else if (originRoverCommType == ROVERCOMM_NAVI)
+		{
+			main_msg_queue = CMD_TAG_PIR_STATUS;//to be sent to NAVI
+			main_navi_auxi_destination_selection = ROVERCOMM_NAVI;
+		}//end else if	
+		else if (originRoverCommType == ROVERCOMM_AUXI)
+		{
+			main_msg_queue = CMD_TAG_PIR_STATUS;//to be sent to AUXI
+			main_navi_auxi_destination_selection = ROVERCOMM_AUXI;
+		}//end else if			
 		 //Clears/resets all data pointers before setting them.
 		clearRoverDataPointers();
 		//Sets the roverDataPointer to the origin
@@ -1542,11 +1641,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
 		}//end if
-		else if (originRoverCommType == ROVERCOMM_NAVI || originRoverCommType == ROVERCOMM_AUXI || originRoverCommType == ROVERCOMM_MAIN)
+		else if (originRoverCommType == ROVERCOMM_MAIN)
 		{
-			main_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
-		}//end else if		
-
+			main_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;//to be sent to MAIN
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+		}//end else if	
+		else if (originRoverCommType == ROVERCOMM_NAVI)
+		{
+			main_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;//to be sent to NAVI
+			main_navi_auxi_destination_selection = ROVERCOMM_NAVI;
+		}//end else if	
+		else if (originRoverCommType == ROVERCOMM_AUXI)
+		{
+			main_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;//to be sent to AUXI
+			main_navi_auxi_destination_selection = ROVERCOMM_AUXI;
+		}//end else if			
+		
 
 		 //Clears/resets all data pointers before setting them.
 		clearRoverDataPointers();
@@ -1569,11 +1679,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		{
 			cmnc_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
 		}//end if
-		else if (originRoverCommType == ROVERCOMM_NAVI || originRoverCommType == ROVERCOMM_AUXI || originRoverCommType == ROVERCOMM_MAIN)
+		else if (originRoverCommType == ROVERCOMM_MAIN)
 		{
-			main_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
-		}//end else if		
-
+			main_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;//to be sent to MAIN
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+		}//end else if	
+		else if (originRoverCommType == ROVERCOMM_NAVI)
+		{
+			main_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;//to be sent to NAVI
+			main_navi_auxi_destination_selection = ROVERCOMM_NAVI;
+		}//end else if	
+		else if (originRoverCommType == ROVERCOMM_AUXI)
+		{
+			main_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;//to be sent to AUXI
+			main_navi_auxi_destination_selection = ROVERCOMM_AUXI;
+		}//end else if			
+		
 		 //Clears/resets all data pointers before setting them.
 		clearRoverDataPointers();
 		//Sets the roverDataPointer to the origin
@@ -1592,10 +1713,21 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		{
 			cmnc_msg_queue = CMD_TAG_INVALID_CMD;
 		}//end if
-		else if (originRoverCommType == ROVERCOMM_NAVI || originRoverCommType == ROVERCOMM_AUXI || originRoverCommType == ROVERCOMM_MAIN)
+		else if (originRoverCommType == ROVERCOMM_MAIN)
 		{
-			main_msg_queue = CMD_TAG_INVALID_CMD;
+			main_msg_queue = CMD_TAG_INVALID_CMD;//to be sent to MAIN
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
 		}//end else if	
+		else if (originRoverCommType == ROVERCOMM_NAVI)
+		{
+			main_msg_queue = CMD_TAG_INVALID_CMD;//to be sent to NAVI
+			main_navi_auxi_destination_selection = ROVERCOMM_NAVI;
+		}//end else if	
+		else if (originRoverCommType == ROVERCOMM_AUXI)
+		{
+			main_msg_queue = CMD_TAG_INVALID_CMD;//to be sent to AUXI
+			main_navi_auxi_destination_selection = ROVERCOMM_AUXI;
+		}//end else if		
 		//else do nothing
 
 		 //Clears/resets all data pointers before setting them.
@@ -1609,7 +1741,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 	return;
 }//end of commandDirector()
-void createDataFromQueueFor(byte roverCommDestination)
+void createDataFromQueueFor(byte roverCommType)
 {
 	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
 
@@ -1621,13 +1753,14 @@ void createDataFromQueueFor(byte roverCommDestination)
 	//Create variables needed for the data packaging (i.e. encoder status)
 	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];//Note: This is not needed yet, but is a place holder just in case in the future it's required. If there is a memory limitation, then go ahead and rid of this variable.
 	byte commandDataCharArraySize;//Note: This is not needed yet, but is a place holder just in case in the future it's required. If there is a memory limitation, then go ahead and rid of this variable.
-				
+	byte roverCommActualDestination;//holds the actual/final destination of the data				
 				
 	
-	//Based on the destination roverCommType of interest, set which queue and rover data the outgoing message should be based on
-	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
+	//Based on the roverCommType of interest, set which queue and rover data the outgoing message should be based on
+	if (roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
 		queueOfInterest = cmnc_msg_queue;
+		roverCommActualDestination = roverCommType;//the rover comm type will be the actual destination for ROVERCOMM_CMNC or ROVERCOMM_PC_USB since it's the only destination for that data channel.
 		if (roverDataForCMNC != NULL)//make sure the roverDataPointer is not NULL
 		{
 			commandDataOfInterest = roverDataForCMNC->getCommandData();
@@ -1637,9 +1770,25 @@ void createDataFromQueueFor(byte roverCommDestination)
 			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
 		}//end else		
 	}//end if
-	else if (roverCommDestination == ROVERCOMM_MAIN)
+	else if (roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_NAVI || roverCommType == ROVERCOMM_AUXI)
 	{
 		queueOfInterest = main_msg_queue;
+		
+		//Check to see that the destination for the MAIN channel is either MAIN, NAVI, or AUXI. Anything else is invalid.
+		//Note: For external redirected messages, it doesn't go through createDataFromQueueFor(), so you don't have to worry about its' original destination being modified. This only affects internally generated messages.
+		if( main_navi_auxi_destination_selection == ROVERCOMM_MAIN
+			|| main_navi_auxi_destination_selection == ROVERCOMM_NAVI
+			|| main_navi_auxi_destination_selection == ROVERCOMM_AUXI
+		)
+		{
+			roverCommActualDestination = main_navi_auxi_destination_selection;//let the actual destination be determined by main_navi_auxi_destination_selection
+		}//end if
+		else//invalid state, error out
+		{
+			_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+		}//end else
+		
+		
 		if (roverDataForMAIN != NULL)//make sure the roverDataPointer is not NULL
 		{
 			commandDataOfInterest = roverDataForMAIN->getCommandData();
@@ -1661,93 +1810,91 @@ void createDataFromQueueFor(byte roverCommDestination)
 
 		//Externally Received Commands	
 		case CMD_TAG_COMM_HW_RESET_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_HW_IS_RESETTING:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_HW_IS_RESETTING, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_HW_IS_RESETTING, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_ALL_SW_RESET_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SW_RESET_REQUEST, getMsgString(0), createdCommand);		
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SW_RESET_REQUEST, getMsgString(0), createdCommand);		
 			break;
 		case CMD_TAG_SW_IS_RESETTING_ACK:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:
-				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(2), createdCommand);		
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(2), createdCommand);		
 			break;			
 		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:
-				RoverCommandCreator::createCmd(error_origin, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(2), createdCommand);
+				RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;
 		case CMD_TAG_SECURE_LINK_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SECURE_LINK_REQUEST, getMsgString(0), createdCommand);		
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SECURE_LINK_REQUEST, getMsgString(0), createdCommand);		
 			break;
 		case CMD_TAG_SYSTEM_READY_STATUS:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_READY_STATUS, getMsgString(0), createdCommand);					
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_READY_STATUS, getMsgString(0), createdCommand);					
 			break;
 		case CMD_TAG_ESTABLISH_SECURE_LINK:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ESTABLISH_SECURE_LINK, getMsgString(0), createdCommand);							
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ESTABLISH_SECURE_LINK, getMsgString(0), createdCommand);							
 			break;
 		case CMD_TAG_SYSTEM_IS_WAKING:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_WAKING, getMsgString(0), createdCommand);							
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_WAKING, getMsgString(0), createdCommand);							
 			break;
 		case CMD_TAG_ALL_SLEEP_REQUEST:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SLEEP_REQUEST, getMsgString(0), createdCommand);							
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ALL_SLEEP_REQUEST, getMsgString(0), createdCommand);							
 			break;
 		case CMD_TAG_PIR_STATUS:
 				if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_))//if motion is detected
 				{
-					RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(3), createdCommand);							
+					RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(3), createdCommand);							
 				}//end if
 				else//if no motion is detected
 				{
-					RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(4), createdCommand);
+					RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_PIR_STATUS, getMsgString(4), createdCommand);
 				}//end else				
 			break;
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);							
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);							
 			break;
 		case CMD_TAG_DEBUG_BYE_TEST_MSG:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest, createdCommand);										
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest, createdCommand);										
 			break;
 		case CMD_TAG_INVALID_CMD:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);									
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);									
 			break;
 		//Internally Generated Commands - Internally Generated by this Arduino. So there are no received command for these types of commands.			
 		case CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS: //The error message will be redirected out through all the Arduinos and out to CMNC
 		
-				//Since for COMM, PC_USB is the same as CMNC, then when it's any Arduino (including itself) i.e. COMM, CMNC, MAIN, NAVI, PC_USB, or AUXI have the destination be set to CMNC. Send the error back to the ground/base station.
-			
-				//Fixed destination of ROVERCOMM_CMNC
-				RoverCommandCreator::createCmd(error_origin, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(2), createdCommand);			
+				//Only allow destination of ROVERCOMM_CMNC
+				if(roverCommActualDestination == ROVERCOMM_CMNC )
+				{
+					RoverCommandCreator::createCmd(error_origin, ROVERCOMM_CMNC, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(2), createdCommand);
+				}//end if				
+				//else do nothing. CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS should not be sent to other Arduino channels other than ROVERCOMM_CMNC as other Arduinos are not currently programmed to handle that type of message.
 
 			break;
 		case CMD_TAG_SYSTEM_IS_SLEEPING_ACK:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_SECURE_LINK_ERROR_STATUS:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_SECURE_LINK_ERROR_STATUS, getMsgString(2), createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SECURE_LINK_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;			
 		default:
-				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1), createdCommand);//output invalid command
+				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1), createdCommand);//output invalid command
 			break;
 	}//end switch
 	
 	
-	if (roverCommDestination == ROVERCOMM_CMNC || roverCommDestination == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
+	if (roverCommActualDestination == ROVERCOMM_CMNC || roverCommActualDestination == ROVERCOMM_PC_USB)//PC_USB and CMNC are the same for the COMM Arduino. CMNC will be used most of the time, but allow ROVERCOMM_PC_USB to exist just in case debugging code is added.
 	{
 		sprintf(txMsgBuffer_CMNC, createdCommand);
 	}//end if
-	else if (roverCommDestination == ROVERCOMM_MAIN)
+	else if (roverCommActualDestination == ROVERCOMM_MAIN || roverCommActualDestination == ROVERCOMM_NAVI || roverCommActualDestination == ROVERCOMM_AUXI)
 	{
 		sprintf(txMsgBuffer_MAIN, createdCommand);
 	}//end else if
 	 //else
 
-
-
-
 	return;
-
 
 
 }//end of createDataFromQueueFor()
@@ -1833,6 +1980,9 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 }//end of setAllCommands()
 void redirectData(RoverComm * roverComm)
 {
+	
+	
+	//Note: The redirect data function get its destination from the received data itself and not these flags. And it calls txData on it's own so it's not affected by createDataFromQueueFor() either.
 	
 
 
@@ -2135,7 +2285,10 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_))
 			{
 				#ifndef _DEBUG_TURN_OFF_SYSTEM_READY_STATUS //normally the main_msg_queue will send the CMD_TAG_SYSTEM_READY_STATUS. Can disable it for debugging purposes
-					main_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;//tells MAIN it's ready to synchronize, it should be normally on. only turn off when in debugging to reduce clutter
+					main_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;//to be sent to MAIN, tells MAIN it's ready to synchronize, it should be normally on. only turn off when in debugging to reduce clutter
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+		
 				#endif
 				//If no system go msg from MAIN received && main_system_ready == false (MAIN system not ready yet to set the main_system_ready flag and have not received a system go to switch states yet, then keep incrementing the timeout counter)
 				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_))
@@ -2166,9 +2319,24 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Skip creating data for CMNC
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if		
+			{			
+				if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//data is for MAIN
+				{
+					createDataFromQueueFor(ROVERCOMM_MAIN);
+				}//end if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI) //data is for NAVI
+				{
+					createDataFromQueueFor(ROVERCOMM_NAVI);
+				}//end else if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
+				{
+					createDataFromQueueFor(ROVERCOMM_AUXI);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else				
+			}//end if
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);			
 			break;
@@ -2177,7 +2345,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Sends data to MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
-				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to MAIN, NAVI, or AUXI, that would be determined in the createDataFromQueueFor().
 			}//end if
 			#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
 				 //Allow redirections for debugging purposes
@@ -2188,6 +2356,8 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//clears message queue(s) and redirect flags		
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
+			
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
@@ -2396,9 +2566,24 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			}//end if
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if
+			{			
+				if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//data is for MAIN
+				{
+					createDataFromQueueFor(ROVERCOMM_MAIN);
+				}//end if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI) //data is for NAVI
+				{
+					createDataFromQueueFor(ROVERCOMM_NAVI);
+				}//end else if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
+				{
+					createDataFromQueueFor(ROVERCOMM_AUXI);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else				
+			}//end if		
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);				
 			break;
@@ -2415,7 +2600,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 				//2. Sends data to MAIN
 				if (main_msg_queue != CMD_TAG_NO_MSG)
 				{
-					txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+					txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to MAIN, NAVI, or AUXI, that would be determined in the createDataFromQueueFor().
 				}//end if				
 				//3. Check to see if there are any second messages to send
 				if (
@@ -2434,6 +2619,8 @@ void runModeFunction_SECURING_LINK(byte currentState)
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
 					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 					//reset the first transmission flag
@@ -2451,6 +2638,8 @@ void runModeFunction_SECURING_LINK(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);					
@@ -2635,9 +2824,24 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			}//end if
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if			
+			{			
+				if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//data is for MAIN
+				{
+					createDataFromQueueFor(ROVERCOMM_MAIN);
+				}//end if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI) //data is for NAVI
+				{
+					createDataFromQueueFor(ROVERCOMM_NAVI);
+				}//end else if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
+				{
+					createDataFromQueueFor(ROVERCOMM_AUXI);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else				
+			}//end if		
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);							
 			break;
@@ -2655,7 +2859,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				//2. Sends data to MAIN
 				if (main_msg_queue != CMD_TAG_NO_MSG)
 				{
-					txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+					txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to MAIN, NAVI, or AUXI, that would be determined in the createDataFromQueueFor().
 				}//end if				
 				//3. Check to see if there are any second messages to send
 				if (
@@ -2674,6 +2878,8 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
 					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 					//reset the first transmission flag
@@ -2691,6 +2897,8 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 					
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);			
@@ -2774,9 +2982,24 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			}//end if
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if			
+			{			
+				if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//data is for MAIN
+				{
+					createDataFromQueueFor(ROVERCOMM_MAIN);
+				}//end if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI) //data is for NAVI
+				{
+					createDataFromQueueFor(ROVERCOMM_NAVI);
+				}//end else if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
+				{
+					createDataFromQueueFor(ROVERCOMM_AUXI);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else				
+			}//end if		
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);							
 			break;
@@ -2789,12 +3012,14 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			//2. Sends data to MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
-				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to MAIN, NAVI, or AUXI, that would be determined in the createDataFromQueueFor().
 			}//end if			
 			//No redirection in the HW_RESETTING mode
 			//clears message queue(s) and redirect flags		
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
+			
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
@@ -2938,7 +3163,10 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				//Resend the sleep request a few times (until timeout occurs) to MAIN (and status to CMNC again) just in case MAIN misses it (as MAIN would have gone to sleep and would have ignored this message) or COMM had missed the COMM Sleep Request back from MAIN
 				//So regenerate the messages as needed			
 				cmnc_msg_queue == CMD_TAG_SYSTEM_IS_SLEEPING_ACK;
-				main_msg_queue == CMD_TAG_ALL_SLEEP_REQUEST;
+				main_msg_queue == CMD_TAG_ALL_SLEEP_REQUEST;//to be sent to MAIN
+		
+				main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+		
 				timeout_counter++;
 				//If timeout has reached while waiting for MAIN to send a COMM Sleep Request then go to error
 				#ifndef _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes
@@ -2974,8 +3202,23 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			}//end if			
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
+			{			
+				if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//data is for MAIN
+				{
+					createDataFromQueueFor(ROVERCOMM_MAIN);
+				}//end if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI) //data is for NAVI
+				{
+					createDataFromQueueFor(ROVERCOMM_NAVI);
+				}//end else if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
+				{
+					createDataFromQueueFor(ROVERCOMM_AUXI);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else				
 			}//end if
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);				
@@ -2989,12 +3232,14 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//2. Sends data to MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
-				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to MAIN, NAVI, or AUXI, that would be determined in the createDataFromQueueFor().
 			}//end if			
 			//No redirection in the HW_RESETTING mode
 			//clears message queue(s) and redirect flags		
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
+			
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
@@ -3061,6 +3306,8 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//clears message queue(s) and redirect flags		
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
+			
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);	
@@ -3262,7 +3509,10 @@ void runModeFunction_SW_RESETTING(byte currentState)
 					{
 						//Note: It should send the request periodically and not continuously so the system has time to process the request and it doesn't get stuck in a loop
 						cmnc_msg_queue == CMD_TAG_SW_IS_RESETTING_ACK;//Resend this message to CMNC to show that it's attempting to SW reset the system again
-						main_msg_queue == CMD_TAG_ALL_SW_RESET_REQUEST;//Resending this request to MAIN
+						main_msg_queue == CMD_TAG_ALL_SW_RESET_REQUEST;//to be sent to MAIN, resending this request to MAIN
+						
+						main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+						
 						//Don't reset timeout_counter, keep counting and see if it will reach the SW_RESET_ERROR_TIMEOUT_VALUE
 					}//end else if
 				#endif				
@@ -3284,11 +3534,26 @@ void runModeFunction_SW_RESETTING(byte currentState)
 				createDataFromQueueFor(ROVERCOMM_CMNC);
 			}//end if	
 			//Creates data for MAIN
-			//TROUBLESHOOTING TIP: If MAIN misses this message or has issues, then main_msg_queue = ALL_SW_RESET_REQUEST should be set and sent again.			
+			//TROUBLESHOOTING TIP: If MAIN misses this message or has issues, then main_msg_queue = ALL_SW_RESET_REQUEST should be set and sent again.
 			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if			
+			{			
+				if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//data is for MAIN
+				{
+					createDataFromQueueFor(ROVERCOMM_MAIN);
+				}//end if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI) //data is for NAVI
+				{
+					createDataFromQueueFor(ROVERCOMM_NAVI);
+				}//end else if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
+				{
+					createDataFromQueueFor(ROVERCOMM_AUXI);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else				
+			}//end if		
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);				
 			break;
@@ -3301,12 +3566,15 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//2. Sends data to MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
 			{
-				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to MAIN, NAVI, or AUXI, that would be determined in the createDataFromQueueFor().
 			}//end if			
 			//No redirection in the HW_RESETTING mode
 			//clears message queue(s) and redirect flags
 			cmnc_msg_queue = CMD_TAG_NO_MSG;
 			main_msg_queue = CMD_TAG_NO_MSG;
+			
+			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+			
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 			//reset the first transmission flag
@@ -3489,7 +3757,10 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
 				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+
 				}//end if	
 		
 				//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)					
@@ -3499,7 +3770,10 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				cmnc_msg_queue == CMD_TAG_SECURE_LINK_ERROR_STATUS;
 				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+							
 				}//end if
 				
 				//(Note: the secure_link_error flag can only be cleared with a sw reset or hw reset)
@@ -3509,7 +3783,10 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				cmnc_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;				
 				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;		
+		
 				}//end if
 				//(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)
 			}//end else if
@@ -3518,7 +3795,10 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				cmnc_msg_queue == CMD_TAG_SW_RESET_ERROR_STATUS;
 				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+					
 				}//end if
 				//(Note: the sw_reset_error flag can only be cleared with a hw reset)
 				//Troubleshooting tip, if it's a sw_reset_error, it will need a HW reset. But SYSTEM_ERROR will allow for both sw and hw resets because it's designed to handle any errors in general. So the user will have to know to send a HW reset in order to clear a SW reset error.
@@ -3528,7 +3808,10 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				cmnc_msg_queue == CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
 				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+					
 				}//end if
 				//(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
 			}			
@@ -3537,7 +3820,10 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				cmnc_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
 				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+										
 				}//end if
 				//(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)
 			}//end else if
@@ -3546,7 +3832,10 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+					
 				}//end if
 			}
 			else //default.
@@ -3557,7 +3846,10 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 				{
-					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//also send a copy to MAIN where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
+					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+					
 				}//end if				
 			}//end else	
 			
@@ -3595,9 +3887,24 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			}//end if
 			//Creates data for MAIN
 			if (main_msg_queue != CMD_TAG_NO_MSG)
-			{
-				createDataFromQueueFor(ROVERCOMM_MAIN);
-			}//end if
+			{			
+				if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//data is for MAIN
+				{
+					createDataFromQueueFor(ROVERCOMM_MAIN);
+				}//end if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI) //data is for NAVI
+				{
+					createDataFromQueueFor(ROVERCOMM_NAVI);
+				}//end else if
+				else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
+				{
+					createDataFromQueueFor(ROVERCOMM_AUXI);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else				
+			}//end if			
 			//Clear PIR Status Flag
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_PIR_MOTION_DETECTED_);				
 			break;
@@ -3615,7 +3922,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				//2. Sends data to MAIN
 				if (main_msg_queue != CMD_TAG_NO_MSG)
 				{
-					txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);
+					txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to MAIN, NAVI, or AUXI, that would be determined in the createDataFromQueueFor().
 				}//end if				
 				//3. Check to see if there are any second messages to send
 				if (
@@ -3633,7 +3940,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
-					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);
 					//reset the first transmission flag
@@ -3651,7 +3958,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 					//clears message queue(s) and redirect flags		
 					cmnc_msg_queue = CMD_TAG_NO_MSG;
 					main_msg_queue = CMD_TAG_NO_MSG;
-					
+					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_CMNC_);
 					BooleanBitFlags::clearFlagBit(flagSet_MessageControl, _BTFG_REDIRECT_TO_MAIN_);								
 					//reset the first transmission flag
@@ -3678,8 +3985,10 @@ void runModeFunction_default()
 	heartLed->ledSetLevel(_ONE_THIRD_BRIGHTNESS_);//run the heart led with desired brightness
 	
 	cmnc_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
-	main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
-
+	main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, //Note: currently this message won't get processed by MAIN. So it will just be ignored.
+	
+	main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+		
 	error_origin = ROVERCOMM_COMM;
 
 		

@@ -1965,6 +1965,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		else if (originRoverCommType == ROVERCOMM_COMM)//If command was from COMM
 		{
 			comm_msg_queue = CMD_TAG_INVALID_CMD;//to be sent to COMM
+			//Note: currently this message won't get processed by any Arduinos. So it will just be ignored.
+			
 			comm_cmnc_destination_selection = ROVERCOMM_COMM;
 		}//end if		
 		else if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
@@ -1974,11 +1976,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		}//end if
 		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
 		{
-			navi_msg_queue = CMD_TAG_INVALID_CMD;
+			navi_msg_queue = CMD_TAG_INVALID_CMD;//Note: currently this message won't get processed by any Arduinos. So it will just be ignored.
 		}//end else if
 		else if (originRoverCommType == ROVERCOMM_AUXI)//else if command was from AUXI
 		{
-			auxi_msg_queue = CMD_TAG_INVALID_CMD;			
+			auxi_msg_queue = CMD_TAG_INVALID_CMD;		//Note: currently this message won't get processed by any Arduinos. So it will just be ignored.	
 		}//end else if
 		//else do nothing	
 	
@@ -2023,6 +2025,7 @@ void createDataFromQueueFor(byte roverCommType)
 		queueOfInterest = comm_msg_queue;
 
 		//Check to see that the destination for the COMM channel is either COMM or CMNC. Anything else is invalid.
+		//Note: For external redirected messages, it doesn't go through createDataFromQueueFor(), so you don't have to worry about its' original destination being modified. This only affects internally generated messages.
 		if(comm_cmnc_destination_selection == ROVERCOMM_COMM || comm_cmnc_destination_selection == ROVERCOMM_CMNC)
 		{
 			roverCommActualDestination = comm_cmnc_destination_selection;//let the actual destination be determined by comm_cmnc_destination_selection
