@@ -1310,7 +1310,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*	
 
 	}//end else if
-	 //ALL SW Request
+	 //ALL SW Reset Request
 	else if (commandTag == CMD_TAG_ALL_SW_RESET_REQUEST &&
 			(
 				(roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_) )
