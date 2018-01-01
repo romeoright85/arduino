@@ -125,46 +125,10 @@ FOIUND LOGICAL BUG 12-29-17
 ===================			
 			Reference: P:\Code Overview Videos\Bugs\bugs_found_129217v1.webm
 			
-			
-//MAIN			
-		
-	[DONE]update MAIN code for shared data fixes
-			[DONE]update MAIN state machine for shared data fixes
-	[DONE]Add #define debug flag to test auto data by starting up in normal operations
-	[DONE] Test auto data by setting:
-	
-		byte queuedState = RX_COMMUNICATIONS;//DEBUG
-		byte currentMode = NORMAL_OPERATIONS;//DEBUG
 
-		[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
-		[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
-	
-		[DONE]Update MAIN code so that it sends internally created command to either CMNC or COMM as desired. (pretty much everywhere where comm_msg_queue is called, comm_cmnc_destination_selection should be set.
-		[DONE] Update MAIN state machine so that it sends internally created command to either CMNC or COMM as desired.
-	
-	
-				
-				
-				
-					
-				
-
-//COMM				
-				
-				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x
-				
-				[DONE]update COMM code for shared data fixes
-					monitor memory use
-				[IN PROGRESS]update COMM state machine for shared data fixes
-
-				[DONE]Add #define debug flag to test auto data by starting up in normal operations
-				[NEED TO DO]Test auto data with that flag
-				[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
-				[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
-					
 //NAVI		
 				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x	
-				[NEED TO DO]update NAVI code for shared data fixes
+				[DO NEXT]update NAVI code for shared data fixes
 				[NEED TO DO]update NAVI state machine for shared data fixes
 
 				[NEED TO DO]Add #define debug flag to test auto data by starting up in normal operations
@@ -2002,4 +1966,40 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 
 ----------------------	
 	
+				
+//MAIN			
+		
+	[DONE]update MAIN code for shared data fixes
+			[DONE]update MAIN state machine for shared data fixes
+	[DONE]Add #define debug flag to test auto data by starting up in normal operations
+	[DONE] Test auto data by setting:
 	
+		byte queuedState = RX_COMMUNICATIONS;//DEBUG
+		byte currentMode = NORMAL_OPERATIONS;//DEBUG
+
+		[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
+		[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
+	
+		[DONE]Update MAIN code so that it sends internally created command to either CMNC or COMM as desired. (pretty much everywhere where comm_msg_queue is called, comm_cmnc_destination_selection should be set.
+		[DONE] Update MAIN state machine so that it sends internally created command to either CMNC or COMM as desired.
+	
+	
+				
+				
+				
+					
+				
+
+//COMM				
+				
+				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x
+				
+				[DONE]update COMM code for shared data fixes
+					monitor memory use
+				[DONE]update COMM state machine for shared data fixes
+
+				[DONE]Add #define debug flag to test auto data by starting up in normal operations
+				[DONE]Test auto data with that flag
+				[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
+				[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
+					

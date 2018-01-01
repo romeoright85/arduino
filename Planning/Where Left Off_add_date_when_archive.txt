@@ -8,11 +8,11 @@ DEADLINES:
 [19 days] 
 Rover_StateMachine_NAVI (get the rover rolling)
 	Get Framework up
-	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 (had to fix autodata algorithm), 1/6
+	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 take day off to relax, 1/6, 1/7
 	Write States and Modes (on average 1 day per mode ,except default)
-	1/7, 1/12, 1/13, 1/14, 1/20, 1/21, 1/26, 1/27
+	1/12, 1/13, 1/14, 1/20, 1/21, 1/26, 1/27, 1/28
 	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE)
-	1/28, 2/3, 2/4, 2/9, 2/10, 2/11, 2/17, 2/18
+	2/3, 2/4, 2/9, 2/10, 2/11, 2/17, 2/18, 2/23
 
 
 
@@ -21,13 +21,13 @@ Rover_StateMachine_NAVI (get the rover rolling)
 [14 days]
 Rover_StateMachine_AUXI (then get the leds and sensors working)
 	Get Framework up
-	2/23, 2/24
+	2/24, 2/25
 	Write States and Modes (on average 1 day per mode, except default)
-	2/25, 3/3, 3/4, 3/9, 3/10, 3/11, 3/17, 3/18
+	3/3, 3/4, 3/9, 3/10, 3/11, 3/17, 3/18, 3/23
 	ALSO NEED TO DO TAXES, so may have to delay some more.
 	
 	Develop Axillary Code (i.e. SYSTEM_HEALTH)
-	3/23, 3/24, 3/25, 3/31, 4/1, 4/6, 4/7, 4/8
+	3/24, 3/25, 3/31, 4/1, 4/6, 4/7, 4/8, 4/14
 	
 	[NEED TO DO FOR AUXI]Update and add to RoverMessagePackager for IMU data
 	Have a way for IMU data to get packaged and pass from AUXI to CMNC.
@@ -35,9 +35,9 @@ Rover_StateMachine_AUXI (then get the leds and sensors working)
 
 
 
-[7 days] *maybe reduce to 6 days if needed
+[6 days]
 Test code
-	4/14, 4/15, 4/2, 4/21, 4/22, 4/28, 4/29
+	4/15, 4/2, 4/21, 4/22, 4/28, 4/29
 	Update the timeouts (especially the sync ones) as needed to get the rover arduinos to all sync up.
 Do a quick screen record with audio walking through roughly how to you would read one of the codes (i.e. MAIN) for documentation.
 Go through and clean up the "//PLACEHOLDER"s in Rover_StateMachine_COMM
@@ -121,50 +121,14 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 
 			
 ===================
-FOIUND LOGICAL BUG 12-29-17
+FOUND LOGICAL BUG 12-29-17
 ===================			
 			Reference: P:\Code Overview Videos\Bugs\bugs_found_129217v1.webm
 			
-			
-//MAIN			
-		
-	[DONE]update MAIN code for shared data fixes
-			[DONE]update MAIN state machine for shared data fixes
-	[DONE]Add #define debug flag to test auto data by starting up in normal operations
-	[DONE] Test auto data by setting:
-	
-		byte queuedState = RX_COMMUNICATIONS;//DEBUG
-		byte currentMode = NORMAL_OPERATIONS;//DEBUG
 
-		[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
-		[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
-	
-		[DONE]Update MAIN code so that it sends internally created command to either CMNC or COMM as desired. (pretty much everywhere where comm_msg_queue is called, comm_cmnc_destination_selection should be set.
-		[DONE] Update MAIN state machine so that it sends internally created command to either CMNC or COMM as desired.
-	
-	
-				
-				
-				
-					
-				
-
-//COMM				
-				
-				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x
-				
-				[DONE]update COMM code for shared data fixes
-					monitor memory use
-				[IN PROGRESS]update COMM state machine for shared data fixes
-
-				[DONE]Add #define debug flag to test auto data by starting up in normal operations
-				[NEED TO DO]Test auto data with that flag
-				[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
-				[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
-					
 //NAVI		
 				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x	
-				[NEED TO DO]update NAVI code for shared data fixes
+				[DO NEXT, start from scratch. Go to link, do a compare of MAIN code and make similar changes to NAVI code. Do the same for MAIN state machine and NAVI state machine as well]update NAVI code for shared data fixes
 				[NEED TO DO]update NAVI state machine for shared data fixes
 
 				[NEED TO DO]Add #define debug flag to test auto data by starting up in normal operations
@@ -174,7 +138,7 @@ FOIUND LOGICAL BUG 12-29-17
 		
 //AUXI					
 				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x
-				[NEED TO DO]update AUXI code for shared data fixes
+				[DO NEXT, start from scratch. Go to link, do a compare of MAIN code and make similar changes to AUXI code. Do the same for MAIN state machine and AUXI state machine as well]update AUXI code for shared data fixes
 				[NEED TO DO]update AUXI state machine for shared data fixes	
 					
 				[NEED TO DO]Add #define debug flag to test auto data by starting up in normal operations
@@ -2002,4 +1966,40 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 
 ----------------------	
 	
+				
+//MAIN			
+		
+	[DONE]update MAIN code for shared data fixes
+			[DONE]update MAIN state machine for shared data fixes
+	[DONE]Add #define debug flag to test auto data by starting up in normal operations
+	[DONE] Test auto data by setting:
 	
+		byte queuedState = RX_COMMUNICATIONS;//DEBUG
+		byte currentMode = NORMAL_OPERATIONS;//DEBUG
+
+		[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
+		[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
+	
+		[DONE]Update MAIN code so that it sends internally created command to either CMNC or COMM as desired. (pretty much everywhere where comm_msg_queue is called, comm_cmnc_destination_selection should be set.
+		[DONE] Update MAIN state machine so that it sends internally created command to either CMNC or COMM as desired.
+	
+	
+				
+				
+				
+					
+				
+
+//COMM				
+				
+				Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\archive\GitHub 12-29-17v1\arduino\Pseudocode\Auto Data Fi 12-30-17v1x
+				
+				[DONE]update COMM code for shared data fixes
+					monitor memory use
+				[DONE]update COMM state machine for shared data fixes
+
+				[DONE]Add #define debug flag to test auto data by starting up in normal operations
+				[DONE]Test auto data with that flag
+				[DONE]Update all error messages in createdatafromqueuefor() to have error instead of nodata. Change the getMsgString.
+				[DONE]Update the invalid command to output invlcmdand not no data. Change the getMsgString.
+					
