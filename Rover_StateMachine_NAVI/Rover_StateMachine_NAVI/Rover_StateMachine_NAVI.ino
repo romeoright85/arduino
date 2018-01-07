@@ -32,8 +32,11 @@ Debug Operation
 
 To test locally with only one Arduino , first make sure if _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ is uncommented in RoverConfig.h
 
+//WRITE ME LATER
+
 Can send:
 //WRITE ME LATER
+
 */
 
 
@@ -53,6 +56,9 @@ Can send:
 #endif
 #ifndef _NAVI_STATE_MACHINE_VARIABLES_
 #define _NAVI_STATE_MACHINE_VARIABLES_ //For RoverConfig.h
+#endif
+#ifndef _ROVER_SHARED_QUEUE_DEFINITIONS
+#define _ROVER_SHARED_QUEUE_DEFINITIONS //For RoverConfig.h
 #endif
 
 
@@ -142,6 +148,14 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============End Debugging: Print Mode and/or State
 
 
+//============Debugging: Skip to Normal Operations
+//Uncomment the flag below to jump straight to normal operations and test the auto data, etc.
+
+//#define _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_ //Normally commented out during normal operations.
+
+//============End Debugging: Skip to Normal Operations
+
+
  //============Debugging: Redirection Notice
 //Uncomment to output notice when redirection is occuring
 //#define _DEBUG_REDIRECTION_NOTICE
@@ -178,10 +192,10 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //Auto Data Counters
 //They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
-//TEMPLATE//byte auto_COMM_data_cnt = 0;
-//TEMPLATE//byte auto_NAVI_data_cnt = 0;
-//TEMPLATE//byte auto_AUXI_data_cnt = 0;
-
+//TEMPLATE//byte auto_NAVI_to_CMNC_data_cnt = 0;
+//TEMPLATE//byte auto_NAVI_to_COMM_data_cnt = 0;
+//TEMPLATE//byte auto_NAVI_to_MAIN_data_cnt = 0;
+//TEMPLATE//byte auto_NAVI_to_AUXI_data_cnt = 0;
 
 
 
@@ -225,7 +239,12 @@ byte pc_usb_msg_queue = CMD_TAG_NO_MSG;// PC_USB won't get autodata, as it would
 byte main_pri_msg_queue = CMD_TAG_NO_MSG;// primary message queue
 byte main_sec_msg_queue = CMD_TAG_NO_MSG;//secondary message queue
 	
-//Note: Since all messages go through MAIN, the destination has to be provided/preset/predetermined. If it needs to go to multiple places, then you need to send the message out multiple times separately.
+
+//Data Destination Selections
+byte pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN, as you don't want just any data leaking out to CMNC (data security)
+
+byte sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN, as you don't want just any data leaking out to CMNC (data security)
+
 
 //LEFT OFF HERE
 /*FIX ME
@@ -410,6 +429,8 @@ RoverReset * resetArray[] = {
 //=====Non-SW Resettable Variables (do not reinitialize these variables on software reset)
 
 
+//Note: Remember MAIN currently only receives and processes generic system error and generic health errors. Also it can't redirect in some modes (i.e. SYNCHRONIZATION) so sending it an error (i.e. sync error) won't do any good.
+
 
 //LEFT OFF HERE - template below
 
@@ -436,15 +457,32 @@ const char* const msg_str_table[] PROGMEM = {
 
 
 
+//States //(these states will not be re-initialized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
+	
+	//Current State
+	byte currentState = RUN_HOUSEKEEPING_TASKS;
+	//Next State
+	byte nextState = RUN_HOUSEKEEPING_TASKS;
 
 
-//States //(these states will not be re-initalized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
-byte currentState = RUN_HOUSEKEEPING_TASKS;
-byte nextState = RUN_HOUSEKEEPING_TASKS;
-byte queuedState = RUN_HOUSEKEEPING_TASKS;
+	//Queued State
+	#ifdef _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_//the debug case (i.e. to test auto data)
+		byte queuedState = RX_COMMUNICATIONS;//DEBUG
+	#else //The normal case
+		byte queuedState = RUN_HOUSEKEEPING_TASKS;
+	#endif
 
-//Modes //(this mode will not be re-initalized in initializeVariables() as they're set by the state machine when being SW resetted)
-byte currentMode = POWER_ON_AND_HW_RESET;
+
+	
+//Modes //(this mode will not be re-initialized in initializeVariables() as they're set by the state machine when being SW resetted)
+
+#ifdef _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_//the debug case (i.e. to test auto data)
+	byte currentMode = NORMAL_OPERATIONS;//DEBUG
+#else //The normal case
+	byte currentMode = POWER_ON_AND_HW_RESET;
+#endif
+
+
 
 
 RoverMessagePackager * roverMessagePackager = new RoverMessagePackager();
@@ -966,8 +1004,20 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
 //WRITE ME LATER
 }//end of commandDirector()
-void createDataFromQueueFor(byte roverCommDestination)
+void createDataFromQueueFor(byte roverCommDestination, byte queueSelection)
 {
+
+
+/*
+Pseudocode
+
+if queueSelection == PRIMARY_QUEUE
+	queueOfInterest = main_pri_msg_queue
+else if if queueSelection == SECONDARY_QUEUE
+	queueOfInterest = main_sec_msg_queue
+*/
+
+
 //WRITE ME LATER
 
 }//end of createDataFromQueueFor()

@@ -1994,7 +1994,7 @@ void createDataFromQueueFor(byte roverCommType)
 {
 
 
-	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+	//Note: The origin of the message will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
 
 	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string

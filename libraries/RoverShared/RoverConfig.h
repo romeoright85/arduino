@@ -306,6 +306,14 @@
 		#define DATA_REDIRECT_ENABLED		1
 	#endif
 	
+	
+	#ifdef _ROVER_SHARED_QUEUE_DEFINITIONS
+		//iused to select between primary and secondary message queues (i.e. for NAVI and AUXI.
+		#define PRIMARY_QUEUE
+		#define SECONDARY_QUEUE
+	#endif
+	
+	
 	//definition for DelayCounter Periods
 	#ifdef _DELAYCOUNTERPERIODS
 		#define DELAY_1_PERIODS 1

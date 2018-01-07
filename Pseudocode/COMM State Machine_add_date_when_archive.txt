@@ -336,12 +336,13 @@ COMM:
 					Allow for all non-conflicting commands to run.
 					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 					
-
-					Set main_navi_auxi_destination_selection as needed if the destination needs to be CMNC instead of the default COMM.
-					
 										
 					Skip for CMNC
 					PIR Status is filtered out for this mode.
+					
+					Set main_navi_auxi_destination_selection as needed if the destination needs to be CMNC instead of the default COMM.
+										
+										
 					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 					Note: Either you should get no data, generic system error message(s), hw reset, comm sw reset, generic health status errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
 
@@ -384,6 +385,8 @@ COMM:
 					Sort based on priority.
 					Allow for all non-conflicting commands to run.
 					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.	
+				
+					Set main_navi_auxi_destination_selection as needed if the destination needs to be CMNC instead of the default COMM.
 				
 					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						Note: Either you should get no data, generic health status errors, generic system error message(s), or secure link data. as everything else was filtered out
@@ -430,7 +433,10 @@ COMM:
 					Allow for all non-conflicting commands to run.
 					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 					
-												
+								
+					Set main_navi_auxi_destination_selection as needed if the destination needs to be CMNC instead of the default COMM.								
+					
+					
 					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 					Unless overridden,
@@ -510,6 +516,8 @@ COMM:
 					Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
 				
 
+					Set main_navi_auxi_destination_selection as needed if the destination needs to be CMNC instead of the default COMM.
+					
 					
 					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						Note: Either you should get no data, generic health status errors, generic system error message(s), or hw or All SW Reset (Re-)Request from CMNC. as everything else was filtered out
@@ -576,8 +584,23 @@ COMM:
 					
 					Improvement tip: Can add a timeout for being in SYSTEM_ERROR too long, and HW reset itself.
 					
+					
+					Set main_navi_auxi_destination_selection as needed if the destination needs to be CMNC instead of the default COMM.
+					
+					
+					Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: Either you should get no data, generic health status errors, generic system error message(s), pir status requests, or hw or All SW Reset (Re-)Request from CMNC. as everything else was filtered out
+						Note: If hw/all sw reset requests from CMNC, see "Command Options" below for more info.						
+					Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						Note: Either you should get no data or hw request (it could come from MAIN, AUXI, or NAVI), or a COMM sw reset request (for all or COMM only) from MAIN. as everything else was filtered out
+						Note: If hw reset request or COMM sw reset request from MAIN, see "Command Options" below for more info.						
+
+					
+					
+					
 					//Run lower priority functions here.
 
+					
 					Note: Any other messages created for CMNC has priority over error messages. Error messages are just for status, but any other messages may be used for debugging.						
 
 					//Recreate/regenerate any error messages (but allow them to be overwritten by higher priority messages)
@@ -747,13 +770,14 @@ COMM:
 					if main_msg_queue == SYSTEM_READY_STATUS (the COMM, aka this arduino, is up and running, so let MAIN know)
 						if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//And since main_navi_auxi_destination_selection = ROVERCOMM_MAIN
 							create system ready msg for MAIN (tells MAIN it's ready to synchronize)				
-						else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+						else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI)//This code should not execute. Just have it there for consistency.
 									create system ready msg for NAVI (tells MAIN it's ready to synchronize)				
-						else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+						else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute. Just have it there for consistency.
 									create system ready msg for AUXI (tells MAIN it's ready to synchronize)												
 						else
 							Send error message. As it's an unknown destination.
-						end else						
+						end else		
+				
 					end if
 					Mode: SYNCHRONIZATION
 					set next state to TX_COMMUNICATIONS						
@@ -768,7 +792,8 @@ COMM:
 							create any msg(s) for AUXI (since they all go through MAIN) as needed based on main_msg_queue
 						else
 							Send error message. As it's an unknown destination.
-						end else												
+						end else		
+												
 					end if					
 					if cmnc_msg_queue == SECURE_LINK_REQUEST
 						create secure link request for CMNC (tells CMNC it's ready for a secure link)
@@ -785,7 +810,9 @@ COMM:
 							create any msg(s) for AUXI (since they all go through MAIN) as needed based on main_msg_queue
 						else
 							Send error message. As it's an unknown destination.
-						end else												
+						end else	
+
+						
 					end if
 					if cmnc_msg_queue != CMD_TAG_NO_MSG
 						create any msg(s) for CMNC as needed based on cmnc_msg_queue
@@ -797,13 +824,15 @@ COMM:
 					if main_msg_queue == COMM_HW_RESET_REQUEST
 						if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//And since main_navi_auxi_destination_selection = ROVERCOMM_MAIN
 							Create (for) MAIN, COMM hw reset request msg
-						else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+						else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI)//This code should not execute. Just have it there for consistency.
 							Create (for) NAVI, COMM hw reset request msg
-						else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+						else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute. Just have it there for consistency.
 							Create (for) AUXI, COMM hw reset request msg
 						else
 							Send error message. As it's an unknown destination.
 						end else
+											
+												
 					end if					
 					if cmnc_msg_queue == HW_IS_RESETTING
 						Create CMNC hw resetting msg
@@ -815,13 +844,15 @@ COMM:
 					if main_msg_queue == ALL_SLEEP_REQUEST
 						if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//And since main_navi_auxi_destination_selection = ROVERCOMM_MAIN
 							Create (for) MAIN, COMM all sleep request msg
-						else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+						else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI)//This code should not execute. Just have it there for consistency.
 							Create (for) NAVI, COMM all sleep request msg
-						else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+						else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute. Just have it there for consistency.
 							Create (for) AUXI, COMM all sleep request msg
 						else
 							Send error message. As it's an unknown destination.
 						end else
+												
+												
 					end if					
 					if cmnc_msg_queue == SYSTEM_IS_SLEEPING
 						Create CMNC system sleeping msg
@@ -841,13 +872,13 @@ COMM:
 						
 						if(main_navi_auxi_destination_selection == ROVERCOMM_MAIN)//And since main_navi_auxi_destination_selection = ROVERCOMM_MAIN
 							Create MAIN all sw reset request msg
-						else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+						else if(main_navi_auxi_destination_selection == ROVERCOMM_NAVI)//This code should not execute. Just have it there for consistency.
 							Create NAVI all sw reset request msg
-						else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+						else if(main_navi_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute. Just have it there for consistency.
 							Create AUXI all sw reset request msg
 						else
 							Send error message. As it's an unknown destination.
-						end else						
+						end else		
 						
 					if cmnc_msg_queue == SW_IS_RESETTING_ACK (it may be cleared out to CMD_TAG_NO_MSG after the request has been sent)
 						Create CMNC sw resetting msg
@@ -865,7 +896,7 @@ COMM:
 						else
 							Send error message. As it's an unknown destination.
 						end else												
-						
+												
 						For CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS in createDataFromQueueFor, create the message using error_origin as the message origin
 					end if					
 					//CMNC (PC_USB)
@@ -894,9 +925,9 @@ COMM:
 					clear message queues and redirect flags
 						cmnc_msg_queue = CMD_TAG_NO_MSG
 						main_msg_queue = CMD_TAG_NO_MSG					
-						main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+						main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 						redirectToCMNC = false
-						redirectToMAIN = false
+						redirectToMAIN = false						
 					first_transmission = true //reset the flag
 					Mode: SYNCHRONIZATION
 					set next state to RX_COMMUNICATIONS											
@@ -922,7 +953,7 @@ COMM:
 							clear message queues and redirect flags
 								cmnc_msg_queue = CMD_TAG_NO_MSG
 								main_msg_queue = CMD_TAG_NO_MSG		
-								main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+								main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 								redirectToCMNC = false
 								redirectToMAIN = false				
 							first_transmission = true //reset the flag
@@ -942,7 +973,7 @@ COMM:
 							clear message queues and redirect flags
 								cmnc_msg_queue = CMD_TAG_NO_MSG
 								main_msg_queue = CMD_TAG_NO_MSG					
-								main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+								main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 								redirectToCMNC = false
 								redirectToMAIN = false		
 							first_transmission = true //reset the flag
@@ -979,7 +1010,7 @@ COMM:
 							clear message queues and redirect flags
 								cmnc_msg_queue = CMD_TAG_NO_MSG
 								main_msg_queue = CMD_TAG_NO_MSG				
-								main_navi_auxi_destination_selection = ROVERCOMM_MAIN;					
+								main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 								redirectToCMNC = false
 								redirectToMAIN = false							
 							first_transmission = true //reset the flag
@@ -999,7 +1030,7 @@ COMM:
 							clear message queues and redirect flags
 								cmnc_msg_queue = CMD_TAG_NO_MSG
 								main_msg_queue = CMD_TAG_NO_MSG
-								main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+								main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 								redirectToCMNC = false
 								redirectToMAIN = false		
 							first_transmission = true //reset the flag
@@ -1040,7 +1071,7 @@ COMM:
 					clear message queues and redirect flags
 						cmnc_msg_queue = CMD_TAG_NO_MSG
 						main_msg_queue = CMD_TAG_NO_MSG
-						main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+						main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 						redirectToCMNC = false
 						redirectToMAIN = false
 					first_transmission = true //reset the flag
@@ -1057,7 +1088,7 @@ COMM:
 					clear message queues and redirect flags
 						cmnc_msg_queue = CMD_TAG_NO_MSG
 						main_msg_queue = CMD_TAG_NO_MSG
-						main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+						main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 						redirectToCMNC = false
 						redirectToMAIN = false
 					first_transmission = true //reset the flag
@@ -1076,7 +1107,7 @@ COMM:
 					clear message queues and redirect flags
 						cmnc_msg_queue = CMD_TAG_NO_MSG
 						main_msg_queue = CMD_TAG_NO_MSG
-						main_navi_auxi_destination_selection = ROVERCOMM_MAIN;				
+						main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 						redirectToCMNC = false
 						redirectToMAIN = false
 					first_transmission = true //reset the flag
@@ -1106,7 +1137,7 @@ COMM:
 							clear message queues and redirect flags
 								cmnc_msg_queue = CMD_TAG_NO_MSG
 								main_msg_queue = CMD_TAG_NO_MSG
-								main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+								main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 								redirectToCMNC = false
 								redirectToMAIN = false						
 							first_transmission = true //reset the flag
@@ -1126,7 +1157,7 @@ COMM:
 							clear message queues and redirect flags
 								cmnc_msg_queue = CMD_TAG_NO_MSG
 								main_msg_queue = CMD_TAG_NO_MSG
-								main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
+								main_navi_auxi_destination_selection = ROVERCOMM_MAIN//default
 								redirectToCMNC = false
 								redirectToMAIN = false		
 							first_transmission = true //reset the flag
@@ -1260,7 +1291,7 @@ Conflicting Functions Ordered By Priority
 				Set error_origin = ROVERCOMM_AUXI
 			else if command was from MAIN
 				Set error_origin = ROVERCOMM_MAIN			
-			else if command was from COMM
+			else if command was from COMM (though this wouldn't happen as it would come from itself. just keep it there for consistency)
 				Set error_origin = ROVERCOMM_COMM							
 			else if command was from PC_USB
 				Set error_origin = ROVERCOMM_PC_USB							

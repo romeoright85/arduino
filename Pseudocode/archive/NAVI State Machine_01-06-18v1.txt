@@ -563,10 +563,6 @@ At POR (defaults):
 			Sort based on priority.
 			Then only run the highest priority for NAVI.
 
-			//Set pri_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or NAVI instead of the default MAIN.
-			
-			//Set sec_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or NAVI instead of the default MAIN.
-			
 			Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				No redirections with the NAVI Arduino.
 				All other messages are allowed from PC_USB. Use with caution.						
@@ -598,10 +594,6 @@ At POR (defaults):
 			Sort based on priority.
 			Then only run the highest priority for NAVI.
 
-			//Set pri_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or NAVI instead of the default MAIN.
-			
-			//Set sec_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or NAVI instead of the default MAIN.
-			
 			Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				No redirections with the NAVI Arduino.
 				All other messages are allowed from PC_USB. Use with caution.						
@@ -923,17 +915,20 @@ At POR (defaults):
 					//And since pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 						if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN)
 							create system ready msg for MAIN (tells MAIN it's ready to synchronize)
-
+						else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_PC_USB)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+							create system ready msg for PC_USB (tells MAIN it's ready to synchronize)																	
 						else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
 							create system ready msg for COMM (tells MAIN it's ready to synchronize)											
-														
 						else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
 							create system ready msg for AUXI (tells MAIN it's ready to synchronize)				
-							
 						else
 							Send error message. As it's an unknown destination.
 						end else
 						
+						
+						pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN//reset to default once the data is created
+									
+				
 				
 			Mode: SYNCHRONIZATION
 			set next state to TX_COMMUNICATIONS						
@@ -947,19 +942,22 @@ At POR (defaults):
 			if main_pri_msg_queue != CMD_TAG_NO_MSG
 			
 
+				//And since pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 				if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN)
 					create any msg(s) for MAIN as needed based on main_pri_msg_queue					
-										
+				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_PC_USB)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
+					create any msg(s) for PC_USB as needed based on main_pri_msg_queue					
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
 					create any msg(s) for COMM as needed based on main_pri_msg_queue					
-					
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
 					create any msg(s) for AUXI as needed based on main_pri_msg_queue					
-					
 				else
 					Send error message. As it's an unknown destination.
 				end else
 
+
+				pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN//reset to default once the data is created			
+				
 			else //since there is no custom data for the primary queue, then send the next auto data										
 					
 					//Since this is a shared data channel, create message corresponding to the next auto data for CMNC, COMM, MAIN, then for AUXI
@@ -1039,18 +1037,25 @@ At POR (defaults):
 			end if
 			if main_sec_msg_queue != CMD_TAG_NO_MSG
 				
+				
+				//And since sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 				if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN)
-					create any msg(s) for MAIN as needed based on main_sec_msg_queue
-					
+					create any msg(s) for MAIN as needed based on main_sec_msg_queue		
+				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_PC_USB)//This code should not execute. Just have it there for consistency.
+					create any msg(s) for MAIN as needed based on main_sec_msg_queue			
 				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//This code should not execute. Just have it there for consistency.
 					create any msg(s) for COMM as needed based on main_sec_msg_queue					
-									
 				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute. Just have it there for consistency.
 					create any msg(s) for AUXI as needed based on main_sec_msg_queue	
-														
 				else
 					Send error message. As it's an unknown destination.
 				end else
+
+
+				sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN//reset to default once the data is created		
+				
+				
+				
 				
 			else //since there is no custom data for the secondary queue, then send the next auto data										
 
@@ -1146,18 +1151,19 @@ At POR (defaults):
 				//And since pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 				if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN)
 					Create NAVI Sleeping Acknowledgement to MAIN
-					
+				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_PC_USB)//This code should not execute. Just have it there for consistency.
+					Create NAVI Sleeping Acknowledgement to PC_USB
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//This code should not execute. Just have it there for consistency.
 					Create NAVI Sleeping Acknowledgement to COMM				
-					
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute. Just have it there for consistency.
 					Create NAVI Sleeping Acknowledgement to AUXI
-					
 				else
 					Send error message. As it's an unknown destination.
 				end else			
 				
-
+				pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN//reset to default once the data is created				
+					
+			
 				Mode: SYSTEM_SLEEPING
 				set next state to TX_COMMUNICATIONS						
 				go to RUN_HOUSEKEEPING_TASKS
@@ -1180,20 +1186,21 @@ At POR (defaults):
 				if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN)
 					create any msg(s) for MAIN as needed based on main_pri_msg_queue					
 					i.e. create error msg for MAIN about SYNC issues, etc.
-					
-										
+				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_PC_USB)//This code should not execute. Just have it there for consistency.
+					create any msg(s) for PC_USB as needed based on main_pri_msg_queue					
+					i.e. create error msg for PC_USB about SYNC issues, etc.
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//This code should not execute. Just have it there for consistency.
 					create any msg(s) for COMM as needed based on main_pri_msg_queue					
 					i.e. create error msg for COMM about SYNC issues, etc.				
-					
-					
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute. Just have it there for consistency.
 					create any msg(s) for AUXI as needed based on main_pri_msg_queue					
 					i.e. create error msg for AUXI about SYNC issues, etc.
-										
 				else
 					Send error message. As it's an unknown destination.
 				end else
+
+
+				pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN//reset to default once the data is created			
 
 				
 				For GENERIC_SYSTEM_ERROR_STATUS in createDataFromQueueFor, create the message using error_origin as the message origin
@@ -1287,18 +1294,21 @@ At POR (defaults):
 
 				if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN)
 					create any msg(s) for MAIN as needed based on main_sec_msg_queue		
-									
+				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_PC_USB)//This code should not execute. Just have it there for consistency.
+					create any msg(s) for MAIN as needed based on main_sec_msg_queue			
 				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//This code should not execute. Just have it there for consistency.
 					create any msg(s) for MAIN as needed based on main_sec_msg_queue						
-					
 				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute. Just have it there for consistency.
 					create any msg(s) for MAIN as needed based on main_sec_msg_queue	
-					
 				else
 					Send error message. As it's an unknown destination.
 				end else
 
-				
+
+				sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN//reset to default once the data is created		
+
+
+			
 			else //since there is no custom data for the secondary queue, then send the next auto data										
 
 					//Since this is a shared data channel, create message corresponding to the next auto data for CMNC, COMM, MAIN, then for AUXI

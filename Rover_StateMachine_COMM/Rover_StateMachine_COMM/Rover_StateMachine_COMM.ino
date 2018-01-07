@@ -1347,7 +1347,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//Create first message here and regenerate later on as needed
 		cmnc_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
 		
-		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+		if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 		{
 			main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 		
@@ -1391,7 +1391,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//Create first message here and regenerate later on as needed
 		cmnc_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//When COMM receives and error, always send it out to the CMNC so the base station knows there's an error	
 
-		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+		if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 		{
 			main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 			
@@ -1743,7 +1743,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 }//end of commandDirector()
 void createDataFromQueueFor(byte roverCommType)
 {
-	//Note: The origin of the messsage will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+	//Note: The origin of the message will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
 
 	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string
@@ -3755,7 +3755,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			{
 			
 				cmnc_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
-				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 				{
 					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 					
@@ -3768,7 +3768,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SECURE_LINK_ERROR_))
 			{
 				cmnc_msg_queue == CMD_TAG_SECURE_LINK_ERROR_STATUS;
-				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 				{
 					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 					
@@ -3781,7 +3781,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SLEEPING_ERROR_))
 			{
 				cmnc_msg_queue == CMD_TAG_SLEEP_ERROR_STATUS;				
-				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 				{
 					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 					
@@ -3793,7 +3793,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SW_RESET_ERROR_))
 			{
 				cmnc_msg_queue == CMD_TAG_SW_RESET_ERROR_STATUS;
-				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 				{
 					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 					
@@ -3806,7 +3806,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			else if(BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_))
 			{
 				cmnc_msg_queue == CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
-				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 				{
 					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 					
@@ -3818,7 +3818,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			else if (BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_))
 			{
 				cmnc_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;
-				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 				{
 					main_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 					
@@ -3830,7 +3830,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			else if(BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_))
 			{
 				cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
-				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 				{
 					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 					
@@ -3844,7 +3844,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_);
 					//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
 				cmnc_msg_queue == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
-				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				if( error_origin != ROVERCOMM_MAIN)//Make sure any messages from the MAIN channel (i.e. MAIN, NAVI, AUXI) isn't sent back to itself to avoid an infinite loop
 				{
 					main_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN, where MAIN will send it to AUXI and NAVI so every Arduino will know of the error
 					
