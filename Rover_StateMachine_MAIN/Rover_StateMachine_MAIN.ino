@@ -448,12 +448,14 @@ RoverReset * resetArray[] = {
 
 //=====Non-SW Resettable Variables (do not reinitialize these variables on software reset)
 
+//Note: Remember COMM currently only receives and processes generic system error and generic health errors. Also it can't redirect in some modes (i.e. SYNCHRONIZATION) so sending it an error (i.e. sync error) won't do any good.
+
 
 //Auto Data Arrays
 //Note: PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
 
 
-//Note: Remember COMM currently only receives and processes generic system error and generic health errors. Also it can't redirect in some modes (i.e. SYNCHRONIZATION) so sending it an error (i.e. sync error) won't do any good.
+
 
 
 //COMM (will have to send data through a shared channel with CMNC)

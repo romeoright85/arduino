@@ -108,41 +108,44 @@ At POR (defaults):
 	error_origin = ROVERCOMM_NONE
 	invalid_state_or_mode_error = false
 	timeout_counter = 0 //shared counter, used to detect timeout of MAIN responding back to COMM for any reason (i.e. system go or system ready responses), error timeouts, etc. Make sure to clear it out before use and only use it for one purpose at a time.
+	
 	motor_turn_value = TURN_NONE
-	prev_motor_turn_value = TURN_NONE //used to hold the previous state, before going to sleep
+	prev_motor_turn_value = TURN_NONE //used to hold the previous state, before going to sleep	
 	motor_speed_value = SPEED_NONE
-	prev_motor_speed_value = SPEED_NONE //used to hold the previous state, before going to sleep
+	prev_motor_speed_value = SPEED_NONE //used to hold the previous state, before going to sleep	
 	gimbal_pan_value = PAN_NONE
 	prev_gimbal_pan_value = PAN_NONE //used to hold the previous state, before going to sleep
 	gimbal_tilt_value = TILT_NONE
 	prev_gimbal_tilt_value = TILT_NONE //used to hold the previous state, before going to sleep
+	
+	
 	drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
 	prev_drive_setting = AUTONOMOUS_DRIVE//used to hold the previous state, before going to sleep
 	buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
 	prev_buffer_remote_ctrl_selected = false//used to hold the previous state, before going to sleep
-	headlight_enable = LIGHTS_OFF
-	prev_headlight_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-	foglight_enable = LIGHTS_OFF
-	prev_foglight_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-	left_signal_light_enable = LIGHTS_OFF
-	prev_left_signal_light_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-	right_signal_light_enable = LIGHTS_OFF
-	prev_right_signal_light_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-	underglow_lights_enable = LIGHTS_OFF
-	prev_underglow_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-	reverse_lights_enable = LIGHTS_OFF
-	prev_reverse_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-	blue_beacon_lights_enable = LIGHTS_OFF
-	prev_blue_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-	ir_beacon_lights_enable = LIGHTS_OFF
-	prev_ir_beacon_lights_enable = LIGHTS_OFF//used to hold the previous state, before going to sleep
-	byte wheelEncoder_MidLeft_Direction;
-	byte wheelEncoder_MidRight_Direction;
-	int wheelEncoder_MidLeft_Speed;
-	int wheelEncoder_MidRight_Speed;
-	int wheelEncoder_MidLeft_Footage;
-	int wheelEncoder_MidRight_Footage;
-	boolean mtrPowerIsOn;
+	headlight_setting = LIGHTS_OFF
+	prev_headlight_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	foglight_setting = LIGHTS_OFF
+	prev_foglight_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	left_signal_light_setting = LIGHTS_OFF
+	prev_left_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	right_signal_light_setting = LIGHTS_OFF
+	prev_right_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	underglow_lights_setting = LIGHTS_OFF
+	prev_underglow_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	reverse_lights_setting = LIGHTS_OFF
+	prev_reverse_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	blue_beacon_lights_setting = LIGHTS_OFF
+	prev_blue_beacon_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	ir_beacon_lights_setting = LIGHTS_OFF
+	prev_ir_beacon_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+	byte wheelEncoder_MidLeft_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
+	byte wheelEncoder_MidRight_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
+	int wheelEncoder_MidLeft_Speed = 0;//used to store values passed in from MAIN
+	int wheelEncoder_MidRight_Speed = 0;//used to store values passed in from MAIN
+	int wheelEncoder_MidLeft_Footage = 0;//used to store values passed in from MAIN
+	int wheelEncoder_MidRight_Footage = 0;//used to store values passed in from MAIN
+	boolean mtrPowerIsOn;//used to store value passed in from MAIN
 
 	RUN_HOUSEKEEPING_TASKS
 		POWER_ON_AND_HW_RESET
@@ -162,14 +165,14 @@ At POR (defaults):
 				//gimbal_pan_value = PAN_NONE
 				//gimbal_tilt_value = TILT_NONE
 				//buffer_remote_ctrl_selected = false
-				//headlight_enable = LIGHTS_OFF
-				//foglight_enable = LIGHTS_OFF
-				//underglow_lights_enable = LIGHTS_OFF
-				//right_signal_light_enable = LIGHTS_OFF
-				//left_signal_light_enable = LIGHTS_OFF
-				//reverse_lights_enable = LIGHTS_OFF
-				//blue_beacon_lights_enable = LIGHTS_OFF
-				//ir_beacon_lights_enable = LIGHTS_OFF
+				//headlight_setting = LIGHTS_OFF
+				//foglight_setting = LIGHTS_OFF
+				//underglow_lights_setting = LIGHTS_OFF
+				//right_signal_light_setting = LIGHTS_OFF
+				//left_signal_light_setting = LIGHTS_OFF
+				//reverse_lights_setting = LIGHTS_OFF
+				//blue_beacon_lights_setting = LIGHTS_OFF
+				//ir_beacon_lights_setting = LIGHTS_OFF
 			Set mode to SYNCHRONIZATION *begin*
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
@@ -180,168 +183,168 @@ At POR (defaults):
 			run background tasks (i.e. counters for LED patterns control)
 			//Control LEDs
 			Control LED Headlights
-				should be headlight_enable == LIGHTS_OFF
+				should be headlight_setting == LIGHTS_OFF
 					turn headlights off
 			Control LED Foglights
-				should be foglight_enable == LIGHTS_OFF
+				should be foglight_setting == LIGHTS_OFF
 					turn foglights off
 			Control LED Underglow
-				should be underglow_lights_enable == LIGHTS_OFF
+				should be underglow_lights_setting == LIGHTS_OFF
 					turn underglow lights off
 			Control LED Right Signal Lights
-				should be right_signal_light_enable == LIGHTS_OFF
+				should be right_signal_light_setting == LIGHTS_OFF
 					turn right signal lights off				
 			Control LED Left Signal Lights
-				should be left_signal_light_enable == LIGHTS_OFF
+				should be left_signal_light_setting == LIGHTS_OFF
 					turn left signal lights off				
 			Control LED Reverse Lights
-				should be reverse_lights_enable == LIGHTS_OFF
+				should be reverse_lights_setting == LIGHTS_OFF
 					turn reverse lights off
 			Control LED Blue Beacon Lights
-				should be blue_beacon_lights_enable == LIGHTS_OFF
+				should be blue_beacon_lights_setting == LIGHTS_OFF
 					turn blue beacon lights off
 			Control LED IR Beacon Lights
-				should be ir_beacon_lights_enable == LIGHTS_OFF
+				should be ir_beacon_lights_setting == LIGHTS_OFF
 					turn IR beacon lights off			
 			Go to whatever the next state is				
 		NORMAL_OPERATIONS	
 			run background tasks (i.e. counters for LED patterns control)
 			//Control LEDs
 			Control LED Headlights
-				switch case headlight_enable
+				switch case headlight_setting
 					control LEDs accordingly
 			Control LED Foglights
-				switch case foglight_enable
+				switch case foglight_setting
 					control LEDs accordingly				
 			Control LED Underglow
-				switch case underglow_lights_enable
+				switch case underglow_lights_setting
 					control LEDs accordingly				
 			Control LED Right Signal Lights
-				switch case right_signal_light_enable
+				switch case right_signal_light_setting
 					control LEDs accordingly							
 			Control LED Left Signal Lights
-				switch case left_signal_light_enable
+				switch case left_signal_light_setting
 					control LEDs accordingly							
 			Control LED Reverse Lights
-				switch case reverse_lights_enable
+				switch case reverse_lights_setting
 					control LEDs accordingly			
 			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_enable
+				switch case blue_beacon_lights_setting
 					control LEDs accordingly			
 			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_enable
+				switch case ir_beacon_lights_setting
 					control LEDs accordingly					
 			Go to whatever the next state is
 		SYSTEM_SLEEPING	
 			run background tasks (i.e. counters for LED patterns control)
 			//Control LEDs
 			Control LED Headlights
-				switch case headlight_enable
+				switch case headlight_setting
 					control LEDs accordingly
 			Control LED Foglights
-				switch case foglight_enable
+				switch case foglight_setting
 					control LEDs accordingly				
 			Control LED Underglow
-				switch case underglow_lights_enable
+				switch case underglow_lights_setting
 					control LEDs accordingly				
 			Control LED Right Signal Lights
-				switch case right_signal_light_enable
+				switch case right_signal_light_setting
 					control LEDs accordingly							
 			Control LED Left Signal Lights
-				switch case left_signal_light_enable
+				switch case left_signal_light_setting
 					control LEDs accordingly							
 			Control LED Reverse Lights
-				switch case reverse_lights_enable
+				switch case reverse_lights_setting
 					control LEDs accordingly			
 			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_enable
+				switch case blue_beacon_lights_setting
 					control LEDs accordingly			
 			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_enable
+				switch case ir_beacon_lights_setting
 					control LEDs accordingly					
 			Go to whatever the next state is	
 		SYSTEM_WAKING
 			run background tasks (i.e. counters for LED patterns control)
 			//Control LEDs
 			Control LED Headlights
-				switch case headlight_enable
+				switch case headlight_setting
 					control LEDs accordingly
 			Control LED Foglights
-				switch case foglight_enable
+				switch case foglight_setting
 					control LEDs accordingly				
 			Control LED Underglow
-				switch case underglow_lights_enable
+				switch case underglow_lights_setting
 					control LEDs accordingly				
 			Control LED Right Signal Lights
-				switch case right_signal_light_enable
+				switch case right_signal_light_setting
 					control LEDs accordingly							
 			Control LED Left Signal Lights
-				switch case left_signal_light_enable
+				switch case left_signal_light_setting
 					control LEDs accordingly							
 			Control LED Reverse Lights
-				switch case reverse_lights_enable
+				switch case reverse_lights_setting
 					control LEDs accordingly			
 			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_enable
+				switch case blue_beacon_lights_setting
 					control LEDs accordingly			
 			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_enable
+				switch case ir_beacon_lights_setting
 					control LEDs accordingly					
 			Go to whatever the next state is	
 		SW_RESETTING
 			run background tasks (i.e. counters for LED patterns control)
 			//Control LEDs
 			Control LED Headlights
-				switch case headlight_enable
+				switch case headlight_setting
 					control LEDs accordingly
 			Control LED Foglights
-				switch case foglight_enable
+				switch case foglight_setting
 					control LEDs accordingly				
 			Control LED Underglow
-				switch case underglow_lights_enable
+				switch case underglow_lights_setting
 					control LEDs accordingly				
 			Control LED Right Signal Lights
-				switch case right_signal_light_enable
+				switch case right_signal_light_setting
 					control LEDs accordingly							
 			Control LED Left Signal Lights
-				switch case left_signal_light_enable
+				switch case left_signal_light_setting
 					control LEDs accordingly							
 			Control LED Reverse Lights
-				switch case reverse_lights_enable
+				switch case reverse_lights_setting
 					control LEDs accordingly			
 			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_enable
+				switch case blue_beacon_lights_setting
 					control LEDs accordingly			
 			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_enable
+				switch case ir_beacon_lights_setting
 					control LEDs accordingly					
 			Go to whatever the next state is
 		SYSTEM_ERROR
 			run background tasks (i.e. counters for LED patterns control)
 			//Control LEDs
 			Control LED Headlights
-				switch case headlight_enable
+				switch case headlight_setting
 					control LEDs accordingly
 			Control LED Foglights
-				switch case foglight_enable
+				switch case foglight_setting
 					control LEDs accordingly				
 			Control LED Underglow
-				switch case underglow_lights_enable
+				switch case underglow_lights_setting
 					control LEDs accordingly				
 			Control LED Right Signal Lights
-				switch case right_signal_light_enable
+				switch case right_signal_light_setting
 					control LEDs accordingly							
 			Control LED Left Signal Lights
-				switch case left_signal_light_enable
+				switch case left_signal_light_setting
 					control LEDs accordingly							
 			Control LED Reverse Lights
-				switch case reverse_lights_enable
+				switch case reverse_lights_setting
 					control LEDs accordingly			
 			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_enable
+				switch case blue_beacon_lights_setting
 					control LEDs accordingly			
 			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_enable
+				switch case ir_beacon_lights_setting
 					control LEDs accordingly					
 			Go to whatever the next state is	
 	RX_COMMUNICATIONS
@@ -533,14 +536,14 @@ At POR (defaults):
 					drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
 					buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
 					//Put LEDs to error pattern
-					headlight_enable = LIGHTS_SYSTEM_ERROR
-					foglight_enable = LIGHTS_SYSTEM_ERROR
-					left_signal_light_enable = LIGHTS_SYSTEM_ERROR
-					right_signal_light_enable = LIGHTS_SYSTEM_ERROR
-					underglow_lights_enable = LIGHTS_SYSTEM_ERROR
-					reverse_lights_enable = LIGHTS_SYSTEM_ERROR
-					blue_beacon_lights_enable = LIGHTS_SYSTEM_ERROR
-					ir_beacon_lights_enable = LIGHTS_SYSTEM_ERROR					
+					headlight_setting = LIGHTS_SYSTEM_ERROR
+					foglight_setting = LIGHTS_SYSTEM_ERROR
+					left_signal_light_setting = LIGHTS_SYSTEM_ERROR
+					right_signal_light_setting = LIGHTS_SYSTEM_ERROR
+					underglow_lights_setting = LIGHTS_SYSTEM_ERROR
+					reverse_lights_setting = LIGHTS_SYSTEM_ERROR
+					blue_beacon_lights_setting = LIGHTS_SYSTEM_ERROR
+					ir_beacon_lights_setting = LIGHTS_SYSTEM_ERROR					
 					//initialize/reset shared counter before use
 					timeout_counter = 0;
 					//Skip PLAN_ROUTE and OBJECT_AVOIDANCE since system is in error and motors and gimbals are off.
@@ -1525,14 +1528,14 @@ At POR (defaults):
 				drive_setting = prev_drive_setting
 				buffer_remote_ctrl_selected = prev_buffer_remote_ctrl_selected
 							
-				prev_headlight_enable = headlight_enable			
-				prev_foglight_enable = foglight_enable			
-				prev_left_signal_light_enable = left_signal_light_enable
-				prev_right_signal_light_enable = right_signal_light_enable
-				prev_underglow_lights_enable = underglow_lights_enable
-				prev_reverse_lights_enable = reverse_lights_enable
-				prev_blue_beacon_lights_enable = blue_beacon_lights_enable
-				prev_ir_beacon_lights_enable = ir_beacon_lights_enable
+				prev_headlight_setting = headlight_setting			
+				prev_foglight_setting = foglight_setting			
+				prev_left_signal_light_setting = left_signal_light_setting
+				prev_right_signal_light_setting = right_signal_light_setting
+				prev_underglow_lights_setting = underglow_lights_setting
+				prev_reverse_lights_setting = reverse_lights_setting
+				prev_blue_beacon_lights_setting = blue_beacon_lights_setting
+				prev_ir_beacon_lights_setting = ir_beacon_lights_setting
 			
 			
 				//clear the flags for future reuse
@@ -1542,14 +1545,14 @@ At POR (defaults):
 				prev_gimbal_tilt_value = TILT_NONE
 				prev_drive_setting = AUTONOMOUS_DRIVE
 				prev_buffer_remote_ctrl_selected = false
-				prev_headlight_enable = LIGHTS_OFF
-				prev_foglight_enable = LIGHTS_OFF
-				left_signal_light_enable = LIGHTS_OFF
-				right_signal_light_enable = LIGHTS_OFF			
-				underglow_lights_enable = LIGHTS_OFF			
-				reverse_lights_enable = LIGHTS_OFF			
-				blue_beacon_lights_enable = LIGHTS_OFF			
-				ir_beacon_lights_enable = LIGHTS_OFF			
+				prev_headlight_setting = LIGHTS_OFF
+				prev_foglight_setting = LIGHTS_OFF
+				left_signal_light_setting = LIGHTS_OFF
+				right_signal_light_setting = LIGHTS_OFF			
+				underglow_lights_setting = LIGHTS_OFF			
+				reverse_lights_setting = LIGHTS_OFF			
+				blue_beacon_lights_setting = LIGHTS_OFF			
+				ir_beacon_lights_setting = LIGHTS_OFF			
 				
 			
 
@@ -1711,14 +1714,14 @@ Conflicting Functions Ordered By Priority
 		gimbal_tilt_value = TILT_NONE
 		drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
 		buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
-		headlight_enable = LIGHTS_OFF
-		foglight_enable = LIGHTS_OFF
-		left_signal_light_enable = LIGHTS_OFF
-		right_signal_light_enable = LIGHTS_OFF
-		underglow_lights_enable = LIGHTS_OFF
-		reverse_lights_enable = LIGHTS_OFF
-		blue_beacon_lights_enable = LIGHTS_OFF
-		ir_beacon_lights_enable = LIGHTS_OFF	
+		headlight_setting = LIGHTS_OFF
+		foglight_setting = LIGHTS_OFF
+		left_signal_light_setting = LIGHTS_OFF
+		right_signal_light_setting = LIGHTS_OFF
+		underglow_lights_setting = LIGHTS_OFF
+		reverse_lights_setting = LIGHTS_OFF
+		blue_beacon_lights_setting = LIGHTS_OFF
+		ir_beacon_lights_setting = LIGHTS_OFF	
 		Set next state to CONTROL_OUTPUTS
 		Set mode to SW_RESETTING *begin*		
 		
@@ -1734,14 +1737,14 @@ Conflicting Functions Ordered By Priority
 		drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
 		buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
 		//Put LEDs to error pattern
-		headlight_enable = LIGHTS_HEALTH_ERROR
-		foglight_enable = LIGHTS_HEALTH_ERROR
-		left_signal_light_enable = LIGHTS_HEALTH_ERROR
-		right_signal_light_enable = LIGHTS_HEALTH_ERROR
-		underglow_lights_enable = LIGHTS_HEALTH_ERROR
-		reverse_lights_enable = LIGHTS_HEALTH_ERROR
-		blue_beacon_lights_enable = LIGHTS_HEALTH_ERROR
-		ir_beacon_lights_enable = LIGHTS_HEALTH_ERROR							
+		headlight_setting = LIGHTS_HEALTH_ERROR
+		foglight_setting = LIGHTS_HEALTH_ERROR
+		left_signal_light_setting = LIGHTS_HEALTH_ERROR
+		right_signal_light_setting = LIGHTS_HEALTH_ERROR
+		underglow_lights_setting = LIGHTS_HEALTH_ERROR
+		reverse_lights_setting = LIGHTS_HEALTH_ERROR
+		blue_beacon_lights_setting = LIGHTS_HEALTH_ERROR
+		ir_beacon_lights_setting = LIGHTS_HEALTH_ERROR							
 
 		//Create first message here and regenerate later on as needed
 		pc_usb_msg_queue = GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
@@ -1841,22 +1844,22 @@ Conflicting Functions Ordered By Priority
 		buffer_remote_ctrl_selected = false
 		
 		//save the LED enable states before shutting them off to go to sleep
-		prev_headlight_enable = headlight_enable
-		headlight_enable = LIGHTS_OFF
-		prev_foglight_enable = foglight_enable
-		foglight_enable = LIGHTS_OFF
-		prev_left_signal_light_enable = left_signal_light_enable
-		left_signal_light_enable = LIGHTS_OFF
-		prev_right_signal_light_enable = right_signal_light_enable
-		right_signal_light_enable = LIGHTS_OFF
-		prev_underglow_lights_enable = underglow_lights_enable
-		underglow_lights_enable = LIGHTS_OFF
-		prev_reverse_lights_enable = reverse_lights_enable
-		reverse_lights_enable = LIGHTS_OFF
-		prev_blue_beacon_lights_enable = blue_beacon_lights_enable
-		blue_beacon_lights_enable = LIGHTS_OFF
-		prev_ir_beacon_lights_enable = ir_beacon_lights_enable
-		ir_beacon_lights_enable = LIGHTS_OFF
+		prev_headlight_setting = headlight_setting
+		headlight_setting = LIGHTS_OFF
+		prev_foglight_setting = foglight_setting
+		foglight_setting = LIGHTS_OFF
+		prev_left_signal_light_setting = left_signal_light_setting
+		left_signal_light_setting = LIGHTS_OFF
+		prev_right_signal_light_setting = right_signal_light_setting
+		right_signal_light_setting = LIGHTS_OFF
+		prev_underglow_lights_setting = underglow_lights_setting
+		underglow_lights_setting = LIGHTS_OFF
+		prev_reverse_lights_setting = reverse_lights_setting
+		reverse_lights_setting = LIGHTS_OFF
+		prev_blue_beacon_lights_setting = blue_beacon_lights_setting
+		blue_beacon_lights_setting = LIGHTS_OFF
+		prev_ir_beacon_lights_setting = ir_beacon_lights_setting
+		ir_beacon_lights_setting = LIGHTS_OFF
 		main_pri_msg_queue = SYSTEM_IS_SLEEPING//Send status back to MAIN
 		
 		pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
@@ -1919,73 +1922,73 @@ Conflicting Functions Ordered By Priority
 			drive_setting = AUTONOMOUS_DRIVE		
 	Set Headlights
 		if on requested
-			headlight_enable = LIGHTS_ON
+			headlight_setting = LIGHTS_ON
 		else if blink requested
-			headlight_enable = LIGHTS_BLINK
+			headlight_setting = LIGHTS_BLINK
 		else //off requested
-			headlight_enable = LIGHTS_OFF
+			headlight_setting = LIGHTS_OFF
 		end if	
 	Set Foglights
 		if on requested
-			foglight_enable = LIGHTS_ON
+			foglight_setting = LIGHTS_ON
 		else if blink requested
-			foglight_enable = LIGHTS_BLINK
+			foglight_setting = LIGHTS_BLINK
 		else //off requested
-			foglight_enable = LIGHTS_OFF
+			foglight_setting = LIGHTS_OFF
 		end if	
 	Set Underglow Lights
 		if on requested
-			underglow_lights_enable = LIGHTS_ON
+			underglow_lights_setting = LIGHTS_ON
 		else if blink requested
-			underglow_lights_enable = LIGHTS_BLINK
+			underglow_lights_setting = LIGHTS_BLINK
 		else //off requested
-			underglow_lights_enable = LIGHTS_OFF
+			underglow_lights_setting = LIGHTS_OFF
 		end if	
 	Set Right Signal Lights
 		//Note: For LIGHTS_SIGNAL, it will blink the front and side lights, but will have a signal pattern for the taillights	
 		if on requested
-			right_signal_light_enable = LIGHTS_ON
+			right_signal_light_setting = LIGHTS_ON
 		else if blink requested
-			right_signal_light_enable = LIGHTS_BLINK
+			right_signal_light_setting = LIGHTS_BLINK
 		else if signal requested
-			right_signal_light_enable = LIGHTS_SIGNAL
+			right_signal_light_setting = LIGHTS_SIGNAL
 		else //off requested
-			right_signal_light_enable = LIGHTS_OFF
+			right_signal_light_setting = LIGHTS_OFF
 		end if	
 	Set Left Signal Lights
 		//Note: For LIGHTS_SIGNAL, it will blink the front and side lights, but will have a signal pattern for the taillights
 		if on requested
-			left_signal_light_enable = LIGHTS_ON
+			left_signal_light_setting = LIGHTS_ON
 		else if blink requested
-			left_signal_light_enable = LIGHTS_BLINK
+			left_signal_light_setting = LIGHTS_BLINK
 		else if signal requested
-			left_signal_light_enable = LIGHTS_SIGNAL			
+			left_signal_light_setting = LIGHTS_SIGNAL			
 		else //off requested
-			left_signal_light_enable = LIGHTS_OFF
+			left_signal_light_setting = LIGHTS_OFF
 		end if	
 	Set Reverse Lights
 		if on requested
-			reverse_lights_enable = LIGHTS_ON
+			reverse_lights_setting = LIGHTS_ON
 		else if blink requested
-			reverse_lights_enable = LIGHTS_BLINK
+			reverse_lights_setting = LIGHTS_BLINK
 		else //off requested
-			reverse_lights_enable = LIGHTS_OFF
+			reverse_lights_setting = LIGHTS_OFF
 		end if
 	Set Blue Beacon Lights
 		if on requested
-			blue_beacon_lights_enable = LIGHTS_ON
+			blue_beacon_lights_setting = LIGHTS_ON
 		else if blink requested
-			blue_beacon_lights_enable = LIGHTS_BLINK
+			blue_beacon_lights_setting = LIGHTS_BLINK
 		else //off requested
-			blue_beacon_lights_enable = LIGHTS_OFF
+			blue_beacon_lights_setting = LIGHTS_OFF
 		end if
 	Set IR Beacon lights
 		if on requested
-			ir_beacon_lights_enable = LIGHTS_ON
+			ir_beacon_lights_setting = LIGHTS_ON
 		else if blink requested
-			ir_beacon_lights_enable = LIGHTS_BLINK
+			ir_beacon_lights_setting = LIGHTS_BLINK
 		else //off requested
-			ir_beacon_lights_enable = LIGHTS_OFF
+			ir_beacon_lights_setting = LIGHTS_OFF
 		end if
 	Get Motor Turn Status
 		main_pri_msg_queue = MOTOR_TURN_STATUS//Send status back to the requester

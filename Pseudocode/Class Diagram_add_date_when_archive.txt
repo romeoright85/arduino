@@ -104,18 +104,19 @@ State Machine - NAVI
 			Waypoint
 			
 
-BufferSelect
-
-MotorController
-
-GimbalController
 			
-UltrasonicSensor (See UltrasonicSensorTest.ino)
-
+(See MotorAndServoTester_NAVI.ino)
+BufferSelect
+MotorController
+GimbalController
 WheelEncoderSensor
 >DelayCounter
 >>GlobalDelayTimer
 	
+	
+UltrasonicSensor (See UltrasonicSensorTest.ino)
+
+
 	
 RoverData
 >RoverComm
@@ -123,7 +124,8 @@ RoverData
 RoverCommandCreator
 
 		
-UnderglowLeds (See DigitalLedTester.ino)
+(See DigitalLedTester.ino)	
+UnderglowLeds
 SideSignalLight
 BeaconLightAssembly
 HeadLightAssembly

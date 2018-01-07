@@ -447,8 +447,8 @@
 		#define PRINT_EULER 1   //Will print the Euler angles Roll, Pitch and Yaw
 				
 		#define HEADING_SAMPLE_SIZE 5 //Used to set the sample size when taking the average of the compass heading values
+		//==End Of Integrated Code From Others
 				
-		//==End Of Intergrated Code From Others
 		
 
 	#endif	

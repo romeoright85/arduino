@@ -192,13 +192,48 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //Auto Data Counters
 //They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
-//TEMPLATE//byte auto_NAVI_to_CMNC_data_cnt = 0;
-//TEMPLATE//byte auto_NAVI_to_COMM_data_cnt = 0;
-//TEMPLATE//byte auto_NAVI_to_MAIN_data_cnt = 0;
-//TEMPLATE//byte auto_NAVI_to_AUXI_data_cnt = 0;
+byte auto_NAVI_to_CMNC_data_cnt = 0;
+byte auto_NAVI_to_COMM_data_cnt = 0;
+byte auto_NAVI_to_MAIN_data_cnt = 0;
+byte auto_NAVI_to_AUXI_data_cnt = 0;
 
 
 
+//TEMPLATE//byte motor_turn_value = TURN_NONE
+//TEMPLATE//byte prev_motor_turn_value = TURN_NONE //used to hold the previous state, before going to sleep	
+//TEMPLATE//byte motor_speed_value = SPEED_NONE
+//TEMPLATE//byte prev_motor_speed_value = SPEED_NONE //used to hold the previous state, before going to sleep	
+//TEMPLATE//byte gimbal_pan_value = PAN_NONE
+//TEMPLATE//byte prev_gimbal_pan_value = PAN_NONE //used to hold the previous state, before going to sleep
+//TEMPLATE//byte gimbal_tilt_value = TILT_NONE
+//TEMPLATE//byte prev_gimbal_tilt_value = TILT_NONE //used to hold the previous state, before going to sleep
+//TEMPLATE//byte drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
+//TEMPLATE//byte prev_drive_setting = AUTONOMOUS_DRIVE//used to hold the previous state, before going to sleep
+//TEMPLATE//byte headlight_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_headlight_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte foglight_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_foglight_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte left_signal_light_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_left_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte right_signal_light_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_right_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte underglow_lights_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_underglow_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte reverse_lights_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_reverse_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte blue_beacon_lights_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_blue_beacon_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte ir_beacon_lights_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_ir_beacon_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte wheelEncoder_MidLeft_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
+//TEMPLATE//byte wheelEncoder_MidRight_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
+//TEMPLATE//int wheelEncoder_MidLeft_Speed = 0;//used to store values passed in from MAIN
+//TEMPLATE//int wheelEncoder_MidRight_Speed = 0;//used to store values passed in from MAIN
+//TEMPLATE//int wheelEncoder_MidLeft_Footage = 0;//used to store values passed in from MAIN
+//TEMPLATE//int wheelEncoder_MidRight_Footage = 0;//used to store values passed in from MAIN
+
+	
+	
 
 //Error Origin (used to send out the origin of the error with the error message)
 byte error_origin = ROVERCOMM_NONE;
@@ -209,7 +244,7 @@ byte error_origin = ROVERCOMM_NONE;
 //Flag(s) - Message Controls
 //TEMPLATE//byte flagSet_MessageControl = _BTFG_NONE_;
 //Flag(s) - System Status 1
-//TEMPLATE//byte flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
+byte flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
 //Flag(s) - Command Filter Options - MAIN and PC_USB each have their own set since they have separate data filters
 //Command Filter Options for PC_USB: Set 1
 //TEMPLATE//byte commandFilterOptionsSet1_PC_USB = _BTFG_NONE_;
@@ -224,11 +259,12 @@ byte error_origin = ROVERCOMM_NONE;
 
 
 //Counters
-//TEMPLATE//unsigned int timeout_counter = 0; //shared counter, used to detect timeout of NAVI responding back to MAIN for any reason 
+unsigned int timeout_counter = 0; //shared counter, used to detect timeout of NAVI responding back to MAIN for any reason 
+
 	//WRITE MORE LATER - add comments on what else timeout_counter is used for. Just search for timeout_counter++ once the code is done and see all the places it's used in and for what purposes
 	
 	
-//TEMPLATE//unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
+unsigned int transmission_delay_cnt = 0;//concurrent transmission delay counter
 
 
 
@@ -246,28 +282,6 @@ byte pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to
 byte sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN, as you don't want just any data leaking out to CMNC (data security)
 
 
-//LEFT OFF HERE
-/*FIX ME
-byte auto_MAIN_data_array[] = {
-	ENC_STATUS_FRT_LEFT, //To CMNC
-	ENC_STATUS_FRT_RIGHT, //To CMNC
-	ENC_STATUS_REAR_LEFT, //To CMNC
-	ENC_STATUS_REAR_RIGHT, //To CMNC
-	MOTOR_TURN_STATUS, //To CMNC
-	MOTOR_SPEED_STATUS, //To CMNC
-	GIMBAL_PAN_STATUS, //To CMNC
-	GIMBAL_TILT_STATUS, //To CMNC
-	LONGITUDE_STATUS, //To CMNC
-	LATITUDE_STATUS, //To CMNC
-	ULTSNC_DISTANCE_FWD_LT_STATUS, //To CMNC
-	ULTSNC_DISTANCE_FWD_CTR_STATUS, //To CMNC
-	ULTSNC_DISTANCE_FWD_RT_STATUS, //To CMNC
-	ULTSNC_DISTANCE_SIDE_RT_STATUS, //To CMNC
-	ULTSNC_DISTANCE_SIDE_LT_STATUS, //To CMNC
-	ULTSNC_DISTANCE_REAR_CTR_STATUS //To CMNC
-}//end of auto_MAIN_data_array[]
-*/
-	
 
 //Flag(s) - Rover Data Channels Status
 byte ch1Status = DATA_STATUS_NOT_READY;//for PC_USB
@@ -435,6 +449,38 @@ RoverReset * resetArray[] = {
 //LEFT OFF HERE - template below
 
 
+//Auto Data Arrays
+//Note: PC_USB doesn't get auto data (since it normally doesn't get monitored, and having data generated all the time would slow the system down)
+
+
+
+byte auto_NAVI_to_CMNC_data_array[] = {
+	ENC_STATUS_FRT_LEFT,
+	ENC_STATUS_FRT_RIGHT,
+	ENC_STATUS_REAR_LEFT,
+	ENC_STATUS_REAR_RIGHT,
+	MOTOR_TURN_STATUS,
+	MOTOR_SPEED_STATUS,
+	GIMBAL_PAN_STATUS,
+	GIMBAL_TILT_STATUS,
+	LONGITUDE_STATUS,
+	LATITUDE_STATUS,
+	ULTSNC_DISTANCE_FWD_LT_STATUS,
+	ULTSNC_DISTANCE_FWD_CTR_STATUS,
+	ULTSNC_DISTANCE_FWD_RT_STATUS,
+	ULTSNC_DISTANCE_SIDE_RT_STATUS,
+	ULTSNC_DISTANCE_SIDE_LT_STATUS,
+	ULTSNC_DISTANCE_REAR_CTR_STATUS
+}	
+byte auto_NAVI_to_COMM_data_array[] = {
+}	
+byte auto_NAVI_to_MAIN_data_array[] = {
+}
+byte auto_NAVI_to_AUXI_data_array[] = {
+}
+
+
+	
 
 //Message Char Array
 char txMsgBuffer_PC_USB[UNIV_BUFFER_SIZE];//transmit buffer for PC_USB
@@ -488,6 +534,9 @@ const char* const msg_str_table[] PROGMEM = {
 RoverMessagePackager * roverMessagePackager = new RoverMessagePackager();
 
 
+
+
+	
 //=====End of: Non-SW Resettable Variables
 
 
@@ -628,27 +677,30 @@ void loop() {
 			{
 				case SYNCHRONIZATION:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-//WRITE ME LATER
+					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)	
+					runModeFunction_SYNCHRONIZATION(currentState);
 					break;
 				case NORMAL_OPERATIONS:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-//WRITE ME LATER
-					break;
-				case SYSTEM_SLEEPING:
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-//WRITE ME LATER
-					break;
-				case SW_RESETTING:
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-//WRITE ME LATER
+					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;
 				case SYSTEM_ERROR:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-//WRITE ME LATER
+					queuedState = DATA_VALIDATION;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
-						 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
+					queuedState = CONTROL_OUTPUTS;
+					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 //WRITE ME LATER
+//turn off or disable anything that you might need to when in error					
+					error_origin = ROVERCOMM_NAVI;
+					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch			
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
@@ -659,6 +711,7 @@ void loop() {
 			{
 				case SYNCHRONIZATION:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes					
+//LEFT OFF HERE					
 //WRITE ME LATER
 					break;
 				case NORMAL_OPERATIONS:

@@ -8,9 +8,9 @@ DEADLINES:
 [19 days] 
 Rover_StateMachine_NAVI (get the rover rolling)
 	Get Framework up
-	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 take day off to relax), 1/6 (had to fix autodata algorithm), 1/7 (had to fix autodata algorithm)/finish framework, 1/12 finish framework/start on States and Modes
-	Write States and Modes (on average 1 day per mode ,except default)
-	1/13 States and Modes/Go to dentist and get Car fixed, 1/14, 1/20, 1/21, 1/26, 1/27, 1/28, 2/3
+	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 take day off to relax), 1/6 (had to fix autodata algorithm), 1/7 (had to fix autodata algorithm)/finish framework
+	Write States and Modes (on average 1 day per mode, except default)
+	1/12, 1/13 (Go to dentist and get Car fixed), 1/14, 1/20, 1/21, 1/26, 1/27, 1/28, 2/3
 	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE)
 	2/4, 2/9, 2/10, 2/11, 2/17, 2/18, 2/23, 2/24
 
@@ -115,20 +115,13 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 			[IN PROGRESS] Setting up framework for Rover_StateMachine_NAVI
 			
 
-				
-				[LEFT OFF HERE, adding auto data from the NAVI state machine plans into the NAVI code] Add other objects/variables planned in the class diagram plans into NAVI
-				
-				
-				[LEFT OFF, from scratch] Add other variables used in NAVI State Machine Planning into the code
-				
-				
-				[NEED TO DO] Create any predicted Bit Flags for NAVI based on the commands list
-					[DONE] gpsDataReady
-					//ADD MORE LATER
+		
 					
-				[NEED TO DO] Add Wheel Encoder data from MAIN auto data, IR Distance Data from AUXI auto data, and Heading from AUXI auto data, to NAVI's PROCESS_DATA and in the commands NAVI can receive.
+				[LEFT OFF NEXT1, NEED TO DO] Add Wheel Encoder data from MAIN auto data, IR Distance Data from AUXI auto data, and Heading from AUXI auto data, to NAVI's PROCESS_DATA and in the commands NAVI can receive to the state machine.
+				
+				[LEFT OFF NEXT2, NEED TO DO] Add Wheel Encoder data from MAIN auto data, IR Distance Data from AUXI auto data, and Heading from AUXI auto data, to NAVI's PROCESS_DATA and in the commands NAVI can receive to the code.
 			
-
+				[LEFT OFF NEXT3, at DATA_VALIDATION,  SYNCHRONIZATION] Work on Rover States and Modes
 			
 			
 Starting on Rover_StateMachine_NAVI.ino at:
@@ -2000,4 +1993,20 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 
 				Note: Remember the shared data channels don't send stuff for PC_USB. So no need to include PC_USB in the if/else statements for the destination selections.				
 
+				
+				
+			Note: Since not all modes are coded/defined for each state (i.e. those that do nothing are not coded it), it will go to default and error out if a state calls a mode that isn't coded/defined yet. (since state transitions should not be default for invalid states, it should just go to the default error)
+			
+			Note: All states are defined for all modes, so it should not default. There are place holders. The reason all states are defined is because modes perform an action or no action (i.e. runModeFunction_SYNCHRONIZATION()) which can be coded in. But different modes select a different state transition. So for states that should not be called for certain modes (i.e. invalid state for certain modes), it's unknown which state it should transition to next.
+			
+			
+				
+			[DONE] Add other objects/variables planned in the class diagram plans (Class Diagram_add_date_when_archive) into NAVI
+			
+			
+			[DONE] Add other variables used in NAVI State Machine Planning into the code
+			
+			
+			[DONE] Create any predicted Bit Flags for NAVI based on the commands list
+				
 				
