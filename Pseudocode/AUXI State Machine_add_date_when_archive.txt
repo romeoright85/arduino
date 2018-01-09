@@ -58,10 +58,6 @@ At POR (defaults):
 		PHOTOSENSOR_CURRENTCCA_FRONTUPWARDPOINTING_MIDDLEDECK_ACTUAL_STATUS,
 		PHOTOSENSOR_DIGITALCCA_LEFTSIDE_UPWARDPOINTING_ACTUAL_STATUS,
 		TEMPSENSOR_POWERCCA_FRONTSIDE_CHARGER_SOLAR_OR_GATE_ACTUAL_STATUS,
-		IR_DISTANCE_FWD_CTR_STATUS,
-		IR_DISTANCE_SIDE_RT_STATUS,
-		IR_DISTANCE_SIDE_LT_STATUS,
-		IR_DISTANCE_REAR_CTR_STATUS,
 		HEADING_STATUS,
 		ROLL_STATUS,
 		PITCH_STATUS,
@@ -80,10 +76,6 @@ At POR (defaults):
 	}
 	auto_AUXI_to_MAIN_data_cnt = 0 //data counter
 	auto_AUXI_to_NAVI_data_array[] = {
-		IR_DISTANCE_FWD_CTR_STATUS,
-		IR_DISTANCE_SIDE_RT_STATUS,
-		IR_DISTANCE_SIDE_LT_STATUS,
-		IR_DISTANCE_REAR_CTR_STATUS,
 		HEADING_STATUS
 	}
 	auto_AUXI_to_NAVI_data_cnt = 0 //data counter	
@@ -251,7 +243,6 @@ At POR (defaults):
 		SYNCHRONIZATION			
 			do nothing		
 		NORMAL_OPERATIONS		
-			read IR sensors
 			read imu sensor
 			Mode: NORMAL_OPERATIONS
 			set next state to SYSTEM_HEALTH
@@ -263,7 +254,6 @@ At POR (defaults):
 		SW_RESETTING
 			do nothing	
 		SYSTEM_ERROR	
-			read IR sensors
 			read imu sensor
 			Mode: SYSTEM_ERROR
 			set next state to SYSTEM_HEALTH
@@ -399,7 +389,7 @@ At POR (defaults):
 			Allow for all non-conflicting commands to run.
 			Then only run the highest priority functions for AUXI last, so it will overwrite anything else, right before state transition.
 			
-			skip IR sensors
+
 			skip imu sensor
 			
 			
@@ -456,7 +446,6 @@ At POR (defaults):
 		
 		
 			process IMU data (calculate heading)
-			process IR data (calculate distance)
 			
 
 			Categorize all commands/data from all sources.
@@ -494,7 +483,6 @@ At POR (defaults):
 			do nothing		
 		SYSTEM_ERROR		
 			process IMU data (calculate heading)
-			process IR data (calculate distance)
 			
 
 			Categorize all commands/data from all sources.
@@ -2143,85 +2131,7 @@ Conflicting Functions Ordered By Priority
 			end if
 
 			
-		Get IR Distance Forward Center Status
-			main_pri_msg_queue = IR_DISTANCE_FWD_CTR_STATUS
-			
-			If command was from CMNC
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_CMNC
-			else if command was from NAVI
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_NAVI
-			else if command was from AUXI
-				Set error_origin = ROVERCOMM_AUXI (though this wouldn't happen as it would come from itself. just keep it there for consistency)				
-			else if command was from MAIN
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_MAIN			
-			else if command was from COMM
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_COMM							
-			else if command was from PC_USB
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_PC_USB							
-			else
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_NONE							
-			end if
 
-			
-		Get IR Distance Side Right Status
-			main_pri_msg_queue = IR_DISTANCE_SIDE_RT_STATUS
-			
-			If command was from CMNC
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_CMNC
-			else if command was from NAVI
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_NAVI
-			else if command was from AUXI
-				Set error_origin = ROVERCOMM_AUXI (though this wouldn't happen as it would come from itself. just keep it there for consistency)				
-			else if command was from MAIN
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_MAIN			
-			else if command was from COMM
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_COMM							
-			else if command was from PC_USB
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_PC_USB							
-			else
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_NONE							
-			end if
-
-			
-		Get IR Distance Side Left Status
-			main_pri_msg_queue = IR_DISTANCE_SIDE_LT_STATUS
-			
-			If command was from CMNC
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_CMNC
-			else if command was from NAVI
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_NAVI
-			else if command was from AUXI
-				Set error_origin = ROVERCOMM_AUXI (though this wouldn't happen as it would come from itself. just keep it there for consistency)				
-			else if command was from MAIN
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_MAIN			
-			else if command was from COMM
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_COMM							
-			else if command was from PC_USB
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_PC_USB							
-			else
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_NONE							
-			end if
-
-			
-		Get IR Distance Rear Center Status
-			main_pri_msg_queue = IR_DISTANCE_REAR_CTR_STATUS
-			
-			If command was from CMNC
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_CMNC
-			else if command was from NAVI
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_NAVI
-			else if command was from AUXI
-				Set error_origin = ROVERCOMM_AUXI (though this wouldn't happen as it would come from itself. just keep it there for consistency)				
-			else if command was from MAIN
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_MAIN			
-			else if command was from COMM
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_COMM							
-			else if command was from PC_USB
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_PC_USB							
-			else
-				Set pri_comm_cmnc_main_navi_destination_selection = ROVERCOMM_NONE							
-			end if
-			
 		Get Heading Status
 			main_pri_msg_queue = HEADING_STATUS
 			

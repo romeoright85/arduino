@@ -200,15 +200,15 @@ double tempValue = 0.0;//temporary variable that is shared and used to print val
 
 
 
-//flags and counters for GPS data
-
-byte headingDataCounter = 0;//counts the number of heading data collected
-byte gpsDataCounter = 0;//counts the number of GPS data collected
+//flags counters and data arrays for GPS and heading data
+byte headingDataCounter = 0;//counts the number of heading data collected (and averaged)
+byte gpsDataCounter = 0;//counts the number of GPS data collected (and averaged)
 //array to hold the GPS samples
 double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
-double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
+//array to hold the heading samples
 double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
 
 RoverReset * resetArray[] = {
 	roverNavigation,

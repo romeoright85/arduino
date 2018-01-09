@@ -34,8 +34,6 @@ RoverAnalogSignals
 >>DelayCounter
 >>>GlobalDelayTimer
 
-IrDistanceSensor
-
 ImuSensor (not really a class but functions)
 >StopWatch
 >>GlobalDelayTimer (also used above)
@@ -117,7 +115,8 @@ WheelEncoderSensor
 UltrasonicSensor (See UltrasonicSensorTest.ino)
 
 
-	
+IrDistanceSensor (see IrDistanceSensorTest.ino)
+
 RoverData
 >RoverComm
 >RoverCommand

@@ -357,18 +357,27 @@ int distanceMeasured = 0;
 
 
 
+
+//------------------From IrDistanceSensorTest
+
+IrDistanceSensor * irDistanceForwardCenter = new  IrDistanceSensor(FORWARD_CENTER_IR_DIST_SENSOR_PIN);
+IrDistanceSensor * irDistanceSideRight = new  IrDistanceSensor(SIDE_RIGHT_IR_DIST_SENSOR_PIN);
+IrDistanceSensor * irDistanceRearCenter = new  IrDistanceSensor(REAR_CENTER_IR_DIST_SENSOR_PIN);
+IrDistanceSensor * irDistanceSideLeft = new IrDistanceSensor(SIDE_LEFT_IR_DIST_SENSOR_PIN);
+
+
 //------------------From NavigationTester_NAVI
 RoverNavigation * roverNavigation = new RoverNavigation();
 RoverGpsSensor * roverGps = new RoverGpsSensor();
-//flags and counters for GPS data
-byte headingDataCounter = 0;//counts the number of heading data collected
-byte gpsDataCounter = 0;//counts the number of GPS data collected
+//flags counters and data arrays for GPS and heading data
+byte headingDataCounter = 0;//counts the number of heading data collected (and averaged)
+byte gpsDataCounter = 0;//counts the number of GPS data collected (and averaged)
 //array to hold the GPS samples
 double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
-double tempHeadingData;//holds the temp heading data. It will get verified for validity before it's assigned to the headingArray.
+//array to hold the heading samples
 double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
-
+double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
 
 
 //------------------From DigitalLedTester.ino
@@ -421,6 +430,10 @@ RoverReset * resetArray[] = {
 	uSon_SideRight,
 	uSon_RearCenter,
 	uSon_SideLeft,
+	irDistanceForwardCenter,
+	irDistanceSideRight,
+	irDistanceRearCenter, 
+	irDistanceSideLeft
 	roverNavigation,
 	roverGps,
 	underglowLight,
@@ -455,22 +468,26 @@ RoverReset * resetArray[] = {
 
 
 byte auto_NAVI_to_CMNC_data_array[] = {
-	ENC_STATUS_FRT_LEFT,
-	ENC_STATUS_FRT_RIGHT,
-	ENC_STATUS_REAR_LEFT,
-	ENC_STATUS_REAR_RIGHT,
-	MOTOR_TURN_STATUS,
-	MOTOR_SPEED_STATUS,
-	GIMBAL_PAN_STATUS,
-	GIMBAL_TILT_STATUS,
-	LONGITUDE_STATUS,
-	LATITUDE_STATUS,
-	ULTSNC_DISTANCE_FWD_LT_STATUS,
-	ULTSNC_DISTANCE_FWD_CTR_STATUS,
-	ULTSNC_DISTANCE_FWD_RT_STATUS,
-	ULTSNC_DISTANCE_SIDE_RT_STATUS,
-	ULTSNC_DISTANCE_SIDE_LT_STATUS,
-	ULTSNC_DISTANCE_REAR_CTR_STATUS
+	CMD_TAG_ENC_STATUS_FRT_LEFT,
+	CMD_TAG_ENC_STATUS_FRT_RIGHT,
+	CMD_TAG_ENC_STATUS_REAR_LEFT,
+	CMD_TAG_ENC_STATUS_REAR_RIGHT,
+	CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS,
+	CMD_TAG_IR_DISTANCE_SIDE_RT_STATUS,
+	CMD_TAG_IR_DISTANCE_SIDE_LT_STATUS,
+	CMD_TAG_IR_DISTANCE_REAR_CTR_STATUS,
+	CMD_TAG_GIMBAL_PAN_STATUS,
+	CMD_TAG_GIMBAL_TILT_STATUS,
+	CMD_TAG_MOTOR_SPEED_STATUS,
+	CMD_TAG_MOTOR_TURN_STATUS,
+	CMD_TAG_LATITUDE_STATUS,
+	CMD_TAG_LONGITUDE_STATUS,
+	CMD_TAG_ULTSNC_DISTANCE_FWD_LT_STATUS,
+	CMD_TAG_ULTSNC_DISTANCE_FWD_CTR_STATUS,
+	CMD_TAG_ULTSNC_DISTANCE_FWD_RT_STATUS,
+	CMD_TAG_ULTSNC_DISTANCE_SIDE_RT_STATUS,
+	CMD_TAG_ULTSNC_DISTANCE_SIDE_LT_STATUS,
+	CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS
 }	
 byte auto_NAVI_to_COMM_data_array[] = {
 }	

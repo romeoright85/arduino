@@ -71,12 +71,16 @@ At POR (defaults):
 		ENC_STATUS_FRT_RIGHT,
 		ENC_STATUS_REAR_LEFT,
 		ENC_STATUS_REAR_RIGHT,
-		MOTOR_TURN_STATUS,
-		MOTOR_SPEED_STATUS,
+		IR_DISTANCE_FWD_CTR_STATUS,
+		IR_DISTANCE_SIDE_RT_STATUS,
+		IR_DISTANCE_SIDE_LT_STATUS,
+		IR_DISTANCE_REAR_CTR_STATUS,		
 		GIMBAL_PAN_STATUS,
-		GIMBAL_TILT_STATUS,
-		LONGITUDE_STATUS,
+		GIMBAL_TILT_STATUS,				
+		MOTOR_SPEED_STATUS,
+		MOTOR_TURN_STATUS,
 		LATITUDE_STATUS,
+		LONGITUDE_STATUS,		
 		ULTSNC_DISTANCE_FWD_LT_STATUS,
 		ULTSNC_DISTANCE_FWD_CTR_STATUS,
 		ULTSNC_DISTANCE_FWD_RT_STATUS,
@@ -146,7 +150,18 @@ At POR (defaults):
 	int wheelEncoder_MidLeft_Footage = 0;//used to store values passed in from MAIN
 	int wheelEncoder_MidRight_Footage = 0;//used to store values passed in from MAIN
 	boolean mtrPowerIsOn;//used to store value passed in from MAIN
+	
 
+	byte headingDataCounter = 0;//counts the number of heading data collected (and averaged)
+	byte gpsDataCounter = 0;//counts the number of GPS data collected (and averaged)
+	//array to hold the GPS samples
+	double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+	double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+	//array to hold the heading samples
+	double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+	double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
+	
+	
 	RUN_HOUSEKEEPING_TASKS
 		POWER_ON_AND_HW_RESET
 			run POR tasks
@@ -416,8 +431,9 @@ At POR (defaults):
 			filter and throw away all MAIN data except:
 				system ready message(s) from MAIN
 				system go message(s) from MAIN
-				sw reset requests message(s) from MAIN
-				generic system error message(s) from MAIN (redirected from AUXI)
+				sw reset requests message(s) from MAIN				
+				generic health error messages
+				generic system error messages
 			Mode: SYNCHRONIZATION
 			set next state to PROCESS_DATA
 			go to RUN_HOUSEKEEPING_TASKS					
@@ -442,6 +458,9 @@ At POR (defaults):
 				//Note: There is no hw reset requests for NAVI. It would have to be done by COMM.
 				SW reset requests message(s) from MAIN
 				Any of the status requests (i.e. Get Longitude, Get Latitude, etc.)
+				Any external status data (i.e. motor power status from MAIN, wheel encoder data from MAIN, heading data from AUXI)
+				generic health error messages
+				generic system error messages
 			Mode: SYSTEM_ERROR
 			set next state to READ_INPUTS
 			go to RUN_HOUSEKEEPING_TASKS		
@@ -453,9 +472,10 @@ At POR (defaults):
 		SYNCHRONIZATION			
 			do nothing						
 		NORMAL_OPERATIONS
-			Read Ultrasonic Sensors
+			Read Ultrasonic Distance Sensors
 				Control Ultrasonic Sensor Triggers
 				//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process		
+			Read IR Distance Sensors
 			Read Wheel Encoders
 			Read GPS		
 			Mode: NORMAL_OPERATIONS
@@ -468,9 +488,10 @@ At POR (defaults):
 		SW_RESETTING
 			do nothing	
 		SYSTEM_ERROR
-			Read Ultrasonic Sensors
+			Read Ultrasonic Distance Sensors
 				Control Ultrasonic Sensor Triggers
 				//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process		
+			Read IR Distance Sensors
 			Read Wheel Encoders
 			Read GPS		
 			Mode: SYSTEM_ERROR
@@ -487,7 +508,10 @@ At POR (defaults):
 			Allow for all non-conflicting commands to run.
 			Then only run the highest priority functions for NAVI last, so it will overwrite anything else, right before state transition.
 			
-			skip ultrasonic sensors
+			skip ultrasonic distance sensors
+			skip ir distance sensors
+			skip heading (for AUXI-external)			
+			skip motor power status (for MAIN-external)
 			skip wheel encoders (for MAIN-external and for NAVI-internal)
 			skip GPS
 			
@@ -500,7 +524,8 @@ At POR (defaults):
 				No redirections with the NAVI Arduino.
 				All other messages are allowed from PC_USB. Use with caution.						
 			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-			Note: Either you should get no data, sw reset, generic health errors, or system ready or system go message(s) from MAIN. as everything else was filtered out.
+						
+			Note: Either you should get no data, system ready messages, system go messages, sw reset requests, generic health errors, generic system errors. as everything else was filtered out.
 
 			//Run lower priority functions here. (i.e. system ready msgs)
 			
@@ -557,7 +582,10 @@ At POR (defaults):
 			go to RUN_HOUSEKEEPING_TASKS				
 		NORMAL_OPERATIONS
 	
-			Process ultrasonic sensors
+			Process ultrasonic distance sensors
+			Process ir distance sensors
+			Process heading (for AUXI-external)			
+			Process motor power status (for MAIN-external)
 			Process wheel encoders (for MAIN-external and for NAVI-internal)			
 			Process GPS
 
@@ -592,9 +620,16 @@ At POR (defaults):
 			do nothing			
 		SYSTEM_ERROR
 	
-			Process ultrasonic sensors
-			Process wheel encoders (for MAIN-external and for NAVI-internal)
+			Process ultrasonic distance sensors
+			Process ir distance sensors
+			Process heading (for AUXI-external)			
+			Process motor power status (for MAIN-external)
+			Process wheel encoders (for MAIN-external and for NAVI-internal)			
 			Process GPS
+			
+			
+			
+			
 
 			Categorize all commands/data from all sources.
 			Allow for all non-conflicting commands to run.
@@ -609,7 +644,11 @@ At POR (defaults):
 				No redirections with the NAVI Arduino.
 				All other messages are allowed from PC_USB. Use with caution.						
 			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
-														
+				No redirections with the NAVI Arduino.
+				Note: Either you should get no data, sw reset requests, status requests, external status data (i.e. wheel encoder data, motor power status, heading, etc.), generic health errors, generic system errors. as everything else was filtered out.
+				
+				
+				
 			//Run lower priority functions here.
 		
 
@@ -1900,6 +1939,8 @@ Conflicting Functions Ordered By Priority
 				
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -1995,6 +2036,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2013,6 +2056,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2037,19 +2082,13 @@ Conflicting Functions Ordered By Priority
 			Set values for wheelEncoder_MidLeft_Direction, wheelEncoder_MidLeft_Speed, wheelEncoder_MidLeft_Footage
 	Set Heading (from AUXI) i.e. HEADING_STATUS
 		Saves the heading value from AUXI's message	
-	Set IR Distance Forward Center (from AUXI) i.e. IR_DISTANCE_FWD_CTR_STATUS
-		Saves the ir distance status from AUXI's message			
-	Set IR Distance Side Right (from AUXI) i.e. IR_DISTANCE_SIDE_RT_STATUS
-		Saves the ir distance status from AUXI's message					
-	Set IR Distance Side Left (from AUXI) i.e. IR_DISTANCE_SIDE_LT_STATUS
-		Saves the ir distance status from AUXI's message				
-	Set IR Distance Rear Center (from AUXI) i.e. IR_DISTANCE_REAR_CTR_STATUS
-		Saves the ir distance status from AUXI's message					
 	Get Gimbal Pan Status
 		main_pri_msg_queue = GIMBAL_PAN_STATUS//Send status back to the requester
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2067,6 +2106,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2085,6 +2126,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2103,6 +2146,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2121,6 +2166,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2139,6 +2186,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2167,6 +2216,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2185,6 +2236,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2203,6 +2256,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2221,6 +2276,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2239,6 +2296,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2257,6 +2316,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2269,12 +2330,92 @@ Conflicting Functions Ordered By Priority
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
 		end if
 
-		
+		Get IR Distance Forward Center Status
+			main_pri_msg_queue = IR_DISTANCE_FWD_CTR_STATUS
+			
+			If command was from CMNC
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+			else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
+			else if command was from AUXI
+				Set error_origin = ROVERCOMM_AUXI
+			else if command was from MAIN
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+			else if command was from COMM
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+			else if command was from PC_USB
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+			else
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+			end if
+
+			
+		Get IR Distance Side Right Status
+			main_pri_msg_queue = IR_DISTANCE_SIDE_RT_STATUS
+			
+			If command was from CMNC
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+			else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
+			else if command was from AUXI
+				Set error_origin = ROVERCOMM_AUXI
+			else if command was from MAIN
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+			else if command was from COMM
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+			else if command was from PC_USB
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+			else
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+			end if
+
+			
+		Get IR Distance Side Left Status
+			main_pri_msg_queue = IR_DISTANCE_SIDE_LT_STATUS
+			
+			If command was from CMNC
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+			else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
+			else if command was from AUXI
+				Set error_origin = ROVERCOMM_AUXI
+			else if command was from MAIN
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+			else if command was from COMM
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+			else if command was from PC_USB
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+			else
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+			end if
+
+			
+		Get IR Distance Rear Center Status
+			main_pri_msg_queue = IR_DISTANCE_REAR_CTR_STATUS
+			
+			If command was from CMNC
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+			else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
+			else if command was from AUXI
+				Set error_origin = ROVERCOMM_AUXI
+			else if command was from MAIN
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+			else if command was from COMM
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+			else if command was from PC_USB
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+			else
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+			end if
+				
 	Run Motor Calibration
 		main_pri_msg_queue = CMD_TAG_CALIBRATE_MOTOR_CONTROLLER//Send status back to the requester
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
@@ -2301,6 +2442,8 @@ Conflicting Functions Ordered By Priority
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
 		else if command was from AUXI
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
 		else if command was from MAIN
