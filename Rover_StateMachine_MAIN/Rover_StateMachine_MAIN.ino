@@ -883,32 +883,32 @@ void loop() {
 			{
 				case SYNCHRONIZATION:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-					queuedState = CREATE_DATA;//Default Next State. This may be overriden by the runModeFunction...()
-					currentMode = SYNCHRONIZATION;//Default Next Mode. This may be overriden by the runModeFunction...()
+					queuedState = CREATE_DATA;//Default Next State. This may be overridden by the runModeFunction...()
+					currentMode = SYNCHRONIZATION;//Default Next Mode. This may be overridden by the runModeFunction...()
 					runModeFunction_SYNCHRONIZATION(currentState);
 					break;
 				case NORMAL_OPERATIONS:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-					currentMode = NORMAL_OPERATIONS;//Default Next Mode. This may be overriden by the runModeFunction...()
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overridden by the runModeFunction...()
+					currentMode = NORMAL_OPERATIONS;//Default Next Mode. This may be overridden by the runModeFunction...()
 					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;
 				case SYSTEM_SLEEPING:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-					currentMode = SYSTEM_SLEEPING;//Default Next Mode. This may be overriden by the runModeFunction...()
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overridden by the runModeFunction...()
+					currentMode = SYSTEM_SLEEPING;//Default Next Mode. This may be overridden by the runModeFunction...()
 					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;
 				case SW_RESETTING:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-					currentMode = SW_RESETTING;//Default Next Mode. This may be overriden by the runModeFunction...()
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overridden by the runModeFunction...()
+					currentMode = SW_RESETTING;//Default Next Mode. This may be overridden by the runModeFunction...()
 					runModeFunction_SW_RESETTING(currentState);
 					break;
 				case SYSTEM_ERROR:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overriden by the runModeFunction...()
-					currentMode = SYSTEM_ERROR;//Default Next Mode. This may be overriden by the runModeFunction...()
+					queuedState = CONTROL_OUTPUTS;//Default Next State. This may be overridden by the runModeFunction...()
+					currentMode = SYSTEM_ERROR;//Default Next Mode. This may be overridden by the runModeFunction...()
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
@@ -1033,13 +1033,13 @@ void loop() {
 					break;
 				case NORMAL_OPERATIONS:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
+					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overridden by the runModeFunction...()
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;
 				case SYSTEM_SLEEPING:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = RX_COMMUNICATIONS;
+					queuedState = RX_COMMUNICATIONS;//waiting for sleep acknowledgements from NAVI and AUXI
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;
@@ -1051,7 +1051,7 @@ void loop() {
 					break;
 				case SYSTEM_ERROR:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overriden by the runModeFunction...()
+					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overridden by the runModeFunction...()
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);				
 					break;

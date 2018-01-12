@@ -434,6 +434,7 @@ At POR (defaults):
 				sw reset requests message(s) from MAIN				
 				generic health error messages
 				generic system error messages
+			Note: Don't read any inputs at the SYNCHRONIZATION state. Will read it later on.
 			Mode: SYNCHRONIZATION
 			set next state to PROCESS_DATA
 			go to RUN_HOUSEKEEPING_TASKS					
@@ -461,6 +462,7 @@ At POR (defaults):
 				Any external status data (i.e. motor power status from MAIN, wheel encoder data from MAIN, heading data from AUXI)
 				generic health error messages
 				generic system error messages
+				set drive setting (so you can switch to auto or manual drive)
 			Mode: SYSTEM_ERROR
 			set next state to READ_INPUTS
 			go to RUN_HOUSEKEEPING_TASKS		
@@ -544,6 +546,13 @@ At POR (defaults):
 				timeout_counter++
 				if timeout_counter >= NAVI_SYNC_TIMEOUT_VALUE
 					Set mode to SYSTEM_ERROR *begin*
+					
+					Set motor controller signals to stop and center
+
+					Set gimbal controller middle and center
+
+					Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
+					
 					error_origin = ROVERCOMM_NAVI
 					main_pri_msg_queue == GENERIC_SYSTEM_ERROR //send a generic system error to main which will send a copy to comm, then to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
 					pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
@@ -645,7 +654,7 @@ At POR (defaults):
 				All other messages are allowed from PC_USB. Use with caution.						
 			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
 				No redirections with the NAVI Arduino.
-				Note: Either you should get no data, sw reset requests, status requests, external status data (i.e. wheel encoder data, motor power status, heading, etc.), generic health errors, generic system errors. as everything else was filtered out.
+				Note: Either you should get no data, sw reset requests, set drive setting (so you can switch to auto or manual drive), status requests, external status data (i.e. wheel encoder data, motor power status, heading, etc.), generic health errors, generic system errors. as everything else was filtered out.
 				
 				
 				
@@ -1669,6 +1678,14 @@ At POR (defaults):
 			end if
 		DEFAULT:
 			Set mode to SYSTEM_ERROR *begin*
+			
+			Set motor controller signals to stop and center
+
+			Set gimbal controller middle and center
+
+			Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)			
+			
+			
 			error_origin = ROVERCOMM_NAVI
 			pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS //send error out through the PC_USB for debugging
 			main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS//with CMNC as the destination
