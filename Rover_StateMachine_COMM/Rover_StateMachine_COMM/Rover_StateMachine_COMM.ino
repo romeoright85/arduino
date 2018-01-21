@@ -207,7 +207,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============Debugging: Turn off System Ready Status During Synchronization Mode
 //Uncomment in order to allow other data to be in the main_msg_queue instead of just System Status
 //#define _DEBUG_TURN_OFF_SYSTEM_READY_STATUS //Normally commented out during normal operations.
-//============End Debugging: All Data Filtering Off
+//============End Debugging: Turn off System Ready 
 
 
 //============Debugging: Print timeout counter value
@@ -216,10 +216,10 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============End Debugging: Print timeout counter value
 
 
-//============Debugging: Disable Comm Sync Timeout
+//============Debugging: Disable COMM Sync Timeout
 //Uncomment in order to disable the COMM Sync timeout
 //#define _DEBUG_DISABLE_COMM_SYNC_TIMEOUT //Normally commented out during normal operations.
-//============End Debugging: Disable Comm Sync Timeout
+//============End Debugging: Disable COMM Sync Timeout
 
 
 //============Debugging: Disable Sleep Error Timeout
@@ -2227,7 +2227,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 
 
 				#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
-							//Allow redirections from MAIN for debugging purposes
+							//Allow redirections from MAIN for debugging purposes.
 							dataDirector(roverDataCh2_COMM, DATA_REDIRECT_ENABLED, flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH2_);//DataDirection will set set the "data was for COMM flag" to true if it was for this Arduino
 				#else
 							//Set no redirections from MAIN	
@@ -2284,7 +2284,10 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//If System Go (from MAIN to COMM) was not received (Note: Messages received could still have been sys ready or no message at all)
 			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_))
 			{
-				#ifndef _DEBUG_TURN_OFF_SYSTEM_READY_STATUS //normally the main_msg_queue will send the CMD_TAG_SYSTEM_READY_STATUS. Can disable it for debugging purposes
+			
+				//Note: You still want to send a system ready, even if you received a system ready, since when MAIN sends a system ready, it has nothing to do with received a system ready from this Arduino.
+				
+				#ifndef _DEBUG_TURN_OFF_SYSTEM_READY_STATUS //normally the main_msg_queue will send the CMD_TAG_SYSTEM_READY_STATUS. Can disable it for debugging purposes.
 					main_msg_queue = CMD_TAG_SYSTEM_READY_STATUS;//to be sent to MAIN, tells MAIN it's ready to synchronize, it should be normally on. only turn off when in debugging to reduce clutter
 					
 					main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
@@ -2294,7 +2297,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_))
 				{
 					timeout_counter++;
-					#ifndef _DEBUG_DISABLE_COMM_SYNC_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes
+					#ifndef _DEBUG_DISABLE_COMM_SYNC_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes.
 						if(timeout_counter >= COMM_SYNC_TIMEOUT_VALUE)
 						{
 							currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
@@ -2348,7 +2351,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				txData(txMsgBuffer_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to MAIN, NAVI, or AUXI, that would be determined in the createDataFromQueueFor().
 			}//end if
 			#ifdef _DEBUG_ALLOW_REDIRECTION_CH2_IN_SYNC_MODE
-				 //Allow redirections for debugging purposes
+				 //Allow redirections for debugging purposes.
 				redirectData(roverComm_Ch2);//This function will redirect data as required, and limit it to one redirection per channel (due to the limits of throughput on the receiving end)
 			#else
 				 //No redirection in the SYNCHRONIZATION mode				
@@ -2516,7 +2519,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 				//Note: PIR Status is used in SECURING_LINK.
 			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 			//Note: Either you should get no data, generic health status errors, generic system error message(s), or secure link data. as everything else was filtered out
-			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from CMNC/PC_USB (Ch1), and it was for COMM
 			{
 				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
 				commandDirector(roverDataCh1_COMM, ROVERCOMM_CMNC);
@@ -2539,7 +2542,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 			{
 				cmnc_msg_queue = CMD_TAG_SECURE_LINK_REQUEST;//tells CMNC it's ready for a secure link
 				timeout_counter++;
-				#ifndef _DEBUG_DISABLE_SECURE_LINK_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes				
+				#ifndef _DEBUG_DISABLE_SECURE_LINK_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes.
 					if(timeout_counter >= SECURE_LINK_TIMEOUT_VALUE)
 					{
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
@@ -2792,7 +2795,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				//Note: PIR Status is used in NORMAL_OPERATIONS.
 			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 			//Note: Either you should get no data, generic health status errors, or secure link data. as everything else was filtered out
-			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from CMNC/PC_USB (Ch1), and it was for COMM
 			{
 				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
 				commandDirector(roverDataCh1_COMM, ROVERCOMM_CMNC);
@@ -3169,7 +3172,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 		
 				timeout_counter++;
 				//If timeout has reached while waiting for MAIN to send a COMM Sleep Request then go to error
-				#ifndef _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes
+				#ifndef _DEBUG_DISABLE_SLEEP_ERROR_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes.
 					if(timeout_counter >= SLEEPING_ERROR_TIMEOUT_VALUE)
 					{
 						//Set mode to SYSTEM_ERROR
@@ -3461,7 +3464,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//Process CMNC command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 			//Note: Either you should get no data, generic health status errors, generic system error message(s), or hw or All SW Reset (Re-)Request from CMNC. as everything else was filtered out									
 			//Note: If hw/sw reset requests from CMNC, see "Command Options" below for more info.						
-			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from CMNC/PC_USB (Ch1), and it was for COMM
 			{
 				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
 				commandDirector(roverDataCh1_COMM, ROVERCOMM_CMNC);
@@ -3853,7 +3856,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				}//end if				
 			}//end else	
 			
-			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from MAIN (Ch2), and it was for COMM
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl, _BTFG_DATA_WAS_FOR_COMM_CH1_))//If there was data from CMNC/PC_USB (Ch1), and it was for COMM
 			{
 				//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
 				commandDirector(roverDataCh1_COMM, ROVERCOMM_CMNC);

@@ -115,7 +115,7 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 
 			[IN PROGRESS] Setting up framework for Rover_StateMachine_NAVI
 			
-				[LEFT OFF HERE, runModeFunction_SYNCHRONIZATION at DATA_FILTER] Work on Rover States and Modes
+				[LEFT OFF HERE, runModeFunction_SYNCHRONIZATION at PLAN_ROUTE] Work on Rover States and Modes
 			
 					[NEED TO DO] Write a function (to be called in PROCESS_DATA) to populate the heading array, sort, then and do an average.
 					

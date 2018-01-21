@@ -483,7 +483,7 @@ At POR (defaults):
 			filter and throw away all MAIN data except:
 				system ready message(s) from MAIN
 				system go message(s) from MAIN
-				sw reset requests message(s) from MAIN				
+				navi sw reset requests message(s) from MAIN				
 				generic health error messages
 				generic system error messages
 			Note: Don't read any inputs at the SYNCHRONIZATION state. Will read it later on.
@@ -509,7 +509,7 @@ At POR (defaults):
 			Allow all data from PC_USB (it's a debugging communication/backdoor to run tests, but use with caution)
 			filter and throw away all MAIN data except:
 				//Note: There is no hw reset requests for NAVI. It would have to be done by COMM.
-				SW reset requests message(s) from MAIN
+				navi sw reset requests message(s) from MAIN
 				Any of the status requests (i.e. Get Longitude, Get Latitude, etc.)
 				Any external status data (i.e. motor power status from MAIN, wheel encoder data from MAIN, heading data from AUXI)
 				generic health error messages
@@ -579,7 +579,7 @@ At POR (defaults):
 				All other messages are allowed from PC_USB. Use with caution.						
 			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 						
-			Note: Either you should get no data, system ready messages, system go messages, sw reset requests, generic health errors, generic system errors. as everything else was filtered out.
+				Note: Either you should get no data, system ready messages, system go messages, navi sw reset requests, generic health errors, generic system errors. as everything else was filtered out.
 
 			//Run lower priority functions here. (i.e. system ready msgs)
 			
@@ -706,7 +706,7 @@ At POR (defaults):
 				All other messages are allowed from PC_USB. Use with caution.						
 			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
 				No redirections with the NAVI Arduino.
-				Note: Either you should get no data, sw reset requests, set drive setting (so you can switch to auto or manual drive), status requests, external status data (i.e. wheel encoder data, motor power status, heading, etc.), generic health errors, generic system errors. as everything else was filtered out.
+				Note: Either you should get no data, navi sw reset requests, set drive setting (so you can switch to auto or manual drive), status requests, external status data (i.e. wheel encoder data, motor power status, heading, etc.), generic health errors, generic system errors. as everything else was filtered out.
 				
 				
 				

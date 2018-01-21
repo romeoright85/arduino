@@ -91,7 +91,20 @@
 		#define _BTFG_DATA_WAS_FOR_MAIN_CH3_				0x40
 		#define _BTFG_DATA_WAS_FOR_MAIN_CH4_				0x80
 		//DEBUG//Message Controls: flagSet_MessageControl2//the variable has not yet been created
-		
+		//System Status: flagSet_SystemStatus1
+		#define _BTFG_FIRST_TRANSMISSION_								0x01
+		#define _BTFG_MTR_POWER_ON_																					0x02
+		#define _BTFG_COMM_SYSTEM_READY_								0x04
+		#define _BTFG_NAVI_SYSTEM_READY_								0x08
+		#define _BTFG_AUXI_SYSTEM_READY_								0x10		
+		#define _BTFG_ALL_SYSTEMS_GO_								0x20				
+		//System Status: flagSet_SystemStatus2
+		#define _BTFG_NAVI_ACKNOWLEDGEMENT_								0x01
+		#define _BTFG_AUXI_ACKNOWLEDGEMENT_								0x02
+		#define _BTFG_RUN_TASKS_ON_MAIN_NOW_								0x04	
+		//System Control: flagSet_SystemControls1
+		#define _BTFG_ENABLE_MTR_POWER_								0x01		
+		#define _BTFG_MTR_PREV_STATE_								0x02
 		
 		 //---------------------------------------------------	
 		 //Command Filter Option Flag(s)
@@ -113,20 +126,7 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_HI_												0x10
 		#define _BTFG_COMMAND_ENABLE_OPTION_BYE_										0x20
 		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID_										0x40		
-		//System Status: flagSet_SystemStatus1
-		#define _BTFG_FIRST_TRANSMISSION_								0x01
-		#define _BTFG_MTR_POWER_ON_																					0x02
-		#define _BTFG_COMM_SYSTEM_READY_								0x04
-		#define _BTFG_NAVI_SYSTEM_READY_								0x08
-		#define _BTFG_AUXI_SYSTEM_READY_								0x10		
-		#define _BTFG_ALL_SYSTEMS_GO_								0x20				
-		//System Status: flagSet_SystemStatus2
-		#define _BTFG_NAVI_ACKNOWLEDGEMENT_								0x01
-		#define _BTFG_AUXI_ACKNOWLEDGEMENT_								0x02
-		#define _BTFG_RUN_TASKS_ON_MAIN_NOW_								0x04	
-		//System Control: flagSet_SystemControls1
-		#define _BTFG_ENABLE_MTR_POWER_								0x01		
-		#define _BTFG_MTR_PREV_STATE_								0x02
+
 		
 		//---------------------------------------------------
 	
@@ -148,17 +148,38 @@
 		#define _BTFG_NONE_													0x00
 		//Error: flagSet_Error1
 //TEMPLATE//		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
-//TEMPLATE//		#define _BTFG_SYNC_ERROR_										0x02
+		#define _BTFG_SYNC_ERROR_										0x02
 //TEMPLATE//		#define _BTFG_SW_RESET_ERROR_								0x04
 //TEMPLATE//		#define _BTFG_SLEEPING_ERROR_									0x08				
 //TEMPLATE//		#define _BTFG_GENERIC_HEALTH_ERROR_						0x01
 //TEMPLATE//		#define _BTFG_GENERIC_SYSTEM_ERROR_							0x02		
 		//DEBUG//Error: flagSet_Error2//the variable has not yet been created
-		//Message Controls: flagSet_MessageControl
+		//Message Controls: flagSet_MessageControl1
 		#define _BTFG_REDIRECT_TO_PC_USB_								0x01
 		#define _BTFG_REDIRECT_TO_MAIN_									0x02		
 		#define _BTFG_DATA_WAS_FOR_NAVI_CH1_					0x04
 		#define _BTFG_DATA_WAS_FOR_NAVI_CH2_				0x08
+		//System Status: flagSet_SystemStatus1
+		#define _BTFG_FIRST_TRANSMISSION_								0x01
+		#define _BTFG_MAIN_SYSTEM_READY_								0x02
+		#define _BTFG_MAIN_SYSTEM_GO_								0x04
+		#define _BTFG_GPS_DATA_READY_								0x08
+		#define _BTFG_ALL_GPS_DATA_GATHERED_								0x10
+		#define _BTFG_ALL_HEADING_DATA_GATHERED_								0x20		
+		//System Control: flagSet_SystemControls1
+		#define _BTFG_MTR_POWER_IS_ON_										0x01//mtrPowerIsOn, used to store values passed in from MAIN
+		#define _BTFG_REMOTE_CTRL_SELECTED_								0x02//replaces buffer_remote_ctrl_selected
+		#define _BTFG_PREV_REMOTE_CTRL_SELECTED_					0x04//replaces prev_buffer_remote_ctrl_selected
+				
+		
+		
+
+
+
+
+
+		
+		
 		//---------------------------------------------------
 		
 		 //---------------------------------------------------	
@@ -229,16 +250,7 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID_						0x40
 
 
-		//System Status: flagSet_SystemStatus1
-		#define _BTFG_FIRST_TRANSMISSION_								0x01
-		#define _BTFG_GPS_DATA_READY_								0x02
-		#define _BTFG_ALL_GPS_DATA_GATHERED_								0x04
-		#define _BTFG_ALL_HEADING_DATA_GATHERED_								0x08
-		//System Control: flagSet_SystemControls1
-		#define _BTFG_MTR_POWER_IS_ON_										0x01//mtrPowerIsOn, used to store values passed in from MAIN
-		#define _BTFG_REMOTE_CTRL_SELECTED_								0x02//replaces buffer_remote_ctrl_selected
-		#define _BTFG_PREV_REMOTE_CTRL_SELECTED_					0x04//replaces prev_buffer_remote_ctrl_selected
-		
+	
 		//---------------------------------------------------
 	
 	

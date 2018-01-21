@@ -379,7 +379,7 @@
 	#ifdef _NAVI_STATE_MACHINE_VARIABLES_
 		//WRITE ME LATER
 		
-//TEMPLATE//		#define MAIN_SYNC_TIMEOUT_VALUE 50//arbitrarily chosen value for now
+		#define NAVI_SYNC_TIMEOUT_VALUE 50//arbitrarily chosen value for now
 //TEMPLATE//		#define CONCURRENT_TRANSMISSION_DELAY		50//delay for about 1-5ms or so between potentially sending messages out again to the same arduino, //DEBUG arbitrarily chosen value for now
 //TEMPLATE//		#define SLEEPING_ERROR_TIMEOUT_VALUE 50//time to waiting and keep resending the AUXI's or NAVI's Sleep Requests from MAIN (since unlike SW requests, if it's already asleep and you send it another request, there is no hard) before MAIN should just error out itself.
 //TEMPLATE//		#define SW_RESET_ERROR_TIMEOUT_VALUE 50//time to waiting and resend the AUXI's or NAVI's SW Reset (Re-)Requests from MAIN before MAIN should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
