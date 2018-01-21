@@ -10,7 +10,7 @@ Rover_StateMachine_NAVI (get the rover rolling)
 	Get Framework up
 	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 take day off to relax), 1/6 (had to fix autodata algorithm), 1/7 (had to fix autodata algorithm)/finish framework
 	Write States and Modes (on average 1 day per mode, except default)
-	1/12, 1/13 (Go to dentist and get Car fixed), 1/14, 1/20, 1/21, 1/26, 1/27, 1/28, 2/3, 2/4
+	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21, 1/26, 1/27, 1/28, 2/3, 2/4, maybe add one more day since behind
 	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE)
 	2/9, 2/10, 2/11, 2/17, 2/18, 2/23, 2/24, 2/25
 
@@ -115,13 +115,14 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 
 			[IN PROGRESS] Setting up framework for Rover_StateMachine_NAVI
 			
-				[LEFT OFF HERE, from scratch runModeFunction_POWER_ON_AND_HW_RESET] Work on Rover States and Modes
+				[LEFT OFF HERE, runModeFunction_SYNCHRONIZATION at DATA_FILTER] Work on Rover States and Modes
 			
 					[NEED TO DO] Write a function (to be called in PROCESS_DATA) to populate the heading array, sort, then and do an average.
 					
 					[NEED TO DO] Write a function (to be called in PROCESS_DATA) to populate the gps array (collect X pairs of latitude and longitude), sort it, then and do an average.
 			
-			
+					[NEED TO DO] Write function(s) to control LED brightnesses
+					
 			
 Starting on Rover_StateMachine_NAVI.ino at:
 	K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Rover_StateMachine_NAVI

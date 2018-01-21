@@ -165,6 +165,33 @@ At POR (defaults):
 	RUN_HOUSEKEEPING_TASKS
 		POWER_ON_AND_HW_RESET
 			run POR tasks
+			Control all LED brightness levels
+			--------------------
+				Control LED Headlights
+					switch case headlight_setting
+						control LEDs accordingly
+				Control LED Foglights
+					switch case foglight_setting
+						control LEDs accordingly				
+				Control LED Underglow
+					switch case underglow_lights_setting
+						control LEDs accordingly				
+				Control LED Right Signal Lights
+					switch case right_signal_light_setting
+						control LEDs accordingly							
+				Control LED Left Signal Lights
+					switch case left_signal_light_setting
+						control LEDs accordingly							
+				Control LED Reverse Lights
+					switch case reverse_lights_setting
+						control LEDs accordingly			
+				Control LED Blue Beacon Lights
+					switch case blue_beacon_lights_setting
+						control LEDs accordingly			
+				Control LED IR Beacon Lights
+					switch case ir_beacon_lights_setting
+						control LEDs accordingly	
+			--------------------	
 			Set mode to INITIALIZATION *begin*
 			Go to whatever the next state is
 				(still is Next State: RUN_HOUSEKEEPING_TASKS)		
@@ -173,21 +200,33 @@ At POR (defaults):
 				initialize/reinitialize all variables
 				i.e. clear system go flag
 			start background tasks
-			//Prior to synchronization tasks
-			//These values are already set from INITIALIZATION:
-				//motor_turn_value = TURN_NONE
-				//motor_speed_value = SPEED_NONE
-				//gimbal_pan_value = PAN_NONE
-				//gimbal_tilt_value = TILT_NONE
-				//buffer_remote_ctrl_selected = false
-				//headlight_setting = LIGHTS_OFF
-				//foglight_setting = LIGHTS_OFF
-				//underglow_lights_setting = LIGHTS_OFF
-				//right_signal_light_setting = LIGHTS_OFF
-				//left_signal_light_setting = LIGHTS_OFF
-				//reverse_lights_setting = LIGHTS_OFF
-				//blue_beacon_lights_setting = LIGHTS_OFF
-				//ir_beacon_lights_setting = LIGHTS_OFF
+			Control all LED brightness levels
+			--------------------
+				Control LED Headlights
+					switch case headlight_setting
+						control LEDs accordingly
+				Control LED Foglights
+					switch case foglight_setting
+						control LEDs accordingly				
+				Control LED Underglow
+					switch case underglow_lights_setting
+						control LEDs accordingly				
+				Control LED Right Signal Lights
+					switch case right_signal_light_setting
+						control LEDs accordingly							
+				Control LED Left Signal Lights
+					switch case left_signal_light_setting
+						control LEDs accordingly							
+				Control LED Reverse Lights
+					switch case reverse_lights_setting
+						control LEDs accordingly			
+				Control LED Blue Beacon Lights
+					switch case blue_beacon_lights_setting
+						control LEDs accordingly			
+				Control LED IR Beacon Lights
+					switch case ir_beacon_lights_setting
+						control LEDs accordingly	
+			--------------------	
 			Set mode to SYNCHRONIZATION *begin*
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
@@ -196,171 +235,184 @@ At POR (defaults):
 				(now just set to RX_COMMUNICATIONS)
 		SYNCHRONIZATION		
 			run background tasks (i.e. counters for LED patterns control)
-			//Control LEDs
-			Control LED Headlights
-				should be headlight_setting == LIGHTS_OFF
-					turn headlights off
-			Control LED Foglights
-				should be foglight_setting == LIGHTS_OFF
-					turn foglights off
-			Control LED Underglow
-				should be underglow_lights_setting == LIGHTS_OFF
-					turn underglow lights off
-			Control LED Right Signal Lights
-				should be right_signal_light_setting == LIGHTS_OFF
-					turn right signal lights off				
-			Control LED Left Signal Lights
-				should be left_signal_light_setting == LIGHTS_OFF
-					turn left signal lights off				
-			Control LED Reverse Lights
-				should be reverse_lights_setting == LIGHTS_OFF
-					turn reverse lights off
-			Control LED Blue Beacon Lights
-				should be blue_beacon_lights_setting == LIGHTS_OFF
-					turn blue beacon lights off
-			Control LED IR Beacon Lights
-				should be ir_beacon_lights_setting == LIGHTS_OFF
-					turn IR beacon lights off			
+			Control all LED brightness levels
+			--------------------
+				Control LED Headlights
+					switch case headlight_setting
+						control LEDs accordingly
+				Control LED Foglights
+					switch case foglight_setting
+						control LEDs accordingly				
+				Control LED Underglow
+					switch case underglow_lights_setting
+						control LEDs accordingly				
+				Control LED Right Signal Lights
+					switch case right_signal_light_setting
+						control LEDs accordingly							
+				Control LED Left Signal Lights
+					switch case left_signal_light_setting
+						control LEDs accordingly							
+				Control LED Reverse Lights
+					switch case reverse_lights_setting
+						control LEDs accordingly			
+				Control LED Blue Beacon Lights
+					switch case blue_beacon_lights_setting
+						control LEDs accordingly			
+				Control LED IR Beacon Lights
+					switch case ir_beacon_lights_setting
+						control LEDs accordingly	
+			--------------------						
 			Go to whatever the next state is				
 		NORMAL_OPERATIONS	
 			run background tasks (i.e. counters for LED patterns control)
-			//Control LEDs
-			Control LED Headlights
-				switch case headlight_setting
-					control LEDs accordingly
-			Control LED Foglights
-				switch case foglight_setting
-					control LEDs accordingly				
-			Control LED Underglow
-				switch case underglow_lights_setting
-					control LEDs accordingly				
-			Control LED Right Signal Lights
-				switch case right_signal_light_setting
-					control LEDs accordingly							
-			Control LED Left Signal Lights
-				switch case left_signal_light_setting
-					control LEDs accordingly							
-			Control LED Reverse Lights
-				switch case reverse_lights_setting
-					control LEDs accordingly			
-			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_setting
-					control LEDs accordingly			
-			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_setting
-					control LEDs accordingly					
+			Control all LED brightness levels
+			--------------------
+				Control LED Headlights
+					switch case headlight_setting
+						control LEDs accordingly
+				Control LED Foglights
+					switch case foglight_setting
+						control LEDs accordingly				
+				Control LED Underglow
+					switch case underglow_lights_setting
+						control LEDs accordingly				
+				Control LED Right Signal Lights
+					switch case right_signal_light_setting
+						control LEDs accordingly							
+				Control LED Left Signal Lights
+					switch case left_signal_light_setting
+						control LEDs accordingly							
+				Control LED Reverse Lights
+					switch case reverse_lights_setting
+						control LEDs accordingly			
+				Control LED Blue Beacon Lights
+					switch case blue_beacon_lights_setting
+						control LEDs accordingly			
+				Control LED IR Beacon Lights
+					switch case ir_beacon_lights_setting
+						control LEDs accordingly	
+			--------------------							
 			Go to whatever the next state is
 		SYSTEM_SLEEPING	
 			run background tasks (i.e. counters for LED patterns control)
 			//Control LEDs
-			Control LED Headlights
-				switch case headlight_setting
-					control LEDs accordingly
-			Control LED Foglights
-				switch case foglight_setting
-					control LEDs accordingly				
-			Control LED Underglow
-				switch case underglow_lights_setting
-					control LEDs accordingly				
-			Control LED Right Signal Lights
-				switch case right_signal_light_setting
-					control LEDs accordingly							
-			Control LED Left Signal Lights
-				switch case left_signal_light_setting
-					control LEDs accordingly							
-			Control LED Reverse Lights
-				switch case reverse_lights_setting
-					control LEDs accordingly			
-			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_setting
-					control LEDs accordingly			
-			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_setting
-					control LEDs accordingly					
+			Control all LED brightness levels
+			--------------------
+				Control LED Headlights
+					switch case headlight_setting
+						control LEDs accordingly
+				Control LED Foglights
+					switch case foglight_setting
+						control LEDs accordingly				
+				Control LED Underglow
+					switch case underglow_lights_setting
+						control LEDs accordingly				
+				Control LED Right Signal Lights
+					switch case right_signal_light_setting
+						control LEDs accordingly							
+				Control LED Left Signal Lights
+					switch case left_signal_light_setting
+						control LEDs accordingly							
+				Control LED Reverse Lights
+					switch case reverse_lights_setting
+						control LEDs accordingly			
+				Control LED Blue Beacon Lights
+					switch case blue_beacon_lights_setting
+						control LEDs accordingly			
+				Control LED IR Beacon Lights
+					switch case ir_beacon_lights_setting
+						control LEDs accordingly	
+			--------------------						
 			Go to whatever the next state is	
 		SYSTEM_WAKING
 			run background tasks (i.e. counters for LED patterns control)
-			//Control LEDs
-			Control LED Headlights
-				switch case headlight_setting
-					control LEDs accordingly
-			Control LED Foglights
-				switch case foglight_setting
-					control LEDs accordingly				
-			Control LED Underglow
-				switch case underglow_lights_setting
-					control LEDs accordingly				
-			Control LED Right Signal Lights
-				switch case right_signal_light_setting
-					control LEDs accordingly							
-			Control LED Left Signal Lights
-				switch case left_signal_light_setting
-					control LEDs accordingly							
-			Control LED Reverse Lights
-				switch case reverse_lights_setting
-					control LEDs accordingly			
-			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_setting
-					control LEDs accordingly			
-			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_setting
-					control LEDs accordingly					
+			Control all LED brightness levels
+			--------------------
+				Control LED Headlights
+					switch case headlight_setting
+						control LEDs accordingly
+				Control LED Foglights
+					switch case foglight_setting
+						control LEDs accordingly				
+				Control LED Underglow
+					switch case underglow_lights_setting
+						control LEDs accordingly				
+				Control LED Right Signal Lights
+					switch case right_signal_light_setting
+						control LEDs accordingly							
+				Control LED Left Signal Lights
+					switch case left_signal_light_setting
+						control LEDs accordingly							
+				Control LED Reverse Lights
+					switch case reverse_lights_setting
+						control LEDs accordingly			
+				Control LED Blue Beacon Lights
+					switch case blue_beacon_lights_setting
+						control LEDs accordingly			
+				Control LED IR Beacon Lights
+					switch case ir_beacon_lights_setting
+						control LEDs accordingly	
+			--------------------	
 			Go to whatever the next state is	
 		SW_RESETTING
 			run background tasks (i.e. counters for LED patterns control)
-			//Control LEDs
-			Control LED Headlights
-				switch case headlight_setting
-					control LEDs accordingly
-			Control LED Foglights
-				switch case foglight_setting
-					control LEDs accordingly				
-			Control LED Underglow
-				switch case underglow_lights_setting
-					control LEDs accordingly				
-			Control LED Right Signal Lights
-				switch case right_signal_light_setting
-					control LEDs accordingly							
-			Control LED Left Signal Lights
-				switch case left_signal_light_setting
-					control LEDs accordingly							
-			Control LED Reverse Lights
-				switch case reverse_lights_setting
-					control LEDs accordingly			
-			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_setting
-					control LEDs accordingly			
-			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_setting
-					control LEDs accordingly					
+			Control all LED brightness levels
+			--------------------
+				Control LED Headlights
+					switch case headlight_setting
+						control LEDs accordingly
+				Control LED Foglights
+					switch case foglight_setting
+						control LEDs accordingly				
+				Control LED Underglow
+					switch case underglow_lights_setting
+						control LEDs accordingly				
+				Control LED Right Signal Lights
+					switch case right_signal_light_setting
+						control LEDs accordingly							
+				Control LED Left Signal Lights
+					switch case left_signal_light_setting
+						control LEDs accordingly							
+				Control LED Reverse Lights
+					switch case reverse_lights_setting
+						control LEDs accordingly			
+				Control LED Blue Beacon Lights
+					switch case blue_beacon_lights_setting
+						control LEDs accordingly			
+				Control LED IR Beacon Lights
+					switch case ir_beacon_lights_setting
+						control LEDs accordingly	
+			--------------------					
 			Go to whatever the next state is
 		SYSTEM_ERROR
 			run background tasks (i.e. counters for LED patterns control)
-			//Control LEDs
-			Control LED Headlights
-				switch case headlight_setting
-					control LEDs accordingly
-			Control LED Foglights
-				switch case foglight_setting
-					control LEDs accordingly				
-			Control LED Underglow
-				switch case underglow_lights_setting
-					control LEDs accordingly				
-			Control LED Right Signal Lights
-				switch case right_signal_light_setting
-					control LEDs accordingly							
-			Control LED Left Signal Lights
-				switch case left_signal_light_setting
-					control LEDs accordingly							
-			Control LED Reverse Lights
-				switch case reverse_lights_setting
-					control LEDs accordingly			
-			Control LED Blue Beacon Lights
-				switch case blue_beacon_lights_setting
-					control LEDs accordingly			
-			Control LED IR Beacon Lights
-				switch case ir_beacon_lights_setting
-					control LEDs accordingly					
+			Control all LED brightness levels
+			--------------------
+				Control LED Headlights
+					switch case headlight_setting
+						control LEDs accordingly
+				Control LED Foglights
+					switch case foglight_setting
+						control LEDs accordingly				
+				Control LED Underglow
+					switch case underglow_lights_setting
+						control LEDs accordingly				
+				Control LED Right Signal Lights
+					switch case right_signal_light_setting
+						control LEDs accordingly							
+				Control LED Left Signal Lights
+					switch case left_signal_light_setting
+						control LEDs accordingly							
+				Control LED Reverse Lights
+					switch case reverse_lights_setting
+						control LEDs accordingly			
+				Control LED Blue Beacon Lights
+					switch case blue_beacon_lights_setting
+						control LEDs accordingly			
+				Control LED IR Beacon Lights
+					switch case ir_beacon_lights_setting
+						control LEDs accordingly	
+			--------------------					
 			Go to whatever the next state is	
 	RX_COMMUNICATIONS
 		POWER_ON_AND_HW_RESET
@@ -1749,10 +1801,6 @@ Note: With external commands, you only want to do all sleep requests (and not in
 
 Non-Conflicting Functions (i.e. it doesn't override the message queues or change states or modes)
 
-	MAIN System Ready (from MAIN)
-		main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
-		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
-		timeout_counter = 0 (for future use)
 
 Conflicting Functions Ordered By Priority	
 	Note: Don't forget to look at Non-Conflicting Functions as well.
@@ -1882,6 +1930,12 @@ Conflicting Functions Ordered By Priority
 		Mode: NORMAL_OPERATIONS *begin*		
 		//initialize/reset shared counter before use
 		timeout_counter = 0;	
+		
+
+	MAIN System Ready (from MAIN)
+		main_system_ready = true (so it can stop checking for this message since the MAIN system is known to be ready)
+		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
+		timeout_counter = 0 (for future use)		
 	
 	NAVI Sleep Request (usually from MAIN)			
 		//save the motor, gimbal buffer states before shutting them off to go to sleep
@@ -1922,34 +1976,8 @@ Conflicting Functions Ordered By Priority
 		
 		Set next state to CONTROL_OUTPUTS
 		Mode: SYSTEM_SLEEPING *begin*	
-	Set Gimbal Pan
-		validate user_value
-		if user_value_valid == true
-			gimbal_pan = user_value
-		end if
-	Get Gimbal Pan
-		return gimbal_pan
-	Set Gimbal Tilt
-		validate user_value
-		if user_value_valid == true
-			gimbal_tilt = user_value
-		end if
-	Get Gimbal Tilt
-		return gimbal_tilt
-	Set Motor Speed
-		validate user_value
-		if user_value_valid == true
-			motor_speed = user_value
-		end if
-	Get Motor Speed
-		return motor_speed
-	Set Motor Turn
-		validate user_value
-		if user_value_valid == true
-			motor_turn = user_value
-		end if
-	Get Motor Turn
-		return motor_turn
+
+
 	Get Drive Setting
 		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = DRIVE_SETTING_STATUS//Send status back to the requester
@@ -1978,6 +2006,162 @@ Conflicting Functions Ordered By Priority
 			drive_setting = SEMI_AUTO_DRIVE
 		else//auto requested
 			drive_setting = AUTONOMOUS_DRIVE		
+			
+	Set Motor Power Status (Status Received from MAIN)
+		Process motor power save status
+			Set mtrPowerIsOn value;
+	Set Mid Right Encoder Status (Status Received from MAIN)
+		Unpack, parse encoder message, and save encoder values
+			Set values for wheelEncoder_MidRight_Direction, wheelEncoder_MidRight_Speed, wheelEncoder_MidRight_Footage
+	Set Mid Left Encoder Status (Status Received from MAIN)
+		Unpack, parse encoder message, and save encoder values
+			Set values for wheelEncoder_MidLeft_Direction, wheelEncoder_MidLeft_Speed, wheelEncoder_MidLeft_Footage
+	Set Heading (from AUXI) i.e. HEADING_STATUS
+		Saves the heading value from AUXI's message	
+
+		
+	Run Motor Calibration
+		main_pri_msg_queue = CMD_TAG_CALIBRATE_MOTOR_CONTROLLER//Send status back to the requester
+		
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if
+
+		
+		//runs motorControllerPowerOnCalibration() as defined in MotorController.h and MotorController.cpp.
+		/*
+		Note:
+			Before running Motor Calibration:
+			1) Motor Power Control Enable should be sent first to MAIN or the HW switch for the Motor Power Control Enable should be turned on
+			2) Set Drive Setting to AUTONOMOUS_DRIVE so the servo signals to the motor controller are coming from NAVI and not the remote controller
+		*/
+		//IMPROVEMENT TIP, maybe NAVI and request the motor to turn on by AUXI and maybe even get an acknowledgement. But this requires a lot of code (i.e. closed loop feedbacK). So for now skip it to keep it basic.
+	Run Gimbal Demo
+		main_pri_msg_queue = CMD_TAG_RUN_GIMBAL_DEMO
+		
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if
+
+		
+		//runs gimbalFunctionalDemo() as defined in GimbalController.h and GimbalController.cpp.		
+		/*
+		Note:
+			Before running the Gimbal Demo:
+			1) Set Drive Setting to AUTONOMOUS_DRIVE so the servo signals to the gimbal are coming from NAVI and not the remote controller
+		*/
+
+		
+	Set Gimbal Pan
+		Set gimbal_pan
+	Get Gimbal Pan Status
+		main_pri_msg_queue = GIMBAL_PAN_STATUS//Send status back to the requester
+		
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if
+		
+	
+	Set Gimbal Tilt
+		Set gimbal_tilt
+	Get Gimbal Tilt Status
+		main_pri_msg_queue = GIMBAL_TILT_STATUS//Send status back to the requester
+		
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if
+	Set Motor Speed
+		Set motor_speed
+	Get Motor Speed Status
+		main_pri_msg_queue = MOTOR_SPEED_STATUS//Send status back to the requester
+		
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if
+	Set Motor Turn
+		Set motor_turn
+	Get Motor Turn Status
+		main_pri_msg_queue = MOTOR_TURN_STATUS//Send status back to the requester
+		
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if
+		
+
+		
+			
 	Set Headlights
 		if on requested
 			headlight_setting = LIGHTS_ON
@@ -1986,6 +2170,8 @@ Conflicting Functions Ordered By Priority
 		else //off requested
 			headlight_setting = LIGHTS_OFF
 		end if	
+
+		
 	Set Foglights
 		if on requested
 			foglight_setting = LIGHTS_ON
@@ -2048,94 +2234,12 @@ Conflicting Functions Ordered By Priority
 		else //off requested
 			ir_beacon_lights_setting = LIGHTS_OFF
 		end if
-	Get Motor Turn Status
-		main_pri_msg_queue = MOTOR_TURN_STATUS//Send status back to the requester
-		
-		If command was from CMNC
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
-		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
-		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
-		else if command was from MAIN
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
-		else if command was from COMM
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
-		else if command was from PC_USB
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
-		else
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
-		end if
-		
-		
-	Get Motor Speed Status
-		main_pri_msg_queue = MOTOR_SPEED_STATUS//Send status back to the requester
-		
-		If command was from CMNC
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
-		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
-		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
-		else if command was from MAIN
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
-		else if command was from COMM
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
-		else if command was from PC_USB
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
-		else
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
-		end if
 
 		
-	Set Motor Power Status (Status Received from MAIN)
-		Process motor power save status
-			Set mtrPowerIsOn value;
-	Set Mid Right Encoder Status (Status Received from MAIN)
-		Unpack, parse encoder message, and save encoder values
-			Set values for wheelEncoder_MidRight_Direction, wheelEncoder_MidRight_Speed, wheelEncoder_MidRight_Footage
-	Set Mid Left Encoder Status (Status Received from MAIN)
-		Unpack, parse encoder message, and save encoder values
-			Set values for wheelEncoder_MidLeft_Direction, wheelEncoder_MidLeft_Speed, wheelEncoder_MidLeft_Footage
-	Set Heading (from AUXI) i.e. HEADING_STATUS
-		Saves the heading value from AUXI's message	
-	Get Gimbal Pan Status
-		main_pri_msg_queue = GIMBAL_PAN_STATUS//Send status back to the requester
+
+
 		
-		If command was from CMNC
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
-		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
-		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
-		else if command was from MAIN
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
-		else if command was from COMM
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
-		else if command was from PC_USB
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
-		else
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
-		end if
-		
-	Get Gimbal Tilt Status
-		main_pri_msg_queue = GIMBAL_TILT_STATUS//Send status back to the requester
-		
-		If command was from CMNC
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
-		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
-		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
-		else if command was from MAIN
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
-		else if command was from COMM
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
-		else if command was from PC_USB
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
-		else
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
-		end if
+
 
 		
 	Get Longitude
@@ -2219,15 +2323,9 @@ Conflicting Functions Ordered By Priority
 
 		
 	Set Latitude Destination
-		validate user_value
-		if user_value_valid == true
-			latitude = user_value
-		end if		
+		Set latitude
 	Set Longitude Destination
-		validate user_value
-		if user_value_valid == true
-			longitude = user_value
-		end if
+		Set longitude
 	Get Ultrasonic Distance Forward Left
 		main_pri_msg_queue = ULTSNC_DISTANCE_FWD_LT_STATUS//Send status back to the requester
 		
@@ -2347,94 +2445,35 @@ Conflicting Functions Ordered By Priority
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
 		end if
 
-		Get IR Distance Forward Center Status
-			main_pri_msg_queue = IR_DISTANCE_FWD_CTR_STATUS
-			
-			If command was from CMNC
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
-			else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
-			else if command was from AUXI
-				Set error_origin = ROVERCOMM_AUXI
-			else if command was from MAIN
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
-			else if command was from COMM
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
-			else if command was from PC_USB
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
-			else
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
-			end if
-
-			
-		Get IR Distance Side Right Status
-			main_pri_msg_queue = IR_DISTANCE_SIDE_RT_STATUS
-			
-			If command was from CMNC
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
-			else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
-			else if command was from AUXI
-				Set error_origin = ROVERCOMM_AUXI
-			else if command was from MAIN
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
-			else if command was from COMM
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
-			else if command was from PC_USB
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
-			else
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
-			end if
-
-			
-		Get IR Distance Side Left Status
-			main_pri_msg_queue = IR_DISTANCE_SIDE_LT_STATUS
-			
-			If command was from CMNC
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
-			else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
-			else if command was from AUXI
-				Set error_origin = ROVERCOMM_AUXI
-			else if command was from MAIN
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
-			else if command was from COMM
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
-			else if command was from PC_USB
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
-			else
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
-			end if
-
-			
-		Get IR Distance Rear Center Status
-			main_pri_msg_queue = IR_DISTANCE_REAR_CTR_STATUS
-			
-			If command was from CMNC
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
-			else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
-			else if command was from AUXI
-				Set error_origin = ROVERCOMM_AUXI
-			else if command was from MAIN
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
-			else if command was from COMM
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
-			else if command was from PC_USB
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
-			else
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
-			end if
-				
-	Run Motor Calibration
-		main_pri_msg_queue = CMD_TAG_CALIBRATE_MOTOR_CONTROLLER//Send status back to the requester
+	Get IR Distance Forward Center Status
+		main_pri_msg_queue = IR_DISTANCE_FWD_CTR_STATUS
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if
+
+			
+	Get IR Distance Side Right Status
+		main_pri_msg_queue = IR_DISTANCE_SIDE_RT_STATUS
+		
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
+		else if command was from AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM
@@ -2446,23 +2485,15 @@ Conflicting Functions Ordered By Priority
 		end if
 
 		
-		//runs motorControllerPowerOnCalibration() as defined in MotorController.h and MotorController.cpp.
-		/*
-		Note:
-			Before running Motor Calibration:
-			1) Motor Power Control Enable should be sent first to MAIN or the HW switch for the Motor Power Control Enable should be turned on
-			2) Set Drive Setting to AUTONOMOUS_DRIVE so the servo signals to the motor controller are coming from NAVI and not the remote controller
-		*/
-		//IMPROVEMENT TIP, maybe NAVI and request the motor to turn on by AUXI and maybe even get an acknowledgement. But this requires a lot of code (i.e. closed loop feedbacK). So for now skip it to keep it basic.
-	Run Gimbal Demo
-		main_pri_msg_queue = CMD_TAG_RUN_GIMBAL_DEMO
+	Get IR Distance Side Left Status
+		main_pri_msg_queue = IR_DISTANCE_SIDE_LT_STATUS
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM
@@ -2474,9 +2505,22 @@ Conflicting Functions Ordered By Priority
 		end if
 
 		
-		//runs gimbalFunctionalDemo() as defined in GimbalController.h and GimbalController.cpp.		
-		/*
-		Note:
-			Before running the Gimbal Demo:
-			1) Set Drive Setting to AUTONOMOUS_DRIVE so the servo signals to the gimbal are coming from NAVI and not the remote controller
-		*/
+	Get IR Distance Rear Center Status
+		main_pri_msg_queue = IR_DISTANCE_REAR_CTR_STATUS
+		
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
+		else if command was from AUXI
+			Set error_origin = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if
+			

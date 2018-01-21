@@ -188,8 +188,6 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //=====SW Resettable Variables (reinitialize these variables on software reset)
 
 
-//LEFT OFF HERE
-
 //Auto Data Counters
 //They can just be byte instead of unsigned int since there aren't that many elements. Also a byte is already positive numbers or zero
 byte auto_NAVI_to_CMNC_data_cnt = 0;
@@ -247,13 +245,36 @@ byte error_origin = ROVERCOMM_NONE;
 byte flagSet_SystemStatus1 = _BTFG_FIRST_TRANSMISSION_;//Default: Set the first transmission flag only, leave everything else unset
 //Flag(s) - Command Filter Options - MAIN and PC_USB each have their own set since they have separate data filters
 //Command Filter Options for PC_USB: Set 1
-//TEMPLATE//byte commandFilterOptionsSet1_PC_USB = _BTFG_NONE_;
+byte commandFilterOptionsSet1_PC_USB = _BTFG_NONE_;
 //Command Filter Options for PC_USB: Set 2
-//TEMPLATE//byte commandFilterOptionsSet2_PC_USB = _BTFG_NONE_;
+byte commandFilterOptionsSet2_PC_USB = _BTFG_NONE_;
+//Command Filter Options for PC_USB: Set 3
+byte commandFilterOptionsSet3_PC_USB = _BTFG_NONE_;
+//Command Filter Options for PC_USB: Set 4
+byte commandFilterOptionsSet4_PC_USB = _BTFG_NONE_;
+//Command Filter Options for PC_USB: Set 5
+byte commandFilterOptionsSet5_PC_USB = _BTFG_NONE_;
+//Command Filter Options for PC_USB: Set 6
+byte commandFilterOptionsSet6_PC_USB = _BTFG_NONE_;
+//Command Filter Options for PC_USB: Set 7
+byte commandFilterOptionsSet7_PC_USB = _BTFG_NONE_;
 //Command Filter Options for MAIN: Set 1
-//TEMPLATE//byte commandFilterOptionsSet1_MAIN = _BTFG_NONE_;
+byte commandFilterOptionsSet1_MAIN = _BTFG_NONE_;
 //Command Filter Options for MAIN: Set 2
-//TEMPLATE//byte commandFilterOptionsSet2_MAIN = _BTFG_NONE_;
+byte commandFilterOptionsSet2_MAIN = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 3
+byte commandFilterOptionsSet3_MAIN = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 4
+byte commandFilterOptionsSet4_MAIN = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 5
+byte commandFilterOptionsSet5_MAIN = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 6
+byte commandFilterOptionsSet6_MAIN = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 7
+byte commandFilterOptionsSet7_MAIN = _BTFG_NONE_;
+
+
+
 //Flag(s) - System Controls
 //TEMPLATE//byte flagSet_SystemControls1 = _BTFG_NONE_;
 
@@ -458,8 +479,6 @@ RoverReset * resetArray[] = {
 
 //Note: Remember MAIN currently only receives and processes generic system error and generic health errors. Also it can't redirect in some modes (i.e. SYNCHRONIZATION) so sending it an error (i.e. sync error) won't do any good.
 
-
-//LEFT OFF HERE - template below
 
 
 //Auto Data Arrays
@@ -1115,7 +1134,7 @@ void loop() {
 void runPORTasks()
 {
 	//run POR tasks
-//PLACEHOLDER: Add things here as needed.
+//place holder: Add things here as needed.
 
 }//runPORTasks()
 void initializeVariables()
@@ -1128,7 +1147,7 @@ void initializeVariables()
 void startBackgroundTasks()
 {
 	//start background tasks
-//PLACEHOLDER: Add things here as needed.
+//place holder: Add things here as needed.
 }//end of startBackgroundTasks()
 void runBackgroundTasks()
 {
@@ -1200,48 +1219,697 @@ void redirectData(RoverComm * roverComm)
 void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: POWER_ON_AND_HW_RESET"));
-//WRITE ME LATER
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: POWER_ON_AND_HW_RESET
+			runPORTasks();
+//WRITE LATER
+//Control all LED brightness levels
+			break;
+		case RX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PLAN_ROUTE: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		case OBJECT_AVOIDANCE: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;					
+		case CONTROL_OUTPUTS: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+			break;			
+		default: //default state
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
 }//end of runStateFunction_POWER_ON_AND_HW_RESET
 void runModeFunction_INITIALIZATION(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: INITIALIZATION"));
 
-//WRITE ME LATER
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: INITIALIZATION
+			//initialize / reinitialize all variables
+			initializeVariables();
+//WRITE LATER
+//Control all LED brightness levels			
+			//start background tasks
+			startBackgroundTasks();
+			//initialize/reset shared counter before use
+			timeout_counter = 0;
+			break;
+		case RX_COMMUNICATIONS: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PLAN_ROUTE: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		case OBJECT_AVOIDANCE: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;					
+		case CONTROL_OUTPUTS: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: INITIALIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+			break;			
+		default: //default state
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+	
 }//end of runModeFunction_INITIALIZATION
 void runModeFunction_SYNCHRONIZATION(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYNCHRONIZATION"));
-//WRITE ME LATER
+
+
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYNCHRONIZATION
+			runBackgroundTasks();
+//Control all LED brightness levels		
+			break;
+		case RX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
+
+			//rxData() from PC_USB
+			//1. Reset status flag
+			ch1Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch1->clearRxData();
+			//3. Receive data
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_PC_USB);//Note: this is a local .ino function
+
+			//rxData() from MAIN
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+						
+			break;
+			
+
+		case DATA_VALIDATION: //Mode: SYNCHRONIZATION
+			
+			//parseAndValidateData() from PC_USB
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+
+			//parseAndValidateData() from MAIN
+			//Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+			 
+			break;
+		case DATA_FILTER: //Mode: SYNCHRONIZATION
+
+		
+		
+
+			//Reset/clear flags (no data was for NAVI)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);
+			
+			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
+			
+
+				
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_PC_USB);//for PC_USB
+			setAllCommandFiltersTo(false, ROVERCOMM_MAIN);//for MAIN
+		
+
+		
+//LEFT OFF HERE
+			
+	/*TEMPLATE
+
+	
+			//Then enable the allowed commands for this mode:
+			//For PC_USB
+			//No filter on PC_USB data. (Allow all data from PC_USB)
+			//No commands from PC_USB are filtered, so set all to true.
+			setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);			
+			//For MAIN
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);				
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_COMMHWRESETREQUEST_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_ALLSWRESETREQUEST_);	
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_COMM, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
+			
+	
+			
+			//Transmit data and/or execute command
+						
+			//For data from PC_USB, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH1_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+
+				/*
+				Allow all data from PC_USB.
+				*/
+
+			}//end if
+
+			//For data from COMM, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH2_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all COMM data except:
+				system ready message(s) from COMM	
+				All SW Reset Request from COMM/CMNC (to restart the SW reset process again)				
+				comm hw reset request message(s), from COMM (used to hw reset the COMM after the COMM has hw reset MAIN, NAVI, and AUXI)
+				*/				
+
+			}//end if
+			
+			//For data from NAVI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch3Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh3_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH3_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all NAVI data except:
+				system ready message(s) from NAVI
+				*/		
+				
+			}//end if
+			
+			
+			//For data from AUXI, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, MAIN
+			if (ch4Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//No redirections in SYNCHRONIZATION.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh4_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_MAIN_CH4_);//DataDirection will set the "data was for MAIN flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all AUXI data except:
+				system ready message(s) from AUXI
+				*/			
+				
+			}//end if				
+		
+		
+		
+			break;	
+		case READ_INPUTS: //Mode: SYNCHRONIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: SYNCHRONIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PLAN_ROUTE: //Mode: SYNCHRONIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		case OBJECT_AVOIDANCE: //Mode: SYNCHRONIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;					
+		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: SYNCHRONIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+			break;			
+		default: //default state
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+	
+
+
 }//end of runModeFunction_SYNCHRONIZATION()
 void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: NORMAL_OPERATIONS"));
+/* TEMPLATE
+//LEFT OFF HERE
 //WRITE ME LATER
+
+
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
+//WRITE LATER
+//Control all LED brightness levels		
+			break;
+		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PLAN_ROUTE: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		case OBJECT_AVOIDANCE: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;					
+		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+			break;			
+		default: //default state
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+*/
 }//end of runModeFunction_NORMAL_OPERATIONS()
 void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYSTEM_SLEEPING"));
+/* TEMPLATE
+//LEFT OFF HERE
 //WRITE ME LATER
+
+
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_SLEEPING
+//WRITE LATER
+//Control all LED brightness levels		
+			break;
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PLAN_ROUTE: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		case OBJECT_AVOIDANCE: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;					
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+			break;			
+		default: //default state
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+*/
+
 }//end of runModeFunction_SYSTEM_SLEEPING()
 void runModeFunction_SYSTEM_WAKING(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYSTEM_WAKING"));
+/* TEMPLATE
+//LEFT OFF HERE
 //WRITE ME LATER
+
+
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_WAKING
+//WRITE LATER
+//Control all LED brightness levels		
+			break;
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PLAN_ROUTE: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		case OBJECT_AVOIDANCE: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;					
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+			break;			
+		default: //default state
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+*/
+
 }//end of runModeFunction_SYSTEM_WAKING()
 void runModeFunction_SW_RESETTING(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SW_RESETTING"));
+/* TEMPLATE
+//LEFT OFF HERE
 //WRITE ME LATER
+
+
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SW_RESETTING
+//WRITE LATER
+//Control all LED brightness levels		
+			break;
+		case RX_COMMUNICATIONS: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PLAN_ROUTE: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		case OBJECT_AVOIDANCE: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;					
+		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: SW_RESETTING
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+			break;			
+		default: //default state
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+*/
+
 }//end of runModeFunction_SW_RESETTING()
 void runModeFunction_SYSTEM_ERROR(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYSTEM_ERROR"));
+/* TEMPLATE
+//LEFT OFF HERE
 //WRITE ME LATER
+
+
+	switch (currentState)
+	{
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_ERROR
+//WRITE LATER
+//Control all LED brightness levels		
+			break;
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_VALIDATION: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case DATA_FILTER: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;	
+		case READ_INPUTS: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PROCESS_DATA: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case PLAN_ROUTE: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;			
+		case OBJECT_AVOIDANCE: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;					
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case CREATE_DATA: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			break;
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
+			//Nothing to do here.
+			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+			break;			
+		default: //default state
+			 //This code should never execute, if it does, there is a logical or programming error
+			runModeFunction_default();//no state needed, all states do the same thing
+			break;
+	}//end switch
+*/
+
 }//end of runModeFunction_SYSTEM_ERROR()
 void runModeFunction_default()
 {
 	_PRINT_MODE_(F("MODE: default"));
+
+//LEFT OFF HERE
 //WRITE ME LATER
+
+	_PRINT_MODE_(F("MODE: default"));
+	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
+	//No switch case needed for the states, all states do the same thing
+	
+/* TEMPLATE
+	
+	comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+ 	pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
+	navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+	auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+	
+	comm_cmnc_destination_selection = ROVERCOMM_COMM;
+				
+	error_origin = ROVERCOMM_MAIN;
+
+	//Set the mode to SYSTEM_ERROR (though it might already be set to that in certain circumstances)
+	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+	//Note: For now don't set the queuedState. But if it doesn't work as expected (i.e. there is a programming logic error), set it to CONTROL_OUTPUTS.
+	//shut down motor when in error for safety
+	BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);		
+	
+	
+		
+	//Set Invalid State Error Flag
+	//Note: The Invalid State Error Flag cann only be cleared with a sw reset or hw reset
+	BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_);
+
+	//initialize/reset shared counter before use
+	timeout_counter = 0;
+
+*/
+	
+	
 }//end of runStateFunction_default
 
  //====End of: Mode Functions
