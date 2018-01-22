@@ -187,6 +187,13 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============End Debugging: Disable NAVI Sync Timeout
 
 
+//============Debugging: Print Drive Selection Status
+//Uncomment in order to print out the Sleep/Wake Status
+#define _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+//============End Debugging: Print Drive Selection Status
+
+
+
 //============Debugging: Print Sleep/Wake Status
 //Uncomment in order to print out the Sleep/Wake Status
 #define _DEBUG_OUTPUT_SLEEP_WAKE_STATUS_
@@ -209,16 +216,26 @@ byte auto_NAVI_to_AUXI_data_cnt = 0;
 
 
 
-//TEMPLATE//byte motor_turn_value = TURN_NONE
-//TEMPLATE//byte prev_motor_turn_value = TURN_NONE //used to hold the previous state, before going to sleep	
-//TEMPLATE//byte motor_speed_value = SPEED_NONE
-//TEMPLATE//byte prev_motor_speed_value = SPEED_NONE //used to hold the previous state, before going to sleep	
-//TEMPLATE//byte gimbal_pan_value = PAN_NONE
-//TEMPLATE//byte prev_gimbal_pan_value = PAN_NONE //used to hold the previous state, before going to sleep
-//TEMPLATE//byte gimbal_tilt_value = TILT_NONE
-//TEMPLATE//byte prev_gimbal_tilt_value = TILT_NONE //used to hold the previous state, before going to sleep
+byte motor_turn_value = SET_GO_STRAIGHT
+//TEMPLATE//byte prev_motor_turn_value = SET_GO_STRAIGHT //used to hold the previous state, before going to sleep	
+byte motor_speed_value = SET_STOP_SPEED
+//TEMPLATE//byte prev_motor_speed_value = SET_STOP_SPEED //used to hold the previous state, before going to sleep	
+byte gimbal_pan_value = SET_CENTER_PAN
+//TEMPLATE//byte prev_gimbal_pan_value = SET_CENTER_PAN //used to hold the previous state, before going to sleep
+byte gimbal_tilt_value = SET_MIDDLE_TILT
+//TEMPLATE//byte prev_gimbal_tilt_value = SET_MIDDLE_TILT //used to hold the previous state, before going to sleep
 //TEMPLATE//byte drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
 //TEMPLATE//byte prev_drive_setting = AUTONOMOUS_DRIVE//used to hold the previous state, before going to sleep
+
+
+
+
+
+
+
+
+
+
 //TEMPLATE//byte headlight_setting = LIGHTS_OFF
 //TEMPLATE//byte prev_headlight_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
 //TEMPLATE//byte foglight_setting = LIGHTS_OFF
@@ -288,7 +305,7 @@ byte commandFilterOptionsSet7_MAIN = _BTFG_NONE_;
 
 
 //Flag(s) - System Controls
-//TEMPLATE//byte flagSet_SystemControls1 = _BTFG_NONE_;
+byte flagSet_SystemControls1 = _BTFG_NONE_;
 
 
 //Counters
@@ -1167,7 +1184,61 @@ void runBackgroundTasks()
 //PLACEHOLDER: Add things here as needed.	
 }//end of runBackgroundTasks()
 byte rxData(RoverComm * roverComm, byte roverCommType) {
-//WRITE ME LATER
+
+	byte counter;
+	byte dataStatus = DATA_STATUS_NOT_READY;
+
+	//Note: Make sure parseAndValidateData() is called between (before, after, or in) successive rxData() function calls, as it will clear the string and reset the index (required for the code to work properly)
+	if ( roverCommType == ROVERCOMM_PC_USB )
+	{
+		if (_PC_USB_SERIAL_.available() > 1)
+		{
+			//initialize the counter
+			counter = 0;
+			while (_PC_USB_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			{
+				//Read one character of serial data at a time
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first.
+				roverComm->appendToRxData((char)_PC_USB_SERIAL_.read());//construct the string one char at a time
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
+			}//end while
+			dataStatus = DATA_STATUS_READY;
+		}//end if
+		else
+		{
+			dataStatus = DATA_STATUS_NOT_READY;
+		}//end else
+	}//end if
+	else if ( roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_AUXI)//COMM, CMNC, MAIN, and AUXI all go through MAIN
+	{
+		if (_MAIN_SERIAL_.available() > 1)
+		{
+			//initialize the counter
+			counter = 0;
+			while (_MAIN_SERIAL_.available() > 0 && counter <= ROVER_COMM_SENTENCE_LENGTH)//while there is data on the Serial RX Buffer and the length is not over the max GPS sentence length
+			{
+				//Read one character of serial data at a time
+				//Note: Must type cast the Serial.Read to a char since not saving it to a char type first
+				roverComm->appendToRxData((char)_MAIN_SERIAL_.read());//construct the string one char at a time
+				counter++;
+				delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
+			}//end while
+			dataStatus = DATA_STATUS_READY;
+		}//end if
+		else
+		{
+			dataStatus = false;
+		}//end DATA_STATUS_NOT_READY
+	}//end else if
+	else
+	{
+		//invalid RoverComm Type, so do nothing
+		dataStatus = DATA_STATUS_NOT_READY;
+	}//end else
+
+	return dataStatus;
+
 }//end of rxData()
 
 void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byte flagOfInterest)
@@ -1182,6 +1253,7 @@ void txData(char * txData, byte roverCommType)
 
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
+//LEFT OFF HERE
 //WRITE ME LATER
 }//end of commandDirector()
 void createDataFromQueueFor(byte roverCommDestination, byte queueSelection)
@@ -1570,34 +1642,127 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 							
 			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 	
-
-
 			break;
 		case PLAN_ROUTE: //Mode: SYNCHRONIZATION
-//LEFT OFF HERE
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case OBJECT_AVOIDANCE: //Mode: SYNCHRONIZATION
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
 		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			
+			//Control Buffer Select
+			//if buffer_remote_ctrl_selected == true
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_))
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("MANUAL DRIVE"));
+				#endif
+				roverBuffer->driverMode(MANUAL_DRIVE);
+			}//end if
+			//buffer_remote_ctrl_selected == false
+			else
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("AUTO DRIVE"));
+				#endif
+				roverBuffer->driverMode(AUTO_DRIVE);
+			}//end else
+
+			//Control Motor Controller's Turn			
+			motorControllerSetSteering(motor_turn_value);//Should be motor_turn_value = SET_GO_STRAIGHT
+				
+			//Control Motor Controller's Speed			
+			motorControllerSetThrottle(motor_speed_value);//Should be motor_speed_value = SET_STOP_SPEED			
+			
+			//Control Gimbal Controller's Pan			
+			gimbalSetPan(gimbal_pan_value);//Should be gimbal_pan_value = SET_CENTER_PAN
+			
+			//Control Gimbal Controller's Tilt			
+			gimbalSetTilt(gimbal_tilt_value);//Should be gimbal_tilt_value = SET_MIDDLE_TILT
+				
+			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS since it requires attention with every loop
+			
+			//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process						
+	
 			break;
 		case CREATE_DATA: //Mode: SYNCHRONIZATION
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+
+			//Creates data for PC_USB
+			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+			{
+				createDataFromQueueFor(ROVERCOMM_PC_USB);
+				
+				//skip auto data	
+				
+			}//end if
+			
+			
+			//Creates data for MAIN (primary queue)
+			if (main_pri_msg_queue != CMD_TAG_NO_MSG)
+			{
+			
+				if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//data is for COMM
+				{
+					createDataFromQueueFor(ROVERCOMM_COMM);
+				}//end if
+				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_CMNC) //data is for CMNC
+				{
+					createDataFromQueueFor(ROVERCOMM_CMNC);
+				}//end else if
+				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN) //data is for MAIN
+				{
+					createDataFromQueueFor(ROVERCOMM_MAIN);
+				}//end else if
+				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
+				{
+					createDataFromQueueFor(ROVERCOMM_AUXI);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else
+				
+				//skip auto data for SYNCHRONIZATION
+								
+			}//end if
+			
+			
+			//Creates data for MAIN (secondary queue)
+			if (main_sec_msg_queue != CMD_TAG_NO_MSG)
+			{
+			
+				if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//data is for COMM
+				{
+					createDataFromQueueFor(ROVERCOMM_COMM);
+				}//end if
+				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_CMNC) //data is for CMNC
+				{
+					createDataFromQueueFor(ROVERCOMM_CMNC);
+				}//end else if
+				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN) //data is for MAIN
+				{
+					createDataFromQueueFor(ROVERCOMM_MAIN);
+				}//end else if
+				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
+				{
+					createDataFromQueueFor(ROVERCOMM_AUXI);
+				}//end else if
+				else//invalid state, error out
+				{
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkDest"));//error, unknown destination
+				}//end else
+				
+				//skip auto data for SYNCHRONIZATION
+								
+			}//end if
+			
+			
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+//LEFT OFF HERE
 			break;			
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error
