@@ -1553,7 +1553,7 @@ At POR (defaults):
 		INITIALIZATION
 			do nothing		
 		SYNCHRONIZATION
-			//NAVI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary.
+			//NAVI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary. If for some reason the a non-NAVI message was sent to NAVI, it will be ignored.
 			if first_transmission == true		
 				//send the first set of messages
 				if pc_usb_msg_queue != CMD_TAG_NO_MSG
@@ -1607,7 +1607,7 @@ At POR (defaults):
 				end if
 			end if				
 		NORMAL_OPERATIONS
-			//NAVI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary.
+			//NAVI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary. If for some reason the a non-NAVI message was sent to NAVI, it will be ignored.
 			if first_transmission == true		
 				//send the first set of messages
 				if pc_usb_msg_queue != CMD_TAG_NO_MSG
@@ -1741,7 +1741,7 @@ At POR (defaults):
 		SW_RESETTING
 			do nothing		
 		SYSTEM_ERROR
-			//NAVI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary.
+			//NAVI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary. If for some reason the a non-NAVI message was sent to NAVI, it will be ignored.
 			if first_transmission == true		
 				//send the first set of messages
 				if pc_usb_msg_queue != CMD_TAG_NO_MSG

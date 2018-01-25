@@ -1241,9 +1241,28 @@ byte rxData(RoverComm * roverComm, byte roverCommType) {
 
 }//end of rxData()
 
-void dataDirector(RoverData * roverData, byte redirectOption, byte &flagSet, byte flagOfInterest)
+void dataDirector(RoverData * roverData, byte &flagSet, byte flagOfInterest)//there is no redirection for NAVI, so the redirectOption variable was removed from this function (unlike in MAIN's and COMM's state machine)
 {
-//WRITE ME LATER
+
+	//Note: This function varies for different Arduinos
+
+	BooleanBitFlags::clearFlagBit(flagSet, flagOfInterest);//initialize flag to false
+
+	byte roverCommType = roverData->getDestinationCommType();//get the roverComm Destination
+
+	if (roverCommType == ROVERCOMM_NAVI)//if the data is for this Arduino unit
+	{
+		//if the data is for this unit, NAVI
+		BooleanBitFlags::setFlagBit(flagSet, flagOfInterest);//set the status such that the data was for this unit, MAIN
+		//process it back in the main loop (to prevent software stack from being too deep)
+	}//end if
+	//else do nothing
+	 
+	//NAVI doesn't have or need redirection since it only talks to MAIN. But it does have two message queues, primary and secondary. If for some reason the a non-NAVI message was sent to NAVI, it will be ignored.
+
+	return;
+
+
 }//end of dataDirector()
 
 void txData(char * txData, byte roverCommType)
@@ -1762,7 +1781,73 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
-//LEFT OFF HERE
+
+			//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+	
+			//Interweave primary transmissions and the secondary transmission, to allow the receiving end have time to process each incoming data
+	
+			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
+			{		
+			
+				//1. Sends data to PC_USB
+				if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
+				}//end if
+				//2. Sends data to MAIN (primary queue)
+				if (main_pri_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_COMM, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
+				}//end if
+				//3. Check to see if there are any second messages to send
+				if ( main_sec_msg_queue != CMD_TAG_NO_MSG )		
+				{
+					BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);//clear the flag
+					//reset the counter before use
+					transmission_delay_cnt = 0;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
+				}//end if
+				else//there is no second transmission, move on
+				{					
+					//clears message queue(s) and redirect flags		
+					pc_usb_msg_queue = CMD_TAG_NO_MSG;
+					main_pri_msg_queue = CMD_TAG_NO_MSG;
+					main_sec_msg_queue = CMD_TAG_NO_MSG;
+					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+					sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN			
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);						
+				}//end else					
+			}//end if			
+			else//this is not the first transmission
+			{
+					
+				if(transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY) //once the desired delay has been reached, continue with the code
+				{								
+			
+				
+					txData(txMsgBuffer_NAVI, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
+				
+					//clears message queue(s) and redirect flags		
+					pc_usb_msg_queue = CMD_TAG_NO_MSG;
+					main_pri_msg_queue = CMD_TAG_NO_MSG;
+					main_sec_msg_queue = CMD_TAG_NO_MSG;
+					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+					sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN			
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
+							
+				}//end if
+				else//the desired delay has not been reached yet, so just increment the count
+				{
+					transmission_delay_cnt++;
+				}//end else			
+			}//end else
+				
 			break;			
 		default: //default state
 			 //This code should never execute, if it does, there is a logical or programming error
