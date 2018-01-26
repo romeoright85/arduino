@@ -62,6 +62,10 @@ Can send:
 #endif
 
 
+#ifndef _ENABLE_BUBBLESORT_CLASS_
+#define _ENABLE_BUBBLESORT_CLASS_ //For RoverConfig.h
+#endif
+
 
 //#includes
 #include <RoverStatesAndModes.h>
@@ -161,6 +165,15 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //#define _DEBUG_REDIRECTION_NOTICE
 //============End Debugging: Redirection Notice
 
+ //============Debugging: Print IMU Median Completed Status
+//Uncomment to print IMU Median Completed Status
+//#define _PRINT_IMU_MEDIAN_COMPLETED_STATUS
+//============End Debugging: Print IMU Median Completed Status
+
+ //============Debugging: Print GPS Median Completed Status
+//Uncomment to print GPS Median Completed Status
+//#define _PRINT_GPS_MEDIAN_COMPLETED_STATUS
+//============End Debugging: Print GPS Median Completed Status
 
 //============Debugging: All Data Filtering Off
 //Uncomment in order to allow all data to pass (turn off all data filters) for debugging)
@@ -423,10 +436,10 @@ RoverGpsSensor * roverGps = new RoverGpsSensor();
 byte headingDataCounter = 0;//counts the number of heading data collected (and averaged)
 byte gpsDataCounter = 0;//counts the number of GPS data collected (and averaged)
 //array to hold the GPS samples
-double latitudeArray[7];//stores latitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
-double longitudeArray[7];//stores longitude samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+double latitudeArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores latitude (in decimal-degrees) samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+double longitudeArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores longitude (in decimal-degrees) samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 //array to hold the heading samples
-double headingArray[7];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
+double headingArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
 
 
@@ -1267,7 +1280,21 @@ void dataDirector(RoverData * roverData, byte &flagSet, byte flagOfInterest)//th
 
 void txData(char * txData, byte roverCommType)
 {
-//WRITE ME LATER
+	//Note: This function varies for different Arduinos
+	if (roverCommType == ROVERCOMM_PC_USB)
+	{
+		//transmit the data to PC_USB
+		_PC_USB_SERIAL_.println(txData);
+	}//end if
+	else if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_AUXI)//CMNC, COMM, MAIN, and AUXI all have to go through MAIN
+	{
+		//transmit the data to COMM
+		_MAIN_SERIAL_.println(txData);
+	}//end else if
+	else
+	{
+		//do nothing
+	}//end else	
 }//end of txData()
 
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
@@ -1894,6 +1921,11 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			break;
 		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
 //TEMPLATE		
+
+
+		
+
+
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
@@ -2307,3 +2339,70 @@ void setRoverDataPointer(RoverData * roverDataPointer, byte roverCommType)
 {
 //WRITE ME LATER
 }//end of setRoverDataPointer()
+
+
+
+void processHeading(double newHeading)
+{
+
+	headingArray[headingDataCounter] = newHeading;//assign the new heading into the heading array
+	headingDataCounter++;//increment the global counter
+	
+	if( headingDataCounter >= _BUBBLESORT_MEDIAN_ARRAY_SIZE_ )//once all the samples have been collected for the median
+	{
+	
+		headingDataCounter = 0;//reset the global counter
+		
+		double avgHeading = BubbleSort::getMedian(headingArray[0], headingArray[1], headingArray[2], headingArray[3], headingArray[4], headingArray[5], headingArray[6]);
+		
+		if(avgHeading >= 0.0 && avgHeading <= 360.0)//check to see that the heading value is within valid range
+		{
+			roverNavigation->setHeadingDeg(avgHeading);
+			
+			#ifdef _PRINT_IMU_MEDIAN_COMPLETED_STATUS
+				_SERIAL_DEBUG_CHANNEL_.println(F("IMU Median Completed"));
+			#endif
+			
+		}//end if
+		//else do nothing and keep the last set value as is
+	}//end if
+	
+}//end of processHeading()
+
+
+
+
+
+void processGPS(double newLatitude, double newLongitude)//where the latitude and longitude are in decimal degrees
+{
+
+	latitudeArray[gpsDataCounter] = newLatitude;//assign the new latitude into the latitude array
+	longitudeArray[gpsDataCounter] = newLongitude;//assign the new longitude into the longitude array
+	gpsDataCounter++;//increment the counter
+	
+	if( gpsDataCounter >= _BUBBLESORT_MEDIAN_ARRAY_SIZE_ )//once all the samples have been collected for the median
+	{
+	
+		gpsDataCounter = 0;//reset the global counter
+		
+		double avgLatitude = BubbleSort::getMedian(latitudeArray[0], latitudeArray[1], latitudeArray[2], latitudeInDecDegArray[3], latitudeArray[4], latitudeArray[5], latitudeArray[6]);//take the median value
+		
+		double avgLongitude = BubbleSort::getMedian(longitudeArray[0], longitudeArray[1], longitudeArray[2], longitudeArray[3], longitudeArray[4], longitudeArray[5], longitudeArray[6]);//take the median
+		
+		//check to see if both lat and long are within valid range
+		if(( avgLatitude >= 0.0 && avgLatitude <= 90.0) && (avgLongitude >= -180.0 && avgLongitude <= 180.0 ))
+		{
+			roverNavigation->setLatitudeDeg(avgLatitude , TYPE_ACTUAL);//set it to the actual latitude value
+			roverNavigation->setLongitudeDeg(avgLongitude, TYPE_ACTUAL);//set it to the actual longitude value
+			
+			
+			#ifdef _PRINT_GPS_MEDIAN_COMPLETED_STATUS
+				_SERIAL_DEBUG_CHANNEL_.println(F("GPS Median Completed"));
+			#endif
+			
+		
+		}//end if
+		//else throw the whole lat/long pair away and keep the previous value
+	}//end if			
+	
+}//end of processGPS()

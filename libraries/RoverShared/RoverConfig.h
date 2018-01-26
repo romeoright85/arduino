@@ -35,7 +35,6 @@
 		#define _GPS_SERIAL_ Serial3
 	#endif	
 	
-
 	
 	#ifdef _DEBUG_ALL_SERIALS_WITH_USB_SERIAL_ //used to test all Serial algorithms by using just the local USB Serial interface	
 		#define CMNC_BAUD_RATE	9600  //used for the COMM Arduino to go from the Arduino to the Xbee (same as PC_USB_BAUD_RATE but specific for COMM)
@@ -142,6 +141,9 @@
 		#define BUFFER_SIZE_7		7
 	#endif
 
+	#ifdef _ENABLE_BUBBLESORT_CLASS_
+		#define _BUBBLESORT_MEDIAN_ARRAY_SIZE_ 7//this is hardcoded to 7, as it takes in 7 parameters in the function
+	#endif	
 	
 	//definition for 
 	#ifdef _ROVERHEALTHANDSTATUS_DEFINITONS

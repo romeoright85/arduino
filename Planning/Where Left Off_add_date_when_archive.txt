@@ -114,21 +114,13 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 #LEFT OFF HERE, START HERE->Rover_StateMachine_NAVI:
 
 			[IN PROGRESS] Setting up framework for Rover_StateMachine_NAVI
-			
-				[DONE] rxData()
-				[DONE] dataDirector()
-				
-				[LEFT OFF HERE, NEED TO DO] Write a function (to be called in PROCESS_DATA) to populate the heading array, sort, then and do an average.
-				
-				[NEED TO DO] Write a function (to be called in PROCESS_DATA) to populate the gps array (collect X pairs of latitude and longitude), sort it, then and do an average.
 				
 				
-				[NEED TO DO] txData()
-				[NEED TO DO] commandDirector()
-				[NEED TO DO] createDataFromQueueFor()
+				[LEFT OFF, NEED TO DO] commandDirector()
+				[LEFT OFF, NEED TO DO] createDataFromQueueFor()
 		
 				
-				[left off here, at runModeFunction_NORMAL_OPERATIONS at RUN_HOUSEKEEPING_TASKS] Work on Rover States and Modes
+				[LEFT OFF, at runModeFunction_NORMAL_OPERATIONS at RUN_HOUSEKEEPING_TASKS] Work on Rover States and Modes
 		
 				[NEED TO DO] Write function(s) to control LED brightnesses
 					
@@ -2026,3 +2018,9 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 			
 			
 			[DONE] Add IR sensors to NAVI
+			
+			[DONE] rxData()
+				[DONE] dataDirector()				
+				[DONE, processHeading()] Write a function (to be called in PROCESS_DATA) to populate the heading array, sort, then and do an average.				
+				[DONE, processGPS()] Write a function (to be called in PROCESS_DATA) to populate the gps array (collect X pairs of latitude and longitude), sort it, then and do an average.
+				[DONE] txData()

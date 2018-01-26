@@ -274,7 +274,7 @@ void loop() {
 				#ifdef _PRINT_IMU_MEDIAN_COMPLETED_STATUS
 					_SERIAL_DEBUG_CHANNEL_.println(F("IMU Median Completed"));
 				#endif
-			}
+			}//end if
 			//else do nothing and keep the last set value as is
 		}//end if
 	 }//end if
