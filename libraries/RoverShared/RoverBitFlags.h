@@ -185,13 +185,15 @@
 		 //---------------------------------------------------	
 		 //Command Filter Option Flag(s)
 		 //---------------------------------------------------
+		 //Note: These flags were grouped best by function, but in the commandDirector, they are ordered by priority. So it may not correlate 1 to 1.
+		 
 		//Command Filter Options: Set 1: Used in commandFilterOptionsSet1_PC_USB, commandFilterOptionsSet1_MAIN
 
 		#define _BTFG_COMMAND_ENABLE_OPTION_NAVISWRESETREQUEST_					0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_				0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_			0x04
 		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_									0x08
-		#define _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_							0x10
+		#define _BTFG_COMMAND_ENABLE_OPTION_MAINSYSTEMREADY_							0x10
 		#define _BTFG_COMMAND_ENABLE_OPTION_NAVISLEEPREQUEST_					0x20
 		
 		//Command Filter Options: Set 2: Used in commandFilterOptionsSet2_PC_USB, commandFilterOptionsSet2_MAIN

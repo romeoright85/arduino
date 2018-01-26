@@ -177,7 +177,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //============Debugging: All Data Filtering Off
 //Uncomment in order to allow all data to pass (turn off all data filters) for debugging)
-#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
+//#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
 //============End Debugging: All Data Filtering Off
 
 
@@ -1300,7 +1300,430 @@ void txData(char * txData, byte roverCommType)
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
 //LEFT OFF HERE
-//WRITE ME LATER
+
+	//Note: This function varies for different Arduinos
+	//Categorize all commands/data from all sources.					
+	//Sort based on priority.
+	//Allow for all non-conflicting commands to run.
+	//Then only run the highest priority functions for COMM last, so it will overwrite anything else, right before state transition.
+
+	
+	#ifdef _DEBUG_TURN_OFF_ALL_DATA_FILTERS
+		setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);//for PC_USB
+		setAllCommandFiltersTo(true, ROVERCOMM_MAIN);//for MAIN		
+	#endif
+
+	byte originRoverCommType;//holds the received data's origin
+	byte destinationRoverCommType;//holds the received data's destination
+	byte commandTag;//holds received data's command tag
+	char commandData[_MAX_ROVER_COMMAND_DATA_LEN_];//holds the received data's command data
+
+	//Get the received data's origin and destination
+	originRoverCommType = roverDataPointer->getOriginCommType();
+	destinationRoverCommType = roverDataPointer->getDestinationCommType();
+
+	//Get the command tag from the Rover Data Object
+	commandTag = roverDataPointer->getCommandTag();
+	//Get the command data from the Rover Data Object	
+	strncpy(commandData, roverDataPointer->getCommandData(), roverDataPointer->getCommandDataLength());
+
+	//Setting the roverDataPointer in order to route where the rover command data will be routed to
+	//Clears/resets all data pointers before setting them.
+	clearRoverDataPointers();
+	//Sets the default such that the rover command data goes to the destination of the command. If needed, this can be overwritten by the command tag if/else statements
+	setRoverDataPointer(roverDataPointer, destinationRoverCommType);
+	//Note: The roverDataPointer should be going to, MAIN, this unit (else it would have been redirected already with dataDirector).
+	//However, it can be overwritten in the if/else conditions below based on the command tag for special cases like when it redirects itself to the original sender (i.e. when the command is a request for data/status, like with PIR Status request)
+
+	//Run highest priority functions first and lower priorities last.
+	//Note: Right now the way it's coded, the conflicting and non conflicting functions are all merged together and treated as conflicting. However, one data channel with a lower priority task may still override a higher priority task because the commandDirector for that channel was called later. If needed, fix this later.
+	
+	//NAVI SW Reset Request
+	if (commandTag == CMD_TAG_NAVI_SW_RESET_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_NAVISWRESETREQUEST_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_NAVISWRESETREQUEST_))				
+			)
+		)	 
+	{
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+				
+	}//end else if	
+	 //Received Generic Health Error
+	else if (commandTag == CMD_TAG_GENERIC_HEALTH_STATUS_ERROR &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if	
+	//Received Generic System Error
+	else if (commandTag == CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end if	
+	//System Go
+	else if (commandTag == CMD_TAG_SYSTEM_GO_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if	
+	//MAIN System Ready
+	else if (commandTag == CMD_TAG_SYSTEM_READY_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MAINSYSTEMREADY_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_MAINSYSTEMREADY_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if	
+	//NAVI Sleep Request
+	else if (commandTag == CMD_TAG_NAVI_SLEEP_REQUEST &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_NAVISLEEPREQUEST_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_NAVISLEEPREQUEST_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if
+	//Get Drive Setting
+	else if (commandTag == CMD_TAG_DRIVE_SETTING_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETDRIVESETTING_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETDRIVESETTING_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if	
+	//Set Drive Setting
+	else if (commandTag == CMD_TAG_SET_DRIVE_SETTING &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETDRIVESETTING_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETDRIVESETTING_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Set Motor Power Status
+	else if (commandTag == CMD_TAG_MTR_PWR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Run Motor Calibration
+	else if (commandTag == CMD_TAG_MTR_PWR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if				
+	//Run Gimbal Demo
+	else if (commandTag == CMD_TAG_RUN_GIMBAL_DEMO &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_RUNGIMBALDEMO_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RUNGIMBALDEMO_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Set Gimbal Pan
+	else if (commandTag == CMD_TAG_SET_PAN_VALUE &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALPAN_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALPAN_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Get Gimbal Pan Status
+	else if (commandTag == CMD_TAG_GIMBAL_PAN_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Set Gimbal Tilt
+	else if (commandTag == CMD_TAG_SET_TILT_VALUE &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALTILT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALTILT_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Get Gimbal Tilt Status
+	else if (commandTag == CMD_TAG_GIMBAL_TILT_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Set Motor Speed
+	else if (commandTag == CMD_TAG_SET_MOTOR_SPEED &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if				
+	//Get Motor Speed Status
+	else if (commandTag == CMD_TAG_MOTOR_SPEED_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if				
+	//Set Motor Turn
+	else if (commandTag == CMD_TAG_SET_MOTOR_TURN &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Get Motor Turn Status
+	else if (commandTag == CMD_TAG_MOTOR_TURN_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Set Headlights
+	else if (commandTag == CMD_TAG_SET_LED_HEADLIGHTS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETHEADLIGHTS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETHEADLIGHTS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if				
+	
+	
+	
+	
+	
+	
+		
+//LEFT OFF HERE		
+		
+/*	
+		
+	Set Foglights
+	
+	Set Underglow Lights
+	
+	Set Right Signal Lights
+	
+	Set Left Signal Lights
+
+	Set Reverse Lights
+
+	Set Blue Beacon Lights
+
+	Set IR Beacon lights
+		
+	Get Longitude
+
+	Get Latitude
+
+	Get GPS Fix Quality
+		
+	Get GPS Satellites Tracked
+		
+	Set Latitude Destination
+
+	Set Longitude Destination
+
+	Get Ultrasonic Distance Forward Left
+		
+	Get Ultrasonic Distance Forward Center
+		
+	Get Ultrasonic Distance Forward Right	
+		
+	Get Ultrasonic Distance Side Right
+
+	Get Ultrasonic Distance Side Left
+		
+	Get Ultrasonic Distance Rear Center
+
+	Get IR Distance Forward Center Status
+			
+	Get IR Distance Side Right Status
+		
+	Get IR Distance Side Left Status
+		
+	Get IR Distance Rear Center Status
+*/
+	
+	 //Hi Command - DEBUG
+	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_HI_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HI_))		
+			)
+		)		 	 
+	{
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			 pc_usb_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;
+		}//end else if				
+		else if ( originRoverCommType == ROVERCOMM_COMM || originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_MAIN || originRoverCommType == ROVERCOMM_AUXI )//If command was from COMM, CMNC, MAIN, or AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_DEBUG_HI_TEST_MSG;//to be sent back to the origin (i.e. CMNC, COMM, MAIN, or AUXI)
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;//set whatever the origin is, to the destination selection
+		}//end if		
+		//else do nothing	
+	}//end if
+	 //Bye Command - DEBUG
+	else if (commandTag == CMD_TAG_DEBUG_BYE_TEST_MSG &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_BYE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_BYE_))		
+			)
+		)		 	 
+	{
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			 pc_usb_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;
+		}//end else if				
+		else if ( originRoverCommType == ROVERCOMM_COMM || originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_MAIN || originRoverCommType == ROVERCOMM_AUXI )//If command was from COMM, CMNC, MAIN, or AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;//to be sent back to the origin (i.e. CMNC, COMM, MAIN, or AUXI)
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;//set whatever the origin is, to the destination selection
+		}//end if		
+		//else do nothing	
+	
+	}//end if
+	 //Invalid - DEBUG
+	else if (
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_INVALID_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))		
+			)	
+		)
+	{
+	
+			//Check to see where the command was from
+			if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+			{
+				 pc_usb_msg_queue = CMD_TAG_INVALID_CMD;
+			}//end else if				
+			else if ( originRoverCommType == ROVERCOMM_COMM || originRoverCommType == ROVERCOMM_CMNC || originRoverCommType == ROVERCOMM_MAIN || originRoverCommType == ROVERCOMM_AUXI )//If command was from COMM, CMNC, MAIN, or AUXI
+			{
+				main_pri_msg_queue = CMD_TAG_INVALID_CMD;//to be sent back to the origin (i.e. CMNC, COMM, MAIN, or AUXI)
+				pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;//set whatever the origin is, to the destination selection
+			}//end if		
+			//else do nothing	
+	
+	}//end else if
+	 //else output nothing	
+
+	return;	
+
 }//end of commandDirector()
 void createDataFromQueueFor(byte roverCommDestination, byte queueSelection)
 {
@@ -1563,7 +1986,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);			
 			//For MAIN
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_NAVISWRESETREQUEST_);	
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMREADY_);				
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_MAINSYSTEMREADY_);				
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SYSTEMGO_);	
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
