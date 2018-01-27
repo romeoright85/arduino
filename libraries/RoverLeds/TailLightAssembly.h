@@ -27,21 +27,22 @@ public:
 	~TailLightAssembly();//destructor
 	
 	//Note: For any LED assemblies, don't add blink options/patterns as it may hold up the main program flow as you're using delays. Instead only have parallel or singular off/on patterns.
+	//Note: Tail light types are defined by _TAILLIGHT_TYPES in RoverConfig.h
 	//overloaded on functions
-	void turnOn(byte);
-	void turnOn(byte, byte);
-	void turnOn(byte, byte, byte);
-	void turnOn(byte, byte, byte, byte);
-	void turnOn(byte, byte, byte, byte, byte);
-	void turnOn(byte, byte, byte, byte, byte, byte);
+	void turnOn(byte);//(tail light type x1)
+	void turnOn(byte, byte);//(tail light type x2)
+	void turnOn(byte, byte, byte);//(tail light type x3)
+	void turnOn(byte, byte, byte, byte);//(tail light type x4)
+	void turnOn(byte, byte, byte, byte, byte);//(tail light type x5)
+	void turnOn(byte, byte, byte, byte, byte, byte);//(tail light type x6)
 
 	//overloaded off functions
-	void turnOff(byte);
-	void turnOff(byte, byte);
-	void turnOff(byte, byte, byte);
-	void turnOff(byte, byte, byte, byte);
-	void turnOff(byte, byte, byte, byte, byte);
-	void turnOff(byte, byte, byte, byte, byte, byte);
+	void turnOff(byte);//(tail light type x1)
+	void turnOff(byte, byte);//(tail light type x2)
+	void turnOff(byte, byte, byte);//(tail light type x3)
+	void turnOff(byte, byte, byte, byte);//(tail light type x4)
+	void turnOff(byte, byte, byte, byte, byte);//(tail light type x5)
+	void turnOff(byte, byte, byte, byte, byte, byte);//(tail light type x6)
 	//returns status of that led
 	boolean isOn(byte);
 	

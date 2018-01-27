@@ -116,21 +116,17 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 			[IN PROGRESS] Setting up framework for Rover_StateMachine_NAVI
 				
 				
-				[LEFT OFF HERE, IN PROGRESS] Start the framework for commandDirector()
-					Do "Set Foglights" next
-					
-					Reference these files:
-						Rover_StateMachine_NAVI.ino
-						RoverCommandDefs.h
-						NAVI State Machine_add_date_when_archive.txt
-						RoverBitFlags.h
+				[DONE] Start the framework for commandDirector()
+
+
+				[NEED TO DO] Write function(s) to control LED brightnesses
+				[NEED TO DO] createDataFromQueueFor()				
+				[NEED TO DO] clearRoverDataPointers()
+				[NEED TO DO] setRoverDataPointer()
 				
 				[LEFT OFF, at runModeFunction_NORMAL_OPERATIONS at RUN_HOUSEKEEPING_TASKS] Work on Rover States and Modes
 		
-				[NEED TO DO] createDataFromQueueFor()				
-				[NEED TO DO] Write function(s) to control LED brightnesses
-				[NEED TO DO] clearRoverDataPointers()
-				[NEED TO DO] setRoverDataPointer()
+		
 				[NEED TO DO] write the code for all the commands in commandDirector()
 				
 				

@@ -2305,7 +2305,25 @@ Conflicting Functions Ordered By Priority
 
 
 		
-
+		
+	Get Latitude
+		main_pri_msg_queue = LATITUDE_STATUS//Send status back to the requester
+		
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if
 
 		
 	Get Longitude
@@ -2327,25 +2345,7 @@ Conflicting Functions Ordered By Priority
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
 		end if
 
-		
-	Get Latitude
-		main_pri_msg_queue = LATITUDE_STATUS//Send status back to the requester
-		
-		If command was from CMNC
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
-		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
-		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
-		else if command was from MAIN
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
-		else if command was from COMM
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
-		else if command was from PC_USB
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
-		else
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
-		end if
+
 
 		
 	Get GPS Fix Quality

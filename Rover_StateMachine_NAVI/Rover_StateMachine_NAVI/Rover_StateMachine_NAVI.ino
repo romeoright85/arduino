@@ -1299,7 +1299,6 @@ void txData(char * txData, byte roverCommType)
 
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
-//LEFT OFF HERE
 
 	//Note: This function varies for different Arduinos
 	//Categorize all commands/data from all sources.					
@@ -1310,7 +1309,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	
 	#ifdef _DEBUG_TURN_OFF_ALL_DATA_FILTERS
 		setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);//for PC_USB
-		setAllCommandFiltersTo(true, ROVERCOMM_MAIN);//for MAIN		
+		setAllCommandFiltersTo(true, ROVERCOMM_MAIN);//for MAIN
 	#endif
 
 	byte originRoverCommType;//holds the received data's origin
@@ -1597,64 +1596,305 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		
 	}//end else if				
+	//Set Foglights
+	else if (commandTag == CMD_TAG_SET_LED_FOGLIGHTS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETFOGLIGHTS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETFOGLIGHTS_))		
+			)
+		)		 	 
+	{	
 	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if				
+	//Set Underglow Lights
+	else if (commandTag == CMD_TAG_SET_LED_UNDERGLOW_LIGHTS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETUNDERGLOWLIGHTS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETUNDERGLOWLIGHTS_))		
+			)
+		)		 	 
+	{	
 	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if				
+	//Set Right Signal Lights
+	else if (commandTag == CMD_TAG_SET_LED_SET_RIGHT_SIGNAL_LIGHTS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETRIGHTSIGNALLIGHTS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETRIGHTSIGNALLIGHTS_))		
+			)
+		)		 	 
+	{	
 	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Set Left Signal Lights
+	else if (commandTag == CMD_TAG_SET_LED_SET_LEFT_SIGNAL_LIGHTS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEFTSIGNALLIGHTS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLEFTSIGNALLIGHTS_))		
+			)
+		)		 	 
+	{	
 	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Set Reverse Lights
+	else if (commandTag == CMD_TAG_SET_LED_REVERSE_LIGHTS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETREVERSELIGHTS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETREVERSELIGHTS_))		
+			)
+		)		 	 
+	{	
 	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if				
+	//Set Blue Beacon Lights
+	else if (commandTag == CMD_TAG_SET_LED_BLUE_BEACON_LIGHTS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETBLUEBEACONLIGHTS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETBLUEBEACONLIGHTS_))		
+			)
+		)		 	 
+	{	
 	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		
-//LEFT OFF HERE		
-		
-/*	
-		
-	Set Foglights
+	}//end else if			
+	//Set IR Beacon lights
+	else if (commandTag == CMD_TAG_SET_LED_IR_BEACONLIGHTS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETIRBEACONLIGHTS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETIRBEACONLIGHTS_))		
+			)
+		)		 	 
+	{	
 	
-	Set Underglow Lights
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Get Latitude
+	else if (commandTag == CMD_TAG_LATITUDE_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_))		
+			)
+		)		 	 
+	{	
 	
-	Set Right Signal Lights
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Get Longitude
+	else if (commandTag == CMD_TAG_LONGITUDE_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_))		
+			)
+		)		 	 
+	{	
 	
-	Set Left Signal Lights
-
-	Set Reverse Lights
-
-	Set Blue Beacon Lights
-
-	Set IR Beacon lights
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		
-	Get Longitude
-
-	Get Latitude
-
-	Get GPS Fix Quality
-		
-	Get GPS Satellites Tracked
-		
-	Set Latitude Destination
-
-	Set Longitude Destination
-
-	Get Ultrasonic Distance Forward Left
-		
-	Get Ultrasonic Distance Forward Center
-		
-	Get Ultrasonic Distance Forward Right	
-		
-	Get Ultrasonic Distance Side Right
-
-	Get Ultrasonic Distance Side Left
-		
-	Get Ultrasonic Distance Rear Center
-
-	Get IR Distance Forward Center Status
-			
-	Get IR Distance Side Right Status
-		
-	Get IR Distance Side Left Status
-		
-	Get IR Distance Rear Center Status
-*/
+	}//end else if		
+	//Get GPS Fix Quality
+	else if (commandTag == CMD_TAG_GPS_FIX_QUALITY_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_))		
+			)
+		)		 	 
+	{	
 	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Get GPS Satellites Tracked
+	else if (commandTag == CMD_TAG_GPS_SATELLITES_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Set Latitude Destination
+	else if (commandTag == CMD_TAG_SET_LATITUDE_DEST &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLATITUDEDESTINATION_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLATITUDEDESTINATION_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Set Longitude Destination
+	else if (commandTag == CMD_TAG_SET_LONGITUDE_DEST &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLONGITUDEDESTINATION_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLONGITUDEDESTINATION_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if			
+	//Get Ultrasonic Distance Forward Left
+	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_FWD_LT_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if					
+	//Get Ultrasonic Distance Forward Center
+	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_FWD_CTR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if						
+	//Get Ultrasonic Distance Forward Right	
+	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_FWD_RT_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Get Ultrasonic Distance Side Right
+	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_SIDE_RT_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if				
+	//Get Ultrasonic Distance Side Left
+	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_SIDE_LT_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Get Ultrasonic Distance Rear Center
+	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Get IR Distance Forward Center Status
+	else if (commandTag == CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Get IR Distance Side Right Status
+	else if (commandTag == CMD_TAG_IR_DISTANCE_SIDE_RT_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Get IR Distance Side Left Status
+	else if (commandTag == CMD_TAG_IR_DISTANCE_SIDE_LT_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if		
+	//Get IR Distance Rear Center Status
+	else if (commandTag == CMD_TAG_IR_DISTANCE_REAR_CTR_STATUS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+	}//end else if
 	 //Hi Command - DEBUG
 	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG &&
 			(

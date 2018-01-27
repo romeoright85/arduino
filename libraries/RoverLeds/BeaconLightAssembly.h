@@ -28,24 +28,25 @@ public:
 	~BeaconLightAssembly();//destructor
 	
 	//Note: For any LED assemblies, don't add blink options/patterns as it may hold up the main program flow as you're using delays. Instead only have parallel or singular off/on patterns.
-	//overloaded on functions
-	void turnOn(byte);
-	void turnOn(byte, byte);
-	void turnOn(byte, byte, byte);
-	void turnOn(byte, byte, byte, byte);
-	void turnOn(byte, byte, byte, byte, byte);
-	void turnOn(byte, byte, byte, byte, byte, byte);
-	void turnOn(byte, byte, byte, byte, byte, byte, byte);
-	void turnOn(byte, byte, byte, byte, byte, byte, byte, byte);
+	//Note: Beacon light types are defined by _BEACON_LIGHT_TYPES in RoverConfig.h
+	//overloaded on functions 	
+	void turnOn(byte);//(beacon light type x1)
+	void turnOn(byte, byte);//(beacon light type x2)
+	void turnOn(byte, byte, byte);//(beacon light type x3)
+	void turnOn(byte, byte, byte, byte);//(beacon light type x4)
+	void turnOn(byte, byte, byte, byte, byte);//(beacon light type x5)
+	void turnOn(byte, byte, byte, byte, byte, byte);//(beacon light type x6)
+	void turnOn(byte, byte, byte, byte, byte, byte, byte);//(beacon light type x7)
+	void turnOn(byte, byte, byte, byte, byte, byte, byte, byte);//(beacon light type x8)
 	//overloaded off functions
-	void turnOff(byte);
-	void turnOff(byte, byte);
-	void turnOff(byte, byte, byte);
-	void turnOff(byte, byte, byte, byte);
-	void turnOff(byte, byte, byte, byte, byte);
-	void turnOff(byte, byte, byte, byte, byte, byte);
-	void turnOff(byte, byte, byte, byte, byte, byte, byte);
-	void turnOff(byte, byte, byte, byte, byte, byte, byte, byte);
+	void turnOff(byte);//(beacon light type x1)
+	void turnOff(byte, byte);//(beacon light type x2)
+	void turnOff(byte, byte, byte);//(beacon light type x3)
+	void turnOff(byte, byte, byte, byte);//(beacon light type x4)
+	void turnOff(byte, byte, byte, byte, byte);//(beacon light type x5)
+	void turnOff(byte, byte, byte, byte, byte, byte);//(beacon light type x6)
+	void turnOff(byte, byte, byte, byte, byte, byte, byte);//(beacon light type x7)
+	void turnOff(byte, byte, byte, byte, byte, byte, byte, byte);//(beacon light type x8)
 	//returns status of that led
 	boolean isOn(byte);
 			

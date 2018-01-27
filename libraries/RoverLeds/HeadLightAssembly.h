@@ -27,15 +27,16 @@ public:
 	~HeadLightAssembly();//destructor
 	
 	//Note: For any LED assemblies, don't add blink options/patterns as it may hold up the main program flow as you're using delays. Instead only have parallel or singular off/on patterns.
+	//Note: Headlight types are defined by _HEADLIGHT_TYPES in RoverConfig.h
 	//overloaded on functions
-	void turnOn(byte);
-	void turnOn(byte, byte);
-	void turnOn(byte, byte, byte);
+	void turnOn(byte);//(headlight type x1)
+	void turnOn(byte, byte);//(headlight type x2)
+	void turnOn(byte, byte, byte);//(headlight type x3)
 
 	//overloaded off functions
-	void turnOff(byte);
-	void turnOff(byte, byte);
-	void turnOff(byte, byte, byte);
+	void turnOff(byte);//(headlight type x1)
+	void turnOff(byte, byte);//(headlight type x2)
+	void turnOff(byte, byte, byte);//(headlight type x3)
 
 	//returns status of that led
 	boolean isOn(byte);
