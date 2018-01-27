@@ -323,7 +323,8 @@ RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 
 //Rover Data Pointers for use with either internal processing or outgoing messages
 //Note: These pointers will be (re-)initialized by the function clearRoverDataPointers()
-RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data incoming to COMM
+//Note: These pointers are used by setRoverDataPointer(), as well as other places.
+RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data incoming to COMM, holds the data (and not just the command) if it's needed. Sometimes the data is not used, but is there just in case it's needed later. i.e. example data would be strings such as "nodata", "invlcmd", or actual values like lat/lon, speed, heading, etc.
 RoverData * roverDataForCMNC;//pointer used access the RoverData which has the command data outgoing to CMNC
 RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data outgoing to MAIN
 
@@ -1240,6 +1241,8 @@ void txData(char * txData, byte roverCommType)
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
 
+	//Note: This function runs when the data was meant for this unit.
+	
 	//Note: This function varies for different Arduinos
 	//Categorize all commands/data from all sources.					
 	//Sort based on priority.
@@ -1743,6 +1746,9 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 }//end of commandDirector()
 void createDataFromQueueFor(byte roverCommType)
 {
+	
+	//Note: createDataFromQueueFor() is only used to create outgoing messages. So it isn't used for internal processing since internally it doesn't need to send a message to itself.
+
 	//Note: The origin of the message will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
 
 	byte queueOfInterest;
@@ -1751,8 +1757,10 @@ void createDataFromQueueFor(byte roverCommType)
 	
 	
 	//Create variables needed for the data packaging (i.e. encoder status)
-	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];//Note: This is not needed yet, but is a place holder just in case in the future it's required. If there is a memory limitation, then go ahead and rid of this variable.
-	byte commandDataCharArraySize;//Note: This is not needed yet, but is a place holder just in case in the future it's required. If there is a memory limitation, then go ahead and rid of this variable.
+	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];//used with the RoverMessagePackager
+		//Note: This is not needed yet, but is a place holder just in case in the future it's required. If there is a memory limitation, then go ahead and rid of this variable.
+	byte commandDataCharArraySize;//used with the RoverMessagePackager
+		//Note: This is not needed yet, but is a place holder just in case in the future it's required. If there is a memory limitation, then go ahead and rid of this variable.
 	byte roverCommActualDestination;//holds the actual/final destination of the data				
 				
 	

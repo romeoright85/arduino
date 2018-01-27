@@ -65,6 +65,9 @@ At POR (defaults):
 	
 	//CMNC
 	auto_MAIN_to_CMNC_data_array[] = {
+		MTR_PWR_STATUS,
+		ENC_STATUS_MID_LEFT,
+		ENC_STATUS_MID_RIGHT
 	}// add more as needed
 	auto_MAIN_to_CMNC_data_cnt = 0 //data counter
 	

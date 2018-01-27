@@ -93,11 +93,7 @@ Can send:
 #include <RoverGpsSensor.h>
 #include <CharArray.h>
 #include <BubbleSort.h>
-#include <UnderglowLeds.h>
-#include <SideSignalLight.h>
-#include <BeaconLightAssembly.h>
-#include <HeadLightAssembly.h>
-#include <TailLightAssembly.h>
+#include <LedController_NAVI.h>
 //WRITE MORE LATER
 //ADD MORE LATER
 
@@ -249,22 +245,25 @@ byte gimbal_tilt_value = SET_MIDDLE_TILT
 
 
 
-//TEMPLATE//byte headlight_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_headlight_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte foglight_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_foglight_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte left_signal_light_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_left_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte right_signal_light_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_right_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte underglow_lights_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_underglow_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte headlightassy_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_headlightassy_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte left_side_signal_light_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_left_side_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte right_side_signal_light_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_right_side_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+//TEMPLATE//byte underglow_light_setting = LIGHTS_OFF
+//TEMPLATE//byte prev_underglow_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
 //TEMPLATE//byte reverse_lights_setting = LIGHTS_OFF
 //TEMPLATE//byte prev_reverse_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
 //TEMPLATE//byte blue_beacon_lights_setting = LIGHTS_OFF
 //TEMPLATE//byte prev_blue_beacon_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
 //TEMPLATE//byte ir_beacon_lights_setting = LIGHTS_OFF
 //TEMPLATE//byte prev_ir_beacon_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
+
+
+
+
+
 //TEMPLATE//byte wheelEncoder_MidLeft_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
 //TEMPLATE//byte wheelEncoder_MidRight_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
 //TEMPLATE//int wheelEncoder_MidLeft_Speed = 0;//used to store values passed in from MAIN
@@ -363,9 +362,11 @@ RoverComm * roverComm_Ch2 = new RoverComm(roverDataCh2_COMM);
 
 
 //Rover Data Pointers for use with either internal processing or outgoing messages
-RoverData * roverDataForNAVI;//pointer used access the RoverData which has the command data incoming to NAVI
+//Note: These pointers will be (re-)initialized by the function clearRoverDataPointers()
+//Note: These pointers are used by setRoverDataPointer(), as well as other places.
+RoverData * roverDataForNAVI;//pointer used access the RoverData which has the command data incoming to NAVI, holds the data (and not just the command) if it's needed. Sometimes the data is not used, but is there just in case it's needed later. i.e. example data would be strings such as "nodata", "invlcmd", or actual values like lat/lon, speed, heading, etc.
 RoverData * roverDataForPC_USB;//pointer used access the RoverData which has the command data outgoing to PC_USB
-RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data outgoing to MAIN
+RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data outgoing to MAIN.
 
 
 
@@ -442,28 +443,8 @@ double longitudeArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores longitude (in dec
 double headingArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
 
-
-//------------------From DigitalLedTester.ino
-//using a counter to create delays while still allowing the loop() to run (i.e. for messages, etc.)
-//TEMPLATE//unsigned long modesToggleDelay = 0;
-//A counter use to increment through the different modes
-//TEMPLATE//byte modesTester = 0;
-
-
-UnderglowLeds * underglowLight = new UnderglowLeds(UNDERGLOW_PIN);
-SideSignalLight * leftSideSignal = new SideSignalLight(SIDE_LEFT_SIGNAL_PIN);
-SideSignalLight * rightSideSignal = new SideSignalLight(SIDE_RIGHT_SIGNAL_PIN);
-BeaconLightAssembly * beaconLightAssy = new BeaconLightAssembly(FRONT_LEFT_BEACON_IR_PIN, BACK_LEFT_BEACON_IR_PIN, BACK_RIGHT_BEACON_IR_PIN, FRONT_RIGHT_BEACON_IR_PIN, LEFT_BEACON_BLUE_PIN, BACK_BEACON_BLUE_PIN, RIGHT_BEACON_BLUE_PIN, FRONT_BEACON_BLUE_PIN);
-HeadLightAssembly * leftHeadLightAssy = new HeadLightAssembly(LEFT_HIGHBEAM_HEADLIGHT_PIN, LEFT_SIGNAL_HEADLIGHT_PIN, LEFT_FOG_HEADLIGHT_PIN);
-HeadLightAssembly * rightHeadLightAssy = new HeadLightAssembly(RIGHT_HIGHBEAM_HEADLIGHT_PIN, RIGHT_SIGNAL_HEADLIGHT_PIN, RIGHT_FOG_HEADLIGHT_PIN); 
-TailLightAssembly * leftTailLightAssy = new TailLightAssembly(LEFT_RED_TAILLIGHT_1_PIN, LEFT_RED_TAILLIGHT_2_PIN, LEFT_RED_TAILLIGHT_3_PIN, LEFT_RED_TAILLIGHT_4_PIN, LEFT_RED_TAILLIGHT_5_PIN, LEFT_WHITE_TAILLIGHT_PIN);
-TailLightAssembly * rightTailLightAssy = new TailLightAssembly(RIGHT_RED_TAILLIGHT_1_PIN, RIGHT_RED_TAILLIGHT_2_PIN, RIGHT_RED_TAILLIGHT_3_PIN, RIGHT_RED_TAILLIGHT_4_PIN, RIGHT_RED_TAILLIGHT_5_PIN, RIGHT_WHITE_TAILLIGHT_PIN);
-
-
-
-
-
-
+//------------------From LedController_NAVI_Tester
+LedController_NAVI * ledControllerNAVI = new LedController_NAVI();//Used to control all the LEDs for the NAVI
 
 
 //Note: Make sure to add any new objects created to this array
@@ -499,15 +480,7 @@ RoverReset * resetArray[] = {
 	irDistanceSideLeft
 	roverNavigation,
 	roverGps,
-	underglowLight,
-	leftSideSignal,
-	rightSideSignal,
-	beaconLightAssy,
-	leftHeadLightAssy,
-	rightHeadLightAssy,
-	leftTailLightAssy,
-	rightTailLightAssy
-	
+	ledControllerNAVI
 };//for pointers, pass them directly, for objects pass the address
 
 
@@ -562,7 +535,8 @@ byte auto_NAVI_to_AUXI_data_array[] = {
 
 //Message Char Array
 char txMsgBuffer_PC_USB[UNIV_BUFFER_SIZE];//transmit buffer for PC_USB
-char txMsgBuffer_MAIN[UNIV_BUFFER_SIZE];//transmit buffer for MAIN
+char txMsgBuffer_Pri_MAIN[UNIV_BUFFER_SIZE];//primary transmit buffer for MAIN
+char txMsgBuffer_Sec_MAIN[UNIV_BUFFER_SIZE];//secondary transmit buffer for MAIN
 char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Message Strings
 
 
@@ -1300,6 +1274,8 @@ void txData(char * txData, byte roverCommType)
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
 
+	//Note: This function runs when the data was meant for this unit.
+	
 	//Note: This function varies for different Arduinos
 	//Categorize all commands/data from all sources.					
 	//Sort based on priority.
@@ -1331,7 +1307,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	clearRoverDataPointers();
 	//Sets the default such that the rover command data goes to the destination of the command. If needed, this can be overwritten by the command tag if/else statements
 	setRoverDataPointer(roverDataPointer, destinationRoverCommType);
-	//Note: The roverDataPointer should be going to, MAIN, this unit (else it would have been redirected already with dataDirector).
+	//Note: The roverDataPointer should be going to, NAVI, this unit (else it would have been redirected already with dataDirector).
 	//However, it can be overwritten in the if/else conditions below based on the command tag for special cases like when it redirects itself to the original sender (i.e. when the command is a request for data/status, like with PIR Status request)
 
 	//Run highest priority functions first and lower priorities last.
@@ -1969,17 +1945,158 @@ void createDataFromQueueFor(byte roverCommDestination, byte queueSelection)
 {
 
 
-/*
-Pseudocode
+	//Note: createDataFromQueueFor() is only used to create outgoing messages. So it isn't used for internal processing since internally it doesn't need to send a message to itself.
 
-if queueSelection == PRIMARY_QUEUE
-	queueOfInterest = main_pri_msg_queue
-else if if queueSelection == SECONDARY_QUEUE
-	queueOfInterest = main_sec_msg_queue
-*/
+	
+	//Note:
+	//The queueSelection is as defined in RoverConfig.h under:
+	//	_ROVER_SHARED_QUEUE_DEFINITIONS
+	//i.e.
+	//	PC_USB_MSG_QUEUE
+	//	PRIMARY_MSG_QUEUE
+	//	SECONDARY_MSG_QUEUE
+	
 
 
-//WRITE ME LATER
+	//Note: The origin of the message will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
+
+	
+	char * commandDataOfInterest;//holds the rover's command data string
+	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command (createdCommand is the output of the method call RoverCommandCreator::createCmd)
+					
+	//Create variables needed for the data packaging (i.e. encoder status)
+	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];//used with the RoverMessagePackager
+	byte commandDataCharArraySize;//used with the RoverMessagePackager
+	byte roverCommActualDestination;//holds the actual/final destination of the data
+				
+				
+	//Based on the roverCommType of interest, set which queue and rover data the outgoing message should be based on
+	if (roverCommType == ROVERCOMM_PC_USB)
+	{
+		if(queueSelection == PC_USB_MSG_QUEUE)
+		//Note: In theory it can just default to this, but since the code should be easily legible, go ahead and detect for a queueSelection of PC_USB_MSG_QUEUE.		
+		{
+			queueOfInterest = pc_usb_msg_queue;
+		}//end if
+		else//invalid state, error out
+		{
+			_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkQueueSel"));//error, unknown Queue Selection
+		}//end else	
+		
+		roverCommActualDestination = roverCommType;//the rover comm type will be the actual destination for ROVERCOMM_PC_USB since it's the only destination for that data channel.
+		if (roverDataForPC_USB != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForPC_USB->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else		
+	}//end if
+	else if ( roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_AUXI )
+	{
+		
+		if(queueSelection == PRIMARY_MSG_QUEUE)
+		{
+			queueOfInterest = main_pri_msg_queue;
+			roverCommActualDestination = pri_comm_cmnc_main_auxi_destination_selection;
+		}//end if
+		else if (queueSelection == SECONDARY_MSG_QUEUE)
+		{
+			queueOfInterest = main_sec_msg_queue;
+			roverCommActualDestination = sec_comm_cmnc_main_auxi_destination_selection;
+		}//end else if
+		else//invalid state, error out
+		{
+			_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkQueueSel"));//error, unknown Queue Selection
+		}//end else
+				
+		if (roverDataForMAIN != NULL)//make sure the roverDataPointer is not NULL
+		{
+			commandDataOfInterest = roverDataForMAIN->getCommandData();
+		}//end if
+		else
+		{
+			commandDataOfInterest = "";//else if it's NULL, set the data to nothing
+		}//end else
+	}//end else if
+	 //else
+	 //do nothing
+
+
+	//Use the Rover Command Creator to add the headers to the data string (origin, destination, priority level, command tag number, the message string)
+	switch (queueOfInterest)
+	{
+
+
+		//Externally Received Commands	
+		
+//LEFT OFF HERE		
+//WRiTE ME LATER		
+//ADD MORE LATER
+
+		case CMD_TAG_DEBUG_HI_TEST_MSG:
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);
+			break;
+		case CMD_TAG_DEBUG_BYE_TEST_MSG:
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_BYE_TEST_MSG, commandDataOfInterest, createdCommand);
+			break;
+		case CMD_TAG_INVALID_CMD:
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(0), createdCommand);
+			break;
+			
+		//Internally Generated Commands - Internally Generated by this Arduino. So there are no received command for these types of commands.
+		case CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS: //The error message will be redirected out through all the Arduinos and out to CMNC
+				//Only allow destination of ROVERCOMM_PC_USB (to go to PC_USB) and ROVERCOMM_CMNC (to go to CMNC, through MAIN, then COMM)
+				if(roverCommActualDestination == ROVERCOMM_PC_USB || roverCommActualDestination == ROVERCOMM_CMNC)
+				{
+					RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS, getMsgString(2), createdCommand);
+				}//end if				
+				//else do nothing. CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS should not be sent to other Arduino channels other than ROVERCOMM_PC_USB and ROVERCOMM_CMNC (through MAIN, then COMM) as other Arduinos are not currently programmed to handle that type of message.
+			break;	
+
+
+
+
+//LEFT OFF HERE			
+//WRiTE ME LATER
+//ADD MORE LATER			
+			
+			
+		default:
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1), createdCommand);//output invalid command
+			break;
+	}//end switch	
+	
+		
+	
+	
+	if (roverCommActualDestination == ROVERCOMM_PC_USB)
+	{
+		sprintf(txMsgBuffer_PC_USB, createdCommand);
+	}//end if
+	else if ( roverCommActualDestination == ROVERCOMM_COMM || roverCommActualDestination == ROVERCOMM_CMNC || roverCommActualDestination == ROVERCOMM_MAIN || roverCommActualDestination == ROVERCOMM_AUXI )
+	{
+		if(queueSelection == PRIMARY_MSG_QUEUE)
+		{
+			sprintf(txMsgBuffer_Pri_MAIN, createdCommand);
+		}//end if
+		else if (queueSelection == SECONDARY_MSG_QUEUE)
+		{
+			sprintf(txMsgBuffer_Sec_MAIN, createdCommand);
+		}//end else if
+		else//invalid state, error out
+		{
+			_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkQueueSel"));//error, unknown Queue Selection
+		}//end else		
+	}//end else if	
+	 //else
+
+	 
+	 pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//once done with creating the data, reset the pri_comm_cmnc_main_auxi_destination_selection variable to default
+	 sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//once done with creating the data, reset the sec_comm_cmnc_main_auxi_destination_selection variable to default
+	 
+	return;
 
 }//end of createDataFromQueueFor()
 void setAllErrorFlagsTo(boolean choice)
@@ -2487,7 +2604,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				//2. Sends data to MAIN (primary queue)
 				if (main_pri_msg_queue != CMD_TAG_NO_MSG)
 				{
-					txData(txMsgBuffer_COMM, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
+					txData(txMsgBuffer_Pri_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
 				}//end if
 				//3. Check to see if there are any second messages to send
 				if ( main_sec_msg_queue != CMD_TAG_NO_MSG )		
@@ -2518,7 +2635,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				{								
 			
 				
-					txData(txMsgBuffer_NAVI, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
+					txData(txMsgBuffer_Sec_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
 				
 					//clears message queue(s) and redirect flags		
 					pc_usb_msg_queue = CMD_TAG_NO_MSG;
@@ -2995,12 +3112,31 @@ char * getMsgString(byte arrayIndex) {
 
 void clearRoverDataPointers()
 {
-//WRITE ME LATER
+	
+	//Clears/resets all data pointers
+	roverDataForNAVI = NULL;	
+	roverDataForPC_USB = NULL;
+	roverDataForMAIN = NULL;
+	
 }//end of clearRoverDataPointer()
 
 void setRoverDataPointer(RoverData * roverDataPointer, byte roverCommType)
 {
-//WRITE ME LATER
+
+	//This sets the roverDataPointer to the desired roverCommType.
+	//Note: This function can be called more than once to set more than one roverDataPointer to the same data (i.e. if the same data needs to be shared in multiple places)
+	if (roverCommType == ROVERCOMM_PC_USB)
+	{
+		roverDataForPC_USB = roverDataPointer;
+	}//end if
+	else if (roverCommType == ROVERCOMM_COMM || roverCommType == ROVERCOMM_CMNC || roverCommType == ROVERCOMM_MAIN || roverCommType == ROVERCOMM_AUXI)//COMM, CMNC, MAIN, and AUXI all go through MAIN
+	{
+		roverDataForMAIN = roverDataPointer;
+	}//end else if
+	else//the roverCommType should be for this local Arduino (i.e. ROVERCOMM_MAIN)
+	{
+		roverDataForNAVI = roverDataPointer;
+	}//end else
 }//end of setRoverDataPointer()
 
 

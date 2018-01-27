@@ -10,9 +10,9 @@ Rover_StateMachine_NAVI (get the rover rolling)
 	Get Framework up
 	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 take day off to relax), 1/6 (had to fix autodata algorithm), 1/7 (had to fix autodata algorithm)/finish framework
 	Write States and Modes (on average 1 day per mode, except default)
-	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27, 1/28, 2/3, 2/4, maybe add two more days since behind
+	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27, 1/28, 2/3, 2/4, 2/9, 2/10, 2/11, 2/17
 	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE)
-	2/9, 2/10, 2/11, 2/17, 2/18, 2/23, 2/24, 2/25
+	2/18, 2/23, 2/24, 2/25, 3/3
 
 
 
@@ -21,13 +21,13 @@ Rover_StateMachine_NAVI (get the rover rolling)
 [14 days]
 Rover_StateMachine_AUXI (then get the leds and sensors working)
 	Get Framework up
-	3/3, 3/4
+	3/4, 3/9
 	Write States and Modes (on average 1 day per mode, except default)
-	3/9, 3/10, 3/11, 3/17, 3/18, 3/23, 3/24, 3/25
+	3/10, 3/11, 3/17, 3/18, 3/23, 3/24, 3/25, 3/31
 	ALSO NEED TO DO TAXES, so may have to delay some more.
 	
 	Develop Axillary Code (i.e. SYSTEM_HEALTH)
-	3/31, 4/1, 4/6, 4/7, 4/8, 4/14, 4/15, 4/20
+	4/1, 4/6, 4/7, 4/8, 4/14, 4/15, 4/20, 4/21
 	
 	[NEED TO DO FOR AUXI]Update and add to RoverMessagePackager for IMU data
 	Have a way for IMU data to get packaged and pass from AUXI to CMNC.
@@ -37,7 +37,7 @@ Rover_StateMachine_AUXI (then get the leds and sensors working)
 
 [6 days]*2 days behind*
 Test code
-	4/21, 4/22, 4/28, 4/29, ???
+	4/22, 4/28, 4/29, ???, ???
 	Update the timeouts (especially the sync ones) as needed to get the rover arduinos to all sync up.
 Do a quick screen record with audio walking through roughly how to you would read one of the codes (i.e. MAIN) for documentation.
 Go through and clean up the "//PLACEHOLDER"s in Rover_StateMachine_COMM
@@ -113,21 +113,51 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 			
 #LEFT OFF HERE, START HERE->Rover_StateMachine_NAVI:
 
-			[IN PROGRESS] Setting up framework for Rover_StateMachine_NAVI
+			[IN PROGRESS] Set up the framework for Rover_StateMachine_NAVI
 				
 				
 				[DONE] Start the framework for commandDirector()
 
-
-				[NEED TO DO] Write function(s) to control LED brightnesses
-				[NEED TO DO] createDataFromQueueFor()				
-				[NEED TO DO] clearRoverDataPointers()
-				[NEED TO DO] setRoverDataPointer()
 				
-				[LEFT OFF, at runModeFunction_NORMAL_OPERATIONS at RUN_HOUSEKEEPING_TASKS] Work on Rover States and Modes
+				
+SATURDAY:
+				[DONE] Set up the framework for createDataFromQueueFor()				
+				[DONE] clearRoverDataPointers()
+				[DONE] setRoverDataPointer()
+				
+				
+								
+				[NEED TO DO] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
+					At first glance I don't think you need to, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???
+				
+				[IN PROGRESS, writing LedController_NAVI_Tester.ino] Write class and function(s) to control LED brightnesses
+					test this code as well
+					if have time, start on NORMAL_OPERATIONS
+
+
+				
+				
+				
+				
+				
+				
+				
+				[LEFT OFF, at runModeFunction_NORMAL_OPERATIONS at RUN_HOUSEKEEPING_TASKS] Work on Rover States and Modes		
+				
+						[DONE] POWER_ON_AND_HW_RESET
+						[DONE] INITIALIZATION
+						[DONE] SYNCHRONIZATION					
+						[IN PROGRESS] NORMAL_OPERATIONS	(2 days, not counting the navigation code)
+							Develop Navigation Code (5 days)
+						SYSTEM_SLEEPING (0.5 days)
+						SYSTEM_WAKING (0.5 days)
+						SW_RESETTING (0.5 days)
+						SYSTEM_ERROR (1 day)
+						DEFAULT (0.5 days)
+
 		
-		
-				[NEED TO DO] write the code for all the commands in commandDirector()
+				[NEED TO DO] write the code for all the commands in commandDirector()  (1 day)
+				[NEED TO DO] write the code for all the commands in createDataFromQueueFor()  (1 day)
 				
 				
 Starting on Rover_StateMachine_NAVI.ino at:
@@ -2029,3 +2059,10 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 				[DONE, processHeading()] Write a function (to be called in PROCESS_DATA) to populate the heading array, sort, then and do an average.				
 				[DONE, processGPS()] Write a function (to be called in PROCESS_DATA) to populate the gps array (collect X pairs of latitude and longitude), sort it, then and do an average.
 				[DONE] txData()
+				
+				
+				Through all code, for some if/else statements, there are no error state for the else state, which may cause issues. You may want to come back and add error handling later. Often I would write a comment saying "//else do nothing"
+				
+				Other times I may error out with a message, like in the NAVI State Machine, but not go into an error state or hold with an infinite while loop. So this can be an issue as well, especially if you're not monitoring for error messages or if the rover still goes and does something dangerous.
+				i.e. 
+					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkQueueSel"));//error, unknown Queue Selection

@@ -311,8 +311,9 @@
 	
 	#ifdef _ROVER_SHARED_QUEUE_DEFINITIONS
 		//iused to select between primary and secondary message queues (i.e. for NAVI and AUXI.
-		#define PRIMARY_QUEUE
-		#define SECONDARY_QUEUE
+		#define PC_USB_MSG_QUEUE
+		#define PRIMARY_MSG_QUEUE
+		#define SECONDARY_MSG_QUEUE
 	#endif
 	
 	

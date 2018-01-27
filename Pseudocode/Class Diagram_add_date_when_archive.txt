@@ -123,13 +123,13 @@ RoverData
 RoverCommandCreator
 
 		
-(See DigitalLedTester.ino)	
-UnderglowLeds
-SideSignalLight
-BeaconLightAssembly
-HeadLightAssembly
-TailLightAssembly
-			
+LedController_NAVI (See LedController_NAVI_Tester.ino)
+	UnderglowLeds
+	SideSignalLight
+	BeaconLightAssembly
+	HeadLightAssembly
+	TailLightAssembly
+	(Also See DigitalLedTester.ino)				
 
 RoverSleeperServer
 

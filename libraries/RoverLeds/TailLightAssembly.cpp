@@ -15,6 +15,9 @@ TailLightAssembly::~TailLightAssembly()
 }
 void TailLightAssembly::reset()
 {
+	
+	this->turnOff(RED1_TAILLIGHT, RED2_TAILLIGHT, RED3_TAILLIGHT, RED4_TAILLIGHT, RED5_TAILLIGHT, WHITE_TAILLIGHT);	
+	
 }
 void TailLightAssembly::turnOn(byte taillightLightType)
 {

@@ -46,9 +46,11 @@ public:
 	//returns status of that led
 	boolean isOn(byte);
 	
-	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
+	virtual void reset();//turns off all leds, software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
 	//Non-SW Resettable
+	
+	//SW Resettable
 	DigitalLed* _redLed1;
 	DigitalLed* _redLed2;
 	DigitalLed* _redLed3;
@@ -56,7 +58,7 @@ private:
 	DigitalLed* _redLed5;
 	DigitalLed* _whiteLed;
 
-	//SW Resettable
+
 
 
 };

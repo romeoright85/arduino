@@ -368,7 +368,8 @@ RoverComm * roverComm_Ch4 = new RoverComm(roverDataCh4_COMM);
 
 //Rover Data Pointers for use with either internal processing or outgoing messages
 //Note: These pointers will be (re-)initialized by the function clearRoverDataPointers()
-RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data incoming to MAIN
+//Note: These pointers are used by setRoverDataPointer(), as well as other places.
+RoverData * roverDataForMAIN;//pointer used access the RoverData which has the command data incoming to MAIN, holds the data (and not just the command) if it's needed. Sometimes the data is not used, but is there just in case it's needed later. i.e. example data would be strings such as "nodata", "invlcmd", or actual values like lat/lon, speed, heading, etc.
 RoverData * roverDataForPC_USB;//pointer used access the RoverData which has the command data outgoing to PC_USB
 RoverData * roverDataForCOMM;//pointer used access the RoverData which has the command data outgoing to COMM
 RoverData * roverDataForNAVI;//pointer used access the RoverData which has the command data outgoing to NAVI
@@ -463,7 +464,9 @@ byte auto_MAIN_to_COMM_data_array[] = {
 	//add more as needed
 };
 byte auto_MAIN_to_CMNC_data_array[] = {
-	//add more as needed
+	CMD_TAG_MTR_PWR_STATUS,
+	CMD_TAG_ENC_STATUS_MID_LEFT,
+	CMD_TAG_ENC_STATUS_MID_RIGHT
 };
 
 
@@ -1399,6 +1402,8 @@ void txData(char * txData, byte roverCommType)
 void commandDirector(RoverData * roverDataPointer, byte roverComm)
 {
 
+	//Note: This function runs when the data was meant for this unit.
+	
 	//Note: This function varies for different Arduinos
 	//Categorize all commands/data from all sources.					
 	//Sort based on priority.
@@ -1934,7 +1939,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		}//end if		
 		else if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
 		{
-			comm_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG//to be sent to CMNC
+			comm_msg_queue = CMD_TAG_DEBUG_BYE_TEST_MSG;//to be sent to CMNC
 			comm_cmnc_destination_selection = ROVERCOMM_CMNC;
 		}//end if
 		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
@@ -1995,6 +2000,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 void createDataFromQueueFor(byte roverCommType)
 {
 
+	//Note: createDataFromQueueFor() is only used to create outgoing messages. So it isn't used for internal processing since internally it doesn't need to send a message to itself.
+
 
 	//Note: The origin of the message will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
 
@@ -2003,8 +2010,8 @@ void createDataFromQueueFor(byte roverCommType)
 	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command (createdCommand is the output of the method call RoverCommandCreator::createCmd)
 					
 	//Create variables needed for the data packaging (i.e. encoder status)
-	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];
-	byte commandDataCharArraySize;
+	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];//used with the RoverMessagePackager
+	byte commandDataCharArraySize;//used with the RoverMessagePackager
 	byte roverCommActualDestination;//holds the actual/final destination of the data
 				
 				

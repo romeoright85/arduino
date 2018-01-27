@@ -50,12 +50,13 @@ public:
 	//returns status of that led
 	boolean isOn(byte);
 			
-	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)		
+	virtual void reset();//turns off all leds, software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 	
 	
 private:
 	//Non-SW Resettable
-	
+		
+	//SW Resettable
 	//have to declare them here in order to have "access of"/"scope to" these objects in all the methods of the class
 	//use a pointer since they will not be created yet until the constructor of this class is called
 	
@@ -70,8 +71,7 @@ private:
 	DigitalLed* _backBeaconBlue;
 	DigitalLed* _rightBeaconBlue;
 	DigitalLed* _frontBeaconBlue;
-	
-	//SW Resettable
+
 };
 
 #endif 
