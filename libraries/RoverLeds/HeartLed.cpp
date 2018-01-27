@@ -47,7 +47,7 @@ void HeartLed::breathing()
 		if (this->_counterPtr->countReached())
 		{
 			this->resetHeartLed();//reset ledPatternIndex
-			this->_counterPtr->setStopValue(this->_periodsForShortDelay);//set the counter for the next interation to wait for (periodsForShortDelay * delayInterval)
+			this->_counterPtr->setStopValue(this->_periodsForShortDelay);//set the counter for the next iteration to wait for (periodsForShortDelay * delayInterval)
 			this->_counterPtr->counterReset();
 		}//end if
 	}//end else

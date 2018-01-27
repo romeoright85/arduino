@@ -259,6 +259,66 @@
 		#define DEC_DEC_NMEA				1
 	#endif	
 	
+	//definition for LedControllers
+	#ifdef _LED_CONTROLLER_DEFINITIONS
+		//Universal LED Modes
+		#define LED_ALL_OFF_MODE									0//default
+		#define LED_ALL_ON_MODE									1
+		#define LED_STANDARD_DAY_TIME_MODE 				2
+		#define LED_NIGHT_TIME_MODE								3//turns on headlights and tail lights
+		#define LED_HAZARD_MODE									4//blinks headlight's signal lights, side signal lights, and tail lights		
+		#define LED_DEMO_MODE										5
+		#define LED_ERROR_MODE										6
+		#define LED_STEALTH_MODE									7//the same as all off mode (just giving it a different name so the code is easier to read)
+		#define LED_DEBUG_MODE										8		
+		//Fog Lights Control
+		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
+		#define LED_FOG_OFF											0//default, turns off fog lights
+		#define LED_FOG_ON												1//turns on fog lights
+		//Underglow Light Control
+		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
+		#define LED_UNDERGLOW_OFF								0
+		#define LED_UNDERGLOW_ON									1
+		//IR Beacon Control
+		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
+		#define LED_IR_BEACON_ALL_OFF							0//default
+		#define LED_IR_BEACON_ALL_ON								1
+		#define LED_IR_BEACON_DIRECTIONAL_MODE			2//turns on 1 or 2 LEDs based on the desired beacon led direction that is set
+		//Blue Beacon Control
+		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
+		#define LED_BLUE_BEACON_ALL_OFF						0//default
+		#define LED_BLUE_BEACON_ALL_ON						1		
+		#define LED_BLUE_BEACON_DIRECTIONAL_MODE		2
+		//Beacon LED Directions
+		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
+		#define LED_DIRECTION_NONE								0//default
+		#define LED_DIRECTION_FRONT								1
+		#define LED_DIRECTION_FRONT_RIGHT					2
+		#define LED_DIRECTION_RIGHT								3
+		#define LED_DIRECTION_REAR_RIGHT						4
+		#define LED_DIRECTION_REAR									5
+		#define LED_DIRECTION_REAR_LEFT						6
+		#define LED_DIRECTION_LEFT									7
+		#define LED_DIRECTION_FRONT_LEFT						8
+		//Rover Motion
+		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
+		#define LED_MOTION_STANDARD								0//default, used when already at a stop or going forward
+		#define LED_MOTION_TURN_LEFT							1//used when turning left
+			//(Note: The option above will be overrided when in LED_HAZARD_MODE)
+		#define LED_MOTION_TURN_RIGHT							2//used when turning right
+			//(Note: The option above will be overrided when in LED_HAZARD_MODE)
+		#define LED_MOTION_BRAKE									3//using when first slowing down to a stop
+			//(Note: The option above will be overrided when in LED_HAZARD_MODE)
+		#define LED_MOTION_REVERSE								4//used when reversing		
+		//LED Error Types
+		#define LED_ERROR_TYPE_NONE
+//ADD MORE LATER		
+		//LED Debug Types
+		#define LED_DEBUG_TYPE_NONE
+//ADD MORE LATER		
+	#endif
+	
+	
 	
 	//definition for BeaconLightAssembly
 	//Beacon light types

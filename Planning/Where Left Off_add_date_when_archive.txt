@@ -126,18 +126,25 @@ SATURDAY:
 				[DONE] setRoverDataPointer()
 				
 				
-								
-				[NEED TO DO] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
-					At first glance I don't think you need to, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???
-				
+	
 				[IN PROGRESS, writing LedController_NAVI_Tester.ino] Write class and function(s) to control LED brightnesses
 					test this code as well
-					if have time, start on NORMAL_OPERATIONS
+					
+					-determine how many types of delays i want and how long they need to be. also decide the power on default delay (if any)
+					-write the different patterns using _LED_CONTROLLER_DEFINITIONS
+						-have switch/case logic to set priorities on the different modes
+					-also use heartled.cpp and .h with analogledtester.ino as a reference to -get the pattern and timing correct
 
+					
+					
+					
 
 				
 				
-				
+										
+				[NEED TO DO] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
+					At first glance I don't think you need to, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???
+					
 				
 				
 				

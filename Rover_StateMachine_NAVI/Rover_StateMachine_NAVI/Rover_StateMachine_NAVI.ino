@@ -444,7 +444,14 @@ double headingArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores heading samples for
 double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
 
 //------------------From LedController_NAVI_Tester
-LedController_NAVI * ledControllerNAVI = new LedController_NAVI();//Used to control all the LEDs for the NAVI
+//TEMPLATE//
+/*
+//LEFT OFF HERE
+DelayCounter * ledControllerDelayCounter = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods (so 10 periods x 5ms = 50ms)
+GlobalDelayTimer * ledControllerTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, ledControllerDelayCounter);//arbitrarily chose 5ms resolution for the timer. Can change this later to something else if I want
+LedController_NAVI * ledController_NAVI = new LedController_NAVI(ledControllerDelayCounter);
+*/
+
 
 
 //Note: Make sure to add any new objects created to this array
