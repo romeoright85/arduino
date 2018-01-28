@@ -3,6 +3,8 @@
 
 #include <LedController_NAVI.h>
 #include <RoverConfig.h>
+#include <GlobalDelayTimer.h>
+#include <DelayCounter.h>
 
 //Global Variables
 
