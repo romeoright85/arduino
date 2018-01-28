@@ -261,6 +261,11 @@
 	
 	//definition for LedControllers
 	#ifdef _LED_CONTROLLER_DEFINITIONS
+	
+		//LED State, used for the discreteLEDControl()
+		#define LED_OFF													0//default
+		#define LED_ON														1
+		
 		//Universal LED Modes
 		#define LED_ALL_OFF_MODE									0//default
 		#define LED_ALL_ON_MODE									1
@@ -271,24 +276,29 @@
 		#define LED_ERROR_MODE										6
 		#define LED_STEALTH_MODE									7//the same as all off mode (just giving it a different name so the code is easier to read)
 		#define LED_DEBUG_MODE										8		
-		//Fog Lights Control
+		
+		//Fog Lights State
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
 		#define LED_FOG_OFF											0//default, turns off fog lights
 		#define LED_FOG_ON												1//turns on fog lights
-		//Underglow Light Control
+		
+		//Underglow Light State
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
 		#define LED_UNDERGLOW_OFF								0
 		#define LED_UNDERGLOW_ON									1
-		//IR Beacon Control
+		
+		//IR Beacon State
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
 		#define LED_IR_BEACON_ALL_OFF							0//default
 		#define LED_IR_BEACON_ALL_ON								1
 		#define LED_IR_BEACON_DIRECTIONAL_MODE			2//turns on 1 or 2 LEDs based on the desired beacon led direction that is set
-		//Blue Beacon Control
+		
+		//Blue Beacon State
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
 		#define LED_BLUE_BEACON_ALL_OFF						0//default
 		#define LED_BLUE_BEACON_ALL_ON						1		
 		#define LED_BLUE_BEACON_DIRECTIONAL_MODE		2
+		
 		//Beacon LED Directions
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
 		#define LED_DIRECTION_NONE								0//default
@@ -300,6 +310,7 @@
 		#define LED_DIRECTION_REAR_LEFT						6
 		#define LED_DIRECTION_LEFT									7
 		#define LED_DIRECTION_FRONT_LEFT						8
+		
 		//Rover Motion
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
 		#define LED_MOTION_STANDARD								0//default, used when already at a stop or going forward
@@ -315,8 +326,56 @@
 //ADD MORE LATER		
 		//LED Debug Types
 		#define LED_DEBUG_TYPE_NONE
-//ADD MORE LATER		
+//ADD MORE LATER	
+
+		//LED Names (for discrete control)
+		//Beacon
+		#define LED_NAME_FRONT_LEFT_IR_BEACON		0
+		#define LED_NAME_BACK_LEFT_IR_BEACON			1
+		#define LED_NAME_BACK_RIGHT_IR_BEACON		2
+		#define LED_NAME_FRONT_RIGHT_IR_BEACON	3
+		#define LED_NAME_LEFT_BLUE_BEACON				4
+		#define LED_NAME_BACK_BLUE_BEACON				5
+		#define LED_NAME_RIGHT_BLUE_BEACON			6
+		#define LED_NAME_FRONT_BLUE_BEACON			7
+		//Headlights
+		#define LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT		8
+		#define LED_NAME_RIGHT_SIGNAL_HEADLIGHT			9
+		#define LED_NAME_RIGHT_FOG_HEADLIGHT				10
+		#define LED_NAME_LEFT_HIGHBEAM_HEADLIGHT			11
+		#define LED_NAME_LEFT_SIGNAL_HEADLIGHT				12
+		#define LED_NAME_LEFT_FOG_HEADLIGHT					13
+		//Taillights
+		#define LED_NAME_RIGHT_RED1_TAILLIGHT					14
+		#define LED_NAME_RIGHT_RED2_TAILLIGHT					15
+		#define LED_NAME_RIGHT_RED3_TAILLIGHT					16
+		#define LED_NAME_RIGHT_RED4_TAILLIGHT					17
+		#define LED_NAME_RIGHT_RED5_TAILLIGHT					18
+		#define LED_NAME_RIGHT_WHITE_TAILLIGHT				19
+		#define LED_NAME_LEFT_RED1_TAILLIGHT					20
+		#define LED_NAME_LEFT_RED2_TAILLIGHT					21
+		#define LED_NAME_LEFT_RED3_TAILLIGHT					22
+		#define LED_NAME_LEFT_RED4_TAILLIGHT					23
+		#define LED_NAME_LEFT_RED5_TAILLIGHT					24
+		#define LED_NAME_LEFT_WHITE_TAILLIGHT					25
+		//Underglow
+		#define LED_NAME_UNDERGLOW_LIGHT						26
+		//Side Signal Lights
+		#define LED_NAME_RIGHT_SIDE_SIGNAL_LIGHT			27
+		#define LED_NAME_LEFT_SIDE_SIGNAL_LIGHT				28
+	
+	
 	#endif
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	

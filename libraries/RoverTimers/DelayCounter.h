@@ -89,7 +89,8 @@ if (counter->countReached())
 
 	class DelayCounter : public virtual RoverReset {
 	public:
-		DelayCounter(unsigned int);//constructor. (stop value. The default start value when not provided is 0.)
+		DelayCounter(unsigned int);//constructor. (initial stop value. The default start value when not provided is 0.)
+		//Note: The initial stop value can be assigned to a different stop value by calling setStopValue()
 		DelayCounter(unsigned int, unsigned int);//constructor. (start value, and stop value)
 		~DelayCounter();//destructor
 		void setStopValue(unsigned int);//set the stop value
