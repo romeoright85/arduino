@@ -35,7 +35,7 @@ void HeartLed::breathing()
 			this->_counterPtr->counterReset();//reset the counter
 			if (this->_ledPatternIndex >= 37)//once all the values of the array has been displayed (0 to 37 aka 38 elements)
 			{
-				this->_counterPtr->setStopValue(this->_periodsForLongDelay);//set the counter for the next interation to wait for (periodsForLongDelay * delayInterval)
+				this->_counterPtr->setStopValue(this->_periodsForLongDelay);//set the counter for the next iteration to wait for (periodsForLongDelay * delayInterval)
 				this->_counterPtr->counterReset();
 			}			
 		}//end if

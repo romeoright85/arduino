@@ -49,14 +49,21 @@ public:
 	void setRoverMotion(byte);//(which Rover Motion) used for LED motions
 	void setErrorType(byte);//(which LED Error Types) used for Error Mode
 	void setDebugType(byte);//(which LED Debug Types) used for Debug Mode
-	void discreteLEDControl(byte, byte);//(which led name, desired led state)
+	void roverDiscreteLEDControl();//(which led name, desired led state). This function should only be called by the rover when the rover wants to control the LEDs. Ultimately this function just calls the private function discreteLEDControl() but after using some logic to ensure it's in the right mode (i.e. LED_ERROR_MODE)
+	void userDiscreteLEDControl();//(which led name, desired led state). This function should only be called when there is a received command (i.e. from CMNC) to control the LEDs. Ultimately this function just calls the private function discreteLEDControl() but after using some logic to ensure it's in the right mode (i.e. LED_DEBUG_MODE)	
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
 	//Non-SW Resettable
 			
 	
+	void incrementPatternIndexCounter(byte);//(max index value to roll over and reset the counter)
+	void resetPatternIndexCounter();//resets the pattern index counter
+	void discreteLEDControl(byte, byte);//(which led name, desired led state). Use this to set the sate of the LED. The state can be overwritten with a higher priority state by calling this function again. The LED won't change states until executeFinalLEDStates() is called. And executeFinalLEDStates() should be called after all states have been finalized.
+	void runIRBeaconDirectionalControl(byte);//(LED Direction) controls the IR Beacon based on the given LED Direction
+	void runBlueBeaconDirectionalControl(byte);//(LED Direction) controls the Blue Beacon based on the given LED Direction
+	void executeFinalLEDStates();//controls the LEDs based on the finalized settings (after overriding priorities)
 	
-		
+	
 	byte _ALL_LED_NAMES[29] = {
 		LED_NAME_FRONT_BLUE_BEACON,
 		LED_NAME_FRONT_RIGHT_IR_BEACON,
@@ -108,6 +115,15 @@ private:
 	
 	
 	//Demo Mode
+	byte * _LED_NAMES_For_DemoMode = _ALL_LED_NAMES;
+	//Pattern: Turn off the previous LED and then turn on the current LED, wait for the duration of the desired delay, then repeat
+	//Use a 500ms delay for the pattern
+	
+	
+/*	 
+//TRY TO USE A BYTE ARRAY POINTER TO SAVE MEMORY SINCE IT'S THE SAME ARRAY AS ALL LED NAMES
+//DELETE THIS COMMENTED OUT CODE ONCE I CONFIRMED THIS CODE WORKS
+	//Demo Mode
 	byte _LED_NAMES_For_DemoMode[29] = {
 		LED_NAME_FRONT_BLUE_BEACON,
 		LED_NAME_FRONT_RIGHT_IR_BEACON,
@@ -141,7 +157,19 @@ private:
 	};
 	//Pattern: Turn off the previous LED and then turn on the current LED, wait for the duration of the desired delay, then repeat
 	//Use a 500ms delay for the pattern
+*/
+
+
 	
+	//Error Mode
+	byte _LED_NAMES_For_ErrorMode[4] = {
+		LED_NAME_FRONT_BLUE_BEACON,
+		LED_NAME_RIGHT_BLUE_BEACON,
+		LED_NAME_BACK_BLUE_BEACON,
+		LED_NAME_LEFT_BLUE_BEACON		
+	};
+	//Pattern: Turn on all of the LEDs in the array, wait for the duration of the desired delay, then turn them all off, and repeat
+	//Use a 500ms delay for the pattern
 	
 	//Motion Left Turn
 	byte _LED_NAMES_For_MotionTurnLeft_Headlight[1] = {
@@ -222,12 +250,29 @@ private:
 		
 
 	//SW Resettable
-	DelayCounter * _counterPtr;//delay counter pointer
 	
 	byte _currentUniversalLEDMode = LED_ALL_OFF_MODE;//holds the current universal LED Mode
+	byte _currentRoverMotion = LED_MOTION_STANDARD;//holds the current Rover Motion
+	byte _currentIRBeaconState = LED_IR_BEACON_ALL_NEUTRAL;//holds the current IR Beacon State
+	byte _currentBlueBeaconState = LED_BLUE_BEACON_ALL_NEUTRAL;//holds the current Blue Beacon State
+	byte _currentBeaconLEDDirection = LED_DIRECTION_NONE;//holds the current Beacon LED Direction (shared between IR Beacons and Blue Beacons)
 	byte _arrayOfInterestSize = 0;//shared variable, used to hold the current array of interest's size
-	byte _currentPatternIndex = 0;//shared variable, used to hold the current pattern index
-
+	byte _patternIndexCounter = 0;//shared variable, used to hold the pattern index counter
+	
+	//LED State Bit Flags, used to hold the on or off state of all the LEDs
+	//Reference: RoverBitFlags.h
+	//Set all the LEDs to default all off
+	byte _ledStateFlagSet1 = _BTFG_LED_STATE_ALL_OFF_;
+	byte _ledStateFlagSet2 = _BTFG_LED_STATE_ALL_OFF_;
+	byte _ledStateFlagSet3 = _BTFG_LED_STATE_ALL_OFF_;
+	byte _ledStateFlagSet4 = _BTFG_LED_STATE_ALL_OFF_;
+	
+	
+	
+	//Class Objects Pointers
+	//Delay Counter Pointer
+	DelayCounter * _counterPtr;
+	//LED Objects
 	UnderglowLeds * _underglowLight;
 	SideSignalLight* _leftSideSignal;
 	SideSignalLight *_rightSideSignal;
@@ -236,6 +281,21 @@ private:
 	HeadLightAssembly * _rightHeadLightAssy; 
 	TailLightAssembly * _leftTailLightAssy;
 	TailLightAssembly * _rightTailLightAssy;	
+	
+	
+	RoverReset * _resetArray[] = {	
+		this->_counterPtr,
+		this->_underglowLight,
+		this->_leftSideSignal,
+		this->_rightSideSignal,
+		this->_beaconLightAssy,
+		this->_leftHeadLightAssy,
+		this->_rightHeadLightAssy,
+		this->_leftTailLightAssy,
+		this->_rightTailLightAssy
+	};
+	
+	
 	
 	
 };
