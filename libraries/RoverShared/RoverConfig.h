@@ -264,6 +264,15 @@
 	
 		//Pattern Sizes
 		#define BLINK_PATTERN_SIZE														2//on and off states only
+		#define TURN_SIGNAL_PATTERN_SIZE														4//since the tail lights need a pattern size of 4 while the head light signals at side signal lights just blink (but at half the rate) use a pattern size of 4. The head light signals and the side signal lights will hold the on/off state for two patterns in order to blink at a slower rate (500ms) while the tail lights will change at a faster rate (250ms)
+		#define BRAKE_PATTERN_SIZE														10//off-med, on-fast, off-med, on-fast, off-slow, on-hold
+		//where:
+		//fast is x1 delay
+		//med is x2 delays
+		//slow is x3 delays
+		//and hold is indefinite
+		//And each delay is 250ms
+		
 	
 		//LED State, used for the discreteLEDControl()
 		#define LED_OFF													0//default

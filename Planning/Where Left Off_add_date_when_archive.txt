@@ -141,27 +141,26 @@ SATURDAY:
 							
 								
 						CHALLENGING:
-						setRoverMotion()
-					[LEFT OFF HERE, put in the led array patterns]
-						
-						
-							For right turns, left turns, and braking:
-								The code should save the current tail light, then do a turn signal, then come back to the original tail light.
-								
-								
-					[NEED TO DO, continue with LED array patterns for rover motion]
-						runLedController()
+	
+						[NEED TO DO]runLedController()
 							Update: For hazards, it should save the current LED settings, then blink the hazards. Once done, it should put back the previous led settings.
-
-							
-						LONG:
+		
+						
+							[NEED TO DO]Finish:
+								//Fog Light Override (if applicable)
+								//Underglow Light Override (if applicable)
+								//IR Beacon Light Override (if applicable)
+								//Blue Beacon Light Override (if applicable)
+						
+					
+						[NEED TO DO]LONG:
 						discreteLEDControl()
 						runIRBeaconDirectionalControl()
 						setErrorType()
 						setDebugType()
 						
 						
-						QUICK:
+						[NEED TO DO]QUICK:
 						setFogLightControl()
 						setUnderglowLightControl()
 						setIRBeaconLightControl()
@@ -2124,3 +2123,10 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 				Other times I may error out with a message, like in the NAVI State Machine, but not go into an error state or hold with an infinite while loop. So this can be an issue as well, especially if you're not monitoring for error messages or if the rover still goes and does something dangerous.
 				i.e. 
 					_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkQueueSel"));//error, unknown Queue Selection
+					
+					
+					[DONE]setRoverMotion()
+					
+						[NOT NEEDED, the universal mode should still be saved. And once the Rover Motion has gone back to LED_MOTION_STANDARD, nothing will be done and the universal mode should now execute as it's not overridden] For right turns, left turns, and braking, the code should save the current tail light, then do a turn signal, then come back to the original tail light.
+								
+												
