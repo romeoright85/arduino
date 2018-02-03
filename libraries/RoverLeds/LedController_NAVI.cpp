@@ -23,6 +23,8 @@ LedController_NAVI::~LedController_NAVI()
 void LedController_NAVI::runLedController()
 {
 
+	//Note: Also see setUniversalLEDMode() and setRoverMotion(), where the LED states are initialized.
+
 //WRITE ME LATER-SEE LEFT OFF HERE
 	
 	switch(this->_currentUniversalLEDMode)
@@ -60,8 +62,8 @@ void LedController_NAVI::runLedController()
 						this->discreteLEDControl( this->_LED_NAMES_For_HazardMode[ i ], LED_ON );//turn off all the elements in the array
 					}//end for
 				}//end else
-				//increment pattern index counter
-				this->incrementPatternIndexCounter(BLINK_PATTERN_SIZE);
+				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
+				this->autoIncrementPatternIndexCounter(BLINK_PATTERN_SIZE);
 				
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
@@ -86,8 +88,8 @@ void LedController_NAVI::runLedController()
 					this->discreteLEDControl( this->_LED_NAMES_For_DemoMode[ this->_patternIndexCounter ], LED_ON );//the current element in the array
 				}//end else	
 					
-				//increment pattern index counter
-				this->incrementPatternIndexCounter(this->_arrayOfInterestSize);
+				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
+				this->autoIncrementPatternIndexCounter(this->_arrayOfInterestSize);
 					
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
@@ -115,8 +117,8 @@ void LedController_NAVI::runLedController()
 						this->discreteLEDControl( this->_LED_NAMES_For_ErrorMode[ i ], LED_ON );//turn off all the elements in the array
 					}//end for
 				}//end else
-				//increment pattern index counter
-				this->incrementPatternIndexCounter(BLINK_PATTERN_SIZE);
+				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
+				this->autoIncrementPatternIndexCounter(BLINK_PATTERN_SIZE);
 				
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
@@ -136,13 +138,55 @@ void LedController_NAVI::runLedController()
 	
 	
 //LEFT OFF HERE	
-//WRITE ME LATER	
-	if()//For these modes, allow Rover Motion to override the LED controls
+//WRITE ME LATER
+	//Rover Motion Overrides (if applicable)
+	if( this->_currentUniversalLEDMode == LED_STANDARD_DAY_TIME_MODE || this->_currentUniversalLEDMode == LED_NIGHT_TIME_MODE )//For these modes, allow Rover Motion to override the LED controls (i.e. turn signal lights, brake lights, etc. on the headlight, side signal, and tail lights)
 	{
+			
 		switch(this->_currentRoverMotion)
 		{
+			case LED_MOTION_STANDARD:
+				//Do nothing that is recurring.
+				break;
+			case LED_MOTION_TURN_LEFT:
+			
+					//use these arrays for left turns??
+					//this->_LED_NAMES_For_MotionTurnLeft_Headlight[]
+					//this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights[]
+					//this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[]
+					//this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[]
+					//this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[]
+					
+			
+					break;
+			case LED_MOTION_TURN_RIGHT:
+			
+					//use these arrays for right turns??
+					//this->_LED_NAMES_For_MotionTurnRight_Headlight[]
+					//this->_LED_NAMES_For_MotionTurnRight_SideSignalLights[]
+					//this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[]
+					//this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2[]
+					//this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[]
+					
+					break;
+			case LED_MOTION_BRAKE:
+					//use these arrays for braking??
+					//this->_LED_NAMES_For_MotionBrake[]
+					break;
+			case LED_MOTION_REVERSE:
+					//Turn on the reverse lights when reversing
+					this->discreteLEDControl(LED_NAME_RIGHT_WHITE_TAILLIGHT, LED_ON);
+					this->discreteLEDControl(LED_NAME_LEFT_WHITE_TAILLIGHT, LED_ON);
+					break;
+			default:
+				//do nothing since it's an invalid state
+				break;
 		}//end switch
 	}//end if
+	
+	
+	
+	
 	if()//For these modes, allow current Fog Light State to override the LED controls
 	{
 		switch(this->)
@@ -186,8 +230,8 @@ void LedController_NAVI::runLedController()
 	
 	
 	
-//WRITE A FUNCTION TO EXECUTE THE STATE OF ALL THE LEDS ONCE THEIR STATES HAVE BEEN DETERMINED (based on priority and overriding)
-//TEMPLATE//executeFinalLEDStates();//controls the LEDs based on the finalized settings (after overriding priorities)
+	//Run the finalized LED States (this function is also ran by setUniversalLEDMode() to control the LEDs initially)
+	executeFinalLEDStates();//controls the LEDs based on the finalized settings (after overriding priorities)
 
 }//end runLedController()
 
@@ -229,32 +273,48 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 	this->resetPatternIndexCounter();
 	//set the desired mode as the current mode
 	this->_currentUniversalLEDMode = desiredMode;
-	//turn off all LEDs for the initial state
-	this->allOff();
+	//initialize/reset/turn off all LEDs before setting the Universal LED Mode
+	for(byte i = 0; i < sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]) ; i++)
+	{
+		this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_OFF );//turn off all the elements in the array
+	}//end for
+
 	
 	//assign the _arrayOfInterestSize
 	switch(desiredMode)
 	{
 		case LED_ALL_OFF_MODE:
-			//Nothing else needs to be done. By default all LEDs are initially turned off when this function is called.
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
 			break;
 		case LED_ALL_ON_MODE:
+			//Set the overriding initialization LED states
 			//Turn on all LEDs
-			this->allOn();
+			for(byte i = 0; i < sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]) ; i++)
+			{
+				this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_ON );//turn on all the elements in the array
+			}//end for
 			break;
 		case LED_STANDARD_DAY_TIME_MODE:
-			//Do nothing else that is recurring. All LEDs are already turned off for the initial state.
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.			
 			break;
-		case LED_NIGHT_TIME_MODE:
+		case LED_NIGHT_TIME_MODE:		
+			//Set the overriding initialization LED states
 			//Turn on the High Beams of the Headlights
-			this->_leftHeadLightAssy->turnOn(HIGHBEAM_HEADLIGHT);
-			this->_rightHeadLightAssy->turnOn(HIGHBEAM_HEADLIGHT);			
+			this->discreteLEDControl( LED_NAME_LEFT_HIGHBEAM_HEADLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT, LED_ON );
 			//Turn on LEDs 2, 4, 5 on the left tail lights
-			this->_leftTailLightAssy = new TailLightAssembly( LEFT_RED_TAILLIGHT_2_PIN,  LEFT_RED_TAILLIGHT_4_PIN, LEFT_RED_TAILLIGHT_5_PIN);
+			this->discreteLEDControl( LED_NAME_LEFT_RED2_TAILLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_LEFT_RED4_TAILLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_LEFT_RED5_TAILLIGHT, LED_ON );
 			//Turn on LEDs 2, 4, 5 on the right tail lights
-			this->_rightTailLightAssy = new TailLightAssembly( RIGHT_RED_TAILLIGHT_2_PIN,  RIGHT_RED_TAILLIGHT_4_PIN, RIGHT_RED_TAILLIGHT_5_PIN );			
+			this->discreteLEDControl( LED_NAME_RIGHT_RED2_TAILLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_RIGHT_RED4_TAILLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_RIGHT_RED5_TAILLIGHT, LED_ON );			
+			
 			break;
-		case LED_HAZARD_MODE:
+		case LED_HAZARD_MODE:		
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
+			
 			this->_arrayOfInterestSize = sizeof(this->_LED_NAMES_For_HazardMode) / sizeof(this->_LED_NAMES_For_HazardMode[0]);
 			
 			this->_counterPtr->setStopValue(DELAY_100_PERIODS);//set the counter stop value for this mode since it uses a specific delay.
@@ -262,6 +322,8 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			
 			break;
 		case LED_DEMO_MODE:
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
+			
 			this->_arrayOfInterestSize = sizeof(this->_LED_NAMES_For_DemoMode) / sizeof(this->_LED_NAMES_For_DemoMode[0]);
 			
 			this->_counterPtr->setStopValue(DELAY_100_PERIODS);//set the counter stop value for this mode since it uses a specific delay.
@@ -269,6 +331,8 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 
 			break;
 		case LED_ERROR_MODE:
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
+			
 			this->_arrayOfInterestSize = sizeof(this->_LED_NAMES_For_ErrorMode) / sizeof(this->_LED_NAMES_For_ErrorMode[0]);
 			
 			this->_counterPtr->setStopValue(DELAY_100_PERIODS);//set the counter stop value for this mode since it uses a specific delay.
@@ -276,15 +340,20 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			
 			break;		
 		case LED_STEALTH_MODE:
-			//Nothing else needs to be done. By default all LEDs are initially turned off when this function is called.
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
 			break;
 		case LED_DEBUG_MODE:
-			//Nothing else needs to be done. By default all LEDs are initially turned off when this function is called.
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
 			break;			
 		default:
-			//Nothing else needs to be done. By default all LEDs are initially turned off when this function is called.
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
 			break;
 	}//end switch
+	
+	
+	//Run the finalized LED States to set the initial LED controls (this function is also ran by runLedController() to control the LEDs recurringly)
+	//Note: This is needed to be done here because for non-recurring LED states, nothing will be set again in runLedController() because runLedController() assumes it will be set here by setUniversalLEDMode()
+	executeFinalLEDStates();//controls the LEDs based on the finalized settings (after overriding priorities)
 	
 }
 void LedController_NAVI::setFogLightControl(byte fogLightsState)
@@ -307,24 +376,117 @@ void LedController_NAVI::setBeaconDirection(byte beaconLedDirection)
 {
 //WRITE ME LATER
 }
-void LedController_NAVI::setRoverMotion(byte roverMotion)
+void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 {
+	
+	/*
+	Note:
+		It is implied that setUniversalLEDMode() is called first and sets the modes. It also initializes the LED states and executes the LEDs controls.
+		Then, if needed, setRoverMotion() is called and sets the motion. (which will only be active if the mode that was set allowed it.
+		Then runLedController() is ran recurringly, and determines (based on mode) if the rover motion's LED states will override the current LED state.		
+		
+	Note:
+		Always make sure runLedController() is called after setRoverMotion() is called so:
+		1) The LED state can be overridden by runLedController() if there is a higher priority
+			i.e.
+			setRoverMotion() will clear all the tail lights states for LED_MOTION_STANDARD. 
+			
+			And when runLedController() is ran, it will set the tail light states if needed for LED_NIGHT_TIME_MODE, LED_HAZARD_MODE, LED_DEMO_MODE, LED_ERROR_MODE, etc.
+			
+			Then at //Rover Motion Overrides (if applicable)
+				For LED_MOTION_STANDARD, nothing is needed to be done. So it will keep it's state it it wasn't overrided by the other modes.
+			
+		2) That runLedController() can call executeFinalLEDStates() which controls the LEDs based on the finalized states
+	*/
+	
+	
+	
+	//Reset the states for certain LED types before changing states. In the switch case for the states, the LEDs state will be set if needed
+	//Note these states aren't executed at the end by executeFinalLEDStates(), so the LEDs won't flicker if the states are changing/overridden.
+	//Head lights (signal)
+	this->discreteLEDControl(LED_NAME_RIGHT_SIGNAL_HEADLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_SIGNAL_HEADLIGHT, LED_OFF);
+	//Side signal lights
+	this->discreteLEDControl(LED_NAME_RIGHT_SIGNAL_HEADLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_SIDE_SIGNAL_LIGHT, LED_OFF);
+	//Tail lights (right)
+	this->discreteLEDControl(LED_NAME_RIGHT_RED1_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_RIGHT_RED2_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_RIGHT_RED3_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_RIGHT_RED4_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_RIGHT_RED5_TAILLIGHT, LED_OFF);
+	//Tail lights (left)
+	this->discreteLEDControl(LED_NAME_LEFT_RED1_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_RED2_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_RED3_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_RED4_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_RED5_TAILLIGHT, LED_OFF);
+	//Reverse Lights
+	this->discreteLEDControl(LED_NAME_RIGHT_WHITE_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_WHITE_TAILLIGHT, LED_OFF);
+		
+		
+		
 //WRITE ME LATER
-
-
-
 
 //NEED TO THINK ABOUT LOGIC FOR:
 //LEFT TURN (which has a pattern across multiple arrays),
 //RIGHT TURN(which has a pattern across multiple arrays),
 //AND BRAKING (which has different delay values)
 
-
-
-
-
-
-
+		switch(this->_currentRoverMotion)
+		{
+			case LED_MOTION_STANDARD:
+				//Initialize the LEDs to this motion's state
+				//It already turned off all the motion LEDs. Nothing else is needed.
+				
+				//Assign desired motion to current rover motion since it's one of the valid cases
+				this->_currentRoverMotion = desiredRoverMotion;			
+				break;
+			case LED_MOTION_TURN_LEFT:
+				//Initialize the LEDs to this motion's state
+				//It already turned off all the motion LEDs. Nothing else is needed.
+				
+				//Assign desired motion to current rover motion since it's one of the valid cases
+				this->_currentRoverMotion = desiredRoverMotion;
+//WRITE ME LATER - add pattern array control here
+				break;
+			case LED_MOTION_TURN_RIGHT:
+				//Initialize the LEDs to this motion's state
+				//It already turned off all the motion LEDs. Nothing else is needed.
+				
+				//Assign desired motion to current rover motion since it's one of the valid cases
+				this->_currentRoverMotion = desiredRoverMotion;
+				
+//WRITE ME LATER - add pattern array control here					
+				break;
+			case LED_MOTION_BRAKE:
+				//Initialize the LEDs to this motion's state
+				//It already turned off all the motion LEDs. Nothing else is needed.
+				
+				//Assign desired motion to current rover motion since it's one of the valid cases
+				this->_currentRoverMotion = desiredRoverMotion;				
+//WRITE ME LATER - add pattern array control here
+			
+				break;
+			case LED_MOTION_REVERSE:
+				//Initialize the LEDs to this motion's state
+				this->discreteLEDControl(LED_NAME_RIGHT_WHITE_TAILLIGHT, LED_ON);
+				this->discreteLEDControl(LED_NAME_LEFT_WHITE_TAILLIGHT, LED_ON);
+				
+				//Assign desired motion to current rover motion since it's one of the valid cases
+				this->_currentRoverMotion = desiredRoverMotion;
+				
+				break;
+			default:
+				//Initialize the LEDs to this motion's state
+				//It already turned off all the motion LEDs. Nothing else is needed.
+				
+				this->_currentRoverMotion = LED_MOTION_STANDARD;//set the current rover motion to the default LED_MOTION_STANDARD
+				
+				//Do nothing else since it's an invalid state				
+				break;
+		}//end switch
 
 }
 void LedController_NAVI::setErrorType(byte errorType)
@@ -337,13 +499,12 @@ void LedController_NAVI::setDebugType(byte debugType)
 }
 void LedController_NAVI::roverDiscreteLEDControl(byte ledName, byte desiredLedState)
 {
-
 	//Check to see if the mode is in LED_ERROR_MODE, else don't do anything.
 	if(this->_currentUniversalLEDMode ==LED_ERROR_MODE)
 	{
 			this->discreteLEDControl(ledName, desiredLedState);
 	}//end if
-	//else don't do anything
+	//else don't do anything	
 }
 
 void LedController_NAVI::userDiscreteLEDControl(byte ledName, byte desiredLedState)
@@ -385,7 +546,7 @@ void LedController_NAVI::reset()
 }
 
 
-void LedController_NAVI::incrementPatternIndexCounter(byte rollOverValue)
+void LedController_NAVI::autoIncrementPatternIndexCounter(byte rollOverValue)
 {
 	//increment counter for the next iteration
 	this->_patternIndexCounter++;
@@ -419,116 +580,116 @@ void LedController_NAVI::discreteLEDControl(byte ledName, byte desiredLedState)
 			correspondingLEDFlagSet= this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_BACK_LEFT_IR_BEACON:
-			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_BACK_LEFT_IR_BEACON;
+			correspondingLEDFlagSet= this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_BACK_RIGHT_IR_BEACON:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_FRONT_RIGHT_IR_BEACON:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_BLUE_BEACON:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_BACK_BLUE_BEACON:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_BLUE_BEACON:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_FRONT_BLUE_BEACON:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_SIGNAL_HEADLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_FOG_HEADLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_HIGHBEAM_HEADLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_SIGNAL_HEADLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_FOG_HEADLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_RED1_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_RED2_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_RED3_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER	
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_RED4_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_RED5_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_WHITE_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_RED1_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_RED2_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_RED3_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_RED4_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_RED5_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_WHITE_TAILLIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_UNDERGLOW_LIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_RIGHT_SIDE_SIGNAL_LIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		case LED_NAME_LEFT_SIDE_SIGNAL_LIGHT:
 			//correspondingLEDFlagOfInterest= ???;//WRITE ME LATER
-			//correspondingLEDFlagSet= ???;//WRITE ME LATER
+			//correspondingLEDFlagSet= this->;
 			break;
 		default:
 			//do nothing

@@ -10,9 +10,9 @@ Rover_StateMachine_NAVI (get the rover rolling)
 	Get Framework up
 	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 take day off to relax), 1/6 (had to fix autodata algorithm), 1/7 (had to fix autodata algorithm)/finish framework
 	Write States and Modes (on average 1 day per mode, except default)
-	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27 (spent some time planning my bday), 1/28 (chili cookoff), 2/3, 2/4, 2/9, 2/10, 2/11, 2/17, +2 more day since behind
+	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27 (spent some time planning my bday), 1/28 (stayed up late coding late night), 2/3 (late day since friday had happy hour and made time to hang with my bear), 2/4 (start taxes, John's party), 2/9, 2/10, 2/11, 2/17, 2/18, 2/23, 2/24, 2/25
 	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE)
-	2/18, 2/23, 2/24, 2/25, 3/3
+	3/3, 3/4, 3/9, 3/10, 3/11
 
 
 
@@ -21,13 +21,13 @@ Rover_StateMachine_NAVI (get the rover rolling)
 [14 days]
 Rover_StateMachine_AUXI (then get the leds and sensors working)
 	Get Framework up
-	3/4, 3/9
+	3/17, 3/18
 	Write States and Modes (on average 1 day per mode, except default)
-	3/10, 3/11, 3/17, 3/18, 3/23, 3/24, 3/25, 3/31
+	3/23, 3/24, 3/25, 3/31, 4/1, 4/6, 4/7, 4/8
 	ALSO NEED TO DO TAXES, so may have to delay some more.
 	
 	Develop Axillary Code (i.e. SYSTEM_HEALTH)
-	4/1, 4/6, 4/7, 4/8, 4/14, 4/15, 4/20, 4/21
+	4/14 (birthday party), 4/15, 4/20, 4/21, 4/22, 4/28, 4/29, 5/4
 	
 	[NEED TO DO FOR AUXI]Update and add to RoverMessagePackager for IMU data
 	Have a way for IMU data to get packaged and pass from AUXI to CMNC.
@@ -35,9 +35,9 @@ Rover_StateMachine_AUXI (then get the leds and sensors working)
 
 
 
-[6 days]*2 days behind*
+[6 days]
 Test code
-	4/22, 4/28, 4/29, ???, ???
+	5/5, 5/6, 5/12, 5/13, 5/ 18, 5/19, 5/20?
 	Update the timeouts (especially the sync ones) as needed to get the rover arduinos to all sync up.
 Do a quick screen record with audio walking through roughly how to you would read one of the codes (i.e. MAIN) for documentation.
 Go through and clean up the "//PLACEHOLDER"s in Rover_StateMachine_COMM
@@ -138,6 +138,22 @@ SATURDAY:
 							HeartLed.cpp
 							LedController_NAVI.cpp
 							LedController_NAVI_Tester.ino
+							
+								
+						CHALLENGING:
+						setRoverMotion()
+					[LEFT OFF HERE, put in the led array patterns]
+						
+						
+							For right turns, left turns, and braking:
+								The code should save the current tail light, then do a turn signal, then come back to the original tail light.
+								
+								
+					[NEED TO DO, continue with LED array patterns for rover motion]
+						runLedController()
+							Update: For hazards, it should save the current LED settings, then blink the hazards. Once done, it should put back the previous led settings.
+
+							
 						LONG:
 						discreteLEDControl()
 						runIRBeaconDirectionalControl()
@@ -153,11 +169,7 @@ SATURDAY:
 						setBeaconDirection()
 						
 						
-						
-						CHALLENGING:
-						runLedController()
-						setRoverMotion()
-						
+					
 
 					Then finish writing LedController_NAVI_Tester.ino
 					
