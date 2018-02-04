@@ -54,8 +54,6 @@ public:
 	void setBeaconDirection(byte);//(which Beacon LED Direction) used in IR/blue beacon directional mode
 	void setRoverMotion(byte);//(which Rover Motion) used for LED motions
 	void setErrorType(byte);//(which LED Error Types) used for Error Mode
-	void setDebugType(byte);//(which LED Debug Types) used for Debug Mode
-	void roverDiscreteLEDControl(byte, byte);//(which led name, desired led state). This function should only be called by the rover when the rover wants to control the LEDs. Ultimately this function just calls the private function discreteLEDControl() but after using some logic to ensure it's in the right mode (i.e. LED_ERROR_MODE)
 	void userDiscreteLEDControl(byte, byte);//(which led name, desired led state). This function should only be called when there is a received command (i.e. from CMNC) to control the LEDs. Ultimately this function just calls the private function discreteLEDControl() but after using some logic to ensure it's in the right mode (i.e. LED_DEBUG_MODE)	
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
@@ -181,6 +179,13 @@ private:
 		LED_NAME_LEFT_BLUE_BEACON		
 	};
 	
+	
+	
+	
+//WRITE ME LATER??
+//add different arrays for different error types?	
+	
+	/* OLD CODE, DELETE ME ONCE GOT ERROR LEDS WORKKING use _ALL_LED_NAMES
 	//Error Mode
 	byte _LED_NAMES_For_ErrorMode[4] = {
 		LED_NAME_FRONT_BLUE_BEACON,
@@ -191,7 +196,7 @@ private:
 	//Note: For all errors, just blink for now.
 	//Pattern: Turn on all of the LEDs in the array, wait for the duration of the desired delay, then turn them all off, wait for the duration of the desired delay, and repeat (off, on)
 	//Use a 500ms delay for the pattern
-	
+	*/
 	
 	//Motion Left Turn
 	byte _LED_NAMES_For_MotionTurnLeft_Headlight[1] = {
@@ -315,11 +320,13 @@ private:
 	
 	byte _currentUniversalLEDMode = LED_ALL_OFF_MODE;//holds the current universal LED Mode
 	byte _currentRoverMotion = LED_MOTION_STANDARD;//holds the current Rover Motion
+	byte _currentErrorState = LED_ERROR_TYPE_NONE;//holds the current error state
 	byte _currentFogLightState = LED_FOG_OFF;//holds the current fog light state
 	byte _currentUnderglowState = LED_UNDERGLOW_OFF;//holds the current underglow state	
 	byte _currentIRBeaconState = LED_IR_BEACON_ALL_OFF;//holds the current IR Beacon State
 	byte _currentBlueBeaconState = LED_BLUE_BEACON_ALL_OFF;//holds the current Blue Beacon State
 	byte _currentBeaconLEDDirection = LED_DIRECTION_NONE;//holds the current Beacon LED Direction (shared between IR Beacons and Blue Beacons)
+	byte _arrayOfInterest * = NULL;//shared variable, used to point to the current array of interest
 	byte _arrayOfInterestSize = 0;//shared variable, used to hold the current array of interest's size
 	//Note: Keep separate pattern index counters just in case one set of LEDs holds a pattern (like with braking) while others still should be incrementing
 	byte _universalLEDModePatternIndexCounter = 0;//used to hold the pattern index counter for the universal LED modes

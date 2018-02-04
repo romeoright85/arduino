@@ -349,6 +349,7 @@
 		#define LED_ERROR_TYPE_SECURE_LINK									5
 		#define LED_ERROR_TYPE_SLEEPING											6
 		#define LED_ERROR_TYPE_INVALID_STATE_OR_MODE				7
+		#define LED_ERROR_TYPE_UNDEFINED										8
 //ADD MORE LATER		
 		//LED Debug Types
 		#define LED_DEBUG_TYPE_NONE

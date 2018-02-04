@@ -143,15 +143,21 @@ SATURDAY:
 					discreteLEDControl()
 					runIRBeaconDirectionalControl()
 					setErrorType()
-					setDebugType()
 					
-	
+					[NEED TO DO] -For LED_ERROR_MODE in runLedController(), set which LEDs to turn on and/or blink depending on which error type
+					[NEED TO DO]  -also update the code in setUniversalLEDMode() for LED_ERROR_MODE as well
+						[NEED TO DO] Determine what combinations of LEDs should be turned on with which error.
+						
+						
 					[NEED TO DO] Then finish writing LedController_NAVI_Tester.ino
 					
 					[NEED TO DO] test this code as well
 					
 					[NEED TO DO] then incorporate the runLedController class into Rover_StateMachine_NAVI.ino code
-					
+						-allow the user to send commands to turn on and off certain LEDs
+							userDiscreteLEDControl()
+						-create a new command to turn on/off LEDs
+							-take the LED type in the command message so you don't need a bunch of separate commands
 					
 					
 					

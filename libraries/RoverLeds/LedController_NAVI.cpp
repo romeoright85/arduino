@@ -104,8 +104,32 @@ void LedController_NAVI::runLedController()
 			{
 				
 				this->_counterPtr->counterReset();//reset the counter
-				
+
+//LEFT OFF HERE				
+//WRITE ME LATER				
+//CHECK CODE BELOW LATER, it should be blinking LEDs in the array the _arrayOfInterest pointer is assigned to.
+				if( this->_universalLEDModePatternIndexCounter == 0)
+				{
+					for(byte i = 0; i < this->_arrayOfInterestSize; i++)
+					{
+						this->discreteLEDControl( this->_arrayOfInterest[ i ], LED_OFF );//turn off all the elements in the array
+					}//end for
+				}//end if
+				else
+				{
+					for(byte i = 0; i < this->_arrayOfInterestSize; i++)
+					{
+						this->discreteLEDControl( this->_arrayOfInterest[ i ], LED_ON );//turn off all the elements in the array
+					}//end for
+				}//end else
+				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
+				this->autoIncrementIndexCounter(this->_universalLEDModePatternIndexCounter, BLINK_PATTERN_SIZE);
 					
+					
+//depending on which error type, this->_currentErrorState, select which LEDs to turn on and/or blink
+//maybe have different arrays of LEDs for errors?
+
+				/*	 OLD CODE, REPLACE WITH Discrete LED lights
 				if( this->_universalLEDModePatternIndexCounter == 0)
 				{
 					for(byte i = 0; i < this->_arrayOfInterestSize; i++)
@@ -122,6 +146,8 @@ void LedController_NAVI::runLedController()
 				}//end else
 				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
 				this->autoIncrementIndexCounter(this->_universalLEDModePatternIndexCounter, BLINK_PATTERN_SIZE);
+				*/
+					
 				
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
@@ -816,7 +842,7 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 	}//end for
 
 	
-	//assign the _arrayOfInterestSize
+	//Assign the _arrayOfInterestSize
 	switch(desiredMode)
 	{
 		case LED_ALL_OFF_MODE:
@@ -884,6 +910,57 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			
 			break;
 		case LED_ERROR_MODE:
+		
+			//Assign desired mode to the current universal LED mode since it's one of the valid cases
+			this->_currentUniversalLEDMode = desiredMode;	
+			
+			switch(this->_currentErrorState)
+			{
+				case LED_ERROR_TYPE_NONE:
+//WRITE ME LATER
+					break;
+				case LED_ERROR_TYPE_GENERIC_HEALTH:
+	//WRITE ME LATER
+	//assign _arrayOfInterest to an array of LEDs that should blink
+	//assign _arrayOfInterestSize to that array's size
+	//Initialize any other LEDs that should be on solid
+	//repeat for all cases below
+					//Set Custom Delay (if required)
+					//This mode uses a 500ms delay. And that's the default delay for setUniversalLEDMode().	
+					break;
+				case LED_ERROR_TYPE_GENERIC_SYSTEM:
+	//WRITE ME LATER
+					break;
+				case LED_ERROR_TYPE_SW_RESET:
+	//WRITE ME LATER
+					break;
+				case LED_ERROR_TYPE_SYNC:
+	//WRITE ME LATER
+					break;
+				case LED_ERROR_TYPE_SECURE_LINK:
+	//WRITE ME LATER
+					break;
+				case LED_ERROR_TYPE_SLEEPING:
+	//WRITE ME LATER
+					break;
+				case LED_ERROR_TYPE_INVALID_STATE_OR_MODE:
+	//WRITE ME LATER
+					break;
+				case LED_ERROR_TYPE_UNDEFINED:
+	//WRITE ME LATER
+					break;			
+				default:
+					//Do nothing else since it's an invalid state		
+					break;				
+			}//end switch
+
+//depending on which error type, this->_currentErrorState, select which LEDs to turn on and/or blink
+//maybe have different arrays of LEDs for errors?
+
+		
+//WRITE ME LATER
+//LEFT OFF HERE		
+/*OLD CODE, may need to rework
 			//Assign desired mode to the current universal LED mode since it's one of the valid cases
 			this->_currentUniversalLEDMode = desiredMode;	
 			
@@ -893,6 +970,8 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			
 			//Set Custom Delay (if required)
 			//This mode uses a 500ms delay. And that's the default delay for setUniversalLEDMode().
+*/
+			
 			
 			break;		
 		case LED_STEALTH_MODE:
@@ -906,6 +985,8 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			this->_currentUniversalLEDMode = desiredMode;	
 
 			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
+			
+			//In LED_DEBUG_MODE, userDiscreteLEDControl() is allowed to run where the user can control the LEDs.
 			break;			
 		default:
 			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
@@ -924,7 +1005,7 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 }
 void LedController_NAVI::setFogLightMode(byte fogLightsState)
 {
-	//assign the fog light state if it's one of the valid modes
+	//Assign the fog light state if it's one of the valid modes
 	switch(fogLightsState)
 	{
 		case LED_FOG_OFF:
@@ -943,7 +1024,7 @@ void LedController_NAVI::setFogLightMode(byte fogLightsState)
 }
 void LedController_NAVI::setUnderglowLightMode(byte underglowLightState)
 {
-	//assign the underglow light mode if it's one of the valid modes
+	//Assign the underglow light mode if it's one of the valid modes
 	switch(underglowLightState)
 	{
 		case LED_UNDERGLOW_OFF:
@@ -962,7 +1043,7 @@ void LedController_NAVI::setUnderglowLightMode(byte underglowLightState)
 }
 void LedController_NAVI::setIRBeaconLightMode(byte irBeaconLightState)
 {
-	//assign the IR Beacon light mode if it's one of the valid modes
+	//Assign the IR Beacon light mode if it's one of the valid modes
 	switch(irBeaconLightState)
 	{
 		case LED_IR_BEACON_ALL_OFF:
@@ -984,7 +1065,7 @@ void LedController_NAVI::setIRBeaconLightMode(byte irBeaconLightState)
 }
 void LedController_NAVI::setBlueBeaconLightMode(byte blueBeaconLightState)
 {
-	//assign the Blue Beacon light mode if it's one of the valid modes
+	//Assign the Blue Beacon light mode if it's one of the valid modes
 	switch(blueBeaconLightState)
 	{
 		case LED_BLUE_BEACON_ALL_OFF:
@@ -1006,7 +1087,7 @@ void LedController_NAVI::setBlueBeaconLightMode(byte blueBeaconLightState)
 }
 void LedController_NAVI::setBeaconDirection(byte beaconLedDirection)
 {
-	//assign the Beacon Direction if it's one of the valid modes
+	//Assign the Beacon Direction if it's one of the valid modes
 	switch(beaconLedDirection)
 	{
 		case LED_DIRECTION_NONE:
@@ -1168,30 +1249,41 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 }
 void LedController_NAVI::setErrorType(byte errorType)
 {
-	
-		#define LED_ERROR_TYPE_NONE												0
-		#define LED_ERROR_TYPE_GENERIC_HEALTH								1
-		#define LED_ERROR_TYPE_GENERIC_SYSTEM								2
-		#define LED_ERROR_TYPE_SW_RESET										3
-		#define LED_ERROR_TYPE_SYNC												4
-		#define LED_ERROR_TYPE_SECURE_LINK									5
-		#define LED_ERROR_TYPE_SLEEPING											6
-		#define LED_ERROR_TYPE_INVALID_STATE_OR_MODE				7
+		//Assign the Error Type if it's one of the valid modes
+		switch(errorType)
+		{
+			case LED_ERROR_TYPE_NONE:
+				this->_currentErrorState = errorType;
+				break;
+			case LED_ERROR_TYPE_GENERIC_HEALTH:
+				this->_currentErrorState = errorType;
+				break;
+			case LED_ERROR_TYPE_GENERIC_SYSTEM:
+				this->_currentErrorState = errorType;			
+				break;
+			case LED_ERROR_TYPE_SW_RESET:
+				this->_currentErrorState = errorType;			
+				break;
+			case LED_ERROR_TYPE_SYNC:
+				this->_currentErrorState = errorType;			
+				break;
+			case LED_ERROR_TYPE_SECURE_LINK:
+				this->_currentErrorState = errorType;			
+				break;
+			case LED_ERROR_TYPE_SLEEPING:
+				this->_currentErrorState = errorType;			
+				break;
+			case LED_ERROR_TYPE_INVALID_STATE_OR_MODE:
+				this->_currentErrorState = errorType;			
+				break;
+			case LED_ERROR_TYPE_UNDEFINED:
+				this->_currentErrorState = errorType;			
+				break;			
+			default:
+				//Do nothing else since it's an invalid state		
+				break;				
+		}//end switch
 }
-void LedController_NAVI::setDebugType(byte debugType)
-{
-//WRITE ME LATER
-}
-void LedController_NAVI::roverDiscreteLEDControl(byte ledName, byte desiredLedState)
-{
-	//Check to see if the mode is in LED_ERROR_MODE, else don't do anything.
-	if(this->_currentUniversalLEDMode ==LED_ERROR_MODE)
-	{
-			this->discreteLEDControl(ledName, desiredLedState);
-	}//end if
-	//else don't do anything	
-}
-
 void LedController_NAVI::userDiscreteLEDControl(byte ledName, byte desiredLedState)
 {
 
@@ -1208,11 +1300,13 @@ void LedController_NAVI::reset()
 	
 	this->_currentUniversalLEDMode = LED_ALL_OFF_MODE;
 	this->_currentRoverMotion = LED_MOTION_STANDARD;
+	this->_currentErrorState = LED_ERROR_TYPE_NONE;
 	this->_currentFogLightState = LED_FOG_OFF;
 	this->_currentUnderglowState = LED_UNDERGLOW_OFF;
 	this->_currentIRBeaconState = LED_IR_BEACON_ALL_OFF;
 	this->_currentBlueBeaconState = LED_BLUE_BEACON_ALL_OFF;
 	this->_currentBeaconLEDDirection = LED_DIRECTION_NONE;
+	this->_arrayOfInterest = NULL;
 	this->_arrayOfInterestSize = 0;
 	this->_universalLEDModePatternIndexCounter = 0;
 	this->_roverMotionPatternIndexCounter = 0;
