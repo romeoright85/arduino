@@ -138,44 +138,23 @@ SATURDAY:
 							HeartLed.cpp
 							LedController_NAVI.cpp
 							LedController_NAVI_Tester.ino
-							
-								
-						CHALLENGING:
+									
+					[NEED TO DO]LONG:
+					discreteLEDControl()
+					runIRBeaconDirectionalControl()
+					setErrorType()
+					setDebugType()
+					
 	
-						[NEED TO DO]runLedController()
-							Update: For hazards, it should save the current LED settings, then blink the hazards. Once done, it should put back the previous led settings.
-		
-						
-							[NEED TO DO]Finish:
-								//Fog Light Override (if applicable)
-								//Underglow Light Override (if applicable)
-								//IR Beacon Light Override (if applicable)
-								//Blue Beacon Light Override (if applicable)
-						
+					[NEED TO DO] Then finish writing LedController_NAVI_Tester.ino
 					
-						[NEED TO DO]LONG:
-						discreteLEDControl()
-						runIRBeaconDirectionalControl()
-						setErrorType()
-						setDebugType()
-						
-						
-						[NEED TO DO]QUICK:
-						setFogLightControl()
-						setUnderglowLightControl()
-						setIRBeaconLightControl()
-						setBlueBeaconLightControl()
-						setBeaconDirection()
-						
-						
+					[NEED TO DO] test this code as well
 					
-
-					Then finish writing LedController_NAVI_Tester.ino
+					[NEED TO DO] then incorporate the runLedController class into Rover_StateMachine_NAVI.ino code
 					
 					
-					test this code as well
 					
-					then incorporate the runLedController class into Rover_StateMachine_NAVI.ino code
+					
 					
 					
 					TIPS:
@@ -2130,3 +2109,15 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 						[NOT NEEDED, the universal mode should still be saved. And once the Rover Motion has gone back to LED_MOTION_STANDARD, nothing will be done and the universal mode should now execute as it's not overridden] For right turns, left turns, and braking, the code should save the current tail light, then do a turn signal, then come back to the original tail light.
 								
 												
+					
+	
+						[DONE]runLedController()
+							Update: For hazards, it should save the current LED settings, then blink the hazards. Once done, it should put back the previous led settings.
+
+						[DONE] setFogLightMode()
+						[DONE] setUnderglowLightMode()
+						[DONE] setIRBeaconLightMode()
+						[DONE] setBlueBeaconLightMode()
+						[DONE] setBeaconDirection()
+						
+																		

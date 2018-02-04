@@ -287,31 +287,36 @@
 		#define LED_DEMO_MODE										5//The Rover will turn on one led at a time and cycle through all of them on the rover
 		#define LED_ERROR_MODE										6//To indicate that the Rover is in error, all the blue beacons will all blink on and off. All other lights are off.
 		#define LED_STEALTH_MODE									7//This mode turns off all the LEDs and make sure they stay off.
-		#define LED_DEBUG_MODE										8//Allow any temporary debugging code to control the LEDs discretely
+		#define LED_DEBUG_MODE										8//Allow any temporary debugging code to control the LEDs discretely. All LEDs in this mode should only be controlled manually by userDiscreteLEDControl().
 		
 		//Fog Lights State
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
+		
 		#define LED_FOG_OFF											0//default, turns off fog lights
 		#define LED_FOG_ON												1//turns on fog lights
+		#define LED_FOG_NEUTRAL						2//it will leave the current Fog as is
 		
 		//Underglow Light State
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
-		#define LED_UNDERGLOW_OFF								0
+		
+		#define LED_UNDERGLOW_OFF								0//default
 		#define LED_UNDERGLOW_ON									1
+		#define LED_UNDERGLOW_NEUTRAL						2//it will leave the current Underglow as is
 		
 		//IR Beacon State
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
-		#define LED_IR_BEACON_ALL_NEUTRAL						0//default, it will leave the current LED state IR Beacons as is
-		#define LED_IR_BEACON_ALL_OFF							1
-		#define LED_IR_BEACON_ALL_ON								2
-		#define LED_IR_BEACON_DIRECTIONAL_MODE			3//turns on 1 or 2 LEDs based on the desired beacon led direction that is set
+		
+		#define LED_IR_BEACON_ALL_OFF							0//default
+		#define LED_IR_BEACON_ALL_ON								1
+		#define LED_IR_BEACON_DIRECTIONAL_MODE			2//turns on 1 or 2 LEDs based on the desired beacon led direction that is set
+		#define LED_IR_BEACON_ALL_NEUTRAL						3//it will leave the current LED state IR Beacons as is
 		
 		//Blue Beacon State
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
-		#define LED_BLUE_BEACON_ALL_NEUTRAL					0//default, it will leave the current LED state Blue Beacons
-		#define LED_BLUE_BEACON_ALL_OFF						1
-		#define LED_BLUE_BEACON_ALL_ON							2		
-		#define LED_BLUE_BEACON_DIRECTIONAL_MODE		3
+		#define LED_BLUE_BEACON_ALL_OFF						0//default
+		#define LED_BLUE_BEACON_ALL_ON							1		
+		#define LED_BLUE_BEACON_DIRECTIONAL_MODE		2
+		#define LED_BLUE_BEACON_ALL_NEUTRAL					3//it will leave the current LED state Blue Beacons
 		
 		//Beacon LED Directions
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)
@@ -336,7 +341,14 @@
 			//(Note: The option above will be overrided when in LED_HAZARD_MODE)
 		#define LED_MOTION_REVERSE								4//used when reversing		
 		//LED Error Types
-		#define LED_ERROR_TYPE_NONE
+		#define LED_ERROR_TYPE_NONE												0
+		#define LED_ERROR_TYPE_GENERIC_HEALTH								1
+		#define LED_ERROR_TYPE_GENERIC_SYSTEM								2
+		#define LED_ERROR_TYPE_SW_RESET										3
+		#define LED_ERROR_TYPE_SYNC												4
+		#define LED_ERROR_TYPE_SECURE_LINK									5
+		#define LED_ERROR_TYPE_SLEEPING											6
+		#define LED_ERROR_TYPE_INVALID_STATE_OR_MODE				7
 //ADD MORE LATER		
 		//LED Debug Types
 		#define LED_DEBUG_TYPE_NONE

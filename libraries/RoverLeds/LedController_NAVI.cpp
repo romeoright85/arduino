@@ -122,7 +122,6 @@ void LedController_NAVI::runLedController()
 				}//end else
 				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
 				this->autoIncrementIndexCounter(this->_universalLEDModePatternIndexCounter, BLINK_PATTERN_SIZE);
-
 				
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
@@ -661,60 +660,106 @@ void LedController_NAVI::runLedController()
 		}//end switch
 	}//end if
 	
-	
-	
-//LEFT OFF HERE	
-//WRITE ME LATER	
+
 	//Fog Light Override (if applicable)
-	if()//For these modes, allow current Fog Light State to override the LED controls
+	if( this->_currentUniversalLEDMode == LED_STANDARD_DAY_TIME_MODE || this->_currentUniversalLEDMode == LED_NIGHT_TIME_MODE || this->_currentUniversalLEDMode == LED_HAZARD_MODE )//For these modes, allow current Fog Light State to override the LED controls
 	{
-		switch(this->)
+		switch(this->_currentFogLightState)
 		{
-		}//end switch
-	}//end if
-	
-	//Underglow Light Override (if applicable)
-	if()//For these modes, allow current Underglow Light State to override the LED controls
-	{
-		switch(this->)
-		{
-		}//end switch
-	}//end if	
-	
-	//IR Beacon Light Override (if applicable)
-	if()//For these modes, allow current IR Beacon State to override the LED controls
-	{
-		switch(this->)
-		{
-			case:
+			case LED_FOG_OFF:
+					this->discreteLEDControl(LED_NAME_LEFT_FOG_HEADLIGHT, LED_OFF);
+					this->discreteLEDControl(LED_NAME_RIGHT_FOG_HEADLIGHT, LED_OFF);
 				break;
-				
-			case LED_IR_BEACON_DIRECTIONAL_MODE:
-				this->runIRBeaconDirectionalControl(this->_currentBeaconLEDDirection);
+			case LED_FOG_ON:
+					this->discreteLEDControl(LED_NAME_LEFT_FOG_HEADLIGHT, LED_ON);
+					this->discreteLEDControl(LED_NAME_RIGHT_FOG_HEADLIGHT, LED_ON);
 				break;
-			default:
-				break;							
-		}//end switch
-	}//end if	
-	
-	//Blue Beacon Light Override (if applicable)
-	if()//For these modes, allow current Blue Beacon State to override the LED controls
-	{
-		switch(this->_currentBlueBeaconState)
-		{
-			case:
-				break;
-				
-			case LED_BLUE_BEACON_DIRECTIONAL_MODE:
-				this->runBlueBeaconDirectionalControl(this->_currentBeaconLEDDirection);
+			case LED_FOG_NEUTRAL:
+				//Do nothing recurring.
 				break;
 			default:
 				break;				
 		}//end switch
 	}//end if
 	
+	//Underglow Light Override (if applicable)
+	if( this->_currentUniversalLEDMode == LED_STANDARD_DAY_TIME_MODE || this->_currentUniversalLEDMode == LED_NIGHT_TIME_MODE || this->_currentUniversalLEDMode == LED_HAZARD_MODE )//For these modes, allow current Underglow Light State to override the LED controls
+	{
+		switch(this->_currentUnderglowState)
+		{
+			case LED_UNDERGLOW_OFF:
+				this->discreteLEDControl(LED_NAME_UNDERGLOW_LIGHT, LED_OFF);					
+				break;
+			case LED_UNDERGLOW_ON:
+				this->discreteLEDControl(LED_NAME_UNDERGLOW_LIGHT, LED_ON);					
+				break;
+			case LED_UNDERGLOW_NEUTRAL:
+				//Do nothing recurring.
+				break;
+			default:
+				//Do nothing recurring.
+				break;				
+		}//end switch
+	}//end if	
 	
+	//IR Beacon Light Override (if applicable)
+	if( this->_currentUniversalLEDMode == LED_STANDARD_DAY_TIME_MODE || this->_currentUniversalLEDMode == LED_NIGHT_TIME_MODE || this->_currentUniversalLEDMode == LED_HAZARD_MODE )//For these modes, allow current IR Beacon State to override the LED controls
+	{
+		switch(this->_currentUnderglowState)
+		{
+			case LED_IR_BEACON_ALL_OFF:
+				for(byte i = 0; i < sizeof(this->_LED_NAMES_For_IRBeaconLEDs) / sizeof(this->_LED_NAMES_For_IRBeaconLEDs[0]) ; i++)
+				{
+					this->discreteLEDControl( this->_LED_NAMES_For_IRBeaconLEDs[ i ], LED_OFF );//turn off all the elements in the array
+				}//end for				
+				break;
+			case LED_IR_BEACON_ALL_ON:
+				for(byte i = 0; i < sizeof(this->_LED_NAMES_For_IRBeaconLEDs) / sizeof(this->_LED_NAMES_For_IRBeaconLEDs[0]) ; i++)
+				{
+					this->discreteLEDControl( this->_LED_NAMES_For_IRBeaconLEDs[ i ], LED_ON );//turn on all the elements in the array
+				}//end for	
+				break;	
+			case LED_IR_BEACON_DIRECTIONAL_MODE:
+				this->runIRBeaconDirectionalControl(this->_currentBeaconLEDDirection);
+				break;
+			case LED_IR_BEACON_ALL_NEUTRAL:
+				//Do nothing recurring.
+				break;					
+			default:
+				//Do nothing recurring.
+				break;							
+		}//end switch
+	}//end if	
 	
+	//Blue Beacon Light Override (if applicable)
+	if( this->_currentUniversalLEDMode == LED_STANDARD_DAY_TIME_MODE || this->_currentUniversalLEDMode == LED_NIGHT_TIME_MODE || this->_currentUniversalLEDMode == LED_HAZARD_MODE )//For these modes, allow current Blue Beacon State to override the LED controls
+	{
+		switch(this->_currentBlueBeaconState)
+		{
+			case LED_BLUE_BEACON_ALL_OFF:
+				for(byte i = 0; i < sizeof(this->_LED_NAMES_For_BlueBeaconLEDs) / sizeof(this->_LED_NAMES_For_BlueBeaconLEDs[0]) ; i++)
+				{
+					this->discreteLEDControl( this->_LED_NAMES_For_BlueBeaconLEDs[ i ], LED_OFF );//turn off all the elements in the array
+				}//end for	
+				break;		
+			case LED_BLUE_BEACON_ALL_ON:
+				for(byte i = 0; i < sizeof(this->_LED_NAMES_For_BlueBeaconLEDs) / sizeof(this->_LED_NAMES_For_BlueBeaconLEDs[0]) ; i++)
+				{
+					this->discreteLEDControl( this->_LED_NAMES_For_BlueBeaconLEDs[ i ], LED_ON );//turn on all the elements in the array
+				}//end for	
+				break;				
+			case LED_BLUE_BEACON_DIRECTIONAL_MODE:
+				this->runBlueBeaconDirectionalControl(this->_currentBeaconLEDDirection);
+				break;
+			case LED_BLUE_BEACON_ALL_NEUTRAL:
+				//Do nothing recurring.
+				break;					
+			default:
+				//Do nothing recurring.			
+				break;				
+		}//end switch
+	}//end if
+		
 	//Run the finalized LED States (this function is also ran by setUniversalLEDMode() to control the LEDs initially)
 	executeFinalLEDStates();//controls the LEDs based on the finalized settings (after overriding priorities)
 
@@ -724,6 +769,7 @@ void LedController_NAVI::runLedController()
 
 void LedController_NAVI::allOn()
 {
+	
 	//Turn on All LEDs
 	this->_underglowLight->turnOn();
 	this->_leftSideSignal->turnOn();
@@ -737,6 +783,7 @@ void LedController_NAVI::allOn()
 }
 void LedController_NAVI::allOff()
 {
+	
 	//Note: Reset could also have been used as well. But to make the code more clear to understand and read, the off command was used explicitly.
 	
 	//Turn off All LEDs
@@ -875,25 +922,124 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 	executeFinalLEDStates();//controls the LEDs based on the finalized settings (after overriding priorities)
 	
 }
-void LedController_NAVI::setFogLightControl(byte fogLightsState)
+void LedController_NAVI::setFogLightMode(byte fogLightsState)
 {
-//WRITE ME LATER
+	//assign the fog light state if it's one of the valid modes
+	switch(fogLightsState)
+	{
+		case LED_FOG_OFF:
+			this->_currentFogLightState = LED_FOG_ON;
+			break;
+		case LED_FOG_ON:
+			this->_currentFogLightState = LED_FOG_ON;
+			break;
+		case LED_FOG_NEUTRAL:
+			this->_currentFogLightState = LED_FOG_NEUTRAL;
+			break;
+		default:
+			//else do nothing since it's an invalid mode
+			break;
+	}//end switch
 }
-void LedController_NAVI::setUnderglowLightControl(byte underglowLightState)
+void LedController_NAVI::setUnderglowLightMode(byte underglowLightState)
 {
-//WRITE ME LATER
+	//assign the underglow light mode if it's one of the valid modes
+	switch(underglowLightState)
+	{
+		case LED_UNDERGLOW_OFF:
+			this->_currentUnderglowState = LED_UNDERGLOW_OFF;
+			break;
+		case LED_UNDERGLOW_ON:
+			this->_currentUnderglowState = LED_UNDERGLOW_ON;
+			break;
+		case LED_UNDERGLOW_NEUTRAL:
+			this->_currentUnderglowState = LED_UNDERGLOW_NEUTRAL;
+			break;
+		default:
+			//else do nothing since it's an invalid mode
+			break;
+	}//end switch
 }
-void LedController_NAVI::setIRBeaconLightControl(byte irBeaconLightState)
+void LedController_NAVI::setIRBeaconLightMode(byte irBeaconLightState)
 {
-//WRITE ME LATER
+	//assign the IR Beacon light mode if it's one of the valid modes
+	switch(irBeaconLightState)
+	{
+		case LED_IR_BEACON_ALL_OFF:
+			this->_currentIRBeaconState = LED_IR_BEACON_ALL_OFF;
+			break;
+		case LED_IR_BEACON_ALL_ON:
+			this->_currentIRBeaconState = LED_IR_BEACON_ALL_ON;
+			break;
+		case LED_IR_BEACON_DIRECTIONAL_MODE:
+			this->_currentIRBeaconState = LED_IR_BEACON_DIRECTIONAL_MODE;
+			break;
+		case LED_IR_BEACON_ALL_NEUTRAL:
+			this->_currentIRBeaconState = LED_IR_BEACON_ALL_NEUTRAL;
+			break;			
+		default:
+			//else do nothing since it's an invalid mode
+			break;
+	}//end switch
 }
-void LedController_NAVI::setBlueBeaconLightControl(byte blueBeaconLightState)
+void LedController_NAVI::setBlueBeaconLightMode(byte blueBeaconLightState)
 {
-//WRITE ME LATER
+	//assign the Blue Beacon light mode if it's one of the valid modes
+	switch(blueBeaconLightState)
+	{
+		case LED_BLUE_BEACON_ALL_OFF:
+			this->_currentIRBeaconState = LED_BLUE_BEACON_ALL_OFF;
+			break;
+		case LED_BLUE_BEACON_ALL_ON:
+			this->_currentIRBeaconState = LED_BLUE_BEACON_ALL_ON;
+			break;
+		case LED_BLUE_BEACON_DIRECTIONAL_MODE:
+			this->_currentIRBeaconState = LED_BLUE_BEACON_DIRECTIONAL_MODE;
+			break;
+		case LED_BLUE_BEACON_ALL_NEUTRAL:
+			this->_currentIRBeaconState = LED_BLUE_BEACON_ALL_NEUTRAL;
+			break;			
+		default:
+			//else do nothing since it's an invalid mode
+			break;
+	}//end switch
 }
 void LedController_NAVI::setBeaconDirection(byte beaconLedDirection)
 {
-//WRITE ME LATER
+	//assign the Beacon Direction if it's one of the valid modes
+	switch(beaconLedDirection)
+	{
+		case LED_DIRECTION_NONE:
+			this->_currentBeaconLEDDirection = LED_DIRECTION_NONE;
+			break;
+		case LED_DIRECTION_FRONT:
+			this->_currentBeaconLEDDirection = LED_DIRECTION_FRONT;
+			break;
+		case LED_DIRECTION_FRONT_RIGHT:
+			this->_currentBeaconLEDDirection = LED_DIRECTION_FRONT_RIGHT;
+			break;
+		case LED_DIRECTION_RIGHT:
+			this->_currentBeaconLEDDirection = LED_DIRECTION_RIGHT;
+			break;			
+		case LED_DIRECTION_REAR_RIGHT:
+			this->_currentBeaconLEDDirection = LED_DIRECTION_REAR_RIGHT;
+			break;			
+		case LED_DIRECTION_REAR:
+			this->_currentBeaconLEDDirection = LED_DIRECTION_REAR;
+			break;			
+		case LED_DIRECTION_REAR_LEFT:
+			this->_currentBeaconLEDDirection = LED_DIRECTION_REAR_LEFT;
+			break;			
+		case LED_DIRECTION_LEFT:
+			this->_currentBeaconLEDDirection = LED_DIRECTION_LEFT;
+			break;			
+		case LED_DIRECTION_FRONT_LEFT:
+			this->_currentBeaconLEDDirection = LED_DIRECTION_FRONT_LEFT;
+			break;						
+		default:
+			//else do nothing since it's an invalid mode
+			break;
+	}//end switch
 }
 void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 {
@@ -1022,7 +1168,15 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 }
 void LedController_NAVI::setErrorType(byte errorType)
 {
-//WRITE ME LATER
+	
+		#define LED_ERROR_TYPE_NONE												0
+		#define LED_ERROR_TYPE_GENERIC_HEALTH								1
+		#define LED_ERROR_TYPE_GENERIC_SYSTEM								2
+		#define LED_ERROR_TYPE_SW_RESET										3
+		#define LED_ERROR_TYPE_SYNC												4
+		#define LED_ERROR_TYPE_SECURE_LINK									5
+		#define LED_ERROR_TYPE_SLEEPING											6
+		#define LED_ERROR_TYPE_INVALID_STATE_OR_MODE				7
 }
 void LedController_NAVI::setDebugType(byte debugType)
 {
@@ -1054,8 +1208,10 @@ void LedController_NAVI::reset()
 	
 	this->_currentUniversalLEDMode = LED_ALL_OFF_MODE;
 	this->_currentRoverMotion = LED_MOTION_STANDARD;
-	this->_currentIRBeaconState = LED_IR_BEACON_ALL_NEUTRAL;
-	this->_currentBlueBeaconState = LED_BLUE_BEACON_ALL_NEUTRAL;
+	this->_currentFogLightState = LED_FOG_OFF;
+	this->_currentUnderglowState = LED_UNDERGLOW_OFF;
+	this->_currentIRBeaconState = LED_IR_BEACON_ALL_OFF;
+	this->_currentBlueBeaconState = LED_BLUE_BEACON_ALL_OFF;
 	this->_currentBeaconLEDDirection = LED_DIRECTION_NONE;
 	this->_arrayOfInterestSize = 0;
 	this->_universalLEDModePatternIndexCounter = 0;
@@ -1104,7 +1260,9 @@ void LedController_NAVI::discreteLEDControl(byte ledName, byte desiredLedState)
 
 	byte correspondingLEDFlagSet;//holds the corresponding LED Flag Set
 	byte correspondingLEDFlagOfInterest;//holds the corresponding LED Flag of Interest
-	
+
+
+//LEFT OFF HERE	
 //WRITE ME LATER	
 
 
@@ -1660,6 +1818,5 @@ void LedController_NAVI::executeFinalLEDStates()
 	else
 	{
 		this->_underglowLight->turnOff();
-	}//end else
-	
+	}//end else	
 }
