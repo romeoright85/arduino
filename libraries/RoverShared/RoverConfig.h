@@ -343,13 +343,14 @@
 		//LED Error Types
 		#define LED_ERROR_TYPE_NONE												0
 		#define LED_ERROR_TYPE_GENERIC_HEALTH								1
-		#define LED_ERROR_TYPE_GENERIC_SYSTEM								2
+		#define LED_ERROR_TYPE_GENERIC_SYSTEM							2
 		#define LED_ERROR_TYPE_SW_RESET										3
 		#define LED_ERROR_TYPE_SYNC												4
-		#define LED_ERROR_TYPE_SECURE_LINK									5
-		#define LED_ERROR_TYPE_SLEEPING											6
-		#define LED_ERROR_TYPE_INVALID_STATE_OR_MODE				7
-		#define LED_ERROR_TYPE_UNDEFINED										8
+		#define LED_ERROR_TYPE_INVALID_STATE_OR_MODE				5
+		#define LED_ERROR_TYPE_UNDEFINED										6
+		//Improvement Tip: Currently NAVI doesn't support sleeping and securing link errors. Maybe in the future it can.
+		
+		
 //ADD MORE LATER		
 		//LED Debug Types
 		#define LED_DEBUG_TYPE_NONE

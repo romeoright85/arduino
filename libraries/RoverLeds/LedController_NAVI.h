@@ -180,7 +180,51 @@ private:
 	};
 	
 	
-	
+	//Error Mode Arrays (for blinking)
+	//Note: For now they all blink the headlights high beams, the reverse tail lights, and underglow lights. And the different taillights will be solid and change based on error type.
+	byte _LED_NAMES_For_Error_Type_Generic_Health[5] = {
+		LED_NAME_LEFT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_WHITE_TAILLIGHT,
+		LED_NAME_LEFT_WHITE_TAILLIGHT,
+		LED_NAME_UNDERGLOW_LIGHT
+	};
+	byte _LED_NAMES_For_Error_Type_Generic_System[5] = {
+		LED_NAME_LEFT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_WHITE_TAILLIGHT,
+		LED_NAME_LEFT_WHITE_TAILLIGHT,
+		LED_NAME_UNDERGLOW_LIGHT
+	};
+	byte _LED_NAMES_For_Error_Type_SW_Reset[5] = {
+		LED_NAME_LEFT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_WHITE_TAILLIGHT,
+		LED_NAME_LEFT_WHITE_TAILLIGHT
+		,LED_NAME_UNDERGLOW_LIGHT
+	};
+	byte _LED_NAMES_For_Error_Type_Sync[5] = {
+		LED_NAME_LEFT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_WHITE_TAILLIGHT,
+		LED_NAME_LEFT_WHITE_TAILLIGHT
+		,LED_NAME_UNDERGLOW_LIGHT
+	};
+	byte _LED_NAMES_For_Error_Type_Invalid_State_Or_Mode[5] = {
+		LED_NAME_LEFT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_WHITE_TAILLIGHT,
+		LED_NAME_LEFT_WHITE_TAILLIGHT,
+		LED_NAME_UNDERGLOW_LIGHT
+	};
+	byte _LED_NAMES_For_Error_Type_Undefined[5] = {
+		LED_NAME_LEFT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT,
+		LED_NAME_RIGHT_WHITE_TAILLIGHT,
+		LED_NAME_LEFT_WHITE_TAILLIGHT,
+		LED_NAME_UNDERGLOW_LIGHT
+	};
+
 	
 //WRITE ME LATER??
 //add different arrays for different error types?	
@@ -326,7 +370,7 @@ private:
 	byte _currentIRBeaconState = LED_IR_BEACON_ALL_OFF;//holds the current IR Beacon State
 	byte _currentBlueBeaconState = LED_BLUE_BEACON_ALL_OFF;//holds the current Blue Beacon State
 	byte _currentBeaconLEDDirection = LED_DIRECTION_NONE;//holds the current Beacon LED Direction (shared between IR Beacons and Blue Beacons)
-	byte _arrayOfInterest * = NULL;//shared variable, used to point to the current array of interest
+	byte * _arrayOfInterest = NULL;//shared variable, used to point to the current array of interest
 	byte _arrayOfInterestSize = 0;//shared variable, used to hold the current array of interest's size
 	//Note: Keep separate pattern index counters just in case one set of LEDs holds a pattern (like with braking) while others still should be incrementing
 	byte _universalLEDModePatternIndexCounter = 0;//used to hold the pattern index counter for the universal LED modes

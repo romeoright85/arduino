@@ -44,5 +44,12 @@ void setup() {
 
 
 void loop() {
+	ledController_NAVI->setErrorType(LED_ERROR_TYPE_GENERIC_HEALTH);
+	ledController_NAVI->setUniversalLEDMode(LED_ERROR_MODE);
 
+	while (1)
+	{
+		ledController_NAVI->runLedController();
+	}
+	
 }

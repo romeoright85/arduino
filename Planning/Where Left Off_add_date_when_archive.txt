@@ -139,15 +139,9 @@ SATURDAY:
 							LedController_NAVI.cpp
 							LedController_NAVI_Tester.ino
 									
-					[NEED TO DO]LONG:
-					discreteLEDControl()
-					runIRBeaconDirectionalControl()
-					setErrorType()
 					
-					[NEED TO DO] -For LED_ERROR_MODE in runLedController(), set which LEDs to turn on and/or blink depending on which error type
-					[NEED TO DO]  -also update the code in setUniversalLEDMode() for LED_ERROR_MODE as well
-						[NEED TO DO] Determine what combinations of LEDs should be turned on with which error.
-						
+					
+
 						
 					[NEED TO DO] Then finish writing LedController_NAVI_Tester.ino
 					
@@ -2125,5 +2119,12 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 						[DONE] setIRBeaconLightMode()
 						[DONE] setBlueBeaconLightMode()
 						[DONE] setBeaconDirection()
+						[DONE] setErrorType()				
 						
-																		
+						[DONE] -For LED_ERROR_MODE in runLedController(), set which LEDs to turn on and/or blink depending on which error type
+						[DONE]  -also update the code in setUniversalLEDMode() for LED_ERROR_MODE as well
+						[DONE] Determine what combinations of LEDs should be turned on with which error.
+						
+						[DONE] runIRBeaconDirectionalControl()
+						
+						[DONE] discreteLEDControl()				
