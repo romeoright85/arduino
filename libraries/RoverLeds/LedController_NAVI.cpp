@@ -32,10 +32,18 @@ void LedController_NAVI::runLedController()
 	switch(this->_currentUniversalLEDMode)
 	{
 		case LED_ALL_OFF_MODE:
-			//Do nothing that is recurring.
+			//Turn Off all LEDs
+			for(byte i = 0; i < sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]) ; i++)
+			{
+				this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_OFF );//turn off all the elements in the array
+			}//end for
 			break;
 		case LED_ALL_ON_MODE:
-			//Do nothing that is recurring.	
+			//Turn On all LEDs
+			for(byte i = 0; i < sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]) ; i++)
+			{
+				this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_ON );//turn on all the elements in the array
+			}//end for
 			break;
 		case LED_STANDARD_DAY_TIME_MODE:
 			//Do nothing that is recurring.			
@@ -167,7 +175,11 @@ void LedController_NAVI::runLedController()
 			break;		
 		case LED_STEALTH_MODE:
 			//Make sure all LEDs turn off and continue to stay off as long as it's in stealth mode
-			this->allOff();
+			//Turn Off all LEDs
+			for(byte i = 0; i < sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]) ; i++)
+			{
+				this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_OFF );//turn off all the elements in the array
+			}//end for
 			break;
 		case LED_DEBUG_MODE:
 			//Do nothing that is recurring.
@@ -802,39 +814,6 @@ void LedController_NAVI::runLedController()
 
 }//end runLedController()
 
-
-
-void LedController_NAVI::allOn()
-{
-	
-	//Turn on All LEDs
-	this->_underglowLight->turnOn();
-	this->_leftSideSignal->turnOn();
-	this->_rightSideSignal->turnOn();
-	this->_beaconLightAssy->turnOn(FRONT_LEFT_IR_BEACON, BACK_LEFT_IR_BEACON, BACK_RIGHT_IR_BEACON, FRONT_RIGHT_IR_BEACON, LEFT_BLUE_BEACON, BACK_BLUE_BEACON, RIGHT_BLUE_BEACON, FRONT_BLUE_BEACON);
-	this->_leftHeadLightAssy->turnOn(HIGHBEAM_HEADLIGHT, SIGNAL_HEADLIGHT, FOG_HEADLIGHT);
-	this->_rightHeadLightAssy->turnOn(HIGHBEAM_HEADLIGHT, SIGNAL_HEADLIGHT, FOG_HEADLIGHT);
-	this->_leftTailLightAssy->turnOn(RED1_TAILLIGHT, RED2_TAILLIGHT, RED3_TAILLIGHT, RED4_TAILLIGHT, RED5_TAILLIGHT, WHITE_TAILLIGHT);	
-	this->_rightTailLightAssy->turnOn(RED1_TAILLIGHT, RED2_TAILLIGHT, RED3_TAILLIGHT, RED4_TAILLIGHT, RED5_TAILLIGHT, WHITE_TAILLIGHT);	
-	
-}
-void LedController_NAVI::allOff()
-{
-	
-	//Note: Reset could also have been used as well. But to make the code more clear to understand and read, the off command was used explicitly.
-	
-	//Turn off All LEDs
-	this->_underglowLight->turnOff();
-	this->_leftSideSignal->turnOff();
-	this->_rightSideSignal->turnOff();
-	this->_beaconLightAssy->turnOff(FRONT_LEFT_IR_BEACON, BACK_LEFT_IR_BEACON, BACK_RIGHT_IR_BEACON, FRONT_RIGHT_IR_BEACON, LEFT_BLUE_BEACON, BACK_BLUE_BEACON, RIGHT_BLUE_BEACON, FRONT_BLUE_BEACON);
-	this->_leftHeadLightAssy->turnOff(HIGHBEAM_HEADLIGHT, SIGNAL_HEADLIGHT, FOG_HEADLIGHT);
-	this->_rightHeadLightAssy->turnOff(HIGHBEAM_HEADLIGHT, SIGNAL_HEADLIGHT, FOG_HEADLIGHT);
-	this->_leftTailLightAssy->turnOff(RED1_TAILLIGHT, RED2_TAILLIGHT, RED3_TAILLIGHT, RED4_TAILLIGHT, RED5_TAILLIGHT, WHITE_TAILLIGHT);	
-	this->_rightTailLightAssy->turnOff(RED1_TAILLIGHT, RED2_TAILLIGHT, RED3_TAILLIGHT, RED4_TAILLIGHT, RED5_TAILLIGHT, WHITE_TAILLIGHT);	
-	
-}
-
 void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 {
 	
@@ -1037,7 +1016,7 @@ void LedController_NAVI::setFogLightMode(byte fogLightsState)
 	switch(fogLightsState)
 	{
 		case LED_FOG_OFF:
-			this->_currentFogLightState = LED_FOG_ON;
+			this->_currentFogLightState = LED_FOG_OFF;
 			break;
 		case LED_FOG_ON:
 			this->_currentFogLightState = LED_FOG_ON;
@@ -1214,12 +1193,16 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 			//Initialize the LEDs to this motion's state
 			//It already turned off all the motion LEDs. Nothing else is needed.
 			
+			//Note: You don't want to turn on any LEDs at this state since the mode has not been verified as a Rover Motion friendly mode yet. LEDs will instead be turned on in the runLedController() function once the current mode has been verified as a Rover Motion friendly state.
+			
 			//Assign desired rover motion to the current rover motion since it's one of the valid cases
 			this->_currentRoverMotion = desiredRoverMotion;			
 			break;
 		case LED_MOTION_TURN_LEFT:
 			//Initialize the LEDs to this motion's state
 			//It already turned off all the motion LEDs. Nothing else is needed.
+			
+			//Note: You don't want to turn on any LEDs at this state since the mode has not been verified as a Rover Motion friendly mode yet. LEDs will instead be turned on in the runLedController() function once the current mode has been verified as a Rover Motion friendly state.
 			
 			//Assign desired rover motion to the current rover motion since it's one of the valid cases
 			this->_currentRoverMotion = desiredRoverMotion;
@@ -1232,6 +1215,8 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 		case LED_MOTION_TURN_RIGHT:
 			//Initialize the LEDs to this motion's state
 			//It already turned off all the motion LEDs. Nothing else is needed.
+			
+			//Note: You don't want to turn on any LEDs at this state since the mode has not been verified as a Rover Motion friendly mode yet. LEDs will instead be turned on in the runLedController() function once the current mode has been verified as a Rover Motion friendly state.
 			
 			//Assign desired rover motion to the current rover motion since it's one of the valid cases
 			this->_currentRoverMotion = desiredRoverMotion;
@@ -1246,6 +1231,8 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 			//Initialize the LEDs to this motion's state
 			//It already turned off all the motion LEDs. Nothing else is needed.
 			
+			//Note: You don't want to turn on any LEDs at this state since the mode has not been verified as a Rover Motion friendly mode yet. LEDs will instead be turned on in the runLedController() function once the current mode has been verified as a Rover Motion friendly state.
+			
 			//Assign desired rover motion to the current rover motion since it's one of the valid cases
 			this->_currentRoverMotion = desiredRoverMotion;			
 
@@ -1257,8 +1244,9 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 			break;
 		case LED_MOTION_REVERSE:
 			//Initialize the LEDs to this motion's state
-			this->discreteLEDControl(LED_NAME_RIGHT_WHITE_TAILLIGHT, LED_ON);
-			this->discreteLEDControl(LED_NAME_LEFT_WHITE_TAILLIGHT, LED_ON);
+			//It already turned off all the motion LEDs. Nothing else is needed.
+			
+			//Note: You don't want to turn on any LEDs at this state since the mode has not been verified as a Rover Motion friendly mode yet. LEDs will instead be turned on in the runLedController() function once the current mode has been verified as a Rover Motion friendly state.
 			
 			//Assign desired rover motion to the current rover motion since it's one of the valid cases
 			this->_currentRoverMotion = desiredRoverMotion;
@@ -1268,12 +1256,18 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 			//Initialize the LEDs to this motion's state
 			//It already turned off all the motion LEDs. Nothing else is needed.
 			
+			//Note: You don't want to turn on any LEDs at this state since the mode has not been verified as a Rover Motion friendly mode yet. LEDs will instead be turned on in the runLedController() function once the current mode has been verified as a Rover Motion friendly state.
+			
 			this->_currentRoverMotion = LED_MOTION_STANDARD;//set the current rover motion to the default LED_MOTION_STANDARD
 			
 			//Do nothing else since it's an invalid state		
 			break;
 	}//end switch
 
+	
+	//Note: Do not run executeFinalLEDStates() here. The LEDs will execute in runLedController() after the modes has been check to make sure they're valid ones for RoverMotion.
+	//Though you can check the modes here, if you do, and it's not set yet, then this function won't run. But you want to allow this function to "preset" the rover motion before the allowed modes are set. So that's why you don't want to check the modes here yet.	
+	
 }
 void LedController_NAVI::setErrorType(byte errorType)
 {

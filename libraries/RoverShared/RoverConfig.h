@@ -278,9 +278,8 @@
 		#define LED_OFF													0//default
 		#define LED_ON														1
 		//Universal LED Modes
-		#define LED_ALL_OFF_MODE									0//default, initially turn off all the LEDs. Then can  control the LEDs later with other commands.
-		#define LED_ALL_ON_MODE									1//Initially turn on all the LEDs. Then can  control the LEDs later with other commands.
-		//Note: On power on, it should go to this mode for a while, to show that all the LEDs are working, then go back to the default LED_ALL_OFF_MODE
+		#define LED_ALL_OFF_MODE									0//default, it will keep LEDs off until the mode is changed to something else
+		#define LED_ALL_ON_MODE									1//it will keep LEDs on until the mode is changed to something else
 		#define LED_STANDARD_DAY_TIME_MODE 				2
 		#define LED_NIGHT_TIME_MODE								3//turns on headlights and tail lights
 		#define LED_HAZARD_MODE									4//blinks headlight's signal lights, side signal lights, and tail lights		
@@ -350,12 +349,6 @@
 		#define LED_ERROR_TYPE_UNDEFINED										6
 		//Improvement Tip: Currently NAVI doesn't support sleeping and securing link errors. Maybe in the future it can.
 		
-		
-//ADD MORE LATER		
-		//LED Debug Types
-		#define LED_DEBUG_TYPE_NONE
-//ADD MORE LATER	
-
 		//LED Names (for discrete control)
 		//Beacon
 		#define LED_NAME_NONE		0//keep this as a blank placeholder

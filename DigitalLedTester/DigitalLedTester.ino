@@ -66,8 +66,8 @@ void setup() {
 
 	}
 
-	Serial.begin(PC_USB_BAUD_RATE);
-	Serial2.begin(MAIN_BAUD_RATE);
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);
 	delay(15);//add a little delay so the serial port has time to start up
 	_SERIAL_DEBUG_CHANNEL_.println("Test running");
 	

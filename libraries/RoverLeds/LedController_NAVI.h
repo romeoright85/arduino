@@ -21,6 +21,147 @@
 #include <DelayCounter.h>
 
 
+
+/*
+Notes on Usage:
+
+Reference: "_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file.
+
+
+When you want to a Universal LED Mode (in general):
+	
+	Run setUniversalLEDMode(<<choose your mode>>) where
+		the universal mode choices are listed in
+		"_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file.
+		Then wait for the next iteration of runLedController() to
+		run automatically in the background.
+
+
+
+When you want set a Fog Light Mode:
+	
+	Run setFogLightMode(<<choose your fog mode here>>) where
+		the fog mode choices are listed in
+		"_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file.
+		It can be ran before or after setUniversalLEDMode().
+	
+	Run setUniversalLEDMode(<<choose your mode>>) as long as
+		the mode is either LED_STANDARD_DAY_TIME_MODE, LED_NIGHT_TIME_MODE, LED_HAZARD_MODE is chosen.
+		It can be ran before or after setFogLightMode().
+		
+	Then wait for the next iteration of runLedController() to
+		run automatically in the background.
+
+	
+When you want set a Underglow Light Mode:
+
+	Run setUnderglowLightMode(<<choose your underglow light mode here>>) where
+		the Underglow Light mode choices are listed in
+		"_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file.
+		It can be ran before or after setUniversalLEDMode().
+
+	Run setUniversalLEDMode(<<choose your mode>>) as long as
+		the mode is either LED_STANDARD_DAY_TIME_MODE, LED_NIGHT_TIME_MODE, LED_HAZARD_MODE is chosen.
+		It can be ran before or after setUnderglowLightMode().
+		
+	Then wait for the next iteration of runLedController() to
+		run automatically in the background.
+
+When you want set a IR Beacon Light Mode:
+
+	Run setIRBeaconLightMode(<<choose your IR Beacon mode here>>) where
+		the IR Beacon mode choices are listed in
+		"_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file.
+		It can be ran before or after setUniversalLEDMode().
+
+	Run setUniversalLEDMode(<<choose your mode>>) as long as
+		the mode is either LED_STANDARD_DAY_TIME_MODE, LED_NIGHT_TIME_MODE, LED_HAZARD_MODE is chosen.
+		It can be ran before or after setIRBeaconLightMode().
+
+	Then wait for the next iteration of runLedController() to
+		run automatically in the background.
+
+
+When you want set a Blue Beacon Light Mode:
+
+	Run setBlueBeaconLightMode(<<choose your Blue Beacon mode here>>) where
+		the Blue Beacon mode choices are listed in
+		"_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file.
+		It can be ran before or after setUniversalLEDMode().
+
+	Run setUniversalLEDMode(<<choose your mode>>) as long as
+		the mode is either LED_STANDARD_DAY_TIME_MODE, LED_NIGHT_TIME_MODE, LED_HAZARD_MODE is chosen.
+		It can be ran before or after setBlueBeaconLightMode().
+
+	Then wait for the next iteration of runLedController() to
+		run automatically in the background.
+
+When you want set a Beacon Direction Mode:
+
+	Run setBeaconDirection(<<choose your Beacon Direction here>>) where
+		the Beacon Direction choices are listed in
+		"_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file.
+		It can be ran before or after setUniversalLEDMode() and setBlueBeaconLightMode(), in any order.
+
+
+	Run either setBlueBeaconLightMode(LED_IR_BEACON_DIRECTIONAL_MODE) and/or
+		setBlueBeaconLightMode(LED_BLUE_BEACON_DIRECTIONAL_MODE). Note
+		that in theory both can be ran as IR and Blue Beacon LEDs are independent of each other.
+		It can be ran before or after setUniversalLEDMode() and setBeaconDirection(), in any order.
+
+	Run setUniversalLEDMode(<<choose your mode>>) as long as
+		the mode is either LED_STANDARD_DAY_TIME_MODE, LED_NIGHT_TIME_MODE, LED_HAZARD_MODE is chosen.
+		It can be ran before or after setBeaconDirection() and setBlueBeaconLightMode(), in any order.
+
+	Then wait for the next iteration of runLedController() to
+		run automatically in the background.
+
+
+When you want to set a Rover Motion:
+
+	Run setRoverMotion(<<choose your rover motion here>>) where
+		the rover motion choices are listed in
+		"_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file.
+		It can be ran before or after setUniversalLEDMode().
+
+	Run setUniversalLEDMode(<<choose your mode>>) as long as
+		the mode is either LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE is chosen.
+		It can be ran before or after setRoverMotion().
+
+	Then wait for the next iteration of runLedController() to
+		run automatically in the background.
+
+
+When you want to set an Error Type then:
+
+	Run setErrorType(<<choose your error type here>>) where
+		the error type choices are listed in
+		"_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file.
+		It needs to be ran before setUniversalLEDMode(LED_ERROR_MODE) as it
+		tells what setUniversalLEDMode() to initialize the LEDs to.
+
+	Run setUniversalLEDMode(LED_ERROR_MODE). It needs to run after
+		setErrorType() as it initializes the LEDs based on the error type.
+
+	Then wait for the next iteration of runLedController() to
+		run automatically in the background.
+
+
+When you want to set a userDiscreteLEDControl:
+
+	Run setUniversalLEDMode(LED_DEBUG_MODE). It needs to run before
+		userDiscreteLEDControl() as it gives permission for userDiscreteLEDControl() to execute.
+
+	Run userDiscreteLEDControl(<<choose the LED name here>>,<<choose the LED state here>>) where
+		the LED name choices are listed in
+		"_LED_CONTROLLER_DEFINITIONS" in the RoverConfig.h file. And
+		where the LED state is either LED_OFF or LED_ON.
+
+	Then wait for the next iteration of runLedController() to
+		run automatically in the background.
+
+*/
+
 /*******************************************************************
 Configure (define) flags before calling #include <RoverConfig.h>
 /********************************************************************/
@@ -44,8 +185,6 @@ public:
 	LedController_NAVI(DelayCounter *, unsigned int, unsigned int);//constructor. (DelayCounter pointer, periods for short delay, periods for long delay)
 	~LedController_NAVI();//destructor
 	void runLedController();//runs the led controller with the desired light pattern(s). This function should be called in every iteration of the Arduino loop()
-	void allOn();//turn on all LEDs
-	void allOff();//turn off all LEDs
 	void setUniversalLEDMode(byte);//(which Universal LED Modes) used for LED modes
 	void setFogLightMode(byte);//(which Fog Lights State)
 	void setUnderglowLightMode(byte);//(which Underglow Light State)
