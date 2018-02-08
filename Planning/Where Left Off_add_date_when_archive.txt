@@ -175,7 +175,7 @@ SATURDAY:
 				
 										
 				[NEED TO DO] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
-					At first glance I don't think you need to, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???
+					At first glance I don't think you need two, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???
 					
 				
 				

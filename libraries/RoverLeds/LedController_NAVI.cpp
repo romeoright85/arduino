@@ -811,7 +811,8 @@ void LedController_NAVI::runLedController()
 		
 	//Run the finalized LED States (this function is also ran by setUniversalLEDMode() to control the LEDs initially)
 	executeFinalLEDStates();//controls the LEDs based on the finalized settings (after overriding priorities)
-
+	
+	
 }//end runLedController()
 
 void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
@@ -1379,127 +1380,128 @@ void LedController_NAVI::discreteLEDControl(byte ledName, byte desiredLedState)
 	//Note: Boolean Bit Flags are used to hold the state of each of the LEDs. This is so that the states can be set and overridden with a high priority setting. And then once everything has been determined, the LED Controller will execute the changes all at once. (else if bit flags weren't used, the LEDs may flash as they are changing states from being overridden from something of a higher priority.
 	
 
-	byte correspondingLEDFlagSet;//holds the corresponding LED Flag Set
+	byte * correspondingLEDFlagSet;//pointer to point to the corresponding LED Flag Set
 	byte correspondingLEDFlagOfInterest;//holds the corresponding LED Flag of Interest
 
 
+	//Assign the correspondingLEDFlagOfInterest and pass the address of the flag set to the correspondingLEDFlagSet pointer
 	switch(ledName)
 	{
 		case LED_NAME_FRONT_LEFT_IR_BEACON:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_FRONT_LEFT_IR_BEACON;
-			correspondingLEDFlagSet= this->_ledStateFlagSet1;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_BACK_LEFT_IR_BEACON:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_BACK_LEFT_IR_BEACON;
-			correspondingLEDFlagSet= this->_ledStateFlagSet1;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_BACK_RIGHT_IR_BEACON:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_BACK_RIGHT_IR_BEACON;
-			correspondingLEDFlagSet= this->_ledStateFlagSet1;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_FRONT_RIGHT_IR_BEACON:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_FRONT_RIGHT_IR_BEACON;
-			correspondingLEDFlagSet= this->_ledStateFlagSet1;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_LEFT_BLUE_BEACON:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_BLUE_BEACON;
-			correspondingLEDFlagSet= this->_ledStateFlagSet1;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_BACK_BLUE_BEACON:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_BACK_BLUE_BEACON;
-			correspondingLEDFlagSet= this->_ledStateFlagSet1;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_RIGHT_BLUE_BEACON:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_BLUE_BEACON;
-			correspondingLEDFlagSet= this->_ledStateFlagSet1;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_FRONT_BLUE_BEACON:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_FRONT_BLUE_BEACON;
-			correspondingLEDFlagSet= this->_ledStateFlagSet1;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet1;
 			break;
 		case LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_HIGHBEAM_HEADLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet2;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet2;
 			break;
 		case LED_NAME_RIGHT_SIGNAL_HEADLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_SIGNAL_HEADLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet2;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet2;
 			break;
 		case LED_NAME_RIGHT_FOG_HEADLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_FOG_HEADLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet2;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet2;
 			break;
 		case LED_NAME_LEFT_HIGHBEAM_HEADLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_HIGHBEAM_HEADLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet2;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet2;
 			break;
 		case LED_NAME_LEFT_SIGNAL_HEADLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_SIGNAL_HEADLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet2;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet2;
 			break;
 		case LED_NAME_LEFT_FOG_HEADLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_FOG_HEADLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet2;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet2;
 			break;
 		case LED_NAME_RIGHT_RED1_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_RED1_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet3;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet3;
 			break;
 		case LED_NAME_RIGHT_RED2_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_RED2_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet3;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet3;
 			break;
 		case LED_NAME_RIGHT_RED3_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_RED3_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet3;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet3;
 			break;
 		case LED_NAME_RIGHT_RED4_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_RED4_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet3;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet3;
 			break;
 		case LED_NAME_RIGHT_RED5_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_RED5_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet3;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet3;
 			break;
 		case LED_NAME_RIGHT_WHITE_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_WHITE_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet3;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet3;
 			break;
 		case LED_NAME_LEFT_RED1_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_RED1_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet4;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet4;
 			break;
 		case LED_NAME_LEFT_RED2_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_RED2_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet4;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet4;
 			break;
 		case LED_NAME_LEFT_RED3_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_RED3_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet3;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet3;
 			break;
 		case LED_NAME_LEFT_RED4_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_RED4_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet3;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet3;
 			break;
 		case LED_NAME_LEFT_RED5_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_RED5_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet4;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet4;
 			break;
 		case LED_NAME_LEFT_WHITE_TAILLIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_WHITE_TAILLIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet4;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet4;
 			break;
 		case LED_NAME_UNDERGLOW_LIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_UNDERGLOW_LIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet4;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet4;
 			break;
 		case LED_NAME_RIGHT_SIDE_SIGNAL_LIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_RIGHT_SIDE_SIGNAL_LIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet2;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet2;
 			break;
 		case LED_NAME_LEFT_SIDE_SIGNAL_LIGHT:
 			correspondingLEDFlagOfInterest= _BTFG_LED_STATE_LEFT_SIDE_SIGNAL_LIGHT;
-			correspondingLEDFlagSet= this->_ledStateFlagSet2;
+			correspondingLEDFlagSet= &this->_ledStateFlagSet2;
 			break;
 		default:
 			//do nothing
@@ -1509,11 +1511,11 @@ void LedController_NAVI::discreteLEDControl(byte ledName, byte desiredLedState)
 
 	if(desiredLedState == LED_ON)
 	{
-		BooleanBitFlags::setFlagBit(correspondingLEDFlagSet, correspondingLEDFlagOfInterest);
+		BooleanBitFlags::setFlagBit(*correspondingLEDFlagSet, correspondingLEDFlagOfInterest);//dereference the pointer in order to pass the address the pointer is pointing to, which is the address of the corresponding LED Flag Set (correspondingLEDFlagSet)
 	}//end if
 	else if (desiredLedState == LED_OFF)
 	{
-		BooleanBitFlags::clearFlagBit(correspondingLEDFlagSet, correspondingLEDFlagOfInterest);
+		BooleanBitFlags::clearFlagBit(*correspondingLEDFlagSet, correspondingLEDFlagOfInterest);//dereference the pointer in order to pass the address the pointer is pointing to, which is the address of the corresponding LED Flag Set (correspondingLEDFlagSet)
 	}//end else
 	//else do nothing, as it's an invalid input
 
@@ -1695,7 +1697,7 @@ void LedController_NAVI::runBlueBeaconDirectionalControl(byte ledDirection)
 }//end of runBlueBeaconDirectionalControl()
 void LedController_NAVI::executeFinalLEDStates()
 {
-		
+	
 	//Front Right IR Beacon
 	if( BooleanBitFlags::flagIsSet(this->_ledStateFlagSet1, _BTFG_LED_STATE_FRONT_RIGHT_IR_BEACON) )
 	{
