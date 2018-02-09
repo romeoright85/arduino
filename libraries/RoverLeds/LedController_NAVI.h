@@ -199,7 +199,7 @@ private:
 	//Non-SW Resettable
 			
 	
-	void autoIncrementIndexCounter(byte, byte);//(index counter, max index value to roll over and reset the counter)
+	void autoIncrementIndexCounter(byte &, byte);//(index counter, max index value to roll over and reset the counter)
 	void resetIndexCounter(byte);//(index counter) resets the pattern index counter
 	void discreteLEDControl(byte, byte);//(which led name, desired led state). Use this to set the state of the LED. The state can be overwritten with a higher priority state by calling this function again. The LED won't change states until executeFinalLEDStates() is called. And executeFinalLEDStates() should be called after all states have been finalized.
 	void runIRBeaconDirectionalControl(byte);//(LED Direction) controls the IR Beacon based on the given LED Direction

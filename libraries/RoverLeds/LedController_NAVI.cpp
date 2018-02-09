@@ -1359,7 +1359,7 @@ void LedController_NAVI::reset()
 }
 
 
-void LedController_NAVI::autoIncrementIndexCounter(byte indexCounter, byte rollOverValue)
+void LedController_NAVI::autoIncrementIndexCounter(byte &indexCounter, byte rollOverValue)
 {
 	//increment counter for the next iteration
 	indexCounter++;

@@ -91,6 +91,12 @@ Notes:
 	
 	I found _BTFG_LED_STATE_RIGHT_RED2_TAILLIGHT had 0x05 set which was wrong. Should be 0x08.
 	I found _BTFG_LED_STATE_RIGHT_RED4_TAILLIGHT as 0x01, should be 0x10
+	
+	
+	I found that the counter was being passed by value and not by reference in autoIncrementIndexCounter() so the values weren't changing globally as needed.
+	
+	
+	
 -------------
 09-17-17
 -------------
