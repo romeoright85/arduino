@@ -282,11 +282,19 @@
 		#define LED_ALL_ON_MODE									1//it will keep LEDs on until the mode is changed to something else
 		#define LED_STANDARD_DAY_TIME_MODE 				2
 		#define LED_NIGHT_TIME_MODE								3//turns on headlights and tail lights
-		#define LED_HAZARD_MODE									4//blinks headlight's signal lights, side signal lights, and tail lights		
-		#define LED_DEMO_MODE										5//The Rover will turn on one led at a time and cycle through all of them on the rover
-		#define LED_ERROR_MODE										6//To indicate that the Rover is in error, all the blue beacons will all blink on and off. All other lights are off.
-		#define LED_STEALTH_MODE									7//This mode turns off all the LEDs and make sure they stay off.
-		#define LED_DEBUG_MODE										8//Allow any temporary debugging code to control the LEDs discretely. All LEDs in this mode should only be controlled manually by userDiscreteLEDControl().
+//REMOVING IT AS A MODE, #define LED_HAZARD_MODE									4//blinks headlight's signal lights, side signal lights, and tail lights				
+		#define LED_DEMO_MODE										4//The Rover will turn on one led at a time and cycle through all of them on the rover
+		#define LED_ERROR_MODE										5//To indicate that the Rover is in error, all the blue beacons will all blink on and off. All other lights are off.
+		#define LED_STEALTH_MODE									6//This mode turns off all the LEDs and make sure they stay off.
+		#define LED_DEBUG_MODE										7//Allow any temporary debugging code to control the LEDs discretely. All LEDs in this mode should only be controlled manually by userDiscreteLEDControl().
+		
+		
+		
+		
+		//Hazard Lights State
+		#define LED_HAZARDS_OFF									0////default, turns off hazard lights
+		#define LED_HAZARDS_ON									1//blinks headlight's signal lights, side signal lights, and tail lights		
+		#define LED_HAZARDS_NEUTRAL									2//it will leave hazard lights as is
 		
 		//Fog Lights State
 		//(Note: The options below will be overrided when in LED_ALL_OFF_MODE, LED_ALL_ON_MODE, LED_DEMO_MODE, LED_ERROR_MODE, LED_STEALTH_MODE, and LED_DEBUG_MODE)

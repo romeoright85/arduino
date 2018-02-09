@@ -60,6 +60,8 @@ void LedController_NAVI::runLedController()
 					
 				if( this->_universalLEDModePatternIndexCounter == 0)
 				{
+					
+
 					for(byte i = 0; i < this->_arrayOfInterestSize; i++)
 					{
 						this->discreteLEDControl( this->_LED_NAMES_For_HazardMode[ i ], LED_OFF );//turn off all the elements in the array
@@ -74,7 +76,6 @@ void LedController_NAVI::runLedController()
 				}//end else
 				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
 				this->autoIncrementIndexCounter(this->_universalLEDModePatternIndexCounter, BLINK_PATTERN_SIZE);
-				
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
 		
@@ -1368,9 +1369,11 @@ void LedController_NAVI::autoIncrementIndexCounter(byte &indexCounter, byte roll
 	{
 		this->resetIndexCounter(indexCounter);//reset the counter once it has reached (or surpassed) the roll over value
 	}//end if	
+	
+Serial.println(this->_universalLEDModePatternIndexCounter);//DEBUG	
 }
 
-void LedController_NAVI::resetIndexCounter(byte indexCounter)
+void LedController_NAVI::resetIndexCounter(byte &indexCounter)
 {
 	indexCounter = 0;
 }

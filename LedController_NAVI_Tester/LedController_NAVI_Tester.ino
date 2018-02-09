@@ -286,7 +286,7 @@ void loop() {
 				ledController_NAVI->setUnderglowLightMode(LED_UNDERGLOW_OFF);
 				break;
 			case 'n':
-				_SERIAL_DEBUG_CHANNEL_.println(F("UG: Off"));//UG = Underglow
+				_SERIAL_DEBUG_CHANNEL_.println(F("UG: On"));//UG = Underglow
 				ledController_NAVI->setUniversalLEDMode(LED_UNDERGLOW_ON);
 				break;
 			case 'o':
