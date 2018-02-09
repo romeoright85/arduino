@@ -81,10 +81,16 @@ WHAT WORKS:
 Notes:	
 	What does work reliably is the all on and all off commands.
 
+
+
+02-09-18 Updates:
+		It looks like the counter it counting (though sometimes it might be stuck and not reset. Check on this later. Could just be an overflow from the Serial.prints and not the counter itself.).
+	
+	I found _BTFG_LED_STATE_RIGHT_FOG_HEADLIGHT and _BTFG_LED_STATE_RIGHT_SIDE_SIGNAL_LIGHT had the same 0x80 bit set in the bit flags. I fuxed this now.
 	
 	
-	
-	
+	I found _BTFG_LED_STATE_RIGHT_RED2_TAILLIGHT had 0x05 set which was wrong. Should be 0x08.
+	I found _BTFG_LED_STATE_RIGHT_RED4_TAILLIGHT as 0x01, should be 0x10
 -------------
 09-17-17
 -------------

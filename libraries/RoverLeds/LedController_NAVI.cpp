@@ -99,7 +99,7 @@ void LedController_NAVI::runLedController()
 				}//end else	
 					
 				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
-				this->autoIncrementIndexCounter(this->_universalLEDModePatternIndexCounter, this->_arrayOfInterestSize);				//the rollover value/size of the pattern is the number of LEDs in the array (as it turns on one at a time)
+				this->autoIncrementIndexCounter(this->_universalLEDModePatternIndexCounter, this->_arrayOfInterestSize);//the rollover value/size of the pattern is the number of LEDs in the array (as it turns on one at a time)
 					
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
@@ -1738,7 +1738,7 @@ void LedController_NAVI::executeFinalLEDStates()
 		this->_beaconLightAssy->turnOff(BACK_BLUE_BEACON);
 	}//end else
 
-	//Back Blue Beacon
+	//Back Left IR Beacon
 	if( BooleanBitFlags::flagIsSet(this->_ledStateFlagSet1, _BTFG_LED_STATE_BACK_LEFT_IR_BEACON) )
 	{
 		this->_beaconLightAssy->turnOn(BACK_LEFT_IR_BEACON);

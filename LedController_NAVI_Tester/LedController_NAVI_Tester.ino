@@ -217,13 +217,11 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 
 void loop() {
 	
+
 	
 	ledController_NAVI->runLedController();
 	
-	
-	//ledController_NAVI->setErrorType(LED_ERROR_TYPE_GENERIC_HEALTH);
-	//ledController_NAVI->setUniversalLEDMode(LED_ERROR_MODE);
-	
+
 	char rxData;
 	
 
@@ -272,15 +270,15 @@ void loop() {
 				ledController_NAVI->setUniversalLEDMode(LED_DEBUG_MODE);
 				break;
 			case 'j':
-				_SERIAL_DEBUG_CHANNEL_.println(F("FS: Debug"));//FG = Fog State
+				_SERIAL_DEBUG_CHANNEL_.println(F("FS: Off"));//FG = Fog State
 				ledController_NAVI->setFogLightMode(LED_FOG_OFF);
 				break;
 			case 'k':
-				_SERIAL_DEBUG_CHANNEL_.println(F("FS: Debug"));//FG = Fog State
+				_SERIAL_DEBUG_CHANNEL_.println(F("FS: On"));//FG = Fog State
 				ledController_NAVI->setFogLightMode(LED_FOG_ON);
 				break;
 			case 'l':
-				_SERIAL_DEBUG_CHANNEL_.println(F("FS: Debug"));//FG = Fog State
+				_SERIAL_DEBUG_CHANNEL_.println(F("FS: Neutral"));//FG = Fog State
 				ledController_NAVI->setFogLightMode(LED_FOG_NEUTRAL);
 				break;
 			case 'm':
@@ -417,4 +415,8 @@ void loop() {
 		}//end switch
 	}//end if
 	
+
+	
+
+
 }
