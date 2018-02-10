@@ -343,63 +343,64 @@ private:
 	byte _LED_NAMES_For_MotionTurnLeft_Headlight[1] = {
 			LED_NAME_LEFT_SIGNAL_HEADLIGHT
 	};
-	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, stay off, wait for the duration of the desired delay, then turn them all on, wait for the duration of the desired delay, stay on, wait for the duration of the desired delay and repeat (off, off, on, on).
-	//Note: This off-off then on-on pattern is so it can use the same 250ms delay used for tail lights, instead of having it's own 500ms delay.
-	//Use a 250ms delay for the pattern
+	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, stay off, wait for the duration of the desired delay, then turn them all on, wait for the duration of the desired delay, stay on, wait for the duration of the desired delay and repeat (off, off, off, off, on, on, on, on).
+	//Note: This off-off then on-on pattern is so it can use the same 125ms delay used for tail lights, instead of having it's own 500ms delay.
+	//Use a 125ms delay for the pattern
 	
 	
 	byte _LED_NAMES_For_MotionTurnLeft_SideSignalLights[1] = {
 			LED_NAME_LEFT_SIDE_SIGNAL_LIGHT
 	};
-	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, stay off, wait for the duration of the desired delay, then turn them all on, wait for the duration of the desired delay, stay on, wait for the duration of the desired delay and repeat (off, off, on, on)
-	//Note: This off-off then on-on pattern is so it can use the same 250ms delay used for tail lights, instead of having it's own 500ms delay.
-	//Use a 250ms delay for the pattern
+	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, stay off, wait for the duration of the desired delay, then turn them all on, wait for the duration of the desired delay, stay on, wait for the duration of the desired delay and repeat (off, off, off, off, on, on, on, on).
+	//Note: This off-off then on-on pattern is so it can use the same 125ms delay used for tail lights, instead of having it's own 500ms delay.
+	//Use a 125ms delay for the pattern
 	
 	
 	byte _LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[1] = {
 			LED_NAME_LEFT_RED3_TAILLIGHT
 	};
-	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, then turn them all on, wait for x2 the duration of the desired delay, and repeat (off, on, off, off: repeat)
-	//Use a 250ms delay for the pattern
+	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, then turn them all on, wait for x2 the duration of the desired delay, and repeat (off, on, off, off, off, on, off, off: repeat)
+	//Use a 125ms delay for the pattern
 	
 	
 	byte _LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[2] = {
 			LED_NAME_LEFT_RED4_TAILLIGHT,
 			LED_NAME_LEFT_RED2_TAILLIGHT
 	};
-	//Pattern: Turn off all of the LEDs in the array, wait for x2 the duration of the desired delay, then turn them all on, wait for x1 the duration of the desired delay, and repeat (off, off, on, off: repeat)
-	//Use a 250ms delay for the pattern
+	//Pattern: Turn off all of the LEDs in the array, wait for x2 the duration of the desired delay, then turn them all on, wait for x1 the duration of the desired delay, and repeat (off, off, on, off, off, off, on, off: repeat)
+	//Use a 125ms delay for the pattern
 	
 	
 	byte _LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[2] = {
 			LED_NAME_LEFT_RED5_TAILLIGHT,			
 			LED_NAME_LEFT_RED1_TAILLIGHT
 	};		
-	//Pattern: Turn off all of the LEDs in the array, wait for x3 the duration of the desired delay, then turn them all on, and repeat (off, off, off, on: repeat)
-	//Use a 250ms delay for the pattern
+	//Pattern: Turn off all of the LEDs in the array, wait for x3 the duration of the desired delay, then turn them all on, and repeat (off, off, off, on, off, off, off, on: repeat)
+	//Use a 125ms delay for the pattern
 		
 		
 	//Motion Right Turn
 	byte _LED_NAMES_For_MotionTurnRight_Headlight[1] = {
 			LED_NAME_RIGHT_SIGNAL_HEADLIGHT
 	};
-	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, stay off, wait for the duration of the desired delay, then turn them all on, wait for the duration of the desired delay, stay on, wait for the duration of the desired delay and repeat (off, off, on, on).
-	//Note: This off-off then on-on pattern is so it can use the same 250ms delay used for tail lights, instead of having it's own 500ms delay.
-	//Use a 250ms delay for the pattern
+	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, stay off, wait for the duration of the desired delay, then turn them all on, wait for the duration of the desired delay, stay on, wait for the duration of the desired delay and repeat (off, off, off, off, on, on, on, on).
+	//Note: This off-off then on-on pattern is so it can use the same 125ms delay used for tail lights, instead of having it's own 500ms delay.
+	//Use a 125ms delay for the pattern
+	
 	
 	
 	byte _LED_NAMES_For_MotionTurnRight_SideSignalLights[1] = {
 			LED_NAME_RIGHT_SIDE_SIGNAL_LIGHT
 	};
-	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, stay off, wait for the duration of the desired delay, then turn them all on, wait for the duration of the desired delay, stay on, wait for the duration of the desired delay and repeat (off, off, on, on).
-	//Note: This off-off then on-on pattern is so it can use the same 250ms delay used for tail lights, instead of having it's own 500ms delay.
-	//Use a 250ms delay for the pattern
+	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, stay off, wait for the duration of the desired delay, then turn them all on, wait for the duration of the desired delay, stay on, wait for the duration of the desired delay and repeat (off, off, off, off, on, on, on, on).
+	//Note: This off-off then on-on pattern is so it can use the same 125ms delay used for tail lights, instead of having it's own 500ms delay.
+	//Use a 125ms delay for the pattern
 	
 	
 	byte _LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[1] = {
 			LED_NAME_RIGHT_RED3_TAILLIGHT
 	};
-	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, then turn them all on, wait for x2 the duration of the desired delay, and repeat (off, on, off, off: repeat)
+	//Pattern: Turn off all of the LEDs in the array, wait for the duration of the desired delay, then turn them all on, wait for x2 the duration of the desired delay, and repeat (off, on, off, off, off, on, off, off: repeat)
 	//Use a 250ms delay for the pattern
 	
 	
@@ -407,16 +408,16 @@ private:
 			LED_NAME_RIGHT_RED4_TAILLIGHT,
 			LED_NAME_RIGHT_RED2_TAILLIGHT
 	};
-	//Pattern: Turn off all of the LEDs in the array, wait for x2 the duration of the desired delay, then turn them all on, wait for x1 the duration of the desired delay, and repeat (off, off, on, off: repeat)
-	//Use a 250ms delay for the pattern
+	//Pattern: Turn off all of the LEDs in the array, wait for x2 the duration of the desired delay, then turn them all on, wait for x1 the duration of the desired delay, and repeat (off, off, on, off, off, off, on, off: repeat)
+	//Use a 125ms delay for the pattern
 	
 	
 	byte _LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[2] = {
 			LED_NAME_RIGHT_RED5_TAILLIGHT,			
 			LED_NAME_RIGHT_RED1_TAILLIGHT
 	};		
-	//Pattern: Turn off all of the LEDs in the array, wait for x3 the duration of the desired delay, then turn them all on, and repeat (off, off, off, on: repeat)
-	//Use a 250ms delay for the pattern
+	//Pattern: Turn off all of the LEDs in the array, wait for x3 the duration of the desired delay, then turn them all on, and repeat (off, off, off, on, off, off, off, on: repeat)
+	//Use a 125ms delay for the pattern
 	
 	
 	//Motion Brake
@@ -439,22 +440,22 @@ private:
 		
 		
 		Turn off all of the LEDs in the array
-		Wait for x2 the duration of the desired delay (i.e. 2x250= 500 ms)
+		Wait for x2 the duration of the desired delay (i.e. 2x125= 250 ms)
 		Turn on all of the LEDs in the array
-		Wait for the duration of the desired delay (i.e. 250 ms)
+		Wait for the duration of the desired delay (i.e. 125 ms)
 		Turn off all of the LEDs in the array
-		Wait for x2 the duration of the desired delay (i.e. 2x250= 500 ms)
+		Wait for x2 the duration of the desired delay (i.e. 2x125= 250 ms)
 		Turn on all of the LEDs in the array
-		Wait for the duration of the desired delay (i.e. 250 ms)	
+		Wait for the duration of the desired delay (i.e. 125 ms)	
 		Turn off all of the LEDs in the array
-		Wait for x3 the duration of the desired delay (i.e. 3x250= 750 ms)
+		Wait for x2 the duration of the desired delay (i.e. 2x125= 250 ms)
 		Turn on all of the LEDs in the array
 		Hold it on indefinitely until the mode is changed to something else
 			
-		(off, off, on, off, off, on, off, off, off, on-hold)
+		(off, off, on, off, off, on, off, off, on-hold)
 		
 	*/
-	//Use a 250ms delay for the pattern
+	//Use a 125ms delay for the pattern
 		
 
 	//SW Resettable
