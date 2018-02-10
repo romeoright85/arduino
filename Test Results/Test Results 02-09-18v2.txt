@@ -117,8 +117,96 @@ All on seems to work on startup, but after running other modes and coming back t
 
 02-09-18 Updates v2:
 	
-	I found that the counter was being passed by value and not by reference in resetIndexCounter() so the values weren't changing globally as needed.
+I found that the counter was being passed by value and not by reference in resetIndexCounter() so the values weren't changing globally as needed.
 	
+	
+02-09-18 Test v2:	
+Hazards work now, but it turns off night time mode lights. So need to fix this.
+
+Brake still doesn't blink.
+
+02-09-18 Updates v3:
+
+
+I found that for setRoverMotion() I was switching on this->_currentRoverMotion (the output) instead of desiredRoverMotion (the input)
+
+
+02-09-18 Test v3:	
+	
+Brake blinks only once.
+Left turn headlight signal and side signal and right tail light works. But should be left tail light.
+	Similar issue with right turn.
+	Possibly want to change states faster?
+	
+Hazard works. But once it turns off, the top tail light led turns off as well in night mode. Should be all three on.
+
+
+Demo mode doesn't work.
+
+Underglow on still turns on everything.
+
+IR Beacon on not turning on.
+
+Blue Beacon on not turning on.
+
+Reverse lights on still turning off tail lights in night mode.
+
+02-09-18 Updates v4:
+
+I forgot to reset the counter after the counter was reached for the LED_MOTION_BRAKE case in runLedController()
+
+
+
+
+
+02-09-18 Test v4:	
+
+Brake lights work now.
+
+Maybe change the speed from DELAY_50_PERIODS to DELAY_25_PERIODS (125ms) for the turn and the brake. But leave the side signal lights still blinking at 250ms.
+
+
+The pinout looks correct and the software looks correct but something looks swapped with the taillights.
+
+When I did a digitalWrite(31, HIGH);//DEBUG to turn on the left tail light, I got the right tail light to turn on. So it's not the code. It's the pinout.
+
+After checking the pinouts by bringing the LED taillight signal to ground, it's the documentation that is reversed. It says left when it should be right.
+
+It looks like during my test, the right tail light is now out.
+	After opening the lid and putting it back on, the tail light seemed to fix itself and works again. Something was probably loose.
+	
+[DONE] Now the front beacon LED doesn't light up. I swapped some cables and the front LED lights up. So nothing is wrong with it's cabling. Either the front LED transistor is bad, it's connection to the NAVI is bad, or the software isn't turning it on.
+	It seems to be a software issue, as I added a line to manually turn on the front LED after turning all LEDs and it turns on.
+	
+	
+	i.e.
+		this->_currentUniversalLEDMode = LED_ALL_ON_MODE;//DEBUG			
+		digitalWrite(FRONT_BEACON_BLUE_PIN, HIGH);//DEBUG
+
+		Found that in executeFinalLEDStates() I forgot to write the case for Front Blue Beacon.
+
+		Also careful not to mix "Beacon light types" with "LED Names (for discrete control)" as one may contain text of another.
+		
+		
+		
+		
+LEFT OFF HERE
+		
+[NEED TO DO] Tighten rover lid nuts.
+	
+
+[NEED TO DO] Then need to go back and update all documentation with left is right and right is left for tail lights.
+	RoverConfig.h
+	Master Pinout List 08-11-16v2
+	Microcontroller Pinout 02-09-18v1
+	
+[NEED TO DO] Then retest and fix other bugs.
+i.e.
+	Demo mode doesn't work.
+	Underglow on still turns on everything.
+	IR Beacon on not turning on.
+	Blue Beacon on not turning on.
+	Reverse lights on still turning off tail lights in night mode.
 	
 	
 	

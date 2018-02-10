@@ -145,7 +145,10 @@ SATURDAY:
 						
 					
 					
-					[LEFT OFF HERE, run the .ino code with Visual Micro and test out the use cases based on the notes on usage] test this code as well
+					[LEFT OFF HERE, see Test Results 02-09-18v2.txt] test this code as well
+					
+					
+					
 					
 					
 					

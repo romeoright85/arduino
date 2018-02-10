@@ -171,6 +171,7 @@ LedController_NAVI * ledController_NAVI = new LedController_NAVI(ledControllerDe
 
 
 
+
 RoverReset * resetArray[] = {
 	ledControllerDelayCounter,
 	ledControllerTimer,
@@ -250,162 +251,170 @@ void loop() {
 				ledController_NAVI->setUniversalLEDMode(LED_NIGHT_TIME_MODE);
 				break;
 			case 'e':
-				_SERIAL_DEBUG_CHANNEL_.println(F("UM: Hazard"));//UM = Universal Mode
-				ledController_NAVI->setUniversalLEDMode(LED_HAZARD_MODE);
+				_SERIAL_DEBUG_CHANNEL_.println(F("HZ: Off"));//HZ = Hazard Lights
+				ledController_NAVI->setHazardLightsMode(LED_HAZARDS_OFF);
 				break;
 			case 'f':
+				_SERIAL_DEBUG_CHANNEL_.println(F("HZ: On"));//HZ = Hazard Lights
+				ledController_NAVI->setHazardLightsMode(LED_HAZARDS_ON);
+				break;
+			case 'g':
+				_SERIAL_DEBUG_CHANNEL_.println(F("HZ: Neutral"));//HZ = Hazard Lights
+				ledController_NAVI->setHazardLightsMode(LED_HAZARDS_NEUTRAL);
+				break;
+			case 'h':
 				_SERIAL_DEBUG_CHANNEL_.println(F("UM: Demo"));//UM = Universal Mode
 				ledController_NAVI->setUniversalLEDMode(LED_DEMO_MODE);
 				break;
-			case 'g':
+			case 'i':
 				_SERIAL_DEBUG_CHANNEL_.println(F("UM: Error"));//UM = Universal Mode
 				ledController_NAVI->setUniversalLEDMode(LED_ERROR_MODE);
 				break;
-			case 'h':
+			case 'j':
 				_SERIAL_DEBUG_CHANNEL_.println(F("UM: Stealth"));//UM = Universal Mode
 				ledController_NAVI->setUniversalLEDMode(LED_STEALTH_MODE);
 				break;
-			case 'i':
+			case 'k':
 				_SERIAL_DEBUG_CHANNEL_.println(F("UM: Debug"));//UM = Universal Mode
 				ledController_NAVI->setUniversalLEDMode(LED_DEBUG_MODE);
 				break;
-			case 'j':
+			case 'l':
 				_SERIAL_DEBUG_CHANNEL_.println(F("FS: Off"));//FG = Fog State
 				ledController_NAVI->setFogLightMode(LED_FOG_OFF);
 				break;
-			case 'k':
+			case 'm':
 				_SERIAL_DEBUG_CHANNEL_.println(F("FS: On"));//FG = Fog State
 				ledController_NAVI->setFogLightMode(LED_FOG_ON);
 				break;
-			case 'l':
+			case 'n':
 				_SERIAL_DEBUG_CHANNEL_.println(F("FS: Neutral"));//FG = Fog State
 				ledController_NAVI->setFogLightMode(LED_FOG_NEUTRAL);
 				break;
-			case 'm':
+			case 'o':
 				_SERIAL_DEBUG_CHANNEL_.println(F("UG: Off"));//UG = Underglow
 				ledController_NAVI->setUnderglowLightMode(LED_UNDERGLOW_OFF);
 				break;
-			case 'n':
+			case 'p':
 				_SERIAL_DEBUG_CHANNEL_.println(F("UG: On"));//UG = Underglow
 				ledController_NAVI->setUniversalLEDMode(LED_UNDERGLOW_ON);
 				break;
-			case 'o':
+			case 'q':
 				_SERIAL_DEBUG_CHANNEL_.println(F("UG: Neutral"));//UG = Underglow
 				ledController_NAVI->setUnderglowLightMode(LED_UNDERGLOW_NEUTRAL);
 				break;
-			case 'p':
+			case 'r':
 				_SERIAL_DEBUG_CHANNEL_.println(F("IR: All Off"));//IR = IR Beacon
 				ledController_NAVI->setIRBeaconLightMode(LED_IR_BEACON_ALL_OFF);
 				break;
-			case 'q':
+			case 's':
 				_SERIAL_DEBUG_CHANNEL_.println(F("IR: All On"));//IR = IR Beacon
 				ledController_NAVI->setIRBeaconLightMode(LED_IR_BEACON_ALL_ON);
 				break;
-			case 'r':
+			case 't':
 				_SERIAL_DEBUG_CHANNEL_.println(F("IR: Drctnl"));//IR = IR Beacon
 				ledController_NAVI->setIRBeaconLightMode(LED_IR_BEACON_DIRECTIONAL_MODE);
 				break;
-			case 's':
+			case 'u':
 				_SERIAL_DEBUG_CHANNEL_.println(F("IR: Neutral"));//IR = IR Beacon
 				ledController_NAVI->setIRBeaconLightMode(LED_IR_BEACON_ALL_NEUTRAL);
 				break;
-			case 't':
+			case 'v':
 				_SERIAL_DEBUG_CHANNEL_.println(F("BL: All Off"));//BL = Blue Beacon
 				ledController_NAVI->setBlueBeaconLightMode(LED_BLUE_BEACON_ALL_OFF);
 				break;
-			case 'u':
+			case 'w':
 				_SERIAL_DEBUG_CHANNEL_.println(F("BL: All On"));//BL = Blue Beacon
 				ledController_NAVI->setBlueBeaconLightMode(LED_BLUE_BEACON_ALL_ON);
 				break;
-			case 'v':
+			case 'x':
 				_SERIAL_DEBUG_CHANNEL_.println(F("BL: Drctnl"));//BL = Blue Beacon
 				ledController_NAVI->setBlueBeaconLightMode(LED_BLUE_BEACON_DIRECTIONAL_MODE);
 				break;
-			case 'w':
+			case 'y':
 				_SERIAL_DEBUG_CHANNEL_.println(F("BL: Neutral"));//BL = Blue Beacon
 				ledController_NAVI->setBlueBeaconLightMode(LED_BLUE_BEACON_ALL_NEUTRAL);
 				break;
-			case 'x':
+			case 'z':
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: None"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_NONE);
 				break;
-			case 'y':
+			case 'A':
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Front"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_FRONT);
 				break;
-			case 'z':
+			case 'B':
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Front Right"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_FRONT_RIGHT);
 				break;
-			case 'A':
+			case 'C':
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Right"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_RIGHT);
 				break;
-			case 'B':
+			case 'D':
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Rear Right"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_REAR_RIGHT);
 				break;
-			case 'C':
+			case 'E':
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Rear"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_REAR);
 				break;
-			case 'D':
+			case 'F':
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Rear Left"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_REAR_LEFT);
 				break;
-			case 'E':
+			case 'G':
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Left"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_LEFT);
 				break;
-			case 'F':
+			case 'H':
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Front Left"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_FRONT_LEFT);
 				break;
-			case 'G':
+			case 'I':
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Std"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_STANDARD);
 				break;
-			case 'H':
+			case 'J':
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Trn Left"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_TURN_LEFT);
 				break;
-			case 'I':
+			case 'K':
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Trn Right"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_TURN_RIGHT);
 				break;
-			case 'J':
+			case 'L':
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Brake"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_BRAKE);
 				break;
-			case 'K':
+			case 'M':
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Reverse"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_REVERSE);
 				break;
-			case 'L':
+			case 'N':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: None"));//ET = Error Type
 				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_NONE);
 				break;
-			case 'M':
+			case 'O':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Gen Health"));//ET = Error Type
 				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_GENERIC_HEALTH);
 				break;
-			case 'N':
+			case 'P':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Gen Sys"));//ET = Error Type
 				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_GENERIC_SYSTEM);
 				break;
-			case 'O':
+			case 'Q':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: SW Rst"));//ET = Error Type
 				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_SW_RESET);
 				break;
-			case 'P':
+			case 'R':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Sync"));//ET = Error Type
 				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_SYNC);
 				break;
-			case 'Q':
+			case 'S':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Invd Ste/Mde"));//ET = Error Type
 				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_INVALID_STATE_OR_MODE);
 				break;
-			case 'R':
+			case 'T':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Undfnd"));//ET = Error Type
 				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_UNDEFINED);
 				break;

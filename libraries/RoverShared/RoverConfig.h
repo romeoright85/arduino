@@ -472,6 +472,7 @@
 		#define DELAY_2_PERIODS 2
 		#define DELAY_4_PERIODS 4
 		#define DELAY_10_PERIODS 10		
+		#define DELAY_25_PERIODS 25
 		#define DELAY_50_PERIODS 50
 		#define DELAY_80_PERIODS 80		
 		#define DELAY_100_PERIODS 100

@@ -90,7 +90,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties arduino.upload.port="COM16" />
+      <UserProperties arduino.upload.port="COM15" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

@@ -22,6 +22,16 @@
 
 
 
+
+//============Debugging: Turn On All LEDs on Power On Reset
+//Uncomment the flag below in order to turn on all LEDs at power on reset. (to see if all LEDs are function. 
+//#define _DEBUG_TURN_ON_ALL_LEDS_AT_POR_
+
+//============End Debugging: Turn On All LEDs on Power On Reset
+
+
+
+
 /*
 Notes on Usage:
 
@@ -186,6 +196,7 @@ public:
 	~LedController_NAVI();//destructor
 	void runLedController();//runs the led controller with the desired light pattern(s). This function should be called in every iteration of the Arduino loop()
 	void setUniversalLEDMode(byte);//(which Universal LED Modes) used for LED modes
+	void setHazardLightsMode(byte);//(which Hazard Lights State)	
 	void setFogLightMode(byte);//(which Fog Lights State)
 	void setUnderglowLightMode(byte);//(which Underglow Light State)
 	void setIRBeaconLightMode(byte);//(which IR Beacon State)
@@ -504,6 +515,7 @@ private:
 	byte _currentUniversalLEDMode = LED_ALL_OFF_MODE;//holds the current universal LED Mode
 	byte _currentRoverMotion = LED_MOTION_STANDARD;//holds the current Rover Motion
 	byte _currentErrorState = LED_ERROR_TYPE_NONE;//holds the current error state
+	byte _currentHazardLightsState = LED_HAZARDS_OFF;//holds the current hazard lights state
 	byte _currentFogLightState = LED_FOG_OFF;//holds the current fog light state
 	byte _currentUnderglowState = LED_UNDERGLOW_OFF;//holds the current underglow state	
 	byte _currentIRBeaconState = LED_IR_BEACON_ALL_OFF;//holds the current IR Beacon State
@@ -513,6 +525,7 @@ private:
 	byte _arrayOfInterestSize = 0;//shared variable, used to hold the current array of interest's size
 	//Note: Keep separate pattern index counters just in case one set of LEDs holds a pattern (like with braking) while others still should be incrementing
 	byte _universalLEDModePatternIndexCounter = 0;//used to hold the pattern index counter for the universal LED modes
+	byte _hazardLightsPatternIndexCounter = 0;//used to hold the pattern index counter for the hazard lights
 	byte _roverMotionPatternIndexCounter = 0;//used to hold the pattern index counter for the rover motion
 	byte _blueBeaconLEDsPatternIndexCounter = 0;//used to hold the pattern index counter for the blue beacon LEDs
 	byte _irBeaconLEDsPatternIndexCounter = 0;//used to hold the pattern index counter for the IR Beacon LEDs
