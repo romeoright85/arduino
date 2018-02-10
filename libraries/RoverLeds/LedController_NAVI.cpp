@@ -32,8 +32,6 @@ void LedController_NAVI::runLedController()
 
 
 
-
-
 		
 	switch(this->_currentUniversalLEDMode)
 	{
@@ -67,7 +65,7 @@ void LedController_NAVI::runLedController()
 			//Turn on LEDs 2, 4, 5 on the right tail lights
 			this->discreteLEDControl( LED_NAME_RIGHT_RED2_TAILLIGHT, LED_ON );
 			this->discreteLEDControl( LED_NAME_RIGHT_RED4_TAILLIGHT, LED_ON );
-			this->discreteLEDControl( LED_NAME_RIGHT_RED5_TAILLIGHT, LED_ON );			
+			this->discreteLEDControl( LED_NAME_RIGHT_RED5_TAILLIGHT, LED_ON );		
 			break;
 		case LED_DEMO_MODE:
 			//Note: This mode uses the delay counter.
@@ -199,6 +197,7 @@ void LedController_NAVI::runLedController()
 						this->_counterPtr->counterReset();//reset the counter
 						
 
+/*OLD CODE
 						switch(this->_hazardLightsPatternIndexCounter)
 						{
 							case 0:
@@ -217,12 +216,35 @@ void LedController_NAVI::runLedController()
 								//do nothing
 								break;								
 						}//end switch
-
+*/
 						//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
 						this->autoIncrementIndexCounter(this->_hazardLightsPatternIndexCounter, BLINK_PATTERN_SIZE);						
 						
 					}//end if
 					//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.	
+					
+					//Set the LEDs based on the pattern index counter value
+					switch(this->_hazardLightsPatternIndexCounter)
+					{
+						case 0:
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_HazardMode) / sizeof(this->_LED_NAMES_For_HazardMode[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_HazardMode[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							break;
+						case 1:
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_HazardMode) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_HazardMode[ i ], LED_ON );//turn off all the elements in the array
+							}//end for								
+							break;
+						default:
+							//do nothing
+							break;								
+					}//end switch
+					
+					
+					
 				break;
 			case LED_HAZARDS_NEUTRAL:
 				//Do nothing that is recurring.
@@ -260,7 +282,7 @@ void LedController_NAVI::runLedController()
 						
 						this->_counterPtr->counterReset();//reset the counter
 						
-
+						/* OLD CODE
 						switch(this->_roverMotionPatternIndexCounter)
 						{
 							case 0:
@@ -439,6 +461,8 @@ void LedController_NAVI::runLedController()
 								//do nothing
 								break;
 						}//end switch
+						
+						*/
 	
 						//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
 						this->autoIncrementIndexCounter(this->_roverMotionPatternIndexCounter, TURN_SIGNAL_PATTERN_SIZE);
@@ -446,6 +470,197 @@ void LedController_NAVI::runLedController()
 				
 					}//end if
 					//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.					
+					
+					
+					//Set the LEDs based on the pattern index counter value
+					switch(this->_roverMotionPatternIndexCounter)
+					{
+						case 0:
+							//Left Turn Headlight - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_Headlight) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_Headlight[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_Headlight[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for			
+							
+							//Right Turn Headlight - Turn Off
+							//Do Nothing
+							//Note: The right headlight's signal should already be turned off by setRoverMotion()'s initialization
+							
+							//Left Side Signal Light - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for	
+							
+							//Right Side Signal Light - Turn Off
+							//Do Nothing
+							//Note: The right side signal light should already be turned off by setRoverMotion()'s initialization
+							
+							//Left Tail Light
+							//Part 1 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							//Part 2 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							//Part 3 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							
+							//Right Tail Light - Turn Off
+							//Do Nothing
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+
+							break;
+						case 1:
+							//Left Turn Headlight - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_Headlight) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_Headlight[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_Headlight[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for			
+							
+							//Right Turn Headlight - Turn Off
+							//Do Nothing
+							//Note: The right headlight's signal should already be turned off by setRoverMotion()'s initialization
+							
+							//Left Side Signal Light - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for	
+							
+							//Right Side Signal Light - Turn Off
+							//Do Nothing
+							//Note: The right side signal light should already be turned off by setRoverMotion()'s initialization
+							
+							//Left Tail Light
+							//Part 1 - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[ i ], LED_ON );//turn on all the elements in the array
+							}//end for
+							//Part 2 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							//Part 3 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							
+							//Right Tail Light - Turn Off
+							//Do Nothing
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+						
+							break;
+						case 2:
+							//Left Turn Headlight - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_Headlight) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_Headlight[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_Headlight[ i ], LED_ON );//turn on all the elements in the array
+							}//end for			
+							
+							//Right Turn Headlight - Turn Off
+							//Do Nothing
+							//Note: The right headlight's signal should already be turned off by setRoverMotion()'s initialization
+							
+							//Left Side Signal Light - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights[ i ], LED_ON );//turn on all the elements in the array
+							}//end for	
+							
+							//Right Side Signal Light - Turn Off
+							//Do Nothing
+							//Note: The right side signal light should already be turned off by setRoverMotion()'s initialization
+							
+							//Left Tail Light
+							//Part 1 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							//Part 2 - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[ i ], LED_ON );//turn on all the elements in the array
+							}//end for								
+							//Part 3 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							
+							//Right Tail Light - Turn Off
+							//Do Nothing
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							
+							break;	
+						case 3:
+							//Left Turn Headlight - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_Headlight) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_Headlight[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_Headlight[ i ], LED_ON );//turn on all the elements in the array
+							}//end for			
+							
+							//Right Turn Headlight - Turn Off
+							//Do Nothing
+							//Note: The right headlight's signal should already be turned off by setRoverMotion()'s initialization
+							
+							//Left Side Signal Light - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_SideSignalLights[ i ], LED_ON );//turn on all the elements in the array
+							}//end for	
+							
+							//Right Side Signal Light - Turn Off
+							//Do Nothing
+							//Note: The right side signal light should already be turned off by setRoverMotion()'s initialization
+							
+							//Left Tail Light
+							//Part 1 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part1[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							//Part 2 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part2[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							//Part 3 - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3) / sizeof(this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnLeft_LeftTaillight_Part3[ i ], LED_ON );//turn on all the elements in the array
+							}//end for								
+							
+							//Right Tail Light - Turn Off
+							//Do Nothing
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							
+							break;
+						default:
+							//do nothing
+							break;
+					}//end switch					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
 					
 					break;
 			case LED_MOTION_TURN_RIGHT:
@@ -456,7 +671,7 @@ void LedController_NAVI::runLedController()
 						
 						this->_counterPtr->counterReset();//reset the counter
 							
-	
+						/*OLD CODE
 						switch(this->_roverMotionPatternIndexCounter)
 						{
 							case 0:
@@ -644,7 +859,7 @@ void LedController_NAVI::runLedController()
 								//do nothing
 								break;
 						}//end switch
-	
+						*/
 	
 						//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
 						this->autoIncrementIndexCounter(this->_roverMotionPatternIndexCounter, TURN_SIGNAL_PATTERN_SIZE);
@@ -652,6 +867,197 @@ void LedController_NAVI::runLedController()
 					}//end if
 					//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.					
 					
+					
+
+
+					//Set the LEDs based on the pattern index counter value
+					switch(this->_roverMotionPatternIndexCounter)
+					{
+						case 0:
+							//Left Turn Headlight - Turn Off
+							//Do Nothing
+							//Note: The left headlight's signal should already be turned off by setRoverMotion()'s initialization
+															
+							//Right Turn Headlight - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_Headlight) / sizeof(this->_LED_NAMES_For_MotionTurnRight_Headlight[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_Headlight[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for			
+							
+							
+							//Left Side Signal Light - Turn Off
+							//Do Nothing
+							//Note: The left side signal light should already be turned off by setRoverMotion()'s initialization
+							
+							//Right Side Signal Light - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_SideSignalLights) / sizeof(this->_LED_NAMES_For_MotionTurnRight_SideSignalLights[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_SideSignalLights[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for	
+							
+							
+							//Left Tail Light - Turn Off
+							//Do Nothing
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							
+							//Right Tail Light - Turn Off
+							//Part 1 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							//Part 2 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							//Part 3 - Turn Off
+							for(byte i = 0; i < sizeof(_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+
+							break;
+						case 1:
+							//Left Turn Headlight - Turn Off
+							//Do Nothing
+							//Note: The left headlight's signal should already be turned off by setRoverMotion()'s initialization
+															
+							//Right Turn Headlight - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_Headlight) / sizeof(this->_LED_NAMES_For_MotionTurnRight_Headlight[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_Headlight[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for			
+							
+							
+							//Left Side Signal Light - Turn Off
+							//Do Nothing
+							//Note: The left side signal light should already be turned off by setRoverMotion()'s initialization
+							
+							//Right Side Signal Light - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_SideSignalLights) / sizeof(this->_LED_NAMES_For_MotionTurnRight_SideSignalLights[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_SideSignalLights[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for	
+							
+							
+							//Left Tail Light - Turn Off
+							//Do Nothing
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							
+							//Right Tail Light
+							//Part 1 - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[ i ], LED_ON );//turn on all the elements in the array
+							}//end for
+							//Part 2 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							//Part 3 - Turn Off
+							for(byte i = 0; i < sizeof(_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for							
+							
+							break;
+						case 2:
+							//Left Turn Headlight - Turn Off
+							//Do Nothing
+							//Note: The left headlight's signal should already be turned off by setRoverMotion()'s initialization
+															
+							//Right Turn Headlight - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_Headlight) / sizeof(this->_LED_NAMES_For_MotionTurnRight_Headlight[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_Headlight[ i ], LED_ON );//turn on all the elements in the array
+							}//end for			
+							
+							
+							//Left Side Signal Light - Turn Off
+							//Do Nothing
+							//Note: The left side signal light should already be turned off by setRoverMotion()'s initialization
+							
+							//Right Side Signal Light - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_SideSignalLights) / sizeof(this->_LED_NAMES_For_MotionTurnRight_SideSignalLights[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_SideSignalLights[ i ], LED_ON );//turn on all the elements in the array
+							}//end for	
+							
+							
+							//Left Tail Light - Turn Off
+							//Do Nothing
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							
+							//Right Tail Light
+							//Part 1 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							//Part 2 - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2[ i ], LED_ON );//turn on all the elements in the array
+							}//end for								
+							//Part 3 - Turn Off
+							for(byte i = 0; i < sizeof(_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for							
+							
+							break;	
+						case 3:
+
+							//Left Turn Headlight - Turn Off
+							//Do Nothing
+							//Note: The left headlight's signal should already be turned off by setRoverMotion()'s initialization
+															
+							//Right Turn Headlight - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_Headlight) / sizeof(this->_LED_NAMES_For_MotionTurnRight_Headlight[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_Headlight[ i ], LED_ON );//turn on all the elements in the array
+							}//end for			
+							
+							
+							//Left Side Signal Light - Turn Off
+							//Do Nothing
+							//Note: The left side signal light should already be turned off by setRoverMotion()'s initialization
+							
+							//Right Side Signal Light - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_SideSignalLights) / sizeof(this->_LED_NAMES_For_MotionTurnRight_SideSignalLights[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_SideSignalLights[ i ], LED_ON );//turn on all the elements in the array
+							}//end for	
+							
+							
+							//Left Tail Light - Turn Off
+							//Do Nothing
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							
+							//Right Tail Light
+							//Part 1 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part1[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							//Part 2 - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part2[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							//Part 3 - Turn On
+							for(byte i = 0; i < sizeof(_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3) / sizeof(this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionTurnRight_RightTaillight_Part3[ i ], LED_ON );//turn on all the elements in the array
+							}//end for							
+							
+							break;
+						default:
+							//do nothing
+							break;
+					}//end switch					
 					
 					break;
 			case LED_MOTION_BRAKE:
@@ -662,6 +1068,8 @@ void LedController_NAVI::runLedController()
 						
 						this->_counterPtr->counterReset();//reset the counter
 						
+						
+						/*OLD CODE
 						switch(this->_roverMotionPatternIndexCounter)
 						{
 							case 0:
@@ -738,7 +1146,7 @@ void LedController_NAVI::runLedController()
 								//do nothing
 								break;
 						}//end switch
-	
+						*/
 						if(this->_roverMotionPatternIndexCounter < 9) //Keep incrementing the pattern counter unless it's the state where the tail light should hold it's value, then don't increment it anymore. As you don't want it to reset. 
 						//Since _roverMotionPatternIndexCounter is independent of other index counters like _universalLEDModePatternIndexCounter, _blueBeaconLEDsPatternIndexCounter, _irBeaconLEDsPatternIndexCounter, etc. other LEDs can still have it's own display patterns still going even though the brake light is held on
 						{
@@ -750,6 +1158,85 @@ void LedController_NAVI::runLedController()
 						
 					}//end if
 					//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.	
+					
+					
+					//Set the LEDs based on the pattern index counter value
+					switch(this->_roverMotionPatternIndexCounter)
+					{
+						case 0:
+							//Right and Left Tail lights - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							break;
+						case 1:
+							//Right and Left Tail lights - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for								
+							break;
+						case 2:
+							//Right and Left Tail lights - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_ON );//turn on all the elements in the array
+							}//end for								
+							break;	
+						case 3:
+							//Right and Left Tail lights - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							break;
+						case 4:
+							//Right and Left Tail lights - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							break;
+						case 5:
+							//Right and Left Tail lights - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_ON );//turn on all the elements in the array
+							}//end for	
+							break;
+						case 6:
+							//Right and Left Tail lights - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							break;
+						case 7:
+							//Right and Left Tail lights - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							break;
+						case 8:
+							//Right and Left Tail lights - Turn Off
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_OFF );//turn off all the elements in the array
+							}//end for
+							break;
+						case 9:
+							//Right and Left Tail lights - Turn On
+							for(byte i = 0; i < sizeof(this->_LED_NAMES_For_MotionBrake) / sizeof(this->_LED_NAMES_For_MotionBrake[0]) ; i++)
+							{
+								this->discreteLEDControl( this->_LED_NAMES_For_MotionBrake[ i ], LED_ON );//turn on all the elements in the array
+							}//end for
+							break;
+						default:
+							//do nothing
+							break;
+					}//end switch					
 					
 					break;
 			case LED_MOTION_REVERSE:
@@ -912,7 +1399,10 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			
 			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.			
 			break;
-		case LED_NIGHT_TIME_MODE:		
+		case LED_NIGHT_TIME_MODE:	
+			//Assign desired mode to the current universal LED mode since it's one of the valid cases
+			this->_currentUniversalLEDMode = desiredMode;	
+			
 			//Set the overriding initialization LED states
 			//Turn on the High Beams of the Headlights
 			this->discreteLEDControl( LED_NAME_LEFT_HIGHBEAM_HEADLIGHT, LED_ON );
@@ -1038,7 +1528,6 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			break;			
 		default:
 			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
-			
 			this->_currentUniversalLEDMode = LED_ALL_OFF_MODE;//set the current universal LED mode to the default LED_ALL_OFF_MODE
 			
 			//Do nothing else since it's an invalid state
@@ -1157,7 +1646,7 @@ void LedController_NAVI::setFogLightMode(byte fogLightsState)
 void LedController_NAVI::setUnderglowLightMode(byte desiredUnderglowLightState)
 {
 	//Assign the underglow light mode if it's one of the valid modes
-	switch(underglowLightState)
+	switch(desiredUnderglowLightState)
 	{
 		case LED_UNDERGLOW_OFF:
 			this->_currentUnderglowState = desiredUnderglowLightState;
@@ -1173,44 +1662,44 @@ void LedController_NAVI::setUnderglowLightMode(byte desiredUnderglowLightState)
 			break;
 	}//end switch
 }
-void LedController_NAVI::setIRBeaconLightMode(byte irBeaconLightState)
+void LedController_NAVI::setIRBeaconLightMode(byte desiredIrBeaconLightState)
 {
 	//Assign the IR Beacon light mode if it's one of the valid modes
-	switch(irBeaconLightState)
+	switch(desiredIrBeaconLightState)
 	{
 		case LED_IR_BEACON_ALL_OFF:
-			this->_currentIRBeaconState = LED_IR_BEACON_ALL_OFF;
+			this->_currentIRBeaconState = desiredIrBeaconLightState;
 			break;
 		case LED_IR_BEACON_ALL_ON:
-			this->_currentIRBeaconState = LED_IR_BEACON_ALL_ON;
+			this->_currentIRBeaconState = desiredIrBeaconLightState;
 			break;
 		case LED_IR_BEACON_DIRECTIONAL_MODE:
-			this->_currentIRBeaconState = LED_IR_BEACON_DIRECTIONAL_MODE;
+			this->_currentIRBeaconState = desiredIrBeaconLightState;
 			break;
 		case LED_IR_BEACON_ALL_NEUTRAL:
-			this->_currentIRBeaconState = LED_IR_BEACON_ALL_NEUTRAL;
+			this->_currentIRBeaconState = desiredIrBeaconLightState;
 			break;			
 		default:
 			//else do nothing since it's an invalid mode
 			break;
 	}//end switch
 }
-void LedController_NAVI::setBlueBeaconLightMode(byte blueBeaconLightState)
+void LedController_NAVI::setBlueBeaconLightMode(byte desiredBlueBeaconLightState)
 {
 	//Assign the Blue Beacon light mode if it's one of the valid modes
-	switch(blueBeaconLightState)
+	switch(desiredBlueBeaconLightState)
 	{
 		case LED_BLUE_BEACON_ALL_OFF:
-			this->_currentIRBeaconState = LED_BLUE_BEACON_ALL_OFF;
+			this->_currentBlueBeaconState = desiredBlueBeaconLightState;
 			break;
 		case LED_BLUE_BEACON_ALL_ON:
-			this->_currentIRBeaconState = LED_BLUE_BEACON_ALL_ON;
+			this->_currentBlueBeaconState = desiredBlueBeaconLightState;
 			break;
 		case LED_BLUE_BEACON_DIRECTIONAL_MODE:
-			this->_currentIRBeaconState = LED_BLUE_BEACON_DIRECTIONAL_MODE;
+			this->_currentBlueBeaconState = desiredBlueBeaconLightState;
 			break;
 		case LED_BLUE_BEACON_ALL_NEUTRAL:
-			this->_currentIRBeaconState = LED_BLUE_BEACON_ALL_NEUTRAL;
+			this->_currentBlueBeaconState = desiredBlueBeaconLightState;
 			break;			
 		default:
 			//else do nothing since it's an invalid mode
@@ -2008,7 +2497,6 @@ void LedController_NAVI::executeFinalLEDStates()
 	if( BooleanBitFlags::flagIsSet(this->_ledStateFlagSet3, _BTFG_LED_STATE_RIGHT_RED1_TAILLIGHT) )
 	{
 		this->_rightTailLightAssy->turnOn(RED1_TAILLIGHT);	
-	
 	}//end if
 	else
 	{
@@ -2030,12 +2518,12 @@ void LedController_NAVI::executeFinalLEDStates()
 	if( BooleanBitFlags::flagIsSet(this->_ledStateFlagSet3, _BTFG_LED_STATE_RIGHT_RED2_TAILLIGHT) )
 	{
 		this->_rightTailLightAssy->turnOn(RED2_TAILLIGHT);	
-	
 	}//end if
 	else
 	{
 		this->_rightTailLightAssy->turnOff(RED2_TAILLIGHT);	
 	}//end else				
+
 		
 	//Right Red 4 Tail Light
 	if( BooleanBitFlags::flagIsSet(this->_ledStateFlagSet3, _BTFG_LED_STATE_RIGHT_RED4_TAILLIGHT) )
