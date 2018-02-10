@@ -30,8 +30,6 @@ void LedController_NAVI::runLedController()
 
 	//Note: Also see setUniversalLEDMode() and setRoverMotion(), where the LED states are initialized.
 
-
-
 		
 	switch(this->_currentUniversalLEDMode)
 	{
@@ -73,94 +71,99 @@ void LedController_NAVI::runLedController()
 			{
 				
 				this->_counterPtr->counterReset();//reset the counter
-					
-				if( this->_universalLEDModePatternIndexCounter == 0)//for the first element in the array
-				{
-					//this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_arrayOfInterestSize - this->_universalLEDModePatternIndexCounter ], LED_OFF );//the last element in the array (the last element = arraySize - currentIndex)
-					
-					this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_arrayOfInterestSize - 1 ], LED_OFF );//the last element in the array (the last element = arraySize - currentIndex)
-					
-					this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_universalLEDModePatternIndexCounter ], LED_ON );//the current element in the array
-				}//end if
-				else//for all other elements
-				{
-					this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_universalLEDModePatternIndexCounter - 1 ], LED_OFF );//the previous element in the array
-					this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_universalLEDModePatternIndexCounter ], LED_ON );//the current element in the array
-				}//end else	
-					
+				
 				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
 				this->autoIncrementIndexCounter(this->_universalLEDModePatternIndexCounter, this->_arrayOfInterestSize);//the rollover value/size of the pattern is the number of LEDs in the array (as it turns on one at a time)
 					
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
+			
+			if( this->_universalLEDModePatternIndexCounter == 0)//for the first element in the array
+			{
+				//this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_arrayOfInterestSize - this->_universalLEDModePatternIndexCounter ], LED_OFF );//the last element in the array (the last element = arraySize - currentIndex)
+				
+				this->discreteLEDControl( this->_arrayOfInterest[ this->_arrayOfInterestSize - 1 ], LED_OFF );//the last element in the array (the last element = arraySize - currentIndex)
+				
+				this->discreteLEDControl( this->_arrayOfInterest[ this->_universalLEDModePatternIndexCounter ], LED_ON );//the current element in the array
+			}//end if
+			else//for all other elements
+			{
+				this->discreteLEDControl( this->_arrayOfInterest[ this->_universalLEDModePatternIndexCounter - 1 ], LED_OFF );//the previous element in the array
+				this->discreteLEDControl( this->_arrayOfInterest[ this->_universalLEDModePatternIndexCounter ], LED_ON );//the current element in the array
+			}//end else	
 				
 			break;
 		case LED_ERROR_MODE:
+		
+
+
 			//Note: This mode uses the delay counter.
 			if (this->_counterPtr->countReached())
 			{
 				
 				this->_counterPtr->counterReset();//reset the counter
 
-				//Depending on which error type, blink certain LEDs and light on (solid) other LEDs
-				
-				//Blink Code
-				if( this->_universalLEDModePatternIndexCounter == 0)
-				{
-					for(byte i = 0; i < this->_arrayOfInterestSize; i++)
-					{
-						this->discreteLEDControl( this->_arrayOfInterest[ i ], LED_OFF );//turn off all the elements in the array
-					}//end for
-				}//end if
-				else
-				{
-					for(byte i = 0; i < this->_arrayOfInterestSize; i++)
-					{
-						this->discreteLEDControl( this->_arrayOfInterest[ i ], LED_ON );//turn off all the elements in the array
-					}//end for
-				}//end else
 				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
 				this->autoIncrementIndexCounter(this->_universalLEDModePatternIndexCounter, BLINK_PATTERN_SIZE);
 					
-				//On Solid Code
-				switch(this->_currentErrorState)
-				{
-					case LED_ERROR_TYPE_NONE:
-						//Do nothing that is recurring.
-						break;
-					case LED_ERROR_TYPE_GENERIC_HEALTH:
-						this->discreteLEDControl( LED_NAME_LEFT_RED1_TAILLIGHT, LED_ON );//turn on this LED
-						this->discreteLEDControl( LED_NAME_RIGHT_RED1_TAILLIGHT, LED_ON );//turn on this LED
-						break;
-					case LED_ERROR_TYPE_GENERIC_SYSTEM:
-						this->discreteLEDControl( LED_NAME_LEFT_RED2_TAILLIGHT, LED_ON );//turn on this LED
-						this->discreteLEDControl( LED_NAME_RIGHT_RED2_TAILLIGHT, LED_ON );//turn on this LED
-						break;
-					case LED_ERROR_TYPE_SW_RESET:
-						this->discreteLEDControl( LED_NAME_LEFT_RED3_TAILLIGHT, LED_ON );//turn on this LED
-					this->discreteLEDControl( LED_NAME_RIGHT_RED3_TAILLIGHT, LED_ON );//turn on this LED
-						break;
-					case LED_ERROR_TYPE_SYNC:
-						this->discreteLEDControl( LED_NAME_LEFT_RED4_TAILLIGHT, LED_ON );//turn on this LED
-						this->discreteLEDControl( LED_NAME_RIGHT_RED4_TAILLIGHT, LED_ON );//turn on this LED
-						break;
-					case LED_ERROR_TYPE_INVALID_STATE_OR_MODE:
-						this->discreteLEDControl( LED_NAME_LEFT_RED5_TAILLIGHT, LED_ON );//turn on this LED
-						this->discreteLEDControl( LED_NAME_RIGHT_RED5_TAILLIGHT, LED_ON );//turn on this LED
-						break;
-					case LED_ERROR_TYPE_UNDEFINED:
-						this->discreteLEDControl( LED_NAME_LEFT_RED1_TAILLIGHT, LED_ON );//turn on this LED
-						this->discreteLEDControl( LED_NAME_RIGHT_RED1_TAILLIGHT, LED_ON );//turn on this LED
-						this->discreteLEDControl( LED_NAME_LEFT_RED3_TAILLIGHT, LED_ON );//turn on this LED
-						this->discreteLEDControl( LED_NAME_RIGHT_RED3_TAILLIGHT, LED_ON );//turn on this LED
-						break;			
-					default:
-						//Do nothing else since it's an invalid state.
-						break;				
-				}//end switch
-				
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
+			
+			
+			//Depending on which error type, blink certain LEDs and light on (solid) other LEDs
+			
+			//Blink Code
+			if( this->_universalLEDModePatternIndexCounter == 0)
+			{
+				for(byte i = 0; i < this->_arrayOfInterestSize; i++)
+				{
+					this->discreteLEDControl( this->_arrayOfInterest[ i ], LED_OFF );//turn off all the elements in the array
+				}//end for
+			}//end if
+			else
+			{
+				for(byte i = 0; i < this->_arrayOfInterestSize; i++)
+				{
+					this->discreteLEDControl( this->_arrayOfInterest[ i ], LED_ON );//turn off all the elements in the array
+				}//end for
+			}//end else
+				
+			//On Solid Code
+			switch(this->_currentErrorState)
+			{
+				case LED_ERROR_TYPE_NONE:
+					//Do nothing that is recurring.
+					break;
+				case LED_ERROR_TYPE_GENERIC_HEALTH:
+					this->discreteLEDControl( LED_NAME_LEFT_RED1_TAILLIGHT, LED_ON );//turn on this LED
+					this->discreteLEDControl( LED_NAME_RIGHT_RED1_TAILLIGHT, LED_ON );//turn on this LED
+					break;
+				case LED_ERROR_TYPE_GENERIC_SYSTEM:
+					this->discreteLEDControl( LED_NAME_LEFT_RED2_TAILLIGHT, LED_ON );//turn on this LED
+					this->discreteLEDControl( LED_NAME_RIGHT_RED2_TAILLIGHT, LED_ON );//turn on this LED
+					break;
+				case LED_ERROR_TYPE_SW_RESET:
+					this->discreteLEDControl( LED_NAME_LEFT_RED3_TAILLIGHT, LED_ON );//turn on this LED
+				this->discreteLEDControl( LED_NAME_RIGHT_RED3_TAILLIGHT, LED_ON );//turn on this LED
+					break;
+				case LED_ERROR_TYPE_SYNC:
+					this->discreteLEDControl( LED_NAME_LEFT_RED4_TAILLIGHT, LED_ON );//turn on this LED
+					this->discreteLEDControl( LED_NAME_RIGHT_RED4_TAILLIGHT, LED_ON );//turn on this LED
+					break;
+				case LED_ERROR_TYPE_INVALID_STATE_OR_MODE:
+					this->discreteLEDControl( LED_NAME_LEFT_RED5_TAILLIGHT, LED_ON );//turn on this LED
+					this->discreteLEDControl( LED_NAME_RIGHT_RED5_TAILLIGHT, LED_ON );//turn on this LED
+					break;
+				case LED_ERROR_TYPE_UNDEFINED:
+					this->discreteLEDControl( LED_NAME_LEFT_RED1_TAILLIGHT, LED_ON );//turn on this LED
+					this->discreteLEDControl( LED_NAME_RIGHT_RED1_TAILLIGHT, LED_ON );//turn on this LED
+					this->discreteLEDControl( LED_NAME_LEFT_RED3_TAILLIGHT, LED_ON );//turn on this LED
+					this->discreteLEDControl( LED_NAME_RIGHT_RED3_TAILLIGHT, LED_ON );//turn on this LED
+					break;			
+				default:
+					//Do nothing else since it's an invalid state.
+					break;				
+			}//end switch			
 			
 			break;		
 		case LED_STEALTH_MODE:
@@ -955,6 +958,8 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			
 			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
 			
+			this->_arrayOfInterest = this->_ALL_LED_NAMES;
+			
 			this->_arrayOfInterestSize = sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]);
 			
 			//Set Custom Delay (if required)
@@ -962,9 +967,14 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			
 			break;
 		case LED_ERROR_MODE:
+			//Reminder: Remember to setUniversalLEDMode(LED_ERROR_MODE) after setErrorType(<<choose your error type here>>)  else it won't activate.
+			
+			//No other initialization needs to be done. It's already been done in setErrorType().
+			
 			//Assign desired mode to the current universal LED mode since it's one of the valid cases
 			this->_currentUniversalLEDMode = desiredMode;	
 			
+
 			switch(this->_currentErrorState)
 			{
 				case LED_ERROR_TYPE_NONE:
@@ -1042,7 +1052,7 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 					//Do nothing else since it's an invalid state.	
 					break;				
 			}//end switch
-			
+		
 			break;		
 		case LED_STEALTH_MODE:
 			//Assign desired mode to the current universal LED mode since it's one of the valid cases
@@ -1416,7 +1426,7 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 	//Though you can check the modes here, if you do, and it's not set yet, then this function won't run. But you want to allow this function to "preset" the rover motion before the allowed modes are set. So that's why you don't want to check the modes here yet.	
 	
 }
-void LedController_NAVI::setErrorType(byte errorType)
+void LedController_NAVI::setErrorType(byte desiredErrorType)
 {
 	
 	/*
@@ -1427,36 +1437,67 @@ void LedController_NAVI::setErrorType(byte errorType)
 
 	*/
 	
+	//Reset the states for certain LED types before changing states. In the switch case for the states, the LEDs state will be set if needed
+	//Note these states aren't executed at the end by executeFinalLEDStates(), so the LEDs won't flicker if the states are changing/overridden.
 	
+	//Head lights (High Beams)
+	this->discreteLEDControl(LED_NAME_LEFT_HIGHBEAM_HEADLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT, LED_OFF);
+	//Underglow
+	this->discreteLEDControl(LED_NAME_UNDERGLOW_LIGHT, LED_OFF);
+	//Tail lights (right)
+	this->discreteLEDControl(LED_NAME_RIGHT_RED1_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_RIGHT_RED2_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_RIGHT_RED3_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_RIGHT_RED4_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_RIGHT_RED5_TAILLIGHT, LED_OFF);
+	//Tail lights (left)
+	this->discreteLEDControl(LED_NAME_LEFT_RED1_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_RED2_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_RED3_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_RED4_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_RED5_TAILLIGHT, LED_OFF);
+	//Reverse Lights
+	this->discreteLEDControl(LED_NAME_RIGHT_WHITE_TAILLIGHT, LED_OFF);
+	this->discreteLEDControl(LED_NAME_LEFT_WHITE_TAILLIGHT, LED_OFF);
 
 	//Assign the Error Type if it's one of the valid modes
-	switch(errorType)
+	switch(desiredErrorType)
 	{
 		case LED_ERROR_TYPE_NONE:
-			this->_currentErrorState = errorType;
+			this->_currentErrorState = desiredErrorType;
+			
 			break;
 		case LED_ERROR_TYPE_GENERIC_HEALTH:
-			this->_currentErrorState = errorType;
+			this->_currentErrorState = desiredErrorType;
+	
 			break;
 		case LED_ERROR_TYPE_GENERIC_SYSTEM:
-			this->_currentErrorState = errorType;			
+			this->_currentErrorState = desiredErrorType;			
+			
 			break;
 		case LED_ERROR_TYPE_SW_RESET:
-			this->_currentErrorState = errorType;			
+			this->_currentErrorState = desiredErrorType;
+	
 			break;
 		case LED_ERROR_TYPE_SYNC:
-			this->_currentErrorState = errorType;			
+			this->_currentErrorState = desiredErrorType;
+			
 			break;
 		case LED_ERROR_TYPE_INVALID_STATE_OR_MODE:
-			this->_currentErrorState = errorType;			
+			this->_currentErrorState = desiredErrorType;
+			
 			break;
 		case LED_ERROR_TYPE_UNDEFINED:
-			this->_currentErrorState = errorType;			
+			this->_currentErrorState = desiredErrorType;
+			
 			break;			
 		default:
 			//Do nothing else since it's an invalid state		
 			break;				
 	}//end switch
+	
+	
 }
 void LedController_NAVI::userDiscreteLEDControl(byte ledName, byte desiredLedState)
 {

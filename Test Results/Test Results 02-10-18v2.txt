@@ -393,8 +393,39 @@ To
 
 		
 		
+	
+	
+02-10-18 Test v6:
 		
+Demo mode lights are now in correct order.
+
+Error lights aren't blinking.
+	The taillights aren't turning on the right ones.
+	Even at default, the none error controlling the LEDs that is expected.
+
+
+
+
+02-10-18 Updates v7:
+	
+Rearranged the error code a bit. Pulled the switch and if statements outside the counter code.
+
+[NAH, this will cause issues with the delay selection since until the error mode is set, the type should not change the delay selection) I moved the error led initializations from setUniversalLEDMode() into setErrorType() now.
+	I also cleared all old LEDs before switching to a new error mode as well.
+
+02-10-18 Test v7:
+
+Error mode blinks lights now.
+	Remember to setUniversalLEDMode(LED_ERROR_MODE) after setErrorType(<<choose your error type here>>)  else it won't activate.
 		
+Error mode works now.	
+	
+	
+02-10-18 Updates v7:
+
+Update the speed of the signal and brake lights.
+	
+	
 LEFT OFF HERE
 
 
