@@ -296,7 +296,7 @@ void loop() {
 				break;
 			case 'p':
 				_SERIAL_DEBUG_CHANNEL_.println(F("UG: On"));//UG = Underglow
-				ledController_NAVI->setUniversalLEDMode(LED_UNDERGLOW_ON);
+				ledController_NAVI->setUnderglowLightMode(LED_UNDERGLOW_ON);
 				break;
 			case 'q':
 				_SERIAL_DEBUG_CHANNEL_.println(F("UG: Neutral"));//UG = Underglow
@@ -392,31 +392,31 @@ void loop() {
 				break;
 			case 'N':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: None"));//ET = Error Type
-				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_NONE);
+				ledController_NAVI->setErrorType(LED_ERROR_TYPE_NONE);
 				break;
 			case 'O':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Gen Health"));//ET = Error Type
-				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_GENERIC_HEALTH);
+				ledController_NAVI->setErrorType(LED_ERROR_TYPE_GENERIC_HEALTH);
 				break;
 			case 'P':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Gen Sys"));//ET = Error Type
-				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_GENERIC_SYSTEM);
+				ledController_NAVI->setErrorType(LED_ERROR_TYPE_GENERIC_SYSTEM);
 				break;
 			case 'Q':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: SW Rst"));//ET = Error Type
-				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_SW_RESET);
+				ledController_NAVI->setErrorType(LED_ERROR_TYPE_SW_RESET);
 				break;
 			case 'R':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Sync"));//ET = Error Type
-				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_SYNC);
+				ledController_NAVI->setErrorType(LED_ERROR_TYPE_SYNC);
 				break;
 			case 'S':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Invd Ste/Mde"));//ET = Error Type
-				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_INVALID_STATE_OR_MODE);
+				ledController_NAVI->setErrorType(LED_ERROR_TYPE_INVALID_STATE_OR_MODE);
 				break;
 			case 'T':
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Undfnd"));//ET = Error Type
-				ledController_NAVI->setRoverMotion(LED_ERROR_TYPE_UNDEFINED);
+				ledController_NAVI->setErrorType(LED_ERROR_TYPE_UNDEFINED);
 				break;
 			default:
 				_SERIAL_DEBUG_CHANNEL_.println(F("INVALID OPTION"));

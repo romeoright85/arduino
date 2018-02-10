@@ -281,6 +281,27 @@ Since turning and hazards only update the led state when the counter has reached
 
 02-10-18 Test v4:
 
+
+Brake and turns now work with night mode! Yay!
+
+Direction with blue beacon works.
+
+Standard motion works with night mode.
+
+Reverse no longer turns off night mode tail lights. Yay!
+
+Not able to test debug mode at this time since I didn't write code in the .ino to test it (yet).
+
+[FIX ME]The underglow off command isn't turning it off.
+
+[FIX ME]Demo mode works for the most part but it doesn't turn off the underglow.
+
+Fog on/off works.
+
+Direction with IR beacon works.
+
+[FIX ME] The error types are calling the wrong function in the .ino.
+
 LEFT OFF HERE
 	
 	
