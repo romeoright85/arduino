@@ -125,56 +125,15 @@ SATURDAY:
 				[DONE] clearRoverDataPointers()
 				[DONE] setRoverDataPointer()
 				
-				
-	
-				[IN PROGRESS, writing LedController_NAVI_Tester.ino] Write class and function(s) to control LED brightnesses
+											
 					
-					
-					Finish writing runLedController.cpp
-						Reference:
-							LedController_NAVI.h
-							RoverConfig.h
-							RoverBitFlags.h
-							HeartLed.cpp
-							LedController_NAVI.cpp
-							LedController_NAVI_Tester.ino
-									
-					
-					
-
-						
-					
-					
-					[LEFT OFF HERE, see Test Results 02-09-18v2.txt] test this code as well
-					
-					
-					
-					
-					
-					
-					[NEED TO DO] then incorporate the runLedController class into Rover_StateMachine_NAVI.ino code
+					[LEFT OFF HERE] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
 						-On power on, it should turn on all the LEDs for a few seconds, then turn it all off. This is so the user can check to make sure all LEDs are functional (not burnt out)
 						-allow the user to send commands to turn on and off certain LEDs
 							userDiscreteLEDControl()
 						-create a new command to turn on/off LEDs
 							-take the LED type in the command message so you don't need a bunch of separate commands
 					
-					
-					
-					
-					
-					TIPS:
-						-write the different patterns using _LED_CONTROLLER_DEFINITIONS
-							-have switch/case logic to set priorities on the different modes
-						-determine how many types of delays i want and how long they need to be. also decide the power on default delay (if any)
-							-add in delay logic to the code
-						-also use heartled.cpp and .h with analogledtester.ino as a reference to -get the pattern and timing correct
-
-						
-					
-					
-
-				
 				
 										
 				[NEED TO DO] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
@@ -2136,3 +2095,32 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 						[DONE] discreteLEDControl()				
 						
 						[DONE] Then finish writing LedController_NAVI_Tester.ino
+						
+										[DONE] Write class and function(s) to control LED lights
+					
+					
+					[DONE]Finish writing the LED Controller
+						Reference:
+							LedController_NAVI.h
+							RoverConfig.h
+							RoverBitFlags.h
+							HeartLed.cpp
+							LedController_NAVI.cpp
+							LedController_NAVI_Tester.ino
+									
+					
+						
+					[DONE] test LED controller code as well
+					
+									
+					
+					TIPS:
+						-write the different patterns using _LED_CONTROLLER_DEFINITIONS
+							-have switch/case logic to set priorities on the different modes
+						-determine how many types of delays i want and how long they need to be. also decide the power on default delay (if any)
+							-add in delay logic to the code
+						-also use heartled.cpp and .h with analogledtester.ino as a reference to -get the pattern and timing correct
+
+					
+					
+					

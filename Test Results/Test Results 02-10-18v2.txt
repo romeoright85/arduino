@@ -421,17 +421,41 @@ Error mode blinks lights now.
 Error mode works now.	
 	
 	
-02-10-18 Updates v7:
+02-10-18 Updates v8:
 
 Update the speed of the signal and brake lights.
 	
+	Also update documentation in:
+		RoverConfig.h		
+		LedController_NAVI.h
+		LedController_NAVI.cpp
+		LedController_NAVI_Tester.ino
+		
+Also changed the brake from x3 delay pause before hold on to just x2 delay pause before hold.
+
+
+Added user debug options to the .ino.		
+		
+		
+02-10-18 Test v8:
+
+New brake and turn speeds work now.
+
+User debug options work now.
+
+Found when hazards are turned on after a rover motion, it doesn't clear up the rover motion.
+Also when hazards are off, it doesn't return the delay to what it was before.
+
+
+02-10-18 Updates v9:
 	
-LEFT OFF HERE
-
-
-
-
+	Added Taillight LEDs 4 and 5 to the reset/initialize code in setHazardLightsMode().
 	
+	Set the period delay each time again in runLedController() to ensure it has the right speed.
+	
+02-10-18 Test v9:	
+
+	Everything seems to work now.
 	
 -------------
 09-17-17

@@ -167,7 +167,7 @@ When you want to set a userDiscreteLEDControl:
 
 DelayCounter * ledControllerDelayCounter = new DelayCounter(DELAY_100_PERIODS);//initialize it to count to 100 periods (so 100 periods x 5ms = 500ms). This is only the initial/default delay. It may change in the code dynamically as needed.
 GlobalDelayTimer * ledControllerTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, ledControllerDelayCounter);//arbitrarily chose 5ms resolution for the timer. Can change this later to something else if I want
-LedController_NAVI * ledController_NAVI = new LedController_NAVI(ledControllerDelayCounter, DELAY_50_PERIODS, DELAY_100_PERIODS);//the short delay is 50 periods (50x5ms=250ms) and the long delay is 100 periods (100x5ms=500ms)
+LedController_NAVI * ledController_NAVI = new LedController_NAVI(ledControllerDelayCounter, DELAY_25_PERIODS, DELAY_100_PERIODS);//the short delay is 25 periods (25x5ms=125ms) and the long delay is 100 periods (100x5ms=500ms)
 
 
 
@@ -232,6 +232,8 @@ void loop() {
 
 		delay(1);
 
+		//Note: Also see "Notes on Usage" above for command/function execution order for it to work.
+
 		switch (rxData)
 		{
 			case 'a':
@@ -251,14 +253,17 @@ void loop() {
 				ledController_NAVI->setUniversalLEDMode(LED_NIGHT_TIME_MODE);
 				break;
 			case 'e':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("HZ: Off"));//HZ = Hazard Lights
 				ledController_NAVI->setHazardLightsMode(LED_HAZARDS_OFF);
 				break;
 			case 'f':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("HZ: On"));//HZ = Hazard Lights
 				ledController_NAVI->setHazardLightsMode(LED_HAZARDS_ON);
 				break;
 			case 'g':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("HZ: Neutral"));//HZ = Hazard Lights
 				ledController_NAVI->setHazardLightsMode(LED_HAZARDS_NEUTRAL);
 				break;
@@ -279,144 +284,195 @@ void loop() {
 				ledController_NAVI->setUniversalLEDMode(LED_DEBUG_MODE);
 				break;
 			case 'l':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("FS: Off"));//FG = Fog State
 				ledController_NAVI->setFogLightMode(LED_FOG_OFF);
 				break;
 			case 'm':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("FS: On"));//FG = Fog State
 				ledController_NAVI->setFogLightMode(LED_FOG_ON);
 				break;
 			case 'n':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("FS: Neutral"));//FG = Fog State
 				ledController_NAVI->setFogLightMode(LED_FOG_NEUTRAL);
 				break;
 			case 'o':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("UG: Off"));//UG = Underglow
 				ledController_NAVI->setUnderglowLightMode(LED_UNDERGLOW_OFF);
 				break;
 			case 'p':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("UG: On"));//UG = Underglow
 				ledController_NAVI->setUnderglowLightMode(LED_UNDERGLOW_ON);
 				break;
 			case 'q':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("UG: Neutral"));//UG = Underglow
 				ledController_NAVI->setUnderglowLightMode(LED_UNDERGLOW_NEUTRAL);
 				break;
 			case 'r':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("IR: All Off"));//IR = IR Beacon
 				ledController_NAVI->setIRBeaconLightMode(LED_IR_BEACON_ALL_OFF);
 				break;
 			case 's':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("IR: All On"));//IR = IR Beacon
 				ledController_NAVI->setIRBeaconLightMode(LED_IR_BEACON_ALL_ON);
 				break;
 			case 't':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("IR: Drctnl"));//IR = IR Beacon
 				ledController_NAVI->setIRBeaconLightMode(LED_IR_BEACON_DIRECTIONAL_MODE);
 				break;
 			case 'u':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("IR: Neutral"));//IR = IR Beacon
 				ledController_NAVI->setIRBeaconLightMode(LED_IR_BEACON_ALL_NEUTRAL);
 				break;
 			case 'v':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("BL: All Off"));//BL = Blue Beacon
 				ledController_NAVI->setBlueBeaconLightMode(LED_BLUE_BEACON_ALL_OFF);
 				break;
 			case 'w':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("BL: All On"));//BL = Blue Beacon
 				ledController_NAVI->setBlueBeaconLightMode(LED_BLUE_BEACON_ALL_ON);
 				break;
 			case 'x':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("BL: Drctnl"));//BL = Blue Beacon
 				ledController_NAVI->setBlueBeaconLightMode(LED_BLUE_BEACON_DIRECTIONAL_MODE);
 				break;
 			case 'y':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("BL: Neutral"));//BL = Blue Beacon
 				ledController_NAVI->setBlueBeaconLightMode(LED_BLUE_BEACON_ALL_NEUTRAL);
 				break;
 			case 'z':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and when LED_IR_BEACON_DIRECTIONAL_MODE and/or LED_BLUE_BEACON_DIRECTIONAL_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: None"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_NONE);
 				break;
 			case 'A':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and when LED_IR_BEACON_DIRECTIONAL_MODE and/or LED_BLUE_BEACON_DIRECTIONAL_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Front"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_FRONT);
 				break;
 			case 'B':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and when LED_IR_BEACON_DIRECTIONAL_MODE and/or LED_BLUE_BEACON_DIRECTIONAL_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Front Right"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_FRONT_RIGHT);
 				break;
 			case 'C':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and when LED_IR_BEACON_DIRECTIONAL_MODE and/or LED_BLUE_BEACON_DIRECTIONAL_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Right"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_RIGHT);
 				break;
 			case 'D':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and when LED_IR_BEACON_DIRECTIONAL_MODE and/or LED_BLUE_BEACON_DIRECTIONAL_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Rear Right"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_REAR_RIGHT);
 				break;
 			case 'E':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and when LED_IR_BEACON_DIRECTIONAL_MODE and/or LED_BLUE_BEACON_DIRECTIONAL_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Rear"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_REAR);
 				break;
 			case 'F':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and when LED_IR_BEACON_DIRECTIONAL_MODE and/or LED_BLUE_BEACON_DIRECTIONAL_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Rear Left"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_REAR_LEFT);
 				break;
 			case 'G':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and when LED_IR_BEACON_DIRECTIONAL_MODE and/or LED_BLUE_BEACON_DIRECTIONAL_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Left"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_LEFT);
 				break;
 			case 'H':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and when LED_IR_BEACON_DIRECTIONAL_MODE and/or LED_BLUE_BEACON_DIRECTIONAL_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("DN: Front Left"));//DN = Direction
 				ledController_NAVI->setBeaconDirection(LED_DIRECTION_FRONT_LEFT);
 				break;
 			case 'I':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and LED_HAZARDS_OFF
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Std"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_STANDARD);
 				break;
 			case 'J':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and LED_HAZARDS_OFF
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Trn Left"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_TURN_LEFT);
 				break;
 			case 'K':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and LED_HAZARDS_OFF
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Trn Right"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_TURN_RIGHT);
 				break;
 			case 'L':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and LED_HAZARDS_OFF
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Brake"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_BRAKE);
 				break;
 			case 'M':
+				//Note: Only works when in LED_STANDARD_DAY_TIME_MODE or LED_NIGHT_TIME_MODE and LED_HAZARDS_OFF
 				_SERIAL_DEBUG_CHANNEL_.println(F("RM: Reverse"));//RM = Rover Motion
 				ledController_NAVI->setRoverMotion(LED_MOTION_REVERSE);
 				break;
 			case 'N':
+				//Note: Only works when in LED_ERROR_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: None"));//ET = Error Type
 				ledController_NAVI->setErrorType(LED_ERROR_TYPE_NONE);
 				break;
 			case 'O':
+				//Note: Only works when in LED_ERROR_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Gen Health"));//ET = Error Type
 				ledController_NAVI->setErrorType(LED_ERROR_TYPE_GENERIC_HEALTH);
 				break;
 			case 'P':
+				//Note: Only works when in LED_ERROR_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Gen Sys"));//ET = Error Type
 				ledController_NAVI->setErrorType(LED_ERROR_TYPE_GENERIC_SYSTEM);
 				break;
 			case 'Q':
+				//Note: Only works when in LED_ERROR_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: SW Rst"));//ET = Error Type
 				ledController_NAVI->setErrorType(LED_ERROR_TYPE_SW_RESET);
 				break;
 			case 'R':
+				//Note: Only works when in LED_ERROR_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Sync"));//ET = Error Type
 				ledController_NAVI->setErrorType(LED_ERROR_TYPE_SYNC);
 				break;
 			case 'S':
+				//Note: Only works when in LED_ERROR_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Invd Ste/Mde"));//ET = Error Type
 				ledController_NAVI->setErrorType(LED_ERROR_TYPE_INVALID_STATE_OR_MODE);
 				break;
 			case 'T':
+				//Note: Only works when in LED_ERROR_MODE
 				_SERIAL_DEBUG_CHANNEL_.println(F("ET: Undfnd"));//ET = Error Type
 				ledController_NAVI->setErrorType(LED_ERROR_TYPE_UNDEFINED);
+				break;
+			case 'U':
+				//Note: Only works when in LED_DEBUG_MODE
+				_SERIAL_DEBUG_CHANNEL_.println(F("UD: Whites Off"));//UD = User Debug
+				ledController_NAVI->userDiscreteLEDControl(LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT, LED_OFF);
+				ledController_NAVI->userDiscreteLEDControl(LED_NAME_LEFT_HIGHBEAM_HEADLIGHT, LED_OFF);
+				ledController_NAVI->userDiscreteLEDControl(LED_NAME_RIGHT_WHITE_TAILLIGHT, LED_OFF);
+				ledController_NAVI->userDiscreteLEDControl(LED_NAME_LEFT_WHITE_TAILLIGHT, LED_OFF);
+				break;
+			case 'V':
+				//Note: Only works when in LED_DEBUG_MODE
+				_SERIAL_DEBUG_CHANNEL_.println(F("UD: Whites On"));//UD = User Debug
+				ledController_NAVI->userDiscreteLEDControl(LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT, LED_ON);
+				ledController_NAVI->userDiscreteLEDControl(LED_NAME_LEFT_HIGHBEAM_HEADLIGHT, LED_ON);
+				ledController_NAVI->userDiscreteLEDControl(LED_NAME_RIGHT_WHITE_TAILLIGHT, LED_ON);
+				ledController_NAVI->userDiscreteLEDControl(LED_NAME_LEFT_WHITE_TAILLIGHT, LED_ON);
 				break;
 			default:
 				_SERIAL_DEBUG_CHANNEL_.println(F("INVALID OPTION"));
