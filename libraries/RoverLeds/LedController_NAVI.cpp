@@ -56,39 +56,19 @@ void LedController_NAVI::runLedController()
 			//Do nothing that is recurring.			
 			break;
 		case LED_NIGHT_TIME_MODE:
-			//Do nothing that is recurring.			
+			//Do thing recurringly just in case rover motion went back to LED_MOTION_STANDARD, then this will re-setup the night time lights
+			//Turn on the High Beams of the Headlights
+			this->discreteLEDControl( LED_NAME_LEFT_HIGHBEAM_HEADLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_RIGHT_HIGHBEAM_HEADLIGHT, LED_ON );
+			//Turn on LEDs 2, 4, 5 on the left tail lights
+			this->discreteLEDControl( LED_NAME_LEFT_RED2_TAILLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_LEFT_RED4_TAILLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_LEFT_RED5_TAILLIGHT, LED_ON );
+			//Turn on LEDs 2, 4, 5 on the right tail lights
+			this->discreteLEDControl( LED_NAME_RIGHT_RED2_TAILLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_RIGHT_RED4_TAILLIGHT, LED_ON );
+			this->discreteLEDControl( LED_NAME_RIGHT_RED5_TAILLIGHT, LED_ON );			
 			break;
-/*OLD CODE
-		case LED_HAZARD_MODE:
-			//Note: This mode uses the delay counter.
-			if (this->_counterPtr->countReached())
-			{
-				
-				this->_counterPtr->counterReset();//reset the counter
-					
-				if( this->_roverMotionPatternIndexCounter == 0)
-				{
-					
-
-					for(byte i = 0; i < this->_arrayOfInterestSize; i++)
-					{
-						this->discreteLEDControl( this->_LED_NAMES_For_HazardMode[ i ], LED_OFF );//turn off all the elements in the array
-					}//end for
-				}//end if
-				else
-				{
-					for(byte i = 0; i < this->_arrayOfInterestSize; i++)
-					{
-						this->discreteLEDControl( this->_LED_NAMES_For_HazardMode[ i ], LED_ON );//turn off all the elements in the array
-					}//end for
-				}//end else
-				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
-				this->autoIncrementIndexCounter(this->_roverMotionPatternIndexCounter, BLINK_PATTERN_SIZE);
-			}//end if
-			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
-		
-			break;
-*/			
 		case LED_DEMO_MODE:
 			//Note: This mode uses the delay counter.
 			if (this->_counterPtr->countReached())
@@ -98,14 +78,14 @@ void LedController_NAVI::runLedController()
 					
 				if( this->_universalLEDModePatternIndexCounter == 0)//for the first element in the array
 				{
-					this->discreteLEDControl( this->_LED_NAMES_For_DemoMode[ this->_arrayOfInterestSize - this->_universalLEDModePatternIndexCounter ], LED_OFF );//the last element in the array (the last element = arraySize - currentIndex)
+					this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_arrayOfInterestSize - this->_universalLEDModePatternIndexCounter ], LED_OFF );//the last element in the array (the last element = arraySize - currentIndex)
 					
-					this->discreteLEDControl( this->_LED_NAMES_For_DemoMode[ this->_universalLEDModePatternIndexCounter ], LED_ON );//the current element in the array
+					this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_universalLEDModePatternIndexCounter ], LED_ON );//the current element in the array
 				}//end if
 				else//for all other elements
 				{
-					this->discreteLEDControl( this->_LED_NAMES_For_DemoMode[ this->_universalLEDModePatternIndexCounter - 1 ], LED_OFF );//the previous element in the array
-					this->discreteLEDControl( this->_LED_NAMES_For_DemoMode[ this->_universalLEDModePatternIndexCounter ], LED_ON );//the current element in the array
+					this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_universalLEDModePatternIndexCounter - 1 ], LED_OFF );//the previous element in the array
+					this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_universalLEDModePatternIndexCounter ], LED_ON );//the current element in the array
 				}//end else	
 					
 				//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
@@ -258,8 +238,10 @@ void LedController_NAVI::runLedController()
 	
 	//Rover Motion Override (if applicable)
 	if(
-		( this->_currentUniversalLEDMode == LED_STANDARD_DAY_TIME_MODE || this->_currentUniversalLEDMode == LED_NIGHT_TIME_MODE ) &&
-		this->_currentHazardLightsState != LED_HAZARDS_ON
+		(
+			this->_currentUniversalLEDMode == LED_STANDARD_DAY_TIME_MODE ||
+			this->_currentUniversalLEDMode == LED_NIGHT_TIME_MODE ) &&
+			this->_currentHazardLightsState != LED_HAZARDS_ON
 	)//For these modes, allow Rover Motion to override the LED controls (i.e. turn signal lights, brake lights, etc. on the headlight, side signal, and tail lights)
 
 	{
@@ -826,7 +808,7 @@ void LedController_NAVI::runLedController()
 	//IR Beacon Light Override (if applicable)
 	if( this->_currentUniversalLEDMode == LED_STANDARD_DAY_TIME_MODE || this->_currentUniversalLEDMode == LED_NIGHT_TIME_MODE )//For these modes, allow current IR Beacon State to override the LED controls
 	{
-		switch(this->_currentUnderglowState)
+		switch(this->_currentIRBeaconState)
 		{
 			case LED_IR_BEACON_ALL_OFF:
 				for(byte i = 0; i < sizeof(this->_LED_NAMES_For_IRBeaconLEDs) / sizeof(this->_LED_NAMES_For_IRBeaconLEDs[0]) ; i++)
@@ -945,29 +927,13 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 			this->discreteLEDControl( LED_NAME_RIGHT_RED5_TAILLIGHT, LED_ON );			
 			
 			break;
-/*OLD CODE
-
-		case LED_HAZARD_MODE:		
-			//Assign desired mode to the current universal LED mode since it's one of the valid cases
-			this->_currentUniversalLEDMode = desiredMode;	
-
-			
-			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
-			
-			this->_arrayOfInterestSize = sizeof(this->_LED_NAMES_For_HazardMode) / sizeof(this->_LED_NAMES_For_HazardMode[0]);
-			
-			//Set Custom Delay (if required)
-			//This mode uses a 500ms delay. And that's the default delay for setUniversalLEDMode().
-			
-			break;
-*/			
 		case LED_DEMO_MODE:
 			//Assign desired mode to the current universal LED mode since it's one of the valid cases
 			this->_currentUniversalLEDMode = desiredMode;
 			
 			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.
 			
-			this->_arrayOfInterestSize = sizeof(this->_LED_NAMES_For_DemoMode) / sizeof(this->_LED_NAMES_For_DemoMode[0]);
+			this->_arrayOfInterestSize = sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]);
 			
 			//Set Custom Delay (if required)
 			//This mode uses a 500ms delay. And that's the default delay for setUniversalLEDMode().
@@ -1188,19 +1154,19 @@ void LedController_NAVI::setFogLightMode(byte fogLightsState)
 			break;
 	}//end switch
 }
-void LedController_NAVI::setUnderglowLightMode(byte underglowLightState)
+void LedController_NAVI::setUnderglowLightMode(byte desiredUnderglowLightState)
 {
 	//Assign the underglow light mode if it's one of the valid modes
 	switch(underglowLightState)
 	{
 		case LED_UNDERGLOW_OFF:
-			this->_currentUnderglowState = LED_UNDERGLOW_OFF;
+			this->_currentUnderglowState = desiredUnderglowLightState;
 			break;
 		case LED_UNDERGLOW_ON:
-			this->_currentUnderglowState = LED_UNDERGLOW_ON;
+			this->_currentUnderglowState = desiredUnderglowLightState;
 			break;
 		case LED_UNDERGLOW_NEUTRAL:
-			this->_currentUnderglowState = LED_UNDERGLOW_NEUTRAL;
+			this->_currentUnderglowState = desiredUnderglowLightState;
 			break;
 		default:
 			//else do nothing since it's an invalid mode
@@ -1320,6 +1286,8 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 	//initialize the current pattern index for  rover motion	
 	this->resetIndexCounter(this->_roverMotionPatternIndexCounter);	
 		
+		
+		
 	
 	//Reset the states for certain LED types before changing states. In the switch case for the states, the LEDs state will be set if needed
 	//Note these states aren't executed at the end by executeFinalLEDStates(), so the LEDs won't flicker if the states are changing/overridden.
@@ -1344,7 +1312,6 @@ void LedController_NAVI::setRoverMotion(byte desiredRoverMotion)
 	//Reverse Lights
 	this->discreteLEDControl(LED_NAME_RIGHT_WHITE_TAILLIGHT, LED_OFF);
 	this->discreteLEDControl(LED_NAME_LEFT_WHITE_TAILLIGHT, LED_OFF);
-		
 
 	switch(desiredRoverMotion)
 	{

@@ -186,21 +186,29 @@ It looks like during my test, the right tail light is now out.
 		Found that in executeFinalLEDStates() I forgot to write the case for Front Blue Beacon.
 
 		Also careful not to mix "Beacon light types" with "LED Names (for discrete control)" as one may contain text of another.
-		
-		
-		
-		
-LEFT OFF HERE
-		
-[NEED TO DO] Tighten rover lid nuts.
-	
+				
+Tighten rover lid nuts.		
 
-[NEED TO DO] Then need to go back and update all documentation with left is right and right is left for tail lights.
-	RoverConfig.h
-	Master Pinout List 08-11-16v2
-	Microcontroller Pinout 02-09-18v1
-	
-[NEED TO DO] Then retest and fix other bugs.
+-------
+
+
+02-10-18 Updates v1:
+
+
+I found in LED_DEMO_MODE I was using a pointer to an array
+	byte * _LED_NAMES_For_DemoMode = _ALL_LED_NAMES;
+But later I used that pointer to try and get the size and a pointer has a fixed size of 2. You can't get the pointer to tell you how big the array it's pointing to is.
+	this->_arrayOfInterestSize = sizeof(this->_LED_NAMES_For_DemoMode) / sizeof(this->_LED_NAMES_For_DemoMode[0]);
+So I got rid of the pointer and just used the original _ALL_LED_NAMES array directly.
+
+I found in //IR Beacon Light Override (if applicable) I had used the underglow for switching instead of the IR beacon.
+IS:
+	switch(this->_currentUnderglowState)		
+SHOULD BE:
+
+
+
+Then retest and fix other bugs.
 i.e.
 	Demo mode doesn't work.
 	Underglow on still turns on everything.
@@ -208,6 +216,21 @@ i.e.
 	Blue Beacon on not turning on.
 	Reverse lights on still turning off tail lights in night mode.
 	
+	
+[NEED TO DO] Then need to go back and update all documentation with left is right and right is left for tail lights.
+	[DONE] RoverConfig.h
+	[DONE] Master Pinout List 2-10-18v1.xlsx
+		[DONE] Also found "headLightLeftWhite" mislabeled as "tailLightLeftRed2". I corrected it to "headLightLeftWhite" now.
+	[DONE] Microcontroller Pinout 02-10-18v1.xlsx
+	[DONE, no change needed. I actually found this to have the correct pinout already, all other documentation and code was wrong] LED Assignments 02-10-18v1
+	
+	
+	
+	
+	
+02-10-18 Test v1:
+
+LEFT OFF HERE
 	
 	
 -------------

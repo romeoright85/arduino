@@ -249,7 +249,7 @@ private:
 		LED_NAME_LEFT_RED1_TAILLIGHT,
 		LED_NAME_LEFT_WHITE_TAILLIGHT,
 		LED_NAME_UNDERGLOW_LIGHT	
-	};//Holds the names of all the LEDs
+	};//Holds the names of all the LEDs, used for LED_ALL_OFF_MODE, LED_ALL_ON_MODE, and LED_DEMO_MODE
 
 	
 	//Hazard Mode
