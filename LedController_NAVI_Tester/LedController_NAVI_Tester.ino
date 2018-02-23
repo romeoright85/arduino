@@ -12,6 +12,14 @@
 #include <BooleanBitFlags.h>	
 #include <RoverBitFlags.h>	
 
+
+
+//============Debugging: Output Text to Show that the Loop is Running (used to see that the Startup Mode is working without interfering/holding up the rest of the code)
+//Uncomment the flag below in order to print out the startup mode status
+//#define _DEBUG_OUTPUT_LOOP_RUNNING_
+//============End Debugging: Output Text to Show that the Loop is Running
+
+
 /*
 Notes on Usage:
 
@@ -194,6 +202,12 @@ void setup() {
 	_MAIN_SERIAL_.flush();//waits for any outgoing serial data to complete
 	delay(50);
 	
+	
+	
+	ledController_NAVI->setUniversalLEDMode(LED_STARTUP_MODE);//Note: Comment out this line if you want to run _DEBUG_TURN_ON_ALL_LEDS_AT_POR_
+	
+	
+	
 	//Setting Up Timer Interrupt
 	OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
 	TIMSK0 |= _BV(OCIE0A);//Activating the Timer Interrupt by setting the Mask Register
@@ -218,10 +232,13 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 
 void loop() {
 	
-
 	
 	ledController_NAVI->runLedController();
 	
+	#ifdef _DEBUG_OUTPUT_LOOP_RUNNING_
+		_PC_USB_SERIAL_.println(F("Loop Running"));
+	#endif
+
 
 	char rxData;
 	

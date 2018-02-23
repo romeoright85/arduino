@@ -264,6 +264,7 @@
 	
 		//Pattern Sizes
 		#define BLINK_PATTERN_SIZE														2//on and off states only
+		#define STARTUP_PATTERN_SIZE														5//turn on all LEDs for 4 counts x 500ms = 2 seconds, then turn it off. It needs 4 counts/patterns of delay, plus a 5th count/pattern in order to turn it off. It will count from 0 to 4, which means it has 5 elements.
 		#define TURN_SIGNAL_PATTERN_SIZE														8//since the tail lights need a pattern size of 4 while the head light signals at side signal lights just blink (but at x4 the rate of the taillights = 4x125ms) use a pattern size of 8. The head light signals and the side signal lights will hold the on/off state for four patterns in order to blink at a slower rate (500ms) while the tail lights will change at a faster rate (125ms) but will have to repeat twice since the array since 8 (in order to blink the headlight signals and side signals at 500ms) but the tail light only has 4 patterns.
 		#define BRAKE_PATTERN_SIZE														9//off-med, on-fast, off-med, on-fast, off-med, on-hold
 		//where:
@@ -277,15 +278,15 @@
 		#define LED_OFF													0//default
 		#define LED_ON														1
 		//Universal LED Modes
-		#define LED_ALL_OFF_MODE									0//default, it will keep LEDs off until the mode is changed to something else
+		#define LED_ALL_OFF_MODE									0//Default for the LedController_NAVI class since the most universal/safe case you want everything to always turn off. But when the code is in use, often LED_STANDARD_DAY_TIME_MODE is set to run on startup. And then LED_ALL_OFF_MODE will take place after LED_STARTUP_MODE is complete, it will keep LEDs off until the mode is changed to something else
 		#define LED_ALL_ON_MODE									1//it will keep LEDs on until the mode is changed to something else
-		#define LED_STANDARD_DAY_TIME_MODE 				2
-		#define LED_NIGHT_TIME_MODE								3//turns on headlights and tail lights
-//REMOVING IT AS A MODE, #define LED_HAZARD_MODE									4//blinks headlight's signal lights, side signal lights, and tail lights				
-		#define LED_DEMO_MODE										4//The Rover will turn on one led at a time and cycle through all of them on the rover
-		#define LED_ERROR_MODE										5//To indicate that the Rover is in error, all the blue beacons will all blink on and off. All other lights are off.
-		#define LED_STEALTH_MODE									6//This mode turns off all the LEDs and make sure they stay off.
-		#define LED_DEBUG_MODE										7//Allow any temporary debugging code to control the LEDs discretely. All LEDs in this mode should only be controlled manually by userDiscreteLEDControl().
+		#define LED_STARTUP_MODE 				2//Typically set to this mode on power up/reset. It should turn on all the LEDs for about 2 seconds (so the user can see that all the LEDs are working, then it should turn it off and go into LED_ALL_OFF_MODE.
+		#define LED_STANDARD_DAY_TIME_MODE 				3
+		#define LED_NIGHT_TIME_MODE								4//turns on headlights and tail lights
+		#define LED_DEMO_MODE										5//The Rover will turn on one led at a time and cycle through all of them on the rover
+		#define LED_ERROR_MODE										6//To indicate that the Rover is in error, all the blue beacons will all blink on and off. All other lights are off.
+		#define LED_STEALTH_MODE									7//This mode turns off all the LEDs and make sure they stay off.
+		#define LED_DEBUG_MODE										8//Allow any temporary debugging code to control the LEDs discretely. All LEDs in this mode should only be controlled manually by userDiscreteLEDControl().
 		
 		
 		

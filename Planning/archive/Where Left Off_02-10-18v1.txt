@@ -10,7 +10,7 @@ Rover_StateMachine_NAVI (get the rover rolling)
 	Get Framework up
 	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 take day off to relax), 1/6 (had to fix autodata algorithm), 1/7 (had to fix autodata algorithm)/finish framework
 	Write States and Modes (on average 1 day per mode, except default)
-	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27 (spent some time planning my bday), 1/28 (stayed up late coding late night), 2/3 (late day since friday had happy hour and made time to hang with my bear), 2/4 (start taxes, John's party), 2/9 (sick so coded a bit, watched tv, and cooked), 2/10 (sick and cooked, break from coding to work on resume), 2/11 (coded a bit but was sick and also cooked, resume too), 2/17 (resume/taxes), 2/18 (resume/hr defense vs josh), 2/23, 2/24, 2/25, + 3 more days behind
+	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27 (spent some time planning my bday), 1/28 (stayed up late coding late night), 2/3 (late day since friday had happy hour and made time to hang with my bear), 2/4 (start taxes, John's party), 2/9 (sick so coded a bit, watched tv, and cooked), 2/10 (coded a bit but was also sick and cooked, resume too), 2/11 (coded a bit but was sick and also cooked, resume too), 2/17, 2/18, 2/23, 2/24, 2/25, + 2 more days behind
 	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE)
 	3/3, 3/4, 3/9, 3/10, 3/11
 
@@ -42,9 +42,6 @@ Test code
 Do a quick screen record with audio walking through roughly how to you would read one of the codes (i.e. MAIN) for documentation.
 Go through and clean up the "//PLACEHOLDER"s in Rover_StateMachine_COMM
 	if have time go back to Rover_StateMachine_COMM and change some of the 1/3 or 3/3 brightness to blinks. need to write code to poll/time the blinks or use interrupts or something	
-	
-	
-	If you must delay grad school for another semester or so to find a new job, hang with a girl, learn new stuff for work, so be it. (i.e. python or test benches)
 	
 =================1 weekend===================				
 
@@ -130,8 +127,8 @@ SATURDAY:
 				
 											
 					
-					[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
-						[DONE]-On power on, it should turn on all the LEDs for a few seconds, then turn it all off. This is so the user can check to make sure all LEDs are functional (not burnt out)
+					[LEFT OFF HERE] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
+						-On power on, it should turn on all the LEDs for a few seconds, then turn it all off. This is so the user can check to make sure all LEDs are functional (not burnt out)
 						-allow the user to send commands to turn on and off certain LEDs
 							userDiscreteLEDControl()
 						-create a new command to turn on/off LEDs

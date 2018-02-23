@@ -172,7 +172,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============End Debugging: Print GPS Median Completed Status
 
 //============Debugging: All Data Filtering Off
-//Uncomment in order to allow all data to pass (turn off all data filters) for debugging)
+//Uncomment in order to allow all data to pass (turn off all data filters) for debugging
 //#define _DEBUG_TURN_OFF_ALL_DATA_FILTERS
 //============End Debugging: All Data Filtering Off
 
@@ -444,13 +444,12 @@ double headingArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores heading samples for
 double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
 
 //------------------From LedController_NAVI_Tester
-//TEMPLATE//
-/*
-//LEFT OFF HERE
-DelayCounter * ledControllerDelayCounter = new DelayCounter(DELAY_10_PERIODS);//initialize it to count to 10 periods (so 10 periods x 5ms = 50ms)
+DelayCounter * ledControllerDelayCounter = new DelayCounter(DELAY_100_PERIODS);//initialize it to count to 100 periods (so 100 periods x 5ms = 500ms). This is only the initial/default delay. It may change in the code dynamically as needed.
 GlobalDelayTimer * ledControllerTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms, ledControllerDelayCounter);//arbitrarily chose 5ms resolution for the timer. Can change this later to something else if I want
-LedController_NAVI * ledController_NAVI = new LedController_NAVI(ledControllerDelayCounter);
-*/
+LedController_NAVI * ledController_NAVI = new LedController_NAVI(ledControllerDelayCounter, DELAY_25_PERIODS, DELAY_100_PERIODS);//the short delay is 25 periods (25x5ms=125ms) and the long delay is 100 periods (100x5ms=500ms)
+
+
+
 
 
 
@@ -487,6 +486,8 @@ RoverReset * resetArray[] = {
 	irDistanceSideLeft
 	roverNavigation,
 	roverGps,
+	ledControllerDelayCounter,
+	ledControllerTimer,
 	ledControllerNAVI
 };//for pointers, pass them directly, for objects pass the address
 
@@ -644,8 +645,13 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 	//This will allow the millis value to be checked every millisecond and not get missed.
 	//Timer(s)
 
-	//ADD TIMERS
-//WRITE ME LATER
+	frontLeftSyncTimer->Running();
+	frontRightSyncTimer->Running();
+	rearLeftSyncTimer->Running();
+	rearRightSyncTimer->Running();
+	ledControllerTimer->Running();
+
+//ADD MORE TIMERS IF NEEDED
 
 }
 
@@ -1163,6 +1169,7 @@ void runPORTasks()
 void initializeVariables()
 {
 	//(re)initialize most global variables (i.e. for software reset)
+	ledController_NAVI->setUniversalLEDMode(LED_STARTUP_MODE);
 
 //WRITE ME LATER
 
@@ -1175,7 +1182,8 @@ void startBackgroundTasks()
 void runBackgroundTasks()
 {
 	//run background tasks	
-//PLACEHOLDER: Add things here as needed.	
+	ledController_NAVI->runLedController();
+
 }//end of runBackgroundTasks()
 byte rxData(RoverComm * roverComm, byte roverCommType) {
 
@@ -2198,10 +2206,10 @@ void runModeFunction_INITIALIZATION(byte currentState)
 		case RUN_HOUSEKEEPING_TASKS: //Mode: INITIALIZATION
 			//initialize / reinitialize all variables
 			initializeVariables();
-//WRITE LATER
-//Control all LED brightness levels			
 			//start background tasks
 			startBackgroundTasks();
+			//Control all LED brightness levels
+			runBackgroundTasks();
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
 			break;
@@ -2261,7 +2269,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: SYNCHRONIZATION
 			runBackgroundTasks();
-//Control all LED brightness levels		
+			//Control all LED brightness levels	
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
 
@@ -2683,8 +2691,8 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
-//WRITE LATER
-//Control all LED brightness levels		
+			runBackgroundTasks();
+//Control all LED brightness levels
 			break;
 		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
 //TEMPLATE		
@@ -2760,7 +2768,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
-//WRITE LATER
+			runBackgroundTasks();
 //Control all LED brightness levels		
 			break;
 		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
@@ -2833,7 +2841,7 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
-//WRITE LATER
+			runBackgroundTasks();
 //Control all LED brightness levels		
 			break;
 		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
@@ -2906,7 +2914,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
-//WRITE LATER
+			runBackgroundTasks();
 //Control all LED brightness levels		
 			break;
 		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS

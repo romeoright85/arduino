@@ -48,6 +48,56 @@ void LedController_NAVI::runLedController()
 				this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_ON );//turn on all the elements in the array
 			}//end for
 			break;
+		case LED_STARTUP_MODE:
+			//Turn On all LEDs initially for about 2 seconds (to make sure they're all working). Then turn them all off by doing into LED_ALL_OFF_MODE.
+			
+			//Sets the delay period (just in case it has changed, like with hazards)
+			this->_counterPtr->setStopValue(this->_periodsForLongDelay);
+		
+			//Note: This mode uses the delay counter.
+			if (this->_counterPtr->countReached())
+			{
+				
+				this->_counterPtr->counterReset();//reset the counter
+				
+				
+				if(this->_universalLEDModePatternIndexCounter <= 4)//It will count from 0 to 4, so it will have 5 elements
+				{
+					//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
+					this->autoIncrementIndexCounter(this->_universalLEDModePatternIndexCounter, STARTUP_PATTERN_SIZE);
+				}
+				//else if it's greater than 4, don't increment it any longer, else the autoIncrementIndexCounter() will roll it over back to zero
+					
+			}//end if
+			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.			
+			
+			//Startup Code
+			if( this->_universalLEDModePatternIndexCounter < 4 )//for the first 4 elements in the array (since 4 elements x 500 ms delay (from _periodsForLongDelay) = 2 seconds of LED on time for the LED_STARTUP_MODE)
+			{
+				//Turn On all LEDs
+				for(byte i = 0; i < sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]) ; i++)
+				{
+					this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_ON );//turn on all the elements in the array
+				}//end for		
+				
+			}//end if
+			else//Once 4x500ms=2 seconds has elapsed
+			{
+				//Turn off all LEDs
+				for(byte i = 0; i < sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]) ; i++)
+				{
+					this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_OFF );//turn off all the elements in the array
+				}//end for
+				
+				
+				#ifdef _DEBUG_OUTPUT_STARTUP_MODE_STATUS_
+					_PC_USB_SERIAL_.println(F("Startup Mode Done"));
+				#else
+					_PC_USB_SERIAL_.println(F("Startup"));
+				#endif
+				//And change the mode to LED_ALL_OFF_MODE
+				this->setUniversalLEDMode(LED_ALL_OFF_MODE);		
+			}//end else
 		case LED_STANDARD_DAY_TIME_MODE:
 			//Do nothing that is recurring.			
 			break;
@@ -85,8 +135,7 @@ void LedController_NAVI::runLedController()
 			
 			if( this->_universalLEDModePatternIndexCounter == 0)//for the first element in the array
 			{
-				//this->discreteLEDControl( this->_ALL_LED_NAMES[ this->_arrayOfInterestSize - this->_universalLEDModePatternIndexCounter ], LED_OFF );//the last element in the array (the last element = arraySize - currentIndex)
-				
+								
 				this->discreteLEDControl( this->_arrayOfInterest[ this->_arrayOfInterestSize - 1 ], LED_OFF );//the last element in the array (the last element = arraySize - currentIndex)
 				
 				this->discreteLEDControl( this->_arrayOfInterest[ this->_universalLEDModePatternIndexCounter ], LED_ON );//the current element in the array
@@ -1328,12 +1377,26 @@ void LedController_NAVI::setUniversalLEDMode(byte desiredMode)
 				this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_ON );//turn on all the elements in the array
 			}//end for
 			break;
+		case LED_STARTUP_MODE:
+			//Assign desired mode to the current universal LED mode since it's one of the valid cases
+			this->_currentUniversalLEDMode = desiredMode;	
+			
+			//Set the overriding initialization LED states
+			//Turn on all LEDs
+			for(byte i = 0; i < sizeof(this->_ALL_LED_NAMES) / sizeof(this->_ALL_LED_NAMES[0]) ; i++)
+			{
+				this->discreteLEDControl( this->_ALL_LED_NAMES[ i ], LED_ON );//turn on all the elements in the array
+			}//end for
+			
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.		
+			
+			break;
 		case LED_STANDARD_DAY_TIME_MODE:
 			//Assign desired mode to the current universal LED mode since it's one of the valid cases
 			this->_currentUniversalLEDMode = desiredMode;	
 
 			
-			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.			
+			//No other initialization needs to be done. By default all LEDs are initially turned off in the code for this function, above.	
 			break;
 		case LED_NIGHT_TIME_MODE:	
 			//Assign desired mode to the current universal LED mode since it's one of the valid cases
@@ -1924,6 +1987,8 @@ void LedController_NAVI::reset()
 	#else
 		this->_currentUniversalLEDMode = LED_ALL_OFF_MODE;
 	#endif
+	//Or you can also set the first mode (i.e. not the default, but the first "user set" mode) in the code to go to be LED_STARTUP_MODE with:
+	//ledController_NAVI->setUniversalLEDMode(LED_STARTUP_MODE);
 	
 	this->_currentRoverMotion = LED_MOTION_STANDARD;
 	this->_currentErrorState = LED_ERROR_TYPE_NONE;

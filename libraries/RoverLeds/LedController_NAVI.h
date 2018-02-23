@@ -24,10 +24,19 @@
 
 
 //============Debugging: Turn On All LEDs on Power On Reset
-//Uncomment the flag below in order to turn on all LEDs at power on reset. (to see if all LEDs are function. 
+//Uncomment the flag below in order to turn on all LEDs at power on reset. (to see if all LEDs are function).
 //#define _DEBUG_TURN_ON_ALL_LEDS_AT_POR_
 
 //============End Debugging: Turn On All LEDs on Power On Reset
+
+
+
+//============Debugging: Output Startup Mode Status
+//Uncomment the flag below in order to print out the startup mode status
+#define _DEBUG_OUTPUT_STARTUP_MODE_STATUS_
+
+//============End Debugging: Output Startup Mode Status
+
 
 
 
@@ -460,7 +469,7 @@ private:
 
 	//SW Resettable
 	
-	byte _currentUniversalLEDMode = LED_ALL_OFF_MODE;//holds the current universal LED Mode
+	byte _currentUniversalLEDMode = LED_ALL_OFF_MODE;//It holds the current universal LED Mode. The default (for the LedController_NAVI class) is LED_ALL_OFF_MODE.
 	byte _currentRoverMotion = LED_MOTION_STANDARD;//holds the current Rover Motion
 	byte _currentErrorState = LED_ERROR_TYPE_NONE;//holds the current error state
 	byte _currentHazardLightsState = LED_HAZARDS_OFF;//holds the current hazard lights state
