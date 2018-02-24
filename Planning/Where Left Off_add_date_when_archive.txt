@@ -10,7 +10,7 @@ Rover_StateMachine_NAVI (get the rover rolling)
 	Get Framework up
 	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 take day off to relax), 1/6 (had to fix autodata algorithm), 1/7 (had to fix autodata algorithm)/finish framework
 	Write States and Modes (on average 1 day per mode, except default)
-	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27 (spent some time planning my bday), 1/28 (stayed up late coding late night), 2/3 (late day since friday had happy hour and made time to hang with my bear), 2/4 (start taxes, John's party), 2/9 (sick so coded a bit, watched tv, and cooked), 2/10 (sick and cooked, break from coding to work on resume), 2/11 (coded a bit but was sick and also cooked, resume too), 2/17 (resume/taxes), 2/18 (resume/hr defense vs josh), 2/23, 2/24, 2/25, + 3 more days behind
+	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27 (spent some time planning my bday), 1/28 (stayed up late coding late night), 2/3 (late day since friday had happy hour and made time to hang with my bear), 2/4 (start taxes, John's party), 2/9 (sick so coded a bit, watched tv, and cooked), 2/10 (sick and cooked, break from coding to work on resume), 2/11 (coded a bit but was sick and also cooked, resume too), 2/17 (resume/taxes), 2/18 (resume/hr defense vs josh), 2/23 (dealing with used camera return), 2/24 (resume, gym, code some, fixing complier errors), 2/25, + 4 more days behind
 	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE)
 	3/3, 3/4, 3/9, 3/10, 3/11
 
@@ -130,15 +130,10 @@ SATURDAY:
 				
 											
 					
-					[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
-						[DONE]-On power on, it should turn on all the LEDs for a few seconds, then turn it all off. This is so the user can check to make sure all LEDs are functional (not burnt out)
-						-allow the user to send commands to turn on and off certain LEDs
-							userDiscreteLEDControl()
-						-create a new command to turn on/off LEDs
-							-take the LED type in the command message so you don't need a bunch of separate commands
 					
-				
-										
+					
+				[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
+						
 				[NEED TO DO] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
 					At first glance I don't think you need two, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???
 					
@@ -152,6 +147,7 @@ SATURDAY:
 						[DONE] INITIALIZATION
 						[DONE] SYNCHRONIZATION					
 						[IN PROGRESS] NORMAL_OPERATIONS	(2 days, not counting the navigation code)
+							[IN PROGRESS] Left off at READ_INPUTS for NORMAL_OPERATIONS
 							Develop Navigation Code (5 days)
 						SYSTEM_SLEEPING (0.5 days)
 						SYSTEM_WAKING (0.5 days)
@@ -2127,3 +2123,7 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 					
 					
 					
+						[DONE]-On power on, it should turn on all the LEDs for a few seconds, then turn it all off. This is so the user can check to make sure all LEDs are functional (not burnt out)
+						[NAH, maybe later]-allow the user to send commands to turn on and off certain LEDs, userDiscreteLEDControl()
+						[NAH, maybe later]-create a new command to turn on/off LEDs
+							[NAH, maybe later]-take the LED type in the command message so you don't need a bunch of separate commands

@@ -482,22 +482,28 @@ At POR (defaults):
 			do nothing
 		SYNCHRONIZATION
 			Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+			
 			Allow all data from PC_USB (it's a debugging communication/backdoor to run tests, but use with caution)
+			
 			filter and throw away all MAIN data except:
 				system ready message(s) from MAIN
 				system go message(s) from MAIN
 				navi sw reset requests message(s) from MAIN				
 				generic health error messages
 				generic system error messages
+				
 			Note: Don't read any inputs at the SYNCHRONIZATION state. Will read it later on.
 			Mode: SYNCHRONIZATION
 			set next state to PROCESS_DATA
 			go to RUN_HOUSEKEEPING_TASKS					
 		NORMAL_OPERATIONS		
 			Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+			
 			Allow all data from PC_USB (it's a debugging communication/backdoor to run tests, but use with caution)
+			
 			filter MAIN data
-				throw away any data not meant for NAVI				
+				throw away any data not meant for NAVI	
+				
 			Mode: NORMAL_OPERATIONS
 			set next state to READ_INPUTS
 			go to RUN_HOUSEKEEPING_TASKS				
@@ -509,15 +515,22 @@ At POR (defaults):
 			do nothing	
 		SYSTEM_ERROR
 			Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+			
 			Allow all data from PC_USB (it's a debugging communication/backdoor to run tests, but use with caution)
+			
 			filter and throw away all MAIN data except:
 				//Note: There is no hw reset requests for NAVI. It would have to be done by COMM.
 				navi sw reset requests message(s) from MAIN
+				generic health error messages
+				generic system error message
+				set drive setting (so you can switch to auto or manual drive)
+					(Note: all other set functions will be set to safety defaults when SYSTEM_ERROR begins and held at that value to prevent user from making the issue worse)
+				
 				Any of the status requests (i.e. Get Longitude, Get Latitude, etc.)
 				Any external status data (i.e. motor power status from MAIN, wheel encoder data from MAIN, heading data from AUXI)
-				generic health error messages
-				generic system error messages
-				set drive setting (so you can switch to auto or manual drive)
+				s
+				
+				
 			Mode: SYSTEM_ERROR
 			set next state to READ_INPUTS
 			go to RUN_HOUSEKEEPING_TASKS		

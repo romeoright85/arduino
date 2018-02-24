@@ -10,6 +10,9 @@
 #endif
 
 
+#ifndef _MOTORCONTROLLER_DEFINITIONS
+#define _MOTORCONTROLLER_DEFINITIONS
+#endif
 
 
 #include <RoverConfig.h>
@@ -23,6 +26,8 @@
 
 //Global Variables
 
+
+/*
 #define SET_LEFT_TURN		45
 #define SET_GO_STRAIGHT		90
 #define SET_RIGHT_TURN		135	
@@ -40,6 +45,7 @@
 #define SET_DOWN_TILT		45
 #define SET_MIDDLE_TILT		90
 #define SET_UP_TILT			135
+*/
 
 BufferSelect * roverBuffer = new BufferSelect(BUFFER_SELECT_PIN);
 

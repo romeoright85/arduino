@@ -459,10 +459,10 @@
 	
 	
 	#ifdef _ROVER_SHARED_QUEUE_DEFINITIONS
-		//iused to select between primary and secondary message queues (i.e. for NAVI and AUXI.
-		#define PC_USB_MSG_QUEUE
-		#define PRIMARY_MSG_QUEUE
-		#define SECONDARY_MSG_QUEUE
+		//it is used to select between primary and secondary message queues (i.e. for NAVI and AUXI.
+		#define PC_USB_MSG_QUEUE				0
+		#define PRIMARY_MSG_QUEUE			1
+		#define SECONDARY_MSG_QUEUE		2
 	#endif
 	
 	
@@ -535,7 +535,7 @@
 		//WRITE ME LATER
 		
 		#define NAVI_SYNC_TIMEOUT_VALUE 50//arbitrarily chosen value for now
-//TEMPLATE//		#define CONCURRENT_TRANSMISSION_DELAY		50//delay for about 1-5ms or so between potentially sending messages out again to the same arduino, //DEBUG arbitrarily chosen value for now
+		#define CONCURRENT_TRANSMISSION_DELAY		50//delay for about 1-5ms or so between potentially sending messages out again to the same arduino, //DEBUG arbitrarily chosen value for now
 //TEMPLATE//		#define SLEEPING_ERROR_TIMEOUT_VALUE 50//time to waiting and keep resending the AUXI's or NAVI's Sleep Requests from MAIN (since unlike SW requests, if it's already asleep and you send it another request, there is no hard) before MAIN should just error out itself.
 //TEMPLATE//		#define SW_RESET_ERROR_TIMEOUT_VALUE 50//time to waiting and resend the AUXI's or NAVI's SW Reset (Re-)Requests from MAIN before MAIN should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
 //TEMPLATE//		#define SW_RESET_RESEND_TIMEOUT_VALUE		50//time to wait for AUXI's or NAVI's SW Reset Acknowledgement to MAIN before restarting the SW Reset, by sending a NAVI or AUXI SW Request again.
@@ -630,7 +630,7 @@
 		//Note: These values should not change. These are  from manufacturing/RC signal specifications.
 		#define MC_CENTER_POSITION_IDEAL		90		
 		
-		//Steering
+		//Steering - Ideal
 		#define MC_MAX_RIGHT_POSITION_IDEAL		180				
 		#define MC_SHARP_RIGHT_POSITION_IDEAL		150		
 		#define MC_WIDE_RIGHT_POSITION_IDEAL		120	
@@ -638,12 +638,24 @@
 		#define MC_WIDE_LEFT_POSITION_IDEAL		60
 		#define MC_SHARP_LEFT_POSITION_IDEAL		30
 		#define MC_MAX_LEFT_POSITION_IDEAL		0
-		//Throttle		
+		//Steering - Actual
+		#define SET_LEFT_TURN		45
+		#define SET_GO_STRAIGHT		90
+		#define SET_RIGHT_TURN		135	
+		
+		//Throttle - Ideal
 		#define MC_MAX_FWD_THROTTLE_IDEAL 0
 		#define MC_NO_THROTTLE_IDEAL	90		
 		#define MC_SLOW_FWD_THROTTLE_IDEAL 60 //used when the rover is close to its destination, aka the final search speed
 		#define MC_NORMAL_FWD_THROTTLE_IDEAL 30 //used to travel long distance to get to destination
 		#define MC_MAX_REV_THROTTLE_IDEAL 180 //use a bigger number is going reverse
+		//Throttle - Actual
+		#define SET_REV_HIGH_SPEED	180
+		#define SET_REV_LOW_SPEED	135
+		#define SET_STOP_SPEED		90
+		#define SET_FWD_LOW_SPEED	45
+		#define SET_FWD_HIGH_SPEED	0
+		
 	#endif	
 	
 	//definition for GimbalController
@@ -651,16 +663,32 @@
 		//Ideal/theoretical value, before calibration adjusted
 		//Note: These values should not change. These are  from manufacturing/RC signal specifications.
 		
-		//Pan
+		//Pan - Ideal
 		#define GC_MAX_LEFT_POSITION_IDEAL		0
 		#define GC_CENTER_POSITION_IDEAL			90
 		#define GC_MAX_RIGHT_POSITION_IDEAL		180
-		//Tilt		
+		//Pan - Actual
+		#define SET_LEFT_PAN		45
+		#define SET_CENTER_PAN		90
+		#define SET_RIGHT_PAN		135
+
+		//Tilt - Ideal
 		#define GC_MAX_DOWN_POSITION_IDEAL		0
 		#define GC_MIDDLE_POSITION_IDEAL			90
 		#define GC_MAX_UP_POSITION_IDEAL			180
-		
+		//Tilt - Actual
+		#define SET_DOWN_TILT		45
+		#define SET_MIDDLE_TILT		90
+		#define SET_UP_TILT			135
+
 	#endif	
+	
+	
+	
+
+
+
+
 	
 	//Rover Current Sensor Models
 	#ifdef _ROVERCURRENTSENSORMODELS
@@ -881,7 +909,7 @@
 	
 	
 	
-	//Used for	Distance Sensors (like ultrasonic and infrared sensors) and the RoverNavigation Class
+	//Used for Distance Sensors (like ultrasonic and infrared sensors) and the RoverNavigation Class
 	#ifdef _DISTANCE_UNITS_MODES
 		//Metric
 		#define UNIT_CM	 0
@@ -898,6 +926,14 @@
 		#define ULTRASONIC_SENSOR_TIMEOUT 30000		
 		#define ULTRASONIC_SENSOR_SAMPLE_TIMES	5 //the number times to sample and average the ultrasonic data
 		#define ULTRASONIC_SENSOR_NO_OBJECT_SAMPLES	3 //the number of times no objects detect threshold before declaring no objects detected. Should be <= ULTRASONIC_SENSOR_SAMPLE_TIMES.
+		#define ULTRASONIC_SENSORS_ARRAY_SIZE 6//number of ultrasonic sensors
+		//Ultrasonic Names
+		#define ULTRASONIC_FWD_LEFT				0
+		#define ULTRASONIC_SIDE_RIGHT			1
+		#define ULTRASONIC_FWD_CENTER			2
+		#define ULTRASONIC_REAR_CENTER		3
+		#define ULTRASONIC_FWD_RIGHT			4
+		#define ULTRASONIC_SIDE_LEFT				5
 	#endif
 	
 	

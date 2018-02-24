@@ -60,12 +60,12 @@ Can send:
 #ifndef _ROVER_SHARED_QUEUE_DEFINITIONS
 #define _ROVER_SHARED_QUEUE_DEFINITIONS //For RoverConfig.h
 #endif
-
-
 #ifndef _ENABLE_BUBBLESORT_CLASS_
 #define _ENABLE_BUBBLESORT_CLASS_ //For RoverConfig.h
 #endif
-
+#ifndef _MOTORCONTROLLER_DEFINITIONS
+#define _MOTORCONTROLLER_DEFINITIONS
+#endif
 
 //#includes
 #include <RoverStatesAndModes.h>
@@ -85,6 +85,7 @@ Can send:
 #include <RoverSleeperClient.h>
 #include <RoverConfig.h>	
 #include <UltrasonicSensor.h>
+#include <IrDistanceSensor.h>
 #include <RoverMessagePackager.h>
 #include <avr/pgmspace.h> //To store certain variables in Flash
 #include <BooleanBitFlags.h>	
@@ -225,13 +226,13 @@ byte auto_NAVI_to_AUXI_data_cnt = 0;
 
 
 
-byte motor_turn_value = SET_GO_STRAIGHT
+byte motor_turn_value = SET_GO_STRAIGHT;
 //TEMPLATE//byte prev_motor_turn_value = SET_GO_STRAIGHT //used to hold the previous state, before going to sleep	
-byte motor_speed_value = SET_STOP_SPEED
+byte motor_speed_value = SET_STOP_SPEED;
 //TEMPLATE//byte prev_motor_speed_value = SET_STOP_SPEED //used to hold the previous state, before going to sleep	
-byte gimbal_pan_value = SET_CENTER_PAN
+byte gimbal_pan_value = SET_CENTER_PAN;
 //TEMPLATE//byte prev_gimbal_pan_value = SET_CENTER_PAN //used to hold the previous state, before going to sleep
-byte gimbal_tilt_value = SET_MIDDLE_TILT
+byte gimbal_tilt_value = SET_MIDDLE_TILT;
 //TEMPLATE//byte prev_gimbal_tilt_value = SET_MIDDLE_TILT //used to hold the previous state, before going to sleep
 //TEMPLATE//byte drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
 //TEMPLATE//byte prev_drive_setting = AUTONOMOUS_DRIVE//used to hold the previous state, before going to sleep
@@ -279,7 +280,7 @@ byte error_origin = ROVERCOMM_NONE;
 
 
 //Flag(s) - Error
-//TEMPLATE//byte flagSet_Error1 = _BTFG_NONE_;
+byte flagSet_Error1 = _BTFG_NONE_;
 //Flag(s) - Message Controls
 byte flagSet_MessageControl1 = _BTFG_NONE_;
 //Flag(s) - System Status 1
@@ -417,7 +418,8 @@ UltrasonicSensor * uSon_SideRight = new UltrasonicSensor(SIDE_RIGHT_ULTSNC_TRIG_
 UltrasonicSensor * uSon_RearCenter = new UltrasonicSensor(REAR_CENTER_ULTSNC_TRIG_PIN, REAR_CENTER_ULTSNC_ECHO_PIN);
 UltrasonicSensor * uSon_SideLeft = new UltrasonicSensor(SIDE_LEFT_ULTSNC_TRIG_PIN, SIDE_LEFT_ULTSNC_ECHO_PIN);
 
-int distanceMeasured = 0;
+
+int distanceMeasured[ULTRASONIC_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
 
 
 
@@ -483,12 +485,12 @@ RoverReset * resetArray[] = {
 	irDistanceForwardCenter,
 	irDistanceSideRight,
 	irDistanceRearCenter, 
-	irDistanceSideLeft
+	irDistanceSideLeft,
 	roverNavigation,
 	roverGps,
 	ledControllerDelayCounter,
 	ledControllerTimer,
-	ledControllerNAVI
+	ledController_NAVI
 };//for pointers, pass them directly, for objects pass the address
 
 
@@ -498,6 +500,11 @@ RoverReset * resetArray[] = {
 
 
 //=====Non-SW Resettable Variables (do not reinitialize these variables on software reset)
+
+//Holds ultrasonic sensors in an array so can loop through them more efficiently
+UltrasonicSensor * uSonSensors[ULTRASONIC_SENSORS_ARRAY_SIZE];//The objects will be assigned in the setup() function.
+
+
 
 
 //Note: Remember MAIN currently only receives and processes generic system error and generic health errors. Also it can't redirect in some modes (i.e. SYNCHRONIZATION) so sending it an error (i.e. sync error) won't do any good.
@@ -530,13 +537,13 @@ byte auto_NAVI_to_CMNC_data_array[] = {
 	CMD_TAG_ULTSNC_DISTANCE_SIDE_RT_STATUS,
 	CMD_TAG_ULTSNC_DISTANCE_SIDE_LT_STATUS,
 	CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS
-}	
+};
 byte auto_NAVI_to_COMM_data_array[] = {
-}	
+};
 byte auto_NAVI_to_MAIN_data_array[] = {
-}
+};
 byte auto_NAVI_to_AUXI_data_array[] = {
-}
+};
 
 
 	
@@ -621,6 +628,16 @@ void setup() {
 	}//end for
 
 
+	//Assigning object to the Ultrasonic Array
+	uSonSensors[ULTRASONIC_FWD_LEFT] = uSon_FwdLeft;
+	uSonSensors[ULTRASONIC_SIDE_RIGHT] = uSon_SideRight;
+	uSonSensors[ULTRASONIC_FWD_CENTER] = uSon_FwdCenter;
+	uSonSensors[ULTRASONIC_REAR_CENTER] = uSon_RearCenter;
+	uSonSensors[ULTRASONIC_FWD_RIGHT] = uSon_FwdRight;
+	uSonSensors[ULTRASONIC_SIDE_LEFT] = uSon_SideLeft;
+
+
+
 	 //Serial Communications
 //WRITE ME LATER
 
@@ -660,6 +677,14 @@ SIGNAL(TIMER0_COMPA_vect)//Interrupt Service Routine
 
 
 void loop() {
+
+	uSonSensors[ULTRASONIC_FWD_LEFT] = uSon_FwdLeft;
+	uSonSensors[ULTRASONIC_SIDE_RIGHT] = uSon_SideRight;
+	uSonSensors[ULTRASONIC_FWD_CENTER] = uSon_FwdCenter;
+	uSonSensors[ULTRASONIC_REAR_CENTER] = uSon_RearCenter;
+	uSonSensors[ULTRASONIC_FWD_RIGHT] = uSon_FwdRight;
+	uSonSensors[ULTRASONIC_SIDE_LEFT] = uSon_SideLeft;
+
 
 
 	
@@ -1181,7 +1206,9 @@ void startBackgroundTasks()
 }//end of startBackgroundTasks()
 void runBackgroundTasks()
 {
-	//run background tasks	
+	//run background tasks
+	
+	//Control the LEDs of the Arduino
 	ledController_NAVI->runLedController();
 
 }//end of runBackgroundTasks()
@@ -1956,7 +1983,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	return;	
 
 }//end of commandDirector()
-void createDataFromQueueFor(byte roverCommDestination, byte queueSelection)
+void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 {
 
 
@@ -1975,7 +2002,7 @@ void createDataFromQueueFor(byte roverCommDestination, byte queueSelection)
 
 	//Note: The origin of the message will change every time it passes through an Arduino (i.e. using the RoverCommandProcessor::createCmd() with a Rover Comm Type passed to it). It shows the last originating Arduino that handled the data. If the true origin is required, that should be placed in the command data where it's not altered.
 
-	
+	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string
 	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command (createdCommand is the output of the method call RoverCommandCreator::createCmd)
 					
@@ -2148,8 +2175,6 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: POWER_ON_AND_HW_RESET
 			runPORTasks();
-//WRITE LATER
-//Control all LED brightness levels
 			break;
 		case RX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
@@ -2208,7 +2233,6 @@ void runModeFunction_INITIALIZATION(byte currentState)
 			initializeVariables();
 			//start background tasks
 			startBackgroundTasks();
-			//Control all LED brightness levels
 			runBackgroundTasks();
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
@@ -2269,7 +2293,6 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: SYNCHRONIZATION
 			runBackgroundTasks();
-			//Control all LED brightness levels	
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
 
@@ -2332,14 +2355,11 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			break;
 		case DATA_FILTER: //Mode: SYNCHRONIZATION
 
-		
-		
-
 			//Reset/clear flags (no data was for NAVI)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);
 			
-			//Reset/Clear redirect to CMNC and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//Reset/Clear redirect to PC_USB and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
 			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
@@ -2375,7 +2395,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
 				//Note: this is a local .ino function
 
-				dataDirector(roverDataCh1_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);//DataDirection will set the "data was for NAVI flag" to true if it was for this Arduino
+				dataDirector(roverDataCh1_COMM, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);//DataDirection will set the "data was for NAVI flag" to true if it was for this Arduino
 
 				/*
 				Allow all data from PC_USB.
@@ -2392,7 +2412,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
 				//Note: this is a local .ino function
 
-				dataDirector(roverDataCh2_COMM, DATA_REDIRECT_DISABLED, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);//DataDirection will set the "data was for NAVI flag" to true if it was for this Arduino
+				dataDirector(roverDataCh2_COMM, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);//DataDirection will set the "data was for NAVI flag" to true if it was for this Arduino
 				
 				/*
 				Set filter to throw away all MAIN data except:
@@ -2524,7 +2544,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Control Gimbal Controller's Tilt			
 			gimbalSetTilt(gimbal_tilt_value);//Should be gimbal_tilt_value = SET_MIDDLE_TILT
 				
-			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS since it requires attention with every loop
+			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS (i.e. runBackgroundTasks()) since it requires attention with every loop
 			
 			//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process						
 	
@@ -2534,7 +2554,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Creates data for PC_USB
 			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
 			{
-				createDataFromQueueFor(ROVERCOMM_PC_USB);
+				createDataFromQueueFor(ROVERCOMM_PC_USB, PC_USB_MSG_QUEUE);
 				
 				//skip auto data	
 				
@@ -2547,19 +2567,19 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			
 				if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//data is for COMM
 				{
-					createDataFromQueueFor(ROVERCOMM_COMM);
+					createDataFromQueueFor(ROVERCOMM_COMM, PRIMARY_MSG_QUEUE);
 				}//end if
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_CMNC) //data is for CMNC
 				{
-					createDataFromQueueFor(ROVERCOMM_CMNC);
+					createDataFromQueueFor(ROVERCOMM_CMNC, PRIMARY_MSG_QUEUE);
 				}//end else if
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN) //data is for MAIN
 				{
-					createDataFromQueueFor(ROVERCOMM_MAIN);
+					createDataFromQueueFor(ROVERCOMM_MAIN, PRIMARY_MSG_QUEUE);
 				}//end else if
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
 				{
-					createDataFromQueueFor(ROVERCOMM_AUXI);
+					createDataFromQueueFor(ROVERCOMM_AUXI, PRIMARY_MSG_QUEUE);
 				}//end else if
 				else//invalid state, error out
 				{
@@ -2577,19 +2597,19 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			
 				if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//data is for COMM
 				{
-					createDataFromQueueFor(ROVERCOMM_COMM);
+					createDataFromQueueFor(ROVERCOMM_COMM, SECONDARY_MSG_QUEUE);
 				}//end if
 				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_CMNC) //data is for CMNC
 				{
-					createDataFromQueueFor(ROVERCOMM_CMNC);
+					createDataFromQueueFor(ROVERCOMM_CMNC, SECONDARY_MSG_QUEUE);
 				}//end else if
 				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN) //data is for MAIN
 				{
-					createDataFromQueueFor(ROVERCOMM_MAIN);
+					createDataFromQueueFor(ROVERCOMM_MAIN, SECONDARY_MSG_QUEUE);
 				}//end else if
 				else if(sec_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI) //data is for AUXI
 				{
-					createDataFromQueueFor(ROVERCOMM_AUXI);
+					createDataFromQueueFor(ROVERCOMM_AUXI, SECONDARY_MSG_QUEUE);
 				}//end else if
 				else//invalid state, error out
 				{
@@ -2683,7 +2703,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: NORMAL_OPERATIONS"));
-/* TEMPLATE
+
 //LEFT OFF HERE
 //WRITE ME LATER
 
@@ -2692,28 +2712,159 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
 			runBackgroundTasks();
-//Control all LED brightness levels
 			break;
 		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+
+			//rxData() from PC_USB
+			//1. Reset status flag
+			ch1Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch1->clearRxData();
+			//3. Receive data
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_PC_USB);//Note: this is a local .ino function
+
+			//rxData() from MAIN
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+					
 			break;
+		
 		case DATA_VALIDATION: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+
+			//parseAndValidateData() from PC_USB
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+
+			//parseAndValidateData() from MAIN
+			//Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY		
+		
 			break;
 		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+
+
+			//Reset/clear flags (no data was for NAVI)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);
+			
+			//Reset/Clear redirect to PC_USB and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
+			
+
+				
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_PC_USB);//for PC_USB
+			setAllCommandFiltersTo(false, ROVERCOMM_MAIN);//for MAIN
+			
+			//Then enable the allowed commands for this mode:
+			//For PC_USB
+			//No filter on PC_USB data. (Allow all data from PC_USB)
+			//No commands from PC_USB are filtered, so set all to true.
+			setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);			
+			//For MAIN
+			setAllCommandFiltersTo(true, ROVERCOMM_MAIN);			
+			//No filter on MAIN data. (Allow all data from MAIN)
+			//No commands from MAIN are filtered, so set all to true.
+			
+			
+			//Transmit data and/or execute command
+						
+			//For data from PC_USB, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, NAVI
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh1_COMM, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);//DataDirection will set the "data was for NAVI flag" to true if it was for this Arduino
+
+				/*
+				Allow all data from PC_USB.
+				*/
+
+			}//end if
+
+			//For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, NAVI
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh2_COMM, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);//DataDirection will set the "data was for NAVI flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all MAIN data except:
+
+				*/				
+
+			}//end if		
+		
+		
 			break;	
 		case READ_INPUTS: //Mode: NORMAL_OPERATIONS
+		
+		
+			//Read All Ultrasonic Distance Sensors
+			//Note: The Ultrasonic's trigger will implicitly be controlled when the sensor is read, since the trigger is part of the reading process	
+			for (byte i = 0; i < ULTRASONIC_SENSORS_ARRAY_SIZE; i++)
+			{
+				distanceMeasured[i] = uSonSensors[i]->getDistance(UNIT_CM);//store the ultrasonic's distance in the corresponding spot in the distanceMeasured[] array
+			}//end for
+			
+				
+				
+			//Read IR Distance Sensors
+			//Read Wheel Encoders
+			//Read GPS				
+		
+		
+//LEFT OFF HERE
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			
+			
+			
 			break;
+/* TEMPLATE		
 		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
 //TEMPLATE		
 
@@ -2748,75 +2899,75 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
-			break;			
+			break;		
+*/				
 		default: //default state
 //TEMPLATE		
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
+		
 	}//end switch
-*/
+
 }//end of runModeFunction_NORMAL_OPERATIONS()
 void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYSTEM_SLEEPING"));
-/* TEMPLATE
+
 //LEFT OFF HERE
 //WRITE ME LATER
 
 
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_SLEEPING
 			runBackgroundTasks();
-//Control all LED brightness levels		
 			break;
-		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case DATA_VALIDATION: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
+		case DATA_VALIDATION: //Mode: SYSTEM_SLEEPING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
+		case DATA_FILTER: //Mode: SYSTEM_SLEEPING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
-		case READ_INPUTS: //Mode: NORMAL_OPERATIONS
+		case READ_INPUTS: //Mode: SYSTEM_SLEEPING
+			
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
+/* TEMPLATE			
+		case PROCESS_DATA: //Mode: SYSTEM_SLEEPING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case PLAN_ROUTE: //Mode: NORMAL_OPERATIONS
+		case PLAN_ROUTE: //Mode: SYSTEM_SLEEPING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
-		case OBJECT_AVOIDANCE: //Mode: NORMAL_OPERATIONS
+		case OBJECT_AVOIDANCE: //Mode: SYSTEM_SLEEPING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
-		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
+		case CREATE_DATA: //Mode: SYSTEM_SLEEPING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
@@ -2826,143 +2977,143 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
+*/			
 	}//end switch
-*/
+
 
 }//end of runModeFunction_SYSTEM_SLEEPING()
 void runModeFunction_SYSTEM_WAKING(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYSTEM_WAKING"));
-/* TEMPLATE
+
 //LEFT OFF HERE
 //WRITE ME LATER
 
 
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_WAKING
 			runBackgroundTasks();
-//Control all LED brightness levels		
 			break;
-		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case DATA_VALIDATION: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
+		case DATA_VALIDATION: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
+		case DATA_FILTER: //Mode: SYSTEM_WAKING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
-		case READ_INPUTS: //Mode: NORMAL_OPERATIONS
+		case READ_INPUTS: //Mode: SYSTEM_WAKING
+
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
+/* TEMPLATE
+		case PROCESS_DATA: //Mode: SYSTEM_WAKING
+											
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case PLAN_ROUTE: //Mode: NORMAL_OPERATIONS
+		case PLAN_ROUTE: //Mode: SYSTEM_WAKING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
-		case OBJECT_AVOIDANCE: //Mode: NORMAL_OPERATIONS
+		case OBJECT_AVOIDANCE: //Mode: SYSTEM_WAKING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
-		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
+		case CREATE_DATA: //Mode: SYSTEM_WAKING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;			
+*/			
 		default: //default state
+	
 //TEMPLATE		
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
+
 	}//end switch
-*/
+
 
 }//end of runModeFunction_SYSTEM_WAKING()
 void runModeFunction_SW_RESETTING(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SW_RESETTING"));
-/* TEMPLATE
 //LEFT OFF HERE
 //WRITE ME LATER
 
 
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SW_RESETTING
 			runBackgroundTasks();
-//Control all LED brightness levels		
 			break;
-		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
+		case RX_COMMUNICATIONS: //Mode: SW_RESETTING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case DATA_VALIDATION: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
+		case DATA_VALIDATION: //Mode: SW_RESETTING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
+		case DATA_FILTER: //Mode: SW_RESETTING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
-		case READ_INPUTS: //Mode: NORMAL_OPERATIONS
+		case READ_INPUTS: //Mode: SW_RESETTING
+
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
+/* TEMPLATE									
+		case PROCESS_DATA: //Mode: SW_RESETTING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case PLAN_ROUTE: //Mode: NORMAL_OPERATIONS
+		case PLAN_ROUTE: //Mode: SW_RESETTING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
-		case OBJECT_AVOIDANCE: //Mode: NORMAL_OPERATIONS
+		case OBJECT_AVOIDANCE: //Mode: SW_RESETTING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
-		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
+		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
+		case CREATE_DATA: //Mode: SW_RESETTING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
+		case TX_COMMUNICATIONS: //Mode: SW_RESETTING
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
@@ -2972,70 +3123,214 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
-	}//end switch
 */
+	}//end switch
+
 
 }//end of runModeFunction_SW_RESETTING()
 void runModeFunction_SYSTEM_ERROR(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYSTEM_ERROR"));
-/* TEMPLATE
+
 //LEFT OFF HERE
 //WRITE ME LATER
 
 
 	switch (currentState)
 	{
-		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
+		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_ERROR
 //WRITE LATER
-//Control all LED brightness levels		
 			break;
-		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+		case RX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
+		
+			//rxData() from PC_USB
+			//1. Reset status flag
+			ch1Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch1->clearRxData();
+			//3. Receive data
+			ch1Status = rxData(roverComm_Ch1, ROVERCOMM_PC_USB);//Note: this is a local .ino function
+
+			//rxData() from MAIN
+			//1. Reset status flag
+			ch2Status = DATA_STATUS_NOT_READY;
+			//2. Clear all Rx'ed data before getting new data				
+			roverComm_Ch2->clearRxData();
+			//3. Receive data
+			ch2Status = rxData(roverComm_Ch2, ROVERCOMM_MAIN);//Note: this is a local .ino function
+		
 			break;
-		case DATA_VALIDATION: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+		case DATA_VALIDATION: //Mode: SYSTEM_ERROR
+
+			//parseAndValidateData() from PC_USB
+			//Process/validate the data that was received
+			if (ch1Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch1->parseAndValidateData())
+				{
+					ch1Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch1Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY
+
+
+			//parseAndValidateData() from MAIN
+			//Process/validate the data that was received
+			if (ch2Status == DATA_STATUS_READY)
+			{
+				//If the data is valid, set the status as such
+				if (roverComm_Ch2->parseAndValidateData())
+				{
+					ch2Status = DATA_STATUS_VALID;//if data is valid once it's validated, set the flag
+				}//end if
+				 //Else the data is invalid, so set the status as such
+				else
+				{
+					ch2Status = DATA_STATUS_INVALID;
+				}//end else
+			}//end if
+			 //Else, since the data isn't ready, leave the status as DATA_STATUS_NOT_READY		
+
 			break;
-		case DATA_FILTER: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+		case DATA_FILTER: //Mode: SYSTEM_ERROR
+
+
+			//Reset/clear flags (no data was for NAVI)
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);
+			
+			//Reset/Clear redirect to PC_USB and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
+			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
+			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
+			
+
+				
+			//Set Command Filter Options
+			//First initialize all command choices to false
+			setAllCommandFiltersTo(false, ROVERCOMM_PC_USB);//for PC_USB
+			setAllCommandFiltersTo(false, ROVERCOMM_MAIN);//for MAIN
+			
+			//Then enable the allowed commands for this mode:
+			//For PC_USB
+			//No filter on PC_USB data. (Allow all data from PC_USB)
+			//No commands from PC_USB are filtered, so set all to true.
+			setAllCommandFiltersTo(true, ROVERCOMM_PC_USB);			
+			//For MAIN
+			//Flag Set 1
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_NAVISWRESETREQUEST_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet1_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GENERICSYSTEMERROR_);
+			//Flag Set 2
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETDRIVESETTING_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETDRIVESETTING_);
+			//Flag Set 3
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_);
+			//Flag Set 4
+			//None
+			//Flag Set 5
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_);
+			//Flag Set 6
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_);
+			//Flag Set 7
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_);
+			
+		
+			//Transmit data and/or execute command
+						
+			//For data from PC_USB, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, NAVI
+			if (ch1Status == DATA_STATUS_VALID)
+			{
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh1_COMM, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);//DataDirection will set the "data was for NAVI flag" to true if it was for this Arduino
+
+				/*
+				Allow all data from PC_USB.
+				*/
+
+			}//end if
+
+			//For data from MAIN, transmit the data to it's proper destination if it was meant for another Arduino
+			//or take any actions if the data was meant for this unit, NAVI
+			if (ch2Status == DATA_STATUS_VALID)
+			{
+			
+				//if the data is valid, send it to the dataDirector where it will be routed to the corresponding action
+				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+				//Note: this is a local .ino function
+
+				dataDirector(roverDataCh2_COMM, flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);//DataDirection will set the "data was for NAVI flag" to true if it was for this Arduino
+				
+				/*
+				Set filter to throw away all MAIN data except:
+
+				*/				
+
+			}//end if		
+				
+		
+		
+		
 			break;	
-		case READ_INPUTS: //Mode: NORMAL_OPERATIONS
+/* TEMPLATE						
+		case READ_INPUTS: //Mode: SYSTEM_ERROR
+	
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
+		case PROCESS_DATA: //Mode: SYSTEM_ERROR
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case PLAN_ROUTE: //Mode: NORMAL_OPERATIONS
+		case PLAN_ROUTE: //Mode: SYSTEM_ERROR
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
-		case OBJECT_AVOIDANCE: //Mode: NORMAL_OPERATIONS
+		case OBJECT_AVOIDANCE: //Mode: SYSTEM_ERROR
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
-		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
+		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
+		case CREATE_DATA: //Mode: SYSTEM_ERROR
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
+		case TX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
@@ -3045,8 +3340,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
+*/			
 	}//end switch
-*/
+
 
 }//end of runModeFunction_SYSTEM_ERROR()
 void runModeFunction_default()
@@ -3120,7 +3416,16 @@ void InterruptDispatch_WakeUpArduino() {
 
 
 char * getMsgString(byte arrayIndex) {
-//WRITE ME LATER
+	if( arrayIndex < sizeof(msg_str_table)/sizeof(msg_str_table[0]))
+	{
+		memset(programMem2RAMBuffer, 0, sizeof(programMem2RAMBuffer));//clear char array buffer
+		return strcpy_P(programMem2RAMBuffer, (char*)pgm_read_word(&(msg_str_table[arrayIndex])));//copy the fixed string from flash into the char buffer
+	}//end if
+	else
+	{
+		Serial.println(F("ArrayOvflw"));
+		while(1);//hold the code here until it's fixed
+	}
 }//end of getMsgString()
 
 
@@ -3199,7 +3504,7 @@ void processGPS(double newLatitude, double newLongitude)//where the latitude and
 	
 		gpsDataCounter = 0;//reset the global counter
 		
-		double avgLatitude = BubbleSort::getMedian(latitudeArray[0], latitudeArray[1], latitudeArray[2], latitudeInDecDegArray[3], latitudeArray[4], latitudeArray[5], latitudeArray[6]);//take the median value
+		double avgLatitude = BubbleSort::getMedian(latitudeArray[0], latitudeArray[1], latitudeArray[2], latitudeArray[3], latitudeArray[4], latitudeArray[5], latitudeArray[6]);//take the median value
 		
 		double avgLongitude = BubbleSort::getMedian(longitudeArray[0], longitudeArray[1], longitudeArray[2], longitudeArray[3], longitudeArray[4], longitudeArray[5], longitudeArray[6]);//take the median
 		
