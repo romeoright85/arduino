@@ -164,8 +164,9 @@
 		#define _BTFG_MAIN_SYSTEM_READY_								0x02
 		#define _BTFG_MAIN_SYSTEM_GO_								0x04
 		#define _BTFG_GPS_DATA_READY_								0x08
-		#define _BTFG_ALL_GPS_DATA_GATHERED_								0x10
-		#define _BTFG_ALL_HEADING_DATA_GATHERED_								0x20		
+		#define _BTFG_HEADING_DATA_READY_						0x10
+		#define _BTFG_ALL_GPS_DATA_GATHERED_								0x20
+		#define _BTFG_ALL_HEADING_DATA_GATHERED_								0x40
 		//System Control: flagSet_SystemControls1
 		#define _BTFG_MTR_POWER_IS_ON_										0x01//mtrPowerIsOn, used to store values passed in from MAIN
 		#define _BTFG_REMOTE_CTRL_SELECTED_								0x02//replaces buffer_remote_ctrl_selected, default: false/clear

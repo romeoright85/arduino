@@ -10,7 +10,7 @@
 		#define CMD_PRI_LVL_3	3		
 		//Command Tags - Message Definitions
 		//Reference: K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes\Command Creator	
-		
+			
 		#define CMD_TAG_NO_MSG     0
 		#define CMD_TAG_DEBUG_OUTPUT_RXD_CMD     1
 		#define CMD_TAG_DEBUG_HI_TEST_MSG     2
@@ -63,10 +63,10 @@
 		#define CMD_TAG_ENC_STATUS_MID_RIGHT     49
 		#define CMD_TAG_ENC_STATUS_REAR_LEFT     50
 		#define CMD_TAG_ENC_STATUS_REAR_RIGHT     51
-		#define CMD_TAG_HEADING_REQUEST     52
-		#define CMD_TAG_ROLL_REQUEST     53
-		#define CMD_TAG_PITCH_REQUEST     54
-		#define CMD_TAG_YAW_REQUEST     55
+		#define CMD_TAG_SET_HEADING     52
+		#define CMD_TAG_SET_ROLL     53
+		#define CMD_TAG_SET_PITCH     54
+		#define CMD_TAG_SET_YAW     55
 		#define CMD_TAG_HEADING_STATUS     56
 		#define CMD_TAG_ROLL_STATUS     57
 		#define CMD_TAG_PITCH_STATUS     58
@@ -180,4 +180,5 @@
 		#define CMD_TAG_CALIBRATE_MOTOR_CONTROLLER     166
 		#define CMD_TAG_RUN_GIMBAL_DEMO     167
 		
+
 	#endif	

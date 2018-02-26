@@ -269,7 +269,7 @@ void loop() {
 			double avgHeading = BubbleSort::getMedian(headingArray[0], headingArray[1], headingArray[2], headingArray[3], headingArray[4], headingArray[5], headingArray[6]);
 			if(avgHeading >= 0.0 && avgHeading <= 360.0)//check to see that the heading value is within valid range
 			{
-				roverNavigation->setHeadingDeg(avgHeading);
+				roverNavigation->setHeadingDeg(avgHeading);//set it to the actual/official heading value
 				
 				#ifdef _PRINT_IMU_MEDIAN_COMPLETED_STATUS
 					_SERIAL_DEBUG_CHANNEL_.println(F("IMU Median Completed"));
@@ -310,8 +310,8 @@ void loop() {
 			//check to see if both lat and long are within valid range
 			if(( avgLatitude >= 0.0 && avgLatitude <= 90.0) && (avgLongitude >= -180.0 && avgLongitude <= 180.0 ))
 			{
-				roverNavigation->setLatitudeDeg(avgLatitude , TYPE_ACTUAL);//set it to the actual latitude value
-				roverNavigation->setLongitudeDeg(avgLongitude, TYPE_ACTUAL);//set it to the actual longitude value
+				roverNavigation->setLatitudeDeg(avgLatitude , TYPE_ACTUAL);//set it to the actual/official latitude value
+				roverNavigation->setLongitudeDeg(avgLongitude, TYPE_ACTUAL);//set it to the actual/official longitude value
 				
 				
 				#ifdef _PRINT_GPS_MEDIAN_COMPLETED_STATUS
@@ -571,7 +571,7 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 	while (numberOfAttempts <= GPS_RX_DATA_ATTEMPTS)
 	{
 
-		//Check availabiltiy of serial data
+		//Check availability of serial data
 		if (_GPS_SERIAL_.available())
 		{
 			//initialize the counter
@@ -591,7 +591,7 @@ boolean rxGPSData(RoverGpsSensor * roverGps) {
 
 
 
-			//If timeout has NOT occured, keep processing the GPS data
+			//If time-out has NOT occurred, keep processing the GPS data
 			if (foundStart)
 			{
 				//initialize the counter

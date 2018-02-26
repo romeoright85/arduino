@@ -66,6 +66,22 @@ Can send:
 #ifndef _MOTORCONTROLLER_DEFINITIONS
 #define _MOTORCONTROLLER_DEFINITIONS
 #endif
+#ifndef _ULTRASONIC_SENSOR_DEFINITIONS
+#define _ULTRASONIC_SENSOR_DEFINITIONS
+#endif
+#ifndef _INFRARED_SENSOR_DEFINITIONS
+#define _INFRARED_SENSOR_DEFINITIONS
+#endif
+#ifndef _WHEEL_ENCODER_DEFINITIONS
+#define _WHEEL_ENCODER_DEFINITIONS
+#endif
+#ifndef _GPS_SENSOR
+#define _GPS_SENSOR
+#endif
+
+
+
+
 
 //#includes
 #include <RoverStatesAndModes.h>
@@ -124,6 +140,20 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 
 //============End of Debugging: Serial Channel Selection
+
+
+
+//============Debugging: Print GPS Data Status
+//Uncomment to print GPS Data Valid Status
+//#define _PRINT_GPS_DATA_STATUS
+//============End Debugging: Print GPS Data Status
+
+
+//============Debugging: Print GPS Median Completed
+//Uncomment to print GPS Median Completed Status
+//#define _PRINT_GPS_MEDIAN_COMPLETED_STATUS
+//============End Debugging: Print GPS Median Completed
+
 
 
 
@@ -419,9 +449,11 @@ UltrasonicSensor * uSon_RearCenter = new UltrasonicSensor(REAR_CENTER_ULTSNC_TRI
 UltrasonicSensor * uSon_SideLeft = new UltrasonicSensor(SIDE_LEFT_ULTSNC_TRIG_PIN, SIDE_LEFT_ULTSNC_ECHO_PIN);
 
 
-int distanceMeasured[ULTRASONIC_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
-
-
+int uSonDistanceMeasured[ULTRASONIC_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
+int irDistanceMeasured[INFRARED_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
+byte allWheelEncodersDirection[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
+byte allWheelEncodersFootage[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
+byte allWheelEncodersSpeed[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
 
 
 //------------------From IrDistanceSensorTest
@@ -503,6 +535,9 @@ RoverReset * resetArray[] = {
 
 //Holds ultrasonic sensors in an array so can loop through them more efficiently
 UltrasonicSensor * uSonSensors[ULTRASONIC_SENSORS_ARRAY_SIZE];//The objects will be assigned in the setup() function.
+//Holds IR sensors in an array so can loop through them more efficiently
+IrDistanceSensor * irDistanceSensors[INFRARED_SENSORS_ARRAY_SIZE];//The objects will be assigned in the setup() function.
+WheelEncoderSensor * naviWheelEncoders[NAVI_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE];//The objects will be assigned in the setup() function.
 
 
 
@@ -628,7 +663,7 @@ void setup() {
 	}//end for
 
 
-	//Assigning object to the Ultrasonic Array
+	//Assigning object pointers to the Ultrasonic Array
 	uSonSensors[ULTRASONIC_FWD_LEFT] = uSon_FwdLeft;
 	uSonSensors[ULTRASONIC_SIDE_RIGHT] = uSon_SideRight;
 	uSonSensors[ULTRASONIC_FWD_CENTER] = uSon_FwdCenter;
@@ -636,10 +671,32 @@ void setup() {
 	uSonSensors[ULTRASONIC_FWD_RIGHT] = uSon_FwdRight;
 	uSonSensors[ULTRASONIC_SIDE_LEFT] = uSon_SideLeft;
 
+	//Assigning object pointers to the IR Distance Sensor Array
+	irDistanceSensors[INFRARED_SENSOR_FWD_CENTER] = irDistanceForwardCenter;
+	irDistanceSensors[INFRARED_SENSOR_FWD_SIDE_RIGHT] = irDistanceSideRight;
+	irDistanceSensors[INFRARED_SENSOR_REAR_CENTER] = irDistanceRearCenter;
+	irDistanceSensors[INFRARED_SENSOR_FWD_SIDE_LEFT] = irDistanceSideLeft;
 
+	//Assigning object pointers to the NAVI Wheel Encoders Array
+	naviWheelEncoders[WHEEL_ENC_FRONT_LEFT] = wheelEncoder_FrontLeft;
+	naviWheelEncoders[WHEEL_ENC_FRONT_RIGHT] = wheelEncoder_FrontRight;
+	naviWheelEncoders[WHEEL_ENC_REAR_LEFT] = wheelEncoder_RearLeft;
+	naviWheelEncoders[WHEEL_ENC_REAR_RIGHT] = wheelEncoder_RearRight;
+	
 
+	
 	 //Serial Communications
-//WRITE ME LATER
+	//Setup the HW_UART for communications between NAVI and MAIN, NAVI and the GPS, and NAVI and PC USB
+	_PC_USB_SERIAL_.begin(PC_USB_BAUD_RATE);
+	_PC_USB_SERIAL_.flush();//waits for any outgoing serial data to complete
+	
+	_MAIN_SERIAL_.begin(MAIN_BAUD_RATE);
+	_MAIN_SERIAL_.flush();//waits for any outgoing serial data to complete
+	
+	_GPS_SERIAL_.begin(GPS_BAUD_RATE);
+	_GPS_SERIAL_.flush();//waits for any outgoing serial data to complete
+	
+	 
 
 	//Setting Up Timer Interrupt
 	OCR0A = 0x7F;//Set the timer to interrupt somewhere in the middle of it's count, say 127 aka 7F in hex (since Timer0 is 8 bit and counts from 0 to 255)
@@ -1210,6 +1267,13 @@ void runBackgroundTasks()
 	
 	//Control the LEDs of the Arduino
 	ledController_NAVI->runLedController();
+	
+	//Wheel Encoders
+	wheelEncoder_FrontLeft->sensorOnline();
+	wheelEncoder_FrontRight->sensorOnline();
+	wheelEncoder_RearLeft->sensorOnline();
+	wheelEncoder_RearRight->sensorOnline();
+	
 
 }//end of runBackgroundTasks()
 byte rxData(RoverComm * roverComm, byte roverCommType) {
@@ -1469,10 +1533,110 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	
 //WRITE LATER	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+
+//Set or clear status flag, _BTFG_MTR_POWER_IS_ON_ depending on the data received
 		
 	}//end else if		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//Set Mid Right Encoder Status (Status Received from MAIN)
+	else if (commandTag == CMD_TAG_ENC_STATUS_MID_RIGHT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMIDRIGHTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMIDRIGHTENCODERSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+		
+		
+		/*
+		
+		See and use RoverMessagePackager()
+		
+		
+		TEMPLATE/SUGGESTION
+			allWheelEncodersDirection[WHEEL_ENC_MID_RIGHT] = <<PARSED RXD DATA HERE>>//As defined in RoverConfig.h under "//Motor Directions"
+			allWheelEncodersFootage[WHEEL_ENC_MID_RIGHT] = <<PARSED RXD DATA HERE>>;//distance travelled in feet
+			allWheelEncodersSpeed[WHEEL_ENC_MID_RIGHT] = <<PARSED RXD DATA HERE>>;//in inches per second
+		
+		*/
+		
+	}//end else if				
+	//Set Mid Left Encoder Status (Status Received from MAIN)
+	else if (commandTag == CMD_TAG_ENC_STATUS_MID_LEFT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMIDLEFTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMIDLEFTENCODERSTATUS_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+		
+		/*
+		TEMPLATE/SUGGESTION
+		
+		See and use RoverMessagePackager()
+		
+			allWheelEncodersDirection[WHEEL_ENC_MID_LEFT] = <<PARSED RXD DATA HERE>>//As defined in RoverConfig.h under "//Motor Directions"
+			allWheelEncodersFootage[WHEEL_ENC_MID_LEFT] = <<PARSED RXD DATA HERE>>;//distance travelled in feet
+			allWheelEncodersSpeed[WHEEL_ENC_MID_LEFT] = <<PARSED RXD DATA HERE>>;//in inches per second
+		
+		*/		
+		
+		
+		
+		
+		
+		
+	}//end else if				
+	//Set Heading (Status Received from AUXI)
+	else if (commandTag == CMD_TAG_SET_HEADING &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETHEADING_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETHEADING_))		
+			)
+		)		 	 
+	{	
+	
+//WRITE LATER	
+//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+
+
+//Parse data
+	//SEE NavigationTester_NAVI.ino for example code ( i.e. rxCompassData() )
+//Check to see if it's valid heading data (i.e. within range)
+	//See ImuSensor.cpp, getCorrectedHeading(), etc.
+	
+//Then if valid, save data to the global tempHeadingData.
+/*
+if data is valid, set status flag
+	BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_HEADING_DATA_READY_);
+else clear status flag
+	BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_HEADING_DATA_READY_);
+end if
+*/
+//Then tempHeadingData will get processed further in PROCESS_DATA by processHeading()
+
+		
+	}//end else if					
+	
+	
 	//Run Motor Calibration
-	else if (commandTag == CMD_TAG_MTR_PWR_STATUS &&
+	else if (commandTag == CMD_TAG_CALIBRATE_MOTOR_CONTROLLER &&
 			(
 				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_) )
 				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_))		
@@ -1484,6 +1648,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		
 	}//end else if				
+	
+	
 	//Run Gimbal Demo
 	else if (commandTag == CMD_TAG_RUN_GIMBAL_DEMO &&
 			(
@@ -2432,19 +2598,10 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				Serial.println(timeout_counter);//DEBUG
 			#endif
 			
-			//Skip Ultrasonic Distance Sensors
-			//Skip IR Distance Sensors
-			//Skip Heading (for AUXI-external)			
-			//Skip Motor power status (for MAIN-external)
-			//Skip Wheel Encoders (for MAIN-external and for NAVI-internal)
-			//Skip GPS
-			
 			
 			//Run lower priority functions here.
 			//These messages and flags may be overrided with commandDirector()			
 
-
-			
 			
 			//If System Go (from MAIN to NAVI) was not received (Note: Messages received could still have been sys ready or no message at all)
 			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_))
@@ -2481,6 +2638,9 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				}//end if
 			}//end if					
 			
+			
+			
+			
 
 			//Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				//All other messages are allowed from PC_USB. Use with caution.
@@ -2500,6 +2660,13 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 				commandDirector(roverDataCh2_COMM, ROVERCOMM_MAIN);
 			}//end if				
 
+			
+			//Skip Ultrasonic Distance Sensors
+			//Skip IR Distance Sensors
+			//Skip Heading (for AUXI-external)			
+			//Skip Motor power status (for MAIN-external)
+			//Skip Wheel Encoders (for MAIN-external and for NAVI-internal)
+			//Skip GPS
 							
 			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 	
@@ -2843,43 +3010,157 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 		
 		
 			//Read All Ultrasonic Distance Sensors
-			//Note: The Ultrasonic's trigger will implicitly be controlled when the sensor is read, since the trigger is part of the reading process	
+				//Note: The Ultrasonic's trigger will implicitly be controlled when the sensor is read, since the trigger is part of the reading process	
 			for (byte i = 0; i < ULTRASONIC_SENSORS_ARRAY_SIZE; i++)
 			{
-				distanceMeasured[i] = uSonSensors[i]->getDistance(UNIT_CM);//store the ultrasonic's distance in the corresponding spot in the distanceMeasured[] array
+				uSonDistanceMeasured[i] = uSonSensors[i]->getDistance(UNIT_CM);//store the ultrasonic's distance in the corresponding spot in the uSonDistanceMeasured[] array
 			}//end for
 			
-				
-				
 			//Read IR Distance Sensors
-			//Read Wheel Encoders
-			//Read GPS				
-		
-		
-//LEFT OFF HERE
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			for (byte i = 0; i < INFRARED_SENSORS_ARRAY_SIZE; i++)
+			{
+				irDistanceMeasured[i] = irDistanceSensors[i]->getDistance(UNIT_CM);//store the ultrasonic's distance in the corresponding spot in the irDistanceMeasured[] array
+			}//end for
+
+				
+			//Read NAVI Wheel Encoders
+			for (byte i = 0; i < NAVI_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE; i++)
+			{
 			
+					allWheelEncodersDirection[i] = naviWheelEncoders[i]->getDirection();//As defined in RoverConfig.h under "//Motor Directions"
+					allWheelEncodersFootage[i] = naviWheelEncoders[i]->getFootage();//distance travelled in feet
+					allWheelEncodersSpeed[i] = naviWheelEncoders[i]->getSpeed();//in inches per second
+
+			}//end for		
+			//Note: For the MAIN Encoders, the mid right and mid left data will be received through serial communication from MAIN and stored. See commandDirector().
 			
-			
+			//Read GPS			
+			//Get samples of actual GPS coordinates
+			if(rxGPSData(roverGps))//Receive (via serial) and process gps data
+			{
+				#ifdef _PRINT_GPS_DATA_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Valid"));
+				#endif
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_GPS_DATA_READY_);
+			 }//end if
+			else//Else notify that the GPS data isn't ready
+			{
+				#ifdef _PRINT_GPS_DATA_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Not Ready"));
+				#endif		
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_GPS_DATA_READY_);
+			}//end else
 			break;
-/* TEMPLATE		
+
 		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
-
-
+		
 		
 
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
+			
+			
+			//Run lower priority functions here.
+			//These messages and flags may be overrided with commandDirector()			
 
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			//Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//All other messages are allowed from PC_USB. Use with caution.
+				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_))//If there was data from PC_USB (Ch1), and it was for NAVI
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh1_COMM, ROVERCOMM_PC_USB);
+			}//end if			
+			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//All messages are allowed from MAIN.
+				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_))//If there was data from MAIN (Ch2), and it was for NAVI
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh2_COMM, ROVERCOMM_MAIN);
+			}//end if				
+
+			
+
+			//Process ultrasonic distance sensors
+				//Note: Nothing else needed to process for ultrasonics. It's already taken care of in the READ_INPUTS state
+			//Process ir distance sensors
+				//Note: Nothing else needed to process for ir distance sensors. It's already taken care of in the READ_INPUTS state
+			//Process heading (for AUXI-external)
+			
+			//If Heading data is ready and valid
+			 if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_HEADING_DATA_READY_))
+			 {
+				processHeading(tempHeadingData);
+			 }//end if
+			 //else do nothing since the data is invalid
+
+			//Process motor power status (for MAIN-external)
+				//Note: Nothing else needed to process for the motor power status. It's already taken care of by the commandDirector() in this PROCESS_DATA state.
+			
+			//Process wheel encoders (for MAIN-external and for NAVI-internal)			
+				//Note: Nothing else needed to process for the NAVI wheel encoders. It's already taken care of in the READ_INPUTS state
+				//Note: Nothing else needed to process for the MAIN wheel encoders. It's already taken care of by the commandDirector() in this PROCESS_DATA state.
+			
+			//Process GPS		
+			//When GPS data is ready and valid
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_GPS_DATA_READY_) )
+			{
+				//save the lat and long data into the array, which will later be sorted and the median will be extracted
+				processGPS(roverGps->getGpsLatitude(DEC_DEG), roverGps->getGpsLongitude(DEC_DEG));//where the latitude and longitude are in decimal degrees
+			}//end if
+			//else do nothing since the data is invalid
+			
+		
+			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+		
+
 			break;
+/* TEMPLATE			
 		case PLAN_ROUTE: //Mode: NORMAL_OPERATIONS
 //TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
-			break;			
+		
+Set ideal (non object in way) course/speed in the PLAN_ROUTE state. Then actual course speed will be either this ideal or if there is an object in the way, it will be overrided in the OBJECT_AVOIDANCE state
+		
+		//SEE NavigationTester_NAVI.ino
+		
+		
+i.e.
+///////////////////END OF EXAMPLE
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Distance: "));
+					tempValue = roverNavigation->getDistance(UNIT_M);
+					_SERIAL_DEBUG_CHANNEL_.println(tempValue, DECIMAL_PRECISION);//print with the define decimal precision
+					_SERIAL_DEBUG_CHANNEL_.print(F("True Bearing: "));
+					tempValue = roverNavigation->getTrueBearing();
+					_SERIAL_DEBUG_CHANNEL_.println(tempValue, DECIMAL_PRECISION);//print with the define decimal precision	
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Relative Bearing: "));
+					tempValue = roverNavigation->getRelativeBearing();
+					_SERIAL_DEBUG_CHANNEL_.println(tempValue, DECIMAL_PRECISION);//print with the define decimal precision	
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Steering: "));
+					tempValue = roverNavigation->getCalculatedMotorSteering();
+					translateMotorSteering(roverNavigation->getCalculatedMotorSteering());
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Get Motor Throttle: "));
+					translateMotorThrottle(roverNavigation->getCalculatedMotorThrottle());
+
+
+					_SERIAL_DEBUG_CHANNEL_.print(F("Rover Nav Status: "));
+					if (roverNavigation->hasReachedDestination())
+					{
+					_SERIAL_DEBUG_CHANNEL_.println(F("Destination Reached"));
+					}
+					else
+					{
+					_SERIAL_DEBUG_CHANNEL_.println(F("Still Navigating"));
+					}
+///////////////////END OF EXAMPLE
+					
+		
+		
 		case OBJECT_AVOIDANCE: //Mode: NORMAL_OPERATIONS
 //TEMPLATE		
 			//Nothing to do here.
@@ -2936,27 +3217,22 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: SYSTEM_SLEEPING
-			
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-/* TEMPLATE			
 		case PROCESS_DATA: //Mode: SYSTEM_SLEEPING
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PLAN_ROUTE: //Mode: SYSTEM_SLEEPING
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case OBJECT_AVOIDANCE: //Mode: SYSTEM_SLEEPING
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
-			break;					
+			break;
+/* TEMPLATE			
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
 //TEMPLATE		
 			//Nothing to do here.
@@ -3008,28 +3284,22 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: SYSTEM_WAKING
-
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-/* TEMPLATE
 		case PROCESS_DATA: //Mode: SYSTEM_WAKING
-											
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PLAN_ROUTE: //Mode: SYSTEM_WAKING
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case OBJECT_AVOIDANCE: //Mode: SYSTEM_WAKING
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
-			break;					
+			break;
+/* TEMPLATE						
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
 //TEMPLATE		
 			//Nothing to do here.
@@ -3082,27 +3352,22 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;	
 		case READ_INPUTS: //Mode: SW_RESETTING
-
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-/* TEMPLATE									
 		case PROCESS_DATA: //Mode: SW_RESETTING
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
 		case PLAN_ROUTE: //Mode: SW_RESETTING
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case OBJECT_AVOIDANCE: //Mode: SW_RESETTING
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
+/* TEMPLATE			
 		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
 //TEMPLATE		
 			//Nothing to do here.
@@ -3230,6 +3495,11 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			//Flag Set 2
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETDRIVESETTING_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETDRIVESETTING_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMIDRIGHTENCODERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMIDLEFTENCODERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETHEADING_);
+			
 			//Flag Set 3
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_);
@@ -3298,25 +3568,70 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 		
 		
 			break;	
-/* TEMPLATE						
 		case READ_INPUTS: //Mode: SYSTEM_ERROR
+
 	
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+			//Read All Ultrasonic Distance Sensors
+				//Note: The Ultrasonic's trigger will implicitly be controlled when the sensor is read, since the trigger is part of the reading process	
+			for (byte i = 0; i < ULTRASONIC_SENSORS_ARRAY_SIZE; i++)
+			{
+				uSonDistanceMeasured[i] = uSonSensors[i]->getDistance(UNIT_CM);//store the ultrasonic's distance in the corresponding spot in the uSonDistanceMeasured[] array
+			}//end for
+			
+			//Read IR Distance Sensors
+			for (byte i = 0; i < INFRARED_SENSORS_ARRAY_SIZE; i++)
+			{
+				irDistanceMeasured[i] = irDistanceSensors[i]->getDistance(UNIT_CM);//store the ultrasonic's distance in the corresponding spot in the irDistanceMeasured[] array
+			}//end for
+
+				
+			//Read NAVI Wheel Encoders
+			for (byte i = 0; i < NAVI_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE; i++)
+			{
+			
+					allWheelEncodersDirection[i] = naviWheelEncoders[i]->getDirection();//As defined in RoverConfig.h under "//Motor Directions"
+					allWheelEncodersFootage[i] = naviWheelEncoders[i]->getFootage();//distance travelled in feet
+					allWheelEncodersSpeed[i] = naviWheelEncoders[i]->getSpeed();//in inches per second
+
+			}//end for		
+			//Note: For the MAIN Encoders, the mid right and mid left data will be received through serial communication from MAIN and stored. See commandDirector().
+			
+			
+			//Read GPS
+			//Get samples of actual GPS coordinates
+
+			if(rxGPSData(roverGps))//Receive (via serial) and process gps data
+			{
+				#ifdef _PRINT_GPS_DATA_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Valid"));
+				#endif
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_GPS_DATA_READY_);
+			 }//end if
+			else//Else notify that the GPS data isn't ready
+			{
+				#ifdef _PRINT_GPS_DATA_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("GPS Data Not Ready"));
+				#endif		
+				BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_GPS_DATA_READY_);
+			}//end else
+		
 			break;
 		case PROCESS_DATA: //Mode: SYSTEM_ERROR
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+	
+//TEMPLATE	
+//LEFT OFF HERE
+//WRITE ME LATER			
+//Use NORMAL_OPERATIONS's PROCESS_DATA as a guide
+			
+			
+			
 			break;
+/* TEMPLATE
 		case PLAN_ROUTE: //Mode: SYSTEM_ERROR
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;			
 		case OBJECT_AVOIDANCE: //Mode: SYSTEM_ERROR
-//TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
@@ -3476,14 +3791,25 @@ void processHeading(double newHeading)
 		
 		if(avgHeading >= 0.0 && avgHeading <= 360.0)//check to see that the heading value is within valid range
 		{
-			roverNavigation->setHeadingDeg(avgHeading);
+			roverNavigation->setHeadingDeg(avgHeading);//set it to the actual/official heading value
 			
 			#ifdef _PRINT_IMU_MEDIAN_COMPLETED_STATUS
 				_SERIAL_DEBUG_CHANNEL_.println(F("IMU Median Completed"));
 			#endif
-			
+				BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_ALL_HEADING_DATA_GATHERED_);//Set the status flag
+		
 		}//end if
-		//else do nothing and keep the last set value as is
+		
+		else
+		{
+		
+			//do nothing and keep the last set value as is
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_ALL_HEADING_DATA_GATHERED_);//Set the status flag
+			
+		}
+		
+		
+		
 	}//end if
 	
 }//end of processHeading()
@@ -3511,17 +3837,113 @@ void processGPS(double newLatitude, double newLongitude)//where the latitude and
 		//check to see if both lat and long are within valid range
 		if(( avgLatitude >= 0.0 && avgLatitude <= 90.0) && (avgLongitude >= -180.0 && avgLongitude <= 180.0 ))
 		{
-			roverNavigation->setLatitudeDeg(avgLatitude , TYPE_ACTUAL);//set it to the actual latitude value
-			roverNavigation->setLongitudeDeg(avgLongitude, TYPE_ACTUAL);//set it to the actual longitude value
+			roverNavigation->setLatitudeDeg(avgLatitude , TYPE_ACTUAL);//set it to the actual/official latitude value
+			roverNavigation->setLongitudeDeg(avgLongitude, TYPE_ACTUAL);//set it to the actual/official longitude value
 			
 			
 			#ifdef _PRINT_GPS_MEDIAN_COMPLETED_STATUS
 				_SERIAL_DEBUG_CHANNEL_.println(F("GPS Median Completed"));
 			#endif
 			
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_ALL_GPS_DATA_GATHERED_);//Set the status flag
 		
 		}//end if
-		//else throw the whole lat/long pair away and keep the previous value
+		else
+		{
+		
+			//throw the whole lat/long pair away (i.e. do nothing with it) and just keep the previous value
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_ALL_GPS_DATA_GATHERED_);//Set the status flag
+			
+		}
 	}//end if			
 	
 }//end of processGPS()
+
+
+
+boolean rxGPSData(RoverGpsSensor * roverGps) {
+
+	//Note: Make sure processRxGPSData() is called between (before, after, or in) successive rxGPSData() function calls, as it will clear the string and reset the index (required for the code to work properly)
+
+
+	byte numberOfAttempts = 0;//counts the number of times attempting to wait for a valid gps data string
+	byte gpsCharactersToReceiveBeforeTimeout;//counts the number of characters received while waiting for the start of the gps data (i.e. $) before timing out
+	boolean foundStart = false;
+	boolean validGpsData = false;
+	byte counter;
+
+
+	while (numberOfAttempts <= GPS_RX_DATA_ATTEMPTS)
+	{
+
+		//Check availability of serial data
+		if (_GPS_SERIAL_.available())
+		{
+			//initialize the counter
+			gpsCharactersToReceiveBeforeTimeout = 0;
+			//Wait for the GPS start of data (i.e. $) else for a time out
+			do
+			{
+				if ((char)_GPS_SERIAL_.read() == '$')//look for the start of the GPS data (do NOT include it in the gps data string if found)
+				{
+					foundStart = true;
+					delay(1);
+					break;//break out of the loop since the header was found
+				}
+				delay(1);
+			} while (gpsCharactersToReceiveBeforeTimeout <= GPS_SENTENCE_LENGTH);
+
+
+
+
+			//If time-out has NOT occurred, keep processing the GPS data
+			if (foundStart)
+			{
+				//initialize the counter
+				counter = 0;
+
+				//Gather the rest of the GPS String (AFTER the $, so $ is not included)
+				while (_GPS_SERIAL_.available() && _GPS_SERIAL_.peek() != '$' && counter <= GPS_SENTENCE_LENGTH)//while there is still data on the Serial RX Buffer, another sentence has not started, and the length is not over the max GPS sentence length
+				{
+
+
+					//Read one character of serial data at a time
+					//Note: Must type cast the _PC_USB_SERIAL_.Read to a char since not saving it to a char type first					
+
+					roverGps->appendToRxGPSData((char)_GPS_SERIAL_.read());//construct the string one char at a time
+																	  //DEBUG: Add as needed
+					counter++;
+					delay(1);//add a small delay between each transmission to reduce noisy and garbage characters
+
+
+				}//end while
+
+
+
+				 //Process and validate GPS Data
+				validGpsData = roverGps->processRxGPSData();
+
+
+				//If the received gps data is valid, return validGpsData and exit out of this function (no more trial attempts needed)
+				if (validGpsData)
+				{
+					return validGpsData;
+				}
+				//else the GPS data was invalid, so make another attempt to find valid GPS data
+
+
+			}//end if
+			 //else if time out has occurred, go to the next trial		
+
+		}//end if
+		 //else if there is no serial data available do nothing, go to the next trial
+
+		 //Increment trial counter
+		numberOfAttempts++;
+
+	}//end while
+
+	 //Reached the max attempts to receive valid GPS Data
+	return validGpsData;//If the code has reached this point, this value will be false. No valid GPS data found, and max attempts to find it has been reached.
+
+}//end rxGPSData

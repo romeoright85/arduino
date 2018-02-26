@@ -621,6 +621,20 @@
 		#define MOTOR_REVERSE		2
 		#define SINGLE_SIDED_EDGES_PER_REVOLUTION 12
 		#define INCHES_PER_REVOLUTION 15		
+		
+		#define	NAVI_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE 4//number of wheel encoders for NAVI (for the NAVI Wheel Encoders Object Pointer Array)
+		#define	ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE 6//number of wheel encoders from MAIN (qty 2) and NAVI (qty 4)
+		//Wheel Encoder Names
+		//From NAVI
+		#define WHEEL_ENC_FRONT_LEFT				0
+		#define WHEEL_ENC_FRONT_RIGHT			1
+		#define WHEEL_ENC_REAR_LEFT				2
+		#define WHEEL_ENC_REAR_RIGHT			3
+		//From MAIN
+		#define WHEEL_ENC_MID_RIGHT				4
+		#define WHEEL_ENC_MID_LEFT					5
+		
+		
 	#endif	
 	
 
@@ -927,7 +941,7 @@
 		#define ULTRASONIC_SENSOR_SAMPLE_TIMES	5 //the number times to sample and average the ultrasonic data
 		#define ULTRASONIC_SENSOR_NO_OBJECT_SAMPLES	3 //the number of times no objects detect threshold before declaring no objects detected. Should be <= ULTRASONIC_SENSOR_SAMPLE_TIMES.
 		#define ULTRASONIC_SENSORS_ARRAY_SIZE 6//number of ultrasonic sensors
-		//Ultrasonic Names
+		//Ultrasonic Sensor Names
 		#define ULTRASONIC_FWD_LEFT				0
 		#define ULTRASONIC_SIDE_RIGHT			1
 		#define ULTRASONIC_FWD_CENTER			2
@@ -941,6 +955,12 @@
 //definitions for Infrared Sensor
 	#ifdef _INFRARED_SENSOR_DEFINITIONS	
 		#define INFRARED_SENSOR_SAMPLE_TIMES	5 //the number times to sample and average the IR sensor data		
+		#define  INFRARED_SENSORS_ARRAY_SIZE 4//number of IR distance sensors
+		//IR Distance Sensor Names
+		#define INFRARED_SENSOR_FWD_CENTER						0
+		#define INFRARED_SENSOR_FWD_SIDE_RIGHT			1
+		#define INFRARED_SENSOR_REAR_CENTER				2
+		#define INFRARED_SENSOR_FWD_SIDE_LEFT		3
 	#endif
 	
 	//definitions for ArrayFunctions

@@ -525,7 +525,10 @@ At POR (defaults):
 				generic system error message
 				set drive setting (so you can switch to auto or manual drive)
 					(Note: all other set functions will be set to safety defaults when SYSTEM_ERROR begins and held at that value to prevent user from making the issue worse)
-				
+					Set Motor Power Status (Status Received from MAIN)
+					Set Mid Right Encoder Status (Status Received from MAIN)
+					Set Mid Left Encoder Status (Status Received from MAIN)	
+					Set Heading (Status Received from AUXI)
 				Any of the status requests (i.e. Get Longitude, Get Latitude, etc.)
 				Any external status data (i.e. motor power status from MAIN, wheel encoder data from MAIN, heading data from AUXI)
 				s
@@ -573,32 +576,21 @@ At POR (defaults):
 		INITIALIZATION
 			do nothing	
 		SYNCHRONIZATION
+		
 			Categorize all commands/data from all sources.					
 			Sort based on priority.
 			Allow for all non-conflicting commands to run.
 			Then only run the highest priority functions for NAVI last, so it will overwrite anything else, right before state transition.
 			
-			skip ultrasonic distance sensors
-			skip ir distance sensors
-			skip heading (for AUXI-external)			
-			skip motor power status (for MAIN-external)
-			skip wheel encoders (for MAIN-external and for NAVI-internal)
-			skip GPS
-			
+
 			//Set pri_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or AUXI instead of the default MAIN.
 			
 			//Set sec_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or AUXI instead of the default MAIN.			
-			
-			
-			Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-				No redirections with the NAVI Arduino.
-				All other messages are allowed from PC_USB. Use with caution.						
-			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-						
-				Note: Either you should get no data, system ready messages, system go messages, navi sw reset requests, generic health errors, generic system errors. as everything else was filtered out.
+	
 
+		
 			//Run lower priority functions here. (i.e. system ready msgs)
-			
+						
 			If !(system go msg received, check system go flag from MAIN aka can be system ready or no msg)
 				main_pri_msg_queue = SYSTEM_READY_STATUS (tells MAIN it's ready to synchronize)
 				
@@ -607,6 +599,24 @@ At POR (defaults):
 			end if
 			Note: If system go or system ready msg has been received from MAIN, see "Command Options" below for more info.
 
+				
+			
+			Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				No redirections with the NAVI Arduino.
+				All other messages are allowed from PC_USB. Use with caution.						
+			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+						
+				Note: Either you should get no data, system ready messages, system go messages, navi sw reset requests, generic health errors, generic system errors. as everything else was filtered out.
+
+				
+			skip ultrasonic distance sensors
+			skip ir distance sensors
+			skip heading (for AUXI-external)			
+			skip motor power status (for MAIN-external)
+			skip wheel encoders (for MAIN-external and for NAVI-internal)
+			skip GPS
+
+			
 			//Run highest priority functions here. //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
 
 					
@@ -659,12 +669,6 @@ At POR (defaults):
 			go to RUN_HOUSEKEEPING_TASKS				
 		NORMAL_OPERATIONS
 	
-			Process ultrasonic distance sensors
-			Process ir distance sensors
-			Process heading (for AUXI-external)			
-			Process motor power status (for MAIN-external)
-			Process wheel encoders (for MAIN-external and for NAVI-internal)			
-			Process GPS
 
 			Categorize all commands/data from all sources.
 			Allow for all non-conflicting commands to run.
@@ -674,14 +678,27 @@ At POR (defaults):
 			//Set pri_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or NAVI instead of the default MAIN.
 			
 			//Set sec_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or NAVI instead of the default MAIN.
+	
+		
+			//Run lower priority functions here.
+
 			
 			Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				No redirections with the NAVI Arduino.
 				All other messages are allowed from PC_USB. Use with caution.						
-			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
-														
-			//Run lower priority functions here.
-													
+			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)		
+				No redirections with the NAVI Arduino.			
+				All messages are allowed from MAIN.
+	
+
+			Process ultrasonic distance sensors
+			Process ir distance sensors
+			Process heading (for AUXI-external)			
+			Process motor power status (for MAIN-external)
+			Process wheel encoders (for MAIN-external and for NAVI-internal)			
+			Process GPS
+			
+			
 			//Run highest priority functions here. //this will override any lower priority messages
 
 			Unless overridden,
@@ -696,17 +713,6 @@ At POR (defaults):
 		SW_RESETTING
 			do nothing			
 		SYSTEM_ERROR
-	
-			Process ultrasonic distance sensors
-			Process ir distance sensors
-			Process heading (for AUXI-external)			
-			Process motor power status (for MAIN-external)
-			Process wheel encoders (for MAIN-external and for NAVI-internal)			
-			Process GPS
-			
-			
-			
-			
 
 			Categorize all commands/data from all sources.
 			Allow for all non-conflicting commands to run.
@@ -716,19 +722,31 @@ At POR (defaults):
 			//Set pri_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or NAVI instead of the default MAIN.
 			
 			//Set sec_comm_cmnc_main_auxi_destination_selection as needed if the destination needs to be COMM, CMNC, or NAVI instead of the default MAIN.
-			
+					
+		
+
+			//Run lower priority functions here.
+		
+		
 			Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				No redirections with the NAVI Arduino.
 				All other messages are allowed from PC_USB. Use with caution.						
 			Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)						
 				No redirections with the NAVI Arduino.
-				Note: Either you should get no data, navi sw reset requests, set drive setting (so you can switch to auto or manual drive), status requests, external status data (i.e. wheel encoder data, motor power status, heading, etc.), generic health errors, generic system errors. as everything else was filtered out.
+				Note: Either you should get no data, navi sw reset requests, set drive setting (so you can switch to auto or manual drive), status requests, Set Motor Power Status, Set Mid Right Encoder Status, Set Mid Left Encoder Status, Set Heading, external status data (i.e. wheel encoder data, motor power status, heading, etc.), generic health errors, generic system errors. as everything else was filtered out.
 				
 				
-				
-			//Run lower priority functions here.
-		
-
+	
+			Process ultrasonic distance sensors
+			Process ir distance sensors
+			Process heading (for AUXI-external)			
+			Process motor power status (for MAIN-external)
+			Process wheel encoders (for MAIN-external and for NAVI-internal)			
+			Process GPS
+			
+	
+			//Run highest priority functions here. //this will override any lower priority messages
+					
 
 			//Recreate/regenerate any error messages (but allow them to be overwritten by higher priority messages)
 					Improvement Tip: Maybe can send NAVI and AUXI the error messages as well so they can react to it. But for now good enough.
@@ -837,25 +855,6 @@ At POR (defaults):
 
 					Note: Any other messages created for COMM/CMNC has priority over error messages. Error messages are just for status, but any other messages may be used for debugging.											
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		
-			//Run highest priority functions here. //this will override any lower priority messages
-				
 				
 			//Skip PLAN_ROUTE and OBJECT_AVOIDANCE since system is in error and motors and gimbals are off.
 			
@@ -2095,7 +2094,7 @@ Conflicting Functions Ordered By Priority
 	Set Mid Left Encoder Status (Status Received from MAIN)
 		Unpack, parse encoder message, and save encoder values
 			Set values for wheelEncoder_MidLeft_Direction, wheelEncoder_MidLeft_Speed, wheelEncoder_MidLeft_Footage
-	Set Heading (from AUXI) i.e. HEADING_STATUS
+	Set Heading (Status Received from AUXI)
 		Saves the heading value from AUXI's message	
 
 		

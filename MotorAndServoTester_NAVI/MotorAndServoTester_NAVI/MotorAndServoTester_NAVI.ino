@@ -92,8 +92,7 @@ RoverReset * resetArray[] = {
 	wheelEncoder_FrontRight,
 	wheelEncoder_RearLeft,
 	wheelEncoder_RearRight,
-	roverBuffer,
-	
+	roverBuffer	
 };
 
 
@@ -272,7 +271,7 @@ void loop() {
 		_SERIAL_DEBUG_CHANNEL_.println(F("Stopped"));
 	}//end else
 	_SERIAL_DEBUG_CHANNEL_.print(F("Dist: "));//in inches
-	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_FrontLeft->getFootage());//distance traveled in feet
+	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_FrontLeft->getFootage());//distance travelled in feet
 	_SERIAL_DEBUG_CHANNEL_.print(F("Spd: "));//in inches per second
 	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_FrontLeft->getSpeed());//in inches per second
 	
@@ -293,7 +292,7 @@ void loop() {
 		_SERIAL_DEBUG_CHANNEL_.println(F("Stopped"));
 	}//end else
 	_SERIAL_DEBUG_CHANNEL_.print(F("Dist: "));//in inches
-	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_FrontRight->getFootage());//distance traveled in feet
+	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_FrontRight->getFootage());//distance travelled in feet
 	_SERIAL_DEBUG_CHANNEL_.print(F("Spd: "));//in inches per second
 	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_FrontRight->getSpeed());//in inches per second
 
@@ -317,7 +316,7 @@ void loop() {
 		_SERIAL_DEBUG_CHANNEL_.println(F("Stopped"));
 	}//end else
 	_SERIAL_DEBUG_CHANNEL_.print(F("Dist: "));//in inches
-	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_RearLeft->getFootage());//distance traveled in feet
+	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_RearLeft->getFootage());//distance travelled in feet
 	_SERIAL_DEBUG_CHANNEL_.print(F("Spd: "));//in inches per second
 	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_RearLeft->getSpeed());//in inches per second
 
@@ -340,7 +339,7 @@ void loop() {
 		_SERIAL_DEBUG_CHANNEL_.println(F("Stopped"));
 	}//end else
 	_SERIAL_DEBUG_CHANNEL_.print(F("Dist: "));//in inches
-	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_RearRight->getFootage());//distance traveled in feet
+	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_RearRight->getFootage());//distance travelled in feet
 	_SERIAL_DEBUG_CHANNEL_.print(F("Spd: "));//in inches per second
 	_SERIAL_DEBUG_CHANNEL_.println(wheelEncoder_RearRight->getSpeed());//in inches per second
 	_SERIAL_DEBUG_CHANNEL_.println();
