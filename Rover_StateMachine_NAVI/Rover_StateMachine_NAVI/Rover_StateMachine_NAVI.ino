@@ -1075,7 +1075,7 @@ void loop() {
 				case NORMAL_OPERATIONS:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;
-					//Keep the currentMode the same (unchanged)	
+					//Keep the currentMode the same (unchanged)
 					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;
 				case SYSTEM_SLEEPING:
@@ -1093,7 +1093,7 @@ void loop() {
 				case SW_RESETTING:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = CREATE_DATA;
-					currentMode = SYNCHRONIZATION;//Set mode to SYNCHRONIZATION *begin*
+					//Keep the currentMode the same (unchanged)
 					runModeFunction_SW_RESETTING(currentState);
 					break;
 				case SYSTEM_ERROR:
@@ -1141,6 +1141,12 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = TX_COMMUNICATIONS;
+					//Keep the currentMode the same (unchanged)
+					runModeFunction_SW_RESETTING(currentState);
+					break;					
 				case SYSTEM_ERROR:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = TX_COMMUNICATIONS;
@@ -1186,6 +1192,12 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_SLEEPING(currentState);
 					break;
+				case SW_RESETTING:
+					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
+					queuedState = RUN_HOUSEKEEPING_TASKS;
+					currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*
+					runModeFunction_SW_RESETTING(currentState);
+					break;					
 				case SYSTEM_ERROR:
 					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
 					queuedState = RX_COMMUNICATIONS;//Default Next State. This may be overridden by the runModeFunction...()
@@ -2680,7 +2692,18 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
 		case CONTROL_OUTPUTS: //Mode: SYNCHRONIZATION
-			
+		
+			//Since Navigation is skipped for SYNCHRONIZATION, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
+
+			//turn buffer select to auto control
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+				
+			//Set motor and gimbal to default values
+			motor_turn_value = SET_GO_STRAIGHT;
+			motor_speed_value = SET_STOP_SPEED;
+			gimbal_pan_value = SET_CENTER_PAN;
+			gimbal_tilt_value = SET_MIDDLE_TILT;
+
 			//Control Buffer Select
 			//if buffer_remote_ctrl_selected == true
 			if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_))
@@ -2697,19 +2720,24 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 					_SERIAL_DEBUG_CHANNEL_.println(F("AUTO DRIVE"));
 				#endif
 				roverBuffer->driverMode(AUTO_DRIVE);
+				
+				//When in auto drive, control the motors and the gimbal
+				
+				//Control Motor Controller's Turn			
+				motorControllerSetSteering(motor_turn_value);//Should be motor_turn_value = SET_GO_STRAIGHT
+
+				//Control Motor Controller's Speed			
+				motorControllerSetThrottle(motor_speed_value);//Should be motor_speed_value = SET_STOP_SPEED			
+
+				//Control Gimbal Controller's Pan			
+				gimbalSetPan(gimbal_pan_value);//Should be gimbal_pan_value = SET_CENTER_PAN
+
+				//Control Gimbal Controller's Tilt			
+				gimbalSetTilt(gimbal_tilt_value);//Should be gimbal_tilt_value = SET_MIDDLE_TILT
+
+			
 			}//end else
 
-			//Control Motor Controller's Turn			
-			motorControllerSetSteering(motor_turn_value);//Should be motor_turn_value = SET_GO_STRAIGHT
-				
-			//Control Motor Controller's Speed			
-			motorControllerSetThrottle(motor_speed_value);//Should be motor_speed_value = SET_STOP_SPEED			
-			
-			//Control Gimbal Controller's Pan			
-			gimbalSetPan(gimbal_pan_value);//Should be gimbal_pan_value = SET_CENTER_PAN
-			
-			//Control Gimbal Controller's Tilt			
-			gimbalSetTilt(gimbal_tilt_value);//Should be gimbal_tilt_value = SET_MIDDLE_TILT
 				
 			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS (i.e. runBackgroundTasks()) since it requires attention with every loop
 			
@@ -3052,8 +3080,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			}//end else
 			break;
 
-		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS
-		
+		case PROCESS_DATA: //Mode: NORMAL_OPERATIONS		
 		
 
 			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
@@ -3159,19 +3186,58 @@ i.e.
 					}
 ///////////////////END OF EXAMPLE
 					
-		
+
 		
 		case OBJECT_AVOIDANCE: //Mode: NORMAL_OPERATIONS
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
+*/						
 		case CONTROL_OUTPUTS: //Mode: NORMAL_OPERATIONS
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+
+		//Control Buffer Select
+			//if buffer_remote_ctrl_selected == true
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_))
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("MANUAL DRIVE"));
+				#endif
+				roverBuffer->driverMode(MANUAL_DRIVE);
+			}//end if
+			//buffer_remote_ctrl_selected == false
+			else
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("AUTO DRIVE"));
+				#endif
+				roverBuffer->driverMode(AUTO_DRIVE);
+				
+				//When in auto drive, control the motors and the gimbal
+				
+				//Control Motor Controller's Turn			
+				motorControllerSetSteering(motor_turn_value);//the value was determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state
+					
+				//Control Motor Controller's Speed			
+				motorControllerSetThrottle(motor_speed_value);//the value was determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state
+				
+				//Control Gimbal Controller's Pan			
+				gimbalSetPan(gimbal_pan_value);//the value was determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state
+				
+				//Control Gimbal Controller's Tilt			
+				gimbalSetTilt(gimbal_tilt_value);//the value was determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state
+			
+			}//end else
+
+			
+			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS (i.e. runBackgroundTasks()) since it requires attention with every loop
+			
+			//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process						
+	
 			break;
 		case CREATE_DATA: //Mode: NORMAL_OPERATIONS
+//LEFT OFF HERE
+//Similar to SYNCHRONIZATION (already written) but with auto data
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
@@ -3181,7 +3247,7 @@ i.e.
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;		
-*/				
+		
 		default: //default state
 //TEMPLATE		
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -3232,13 +3298,63 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-/* TEMPLATE			
+		
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+		
+			//Since Navigation is skipped for SYSTEM_SLEEPING, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
+
+			//turn buffer select to auto control
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+				
+			//Set motor and gimbal to default values
+			motor_turn_value = SET_GO_STRAIGHT;
+			motor_speed_value = SET_STOP_SPEED;
+			gimbal_pan_value = SET_CENTER_PAN;
+			gimbal_tilt_value = SET_MIDDLE_TILT;
+
+			//Control Buffer Select
+			//if buffer_remote_ctrl_selected == true
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_))
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("MANUAL DRIVE"));
+				#endif
+				roverBuffer->driverMode(MANUAL_DRIVE);
+			}//end if
+			//buffer_remote_ctrl_selected == false
+			else
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("AUTO DRIVE"));
+				#endif
+				roverBuffer->driverMode(AUTO_DRIVE);
+				
+				//When in auto drive, control the motors and the gimbal
+				
+				//Control Motor Controller's Turn			
+				motorControllerSetSteering(motor_turn_value);//Should be motor_turn_value = SET_GO_STRAIGHT
+
+				//Control Motor Controller's Speed			
+				motorControllerSetThrottle(motor_speed_value);//Should be motor_speed_value = SET_STOP_SPEED			
+
+				//Control Gimbal Controller's Pan			
+				gimbalSetPan(gimbal_pan_value);//Should be gimbal_pan_value = SET_CENTER_PAN
+
+				//Control Gimbal Controller's Tilt			
+				gimbalSetTilt(gimbal_tilt_value);//Should be gimbal_tilt_value = SET_MIDDLE_TILT
+
+			
+			}//end else
+
+				
+			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS (i.e. runBackgroundTasks()) since it requires attention with every loop
+			
+			//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process	
+			
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_SLEEPING
+//LEFT OFF HERE
+//Use SYNCHRONIZATION as as basis, but not similar to anything due to Sleeping Acknowledgements
 //TEMPLATE		
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
@@ -3253,7 +3369,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
-*/			
+
 	}//end switch
 
 
@@ -3299,11 +3415,58 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
-/* TEMPLATE						
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_WAKING
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+		
+			//Since Navigation is skipped for SYSTEM_WAKING, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
+
+			//turn buffer select to auto control
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+				
+			//Set motor and gimbal to default values
+			motor_turn_value = SET_GO_STRAIGHT;
+			motor_speed_value = SET_STOP_SPEED;
+			gimbal_pan_value = SET_CENTER_PAN;
+			gimbal_tilt_value = SET_MIDDLE_TILT;
+
+			//Control Buffer Select
+			//if buffer_remote_ctrl_selected == true
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_))
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("MANUAL DRIVE"));
+				#endif
+				roverBuffer->driverMode(MANUAL_DRIVE);
+			}//end if
+			//buffer_remote_ctrl_selected == false
+			else
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("AUTO DRIVE"));
+				#endif
+				roverBuffer->driverMode(AUTO_DRIVE);
+				
+				//When in auto drive, control the motors and the gimbal
+				
+				//Control Motor Controller's Turn			
+				motorControllerSetSteering(motor_turn_value);//Should be motor_turn_value = SET_GO_STRAIGHT
+
+				//Control Motor Controller's Speed			
+				motorControllerSetThrottle(motor_speed_value);//Should be motor_speed_value = SET_STOP_SPEED			
+
+				//Control Gimbal Controller's Pan			
+				gimbalSetPan(gimbal_pan_value);//Should be gimbal_pan_value = SET_CENTER_PAN
+
+				//Control Gimbal Controller's Tilt			
+				gimbalSetTilt(gimbal_tilt_value);//Should be gimbal_tilt_value = SET_MIDDLE_TILT
+
+			
+			}//end else
+
+				
+			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS (i.e. runBackgroundTasks()) since it requires attention with every loop
+			
+			//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process		
+		
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_WAKING
 //TEMPLATE		
@@ -3315,7 +3478,6 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;			
-*/			
 		default: //default state
 	
 //TEMPLATE		
@@ -3367,11 +3529,58 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
-/* TEMPLATE			
 		case CONTROL_OUTPUTS: //Mode: SW_RESETTING
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+		
+			//Since Navigation is skipped for SYNCHRONIZATION, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
+
+			//turn buffer select to auto control
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+				
+			//Set motor and gimbal to default values
+			motor_turn_value = SET_GO_STRAIGHT;
+			motor_speed_value = SET_STOP_SPEED;
+			gimbal_pan_value = SET_CENTER_PAN;
+			gimbal_tilt_value = SET_MIDDLE_TILT;
+
+			//Control Buffer Select
+			//if buffer_remote_ctrl_selected == true
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_))
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("MANUAL DRIVE"));
+				#endif
+				roverBuffer->driverMode(MANUAL_DRIVE);
+			}//end if
+			//buffer_remote_ctrl_selected == false
+			else
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("AUTO DRIVE"));
+				#endif
+				roverBuffer->driverMode(AUTO_DRIVE);
+				
+				//When in auto drive, control the motors and the gimbal
+				
+				//Control Motor Controller's Turn			
+				motorControllerSetSteering(motor_turn_value);//Should be motor_turn_value = SET_GO_STRAIGHT
+
+				//Control Motor Controller's Speed			
+				motorControllerSetThrottle(motor_speed_value);//Should be motor_speed_value = SET_STOP_SPEED			
+
+				//Control Gimbal Controller's Pan			
+				gimbalSetPan(gimbal_pan_value);//Should be gimbal_pan_value = SET_CENTER_PAN
+
+				//Control Gimbal Controller's Tilt			
+				gimbalSetTilt(gimbal_tilt_value);//Should be gimbal_tilt_value = SET_MIDDLE_TILT
+
+			
+			}//end else
+
+				
+			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS (i.e. runBackgroundTasks()) since it requires attention with every loop
+			
+			//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process						
+		
 			break;
 		case CREATE_DATA: //Mode: SW_RESETTING
 //TEMPLATE		
@@ -3388,9 +3597,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
-*/
 	}//end switch
-
 
 }//end of runModeFunction_SW_RESETTING()
 void runModeFunction_SYSTEM_ERROR(byte currentState)
@@ -3617,16 +3824,171 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 		
 			break;
 		case PROCESS_DATA: //Mode: SYSTEM_ERROR
-	
-//TEMPLATE	
-//LEFT OFF HERE
-//WRITE ME LATER			
-//Use NORMAL_OPERATIONS's PROCESS_DATA as a guide
+
+			#ifdef _DEBUG_PRINT_TIMEOUT_COUNTER_VALUE_
+				Serial.println(timeout_counter);//DEBUG
+			#endif
 			
 			
+			//Run lower priority functions here.
+			//These messages and flags may be overrided with commandDirector()			
+
+			//Process PC_USB command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//All other messages are allowed from PC_USB. Use with caution.
+				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_))//If there was data from PC_USB (Ch1), and it was for NAVI
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh1_COMM, ROVERCOMM_PC_USB);
+			}//end if			
+			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
+				//All messages are allowed from MAIN.
+				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_))//If there was data from MAIN (Ch2), and it was for NAVI
+			{
+			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
+				commandDirector(roverDataCh2_COMM, ROVERCOMM_MAIN);
+			}//end if				
+
 			
+
+			//Process ultrasonic distance sensors
+				//Note: Nothing else needed to process for ultrasonics. It's already taken care of in the READ_INPUTS state
+			//Process ir distance sensors
+				//Note: Nothing else needed to process for ir distance sensors. It's already taken care of in the READ_INPUTS state
+			//Process heading (for AUXI-external)
+			
+			//If Heading data is ready and valid
+			 if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_HEADING_DATA_READY_))
+			 {
+				processHeading(tempHeadingData);
+			 }//end if
+			 //else do nothing since the data is invalid
+
+			//Process motor power status (for MAIN-external)
+				//Note: Nothing else needed to process for the motor power status. It's already taken care of by the commandDirector() in this PROCESS_DATA state.
+			
+			//Process wheel encoders (for MAIN-external and for NAVI-internal)			
+				//Note: Nothing else needed to process for the NAVI wheel encoders. It's already taken care of in the READ_INPUTS state
+				//Note: Nothing else needed to process for the MAIN wheel encoders. It's already taken care of by the commandDirector() in this PROCESS_DATA state.
+			
+			//Process GPS		
+			//When GPS data is ready and valid
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_GPS_DATA_READY_) )
+			{
+				//save the lat and long data into the array, which will later be sorted and the median will be extracted
+				processGPS(roverGps->getGpsLatitude(DEC_DEG), roverGps->getGpsLongitude(DEC_DEG));//where the latitude and longitude are in decimal degrees
+			}//end if
+			//else do nothing since the data is invalid
+			
+		
+			//Run highest priority functions here (after command director). //this will override any lower priority messages (i.e. system go). This will overwrite anything else. (i.e. system ready)
+		
+
+		
+			//Recreate/regenerate any error messages (but allow them to be overwritten by higher priority messages)
+			//Improvement Tip: Maybe can send NAVI and AUXI the error messages as well so they can react to it. But for now good enough.
+			if(BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SYNC_ERROR_))
+			{
+				//(Note: the sync_error flag can only be cleared with a sw reset or hw reset)		
+				pc_usb_msg_queue = CMD_TAG_SYNC_ERROR_STATUS;
+			
+			
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					 main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to comm, then to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+					 
+					 pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
+				}//end if
+			}//end if				
+			else if(BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SW_RESET_ERROR_))//if sw_reset_error == true
+			{						
+				pc_usb_msg_queue = CMD_TAG_SW_RESET_ERROR_STATUS; //send error out through the PC_USB for debugging
+				
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					 main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to comm, then to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+					 
+					 pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
+				}																		
+				
+				//(Note: the sw_reset_error flag can only be cleared with a hw reset)
+				//Troubleshooting tip, if it's a sw_reset_error, it will need a HW reset. But SYSTEM_ERROR will allow for both sw and hw resets because it's designed to handle any errors in general. So the user will have to know to send a HW reset in order to clear a SW reset error.
+				
+			}//end else if
+			else if( BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_SLEEPING_ERROR_) )//if sleeping_error == true 
+			{
+			
+				pc_usb_msg_queue = CMD_TAG_SLEEP_ERROR_STATUS; //send error out through the PC_USB for debugging
+
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					 main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to comm, then to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+ 
+					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
+				}						
+				//(Note: the sleeping_error flag can only be cleared with a sw reset or hw reset)				
+				
+			}//end else if
+			else if( BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_) )//if invalid_state_or_mode_error == true
+			{
+			
+				pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
+				
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					 main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					 
+					 pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM;
+				}						
+				
+				//(Note: the invalid_state_or_mode_error flag can only be cleared with a sw reset or hw reset)
+				
+			}//end else if
+			else if( BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_) )//if generic_health_error == true
+			{
+				pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR; //send error out through the PC_USB for debugging
+
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_pri_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					
+					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM;
+				}						
+				
+				//(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)				
+								
+			}//end else if				
+			else if( BooleanBitFlags::flagIsSet(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_) )//if generic_system_error == true
+			{
+				pc_usb_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS; //send error out through the PC_USB for debugging
+				
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					
+					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM;
+				}						
+
+				//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+				
+			}//end else if	
+			else//default: set to generic_system_error
+			{
+				//Set generic_system_error = true
+				BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_);
+				//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+				
+				pc_usb_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS; //send error out through the PC_USB for debugging
+				
+				if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+				{
+					main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+					
+					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM;
+				}							
+			}//end else	
 			break;
-/* TEMPLATE
 		case PLAN_ROUTE: //Mode: SYSTEM_ERROR
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
@@ -3636,12 +3998,61 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;					
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_ERROR
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
+
+			//Since Navigation is skipped for SYNCHRONIZATION, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
+
+			//turn buffer select to auto control
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+				
+			//Set motor and gimbal to default values
+			motor_turn_value = SET_GO_STRAIGHT;
+			motor_speed_value = SET_STOP_SPEED;
+			gimbal_pan_value = SET_CENTER_PAN;
+			gimbal_tilt_value = SET_MIDDLE_TILT;
+
+			//Control Buffer Select
+			//if buffer_remote_ctrl_selected == true
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_))
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("MANUAL DRIVE"));
+				#endif
+				roverBuffer->driverMode(MANUAL_DRIVE);
+			}//end if
+			//buffer_remote_ctrl_selected == false
+			else
+			{
+				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
+					_SERIAL_DEBUG_CHANNEL_.println(F("AUTO DRIVE"));
+				#endif
+				roverBuffer->driverMode(AUTO_DRIVE);
+				
+				//When in auto drive, control the motors and the gimbal
+				
+				//Control Motor Controller's Turn			
+				motorControllerSetSteering(motor_turn_value);//Should be motor_turn_value = SET_GO_STRAIGHT
+
+				//Control Motor Controller's Speed			
+				motorControllerSetThrottle(motor_speed_value);//Should be motor_speed_value = SET_STOP_SPEED			
+
+				//Control Gimbal Controller's Pan			
+				gimbalSetPan(gimbal_pan_value);//Should be gimbal_pan_value = SET_CENTER_PAN
+
+				//Control Gimbal Controller's Tilt			
+				gimbalSetTilt(gimbal_tilt_value);//Should be gimbal_tilt_value = SET_MIDDLE_TILT
+
+			
+			}//end else
+
+				
+			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS (i.e. runBackgroundTasks()) since it requires attention with every loop
+			
+			//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process					
+		
 			break;
 		case CREATE_DATA: //Mode: SYSTEM_ERROR
-//TEMPLATE		
+//LEFT OFF HERE
+//Similar to NORMAL_OPERATIONS and SYSTEM_SLEEPING
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)
 			break;
@@ -3655,7 +4066,6 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
-*/			
 	}//end switch
 
 

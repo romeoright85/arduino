@@ -147,12 +147,12 @@
 		//Universal
 		#define _BTFG_NONE_													0x00
 		//Error: flagSet_Error1
-//TEMPLATE//		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
+		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
 		#define _BTFG_SYNC_ERROR_										0x02
-//TEMPLATE//		#define _BTFG_SW_RESET_ERROR_								0x04
-//TEMPLATE//		#define _BTFG_SLEEPING_ERROR_									0x08				
-//TEMPLATE//		#define _BTFG_GENERIC_HEALTH_ERROR_						0x01
-//TEMPLATE//		#define _BTFG_GENERIC_SYSTEM_ERROR_							0x02		
+		#define _BTFG_SW_RESET_ERROR_								0x04
+		#define _BTFG_SLEEPING_ERROR_									0x08				
+		#define _BTFG_GENERIC_HEALTH_ERROR_						0x01
+		#define _BTFG_GENERIC_SYSTEM_ERROR_							0x02		
 		//DEBUG//Error: flagSet_Error2//the variable has not yet been created
 		//Message Controls: flagSet_MessageControl1
 		#define _BTFG_REDIRECT_TO_PC_USB_								0x01

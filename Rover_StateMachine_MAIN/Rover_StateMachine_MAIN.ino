@@ -5351,8 +5351,6 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			//Note: Any other messages created for COMM/CMNC has priority over error messages. Error messages are just for status, but any other messages may be used for debugging.											
 
 		
-			//Run highest priority functions here. //this will override any lower priority messages
-	
 			//increment the loop count while MAIN is still in SYSTEM_ERROR. This should take highest priority.
 			timeout_counter++;				
 			
