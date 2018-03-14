@@ -3351,7 +3351,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				}//end else
 			}//end if	
 			//Since this is a shared data channel, create message corresponding to the next auto data for COMM, then for CMNC			
-			else if( auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array) )
+			else if( auto_MAIN_to_COMM_data_cnt < sizeof(auto_MAIN_to_COMM_data_array) )//if there is auto data for COMM and it has not been all sent yet
 				//if there is auto data for COMM and it has not been all sent yet
 				//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.
 			{
@@ -3372,7 +3372,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 					//Note: Though auto data increments now, preparing for the next iteration, the queue data was already assigned above and is "latched" or "locked" in for this iteration. As the queue and not the auto data is referred for the rest of this loop iteration.
 
 			}//end else if
-			else if ( auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array) )		//if there is auto data for CMNC and it has not been all sent yet
+			else if ( auto_MAIN_to_CMNC_data_cnt < sizeof(auto_MAIN_to_CMNC_data_array) )//if there is auto data for CMNC and it has not been all sent yet
 				//Note: Since the counter is a byte, it's lowest value is 0. And the array size can't be smaller than zero. So this can only be true if the array has data, i.e. it's size is greater than 0 and the counter is less than the size of the array. If the array is empty, the size would be 0 and the counter's lowest value would be 0, so it would be equal and not less than, so the if statement would be still false.			
 			{
 					//since there is no custom data, then send the next auto data.
@@ -3450,34 +3450,21 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			}//end else if
 			//else do nothing since there was no message and no auto data			
 
-				
-			//reset the auto data counters as needed
-			if ( auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) && sizeof(auto_MAIN_to_COMM_data_array) > 0)
-			//if the counter is equal to or greater than the size of the array and the array isn't empty
+			
+			//Once all the counters are equal to or greater than the size of the arrays (or even if the array is empty with size 0), reset all the counters)
+			if (
+				auto_MAIN_to_COMM_data_cnt >= sizeof(auto_MAIN_to_COMM_data_array) &&
+				auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array) &&
+				auto_MAIN_to_NAVI_data_cnt >= sizeof(auto_MAIN_to_NAVI_data_array) &&
+				auto_MAIN_to_AUXI_data_cnt >= sizeof(auto_MAIN_to_AUXI_data_array)
+				)
 			{
-				//reset the counter
 				auto_MAIN_to_COMM_data_cnt = 0;
-			}//end if
-			if (auto_MAIN_to_CMNC_data_cnt >= sizeof(auto_MAIN_to_CMNC_data_array) && sizeof(auto_MAIN_to_CMNC_data_array) > 0)
-			//if the counter is equal to or greater than the size of the array and the array isn't empty
-			{
-				//reset the counter
 				auto_MAIN_to_CMNC_data_cnt = 0;
-			}//end if	
-			if ( auto_MAIN_to_NAVI_data_cnt >= sizeof(auto_MAIN_to_NAVI_data_array) && sizeof(auto_MAIN_to_NAVI_data_array) > 0)
-			//if the counter is equal to or greater than the size of the array and the array isn't empty
-			{
-				//reset the counter
 				auto_MAIN_to_NAVI_data_cnt = 0;
-			}//end if		
-			if ( auto_MAIN_to_AUXI_data_cnt >= sizeof(auto_MAIN_to_AUXI_data_array) && sizeof(auto_MAIN_to_AUXI_data_array) > 0)
-			//if the counter is equal to or greater than the size of the array and the array isn't empty
-			{
-				//reset the counter
 				auto_MAIN_to_AUXI_data_cnt = 0;
 			}//end if
 
-			
 				
 			//Clear Motor Power Status
 			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MTR_POWER_ON_);
