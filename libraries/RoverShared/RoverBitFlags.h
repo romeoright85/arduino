@@ -155,10 +155,8 @@
 		#define _BTFG_GENERIC_SYSTEM_ERROR_							0x02		
 		//DEBUG//Error: flagSet_Error2//the variable has not yet been created
 		//Message Controls: flagSet_MessageControl1
-		#define _BTFG_REDIRECT_TO_PC_USB_								0x01
-		#define _BTFG_REDIRECT_TO_MAIN_									0x02		
-		#define _BTFG_DATA_WAS_FOR_NAVI_CH1_					0x04
-		#define _BTFG_DATA_WAS_FOR_NAVI_CH2_				0x08
+		#define _BTFG_DATA_WAS_FOR_NAVI_CH1_					0x01
+		#define _BTFG_DATA_WAS_FOR_NAVI_CH2_				0x02
 		//System Status: flagSet_SystemStatus1
 		#define _BTFG_FIRST_TRANSMISSION_								0x01
 		#define _BTFG_MAIN_SYSTEM_READY_								0x02

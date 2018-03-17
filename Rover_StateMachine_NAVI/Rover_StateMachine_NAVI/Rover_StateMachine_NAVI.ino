@@ -78,9 +78,9 @@ Can send:
 #ifndef _GPS_SENSOR
 #define _GPS_SENSOR
 #endif
-
-
-
+#ifndef _LED_SET_TYPES
+#define _LED_SET_TYPES
+#endif
 
 
 //#includes
@@ -179,6 +179,29 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 //============End Debugging: Print Mode and/or State
 
 
+
+
+
+
+
+//============Debugging: Print Wakeup Status
+//Uncomment the flag below in order to print the Wake Up Status
+//#define _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS //Normally commented out during normal operations.
+
+
+#ifdef _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS
+#define _PRINT_SLEEPING_AND_WAKEUP_STATUS_ _SERIAL_DEBUG_CHANNEL_.println
+#else
+#define _PRINT_SLEEPING_AND_WAKEUP_STATUS_ void
+#endif
+
+
+//============End Debugging: Print Wakeup Status
+
+
+
+
+
 //============Debugging: Skip to Normal Operations
 //Uncomment the flag below to jump straight to normal operations and test the auto data, etc.
 
@@ -186,11 +209,6 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 //============End Debugging: Skip to Normal Operations
 
-
- //============Debugging: Redirection Notice
-//Uncomment to output notice when redirection is occuring
-//#define _DEBUG_REDIRECTION_NOTICE
-//============End Debugging: Redirection Notice
 
  //============Debugging: Print IMU Median Completed Status
 //Uncomment to print IMU Median Completed Status
@@ -257,40 +275,37 @@ byte auto_NAVI_to_AUXI_data_cnt = 0;
 
 
 byte motor_turn_value = SET_GO_STRAIGHT;
-//TEMPLATE//byte prev_motor_turn_value = SET_GO_STRAIGHT //used to hold the previous state, before going to sleep	
+byte prev_motor_turn_value = SET_GO_STRAIGHT; //used to hold the previous state, before going to sleep	
 byte motor_speed_value = SET_STOP_SPEED;
-//TEMPLATE//byte prev_motor_speed_value = SET_STOP_SPEED //used to hold the previous state, before going to sleep	
+byte prev_motor_speed_value = SET_STOP_SPEED; //used to hold the previous state, before going to sleep	
 byte gimbal_pan_value = SET_CENTER_PAN;
-//TEMPLATE//byte prev_gimbal_pan_value = SET_CENTER_PAN //used to hold the previous state, before going to sleep
+byte prev_gimbal_pan_value = SET_CENTER_PAN; //used to hold the previous state, before going to sleep
 byte gimbal_tilt_value = SET_MIDDLE_TILT;
-//TEMPLATE//byte prev_gimbal_tilt_value = SET_MIDDLE_TILT //used to hold the previous state, before going to sleep
-//TEMPLATE//byte drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
-//TEMPLATE//byte prev_drive_setting = AUTONOMOUS_DRIVE//used to hold the previous state, before going to sleep
+byte prev_gimbal_tilt_value = SET_MIDDLE_TILT; //used to hold the previous state, before going to sleep
+byte drive_setting = AUTONOMOUS_DRIVE;//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
+byte prev_drive_setting = AUTONOMOUS_DRIVE;//used to hold the previous state, before going to sleep
 
 
 
+byte universal_led_mode = LED_SET_ALL_DEFAULT;
+byte prev_universal_led_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte hazard_light_state = LED_SET_ALL_DEFAULT;
+byte prev_hazard_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte fog_light_state = LED_SET_ALL_DEFAULT;
+byte prev_fog_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte underglow_light_state = LED_SET_ALL_DEFAULT;
+byte prev_underglow_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte ir_beaon_state = LED_SET_ALL_DEFAULT;
+byte prev_ir_beaon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte blue_beacon_state = LED_SET_ALL_DEFAULT;
+byte prev_blue_beacon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
+byte prev_blue_beacon_led_direction = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte rover_motion = LED_SET_ALL_DEFAULT;
+byte prev_rover_motion = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 
-
-
-
-
-
-
-//TEMPLATE//byte headlightassy_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_headlightassy_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte left_side_signal_light_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_left_side_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte right_side_signal_light_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_right_side_signal_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte underglow_light_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_underglow_light_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte reverse_lights_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_reverse_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte blue_beacon_lights_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_blue_beacon_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-//TEMPLATE//byte ir_beacon_lights_setting = LIGHTS_OFF
-//TEMPLATE//byte prev_ir_beacon_lights_setting = LIGHTS_OFF//used to hold the previous state, before going to sleep
-
+				
+				
 
 
 
@@ -1424,9 +1439,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	clearRoverDataPointers();
 	//Sets the default such that the rover command data goes to the destination of the command. If needed, this can be overwritten by the command tag if/else statements
 	setRoverDataPointer(roverDataPointer, destinationRoverCommType);
-	//Note: The roverDataPointer should be going to, NAVI, this unit (else it would have been redirected already with dataDirector).
-	//However, it can be overwritten in the if/else conditions below based on the command tag for special cases like when it redirects itself to the original sender (i.e. when the command is a request for data/status, like with PIR Status request)
-
+	//Note: The roverDataPointer should be going to, NAVI, this unit (else it would have been filtered out, since there is no redirection)
+	
 	//Run highest priority functions first and lower priorities last.
 	//Note: Right now the way it's coded, the conflicting and non conflicting functions are all merged together and treated as conflicting. However, one data channel with a lower priority task may still override a higher priority task because the commandDirector for that channel was called later. If needed, fix this later.
 	
@@ -2334,11 +2348,6 @@ void setAllCommandFiltersTo(boolean choice, byte roverComm)
 {
 	//WRITE ME LATER
 }//end of setAllCommands()
-void redirectData(RoverComm * roverComm)
-{
-//WRITE ME LATER
-}//End of redirectData()
-
 
 //====End of: Misc Functions
 
@@ -2536,12 +2545,6 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);
 			
-			//Reset/Clear redirect to PC_USB and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
-			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
-			
-
 				
 			//Set Command Filter Options
 			//First initialize all command choices to false
@@ -2807,15 +2810,13 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			
 			//Only the primary message queue is sent (the system ready msg to MAIN), and everything else can be ignored since the system is still synching up.
 			
-			//3. Clears message queue(s) and redirect flags		
+			//3. Clears message queue(s)
 			pc_usb_msg_queue = CMD_TAG_NO_MSG;
 			main_pri_msg_queue = CMD_TAG_NO_MSG;
 			main_sec_msg_queue = CMD_TAG_NO_MSG;
 			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 			sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN			
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
-			
+						
 			//4. Reset the first transmission flag
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);						
 	
@@ -2906,14 +2907,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			//Reset/clear flags (no data was for NAVI)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);
-			
-			//Reset/Clear redirect to PC_USB and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
-			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
-			
-
-				
+										
 			//Set Command Filter Options
 			//First initialize all command choices to false
 			setAllCommandFiltersTo(false, ROVERCOMM_PC_USB);//for PC_USB
@@ -3423,12 +3417,6 @@ i.e.
 
 			break;
 		case TX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
-//LEFT OFF HERE		
-//TEMPLATE		
-//FORMER SYNCHRONIZATION's TX_COMMUNICATIONS before removing the secondary queue	
-
-/*
-
 
 			//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
 	
@@ -3457,14 +3445,12 @@ i.e.
 				}//end if
 				else//there is no second transmission, move on
 				{					
-					//clears message queue(s) and redirect flags		
+					//clears message queue(s)
 					pc_usb_msg_queue = CMD_TAG_NO_MSG;
 					main_pri_msg_queue = CMD_TAG_NO_MSG;
 					main_sec_msg_queue = CMD_TAG_NO_MSG;
 					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 					sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN			
-					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
-					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
 					//reset the first transmission flag
 					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);						
 				}//end else					
@@ -3478,14 +3464,12 @@ i.e.
 				
 					txData(txMsgBuffer_Sec_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
 				
-					//clears message queue(s) and redirect flags		
+					//clears message queue(s)
 					pc_usb_msg_queue = CMD_TAG_NO_MSG;
 					main_pri_msg_queue = CMD_TAG_NO_MSG;
 					main_sec_msg_queue = CMD_TAG_NO_MSG;
 					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
 					sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN			
-					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
-					BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
 					//reset the first transmission flag
 					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 							
@@ -3495,11 +3479,7 @@ i.e.
 					transmission_delay_cnt++;
 				}//end else			
 			}//end else
-
-*/			
-			
 			break;		
-		
 		default: //default state
 //TEMPLATE		
 			 //This code should never execute, if it does, there is a logical or programming error
@@ -3649,9 +3629,131 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
-//TEMPLATE		
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+
+
+			//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+
+			//1. Sends data to PC_USB
+			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
+			}//end if
+			//2. Sends data to MAIN (primary queue)
+			if (main_pri_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_Pri_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
+			}//end if
+			
+			//Only the primary message queue is sent (the system ready msg to MAIN), and everything else can be ignored since the system is still synching up.
+			
+			//3. Clears message queue(s)
+			pc_usb_msg_queue = CMD_TAG_NO_MSG;
+			main_pri_msg_queue = CMD_TAG_NO_MSG;
+			main_sec_msg_queue = CMD_TAG_NO_MSG;
+			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+			sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN			
+						
+			//4. Reset the first transmission flag
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);						
+			
+	
+			//Note: If MAIN misses this message, MAIN will go into sleeping error and would require a SW reset or HW reset to take the Rover out of this error. (AUXI can't resend the sleeping acknowledgement since it already went to sleep)	
+	
+			//Troubleshooting tip: If MAIN keeps missing this message, can send it twice through the main_pri_msg_queue and then the main_sec_msg_queue as well.
+
+			
+			//SETUP FOR WAKEUP
+				
+				//setup this mode ahead of time before going to sleep
+				currentMode = SYSTEM_WAKING;//Set mode to SYSTEM_WAKING *begin*			
+				
+				queuedState = CONTROL_OUTPUTS;//Go to CONTROL_OUTPUTS in order to restore previous laser states
+
+				//Restore previous states
+				//Motor Turn/Speed Settings
+				motor_turn_value = prev_motor_turn_value;
+				motor_speed_value = prev_motor_speed_value;
+				//Gimbal Settings
+				gimbal_pan_value = prev_gimbal_pan_value;
+				gimbal_tilt_value = prev_gimbal_tilt_value;
+				//Drive Settings
+				drive_setting = prev_drive_setting;				
+				
+				//Restore previous buffer remote control: buffer_remote_ctrl_selected = prev_buffer_remote_ctrl_selected
+				if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_) )
+				{
+					BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
+				}//end if
+				else
+				{
+					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
+				}//end else
+							
+				//LED States
+				prev_universal_led_mode = universal_led_mode;
+				prev_hazard_light_state = hazard_light_state;
+				prev_fog_light_state = fog_light_state;
+				prev_underglow_light_state = underglow_light_state;
+				prev_ir_beaon_state = ir_beaon_state;
+				prev_blue_beacon_state = blue_beacon_state;
+				prev_blue_beacon_led_direction = blue_beacon_led_direction;
+				prev_rover_motion = rover_motion;
+								
+
+				
+	
+				//clear the flags for future reuse
+				prev_motor_turn_value = SET_GO_STRAIGHT;
+				prev_motor_speed_value = SET_STOP_SPEED;
+				prev_gimbal_pan_value = SET_CENTER_PAN;
+				prev_gimbal_tilt_value = SET_MIDDLE_TILT;
+				prev_drive_setting = AUTONOMOUS_DRIVE;
+				BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);//prev_buffer_remote_ctrl_selected = false
+				prev_universal_led_mode = LED_SET_ALL_DEFAULT;
+				prev_hazard_light_state = LED_SET_ALL_DEFAULT;
+				prev_fog_light_state = LED_SET_ALL_DEFAULT;
+				prev_underglow_light_state = LED_SET_ALL_DEFAULT;
+				prev_ir_beaon_state = LED_SET_ALL_DEFAULT;
+				prev_blue_beacon_state = LED_SET_ALL_DEFAULT;
+				prev_blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
+				prev_rover_motion = LED_SET_ALL_DEFAULT;
+				
+				
+
+				//Run other pre-sleep tasks. (i.e. end software serial, as needed)
+					//No SW Serials used for MAIN
+					//Do nothing for now. Place holder.
+				
+				_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("NAVI_Sleep"));//output to PC for debug, this is actually open loop feedback. In reality, it may still be sleeping.
+				
+				
+				delay(100);//add some delay to allow the serial print to finish before going to sleep
+
+			//END OF SETUP FOR WAKEUP
+					
+			//GOING TO SLEEP
+				//Put NAVI to sleep
+				sleeperNAVI->goToSleep();//will put NAVI to sleep (MAIN will wake up NAVI externally)			
+				
+				//Don't switch states yet. Go to sleep in the current TX_COMMUNICATIONS state.
+
+			//WAKING UP
+				//MAIN will wake up NAVI from the sleep.
+				sleeperNAVI->hasAwoken();//This updates the status and detaches the interrupt for NAVI once NAVI is awaken externally by MAIN.
+				
+				delay(100);// let everybody get up and running for a sec
+
+				//Run wake up tasks. (i.e. begin SW serial as needed, etc.)
+					//Note: Make sure to begin (again) any Software Serial here
+					//No SW Serials used for NAVI
+					//Do nothing for now. Place holder.
+					
+					
+				_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("NAVI_Wake"));//output to PC for debug
+										
+				//While in the SYSTEM_WAKING mode, after going to RUN_HOUSEKEEPING_TASKS, it will go to the next state, which is set to CONTROL_OUTPUTS
+
+				
 			break;			
 		default: //default state
 //TEMPLATE		
@@ -3917,7 +4019,8 @@ void runModeFunction_SW_RESETTING(byte currentState)
 		
 			break;
 		case TX_COMMUNICATIONS: //Mode: SW_RESETTING
-//TEMPLATE		
+//LEFT OFF HERE
+//TEMPLATE, similar to SYNCHRONIZATION
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;			
@@ -4005,13 +4108,6 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			//Reset/clear flags (no data was for NAVI)
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH1_);
 			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_);
-			
-			//Reset/Clear redirect to PC_USB and redirect to MAIN flags (no redirection needed). They will then be set by any of the calls to dataDirector if there is redirection required from the Arduinos, correspondingly.
-			//A bit redundant since this will be cleared again after data transmission. But it's better safe than sorry.
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_PC_USB_);
-			BooleanBitFlags::clearFlagBit(flagSet_MessageControl1, _BTFG_REDIRECT_TO_MAIN_);
-			
-
 				
 			//Set Command Filter Options
 			//First initialize all command choices to false
@@ -4242,6 +4338,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				}																		
 				
 				//(Note: the sw_reset_error flag can only be cleared with a hw reset)
+				
 				//Troubleshooting tip, if it's a sw_reset_error, it will need a HW reset. But SYSTEM_ERROR will allow for both sw and hw resets because it's designed to handle any errors in general. So the user will have to know to send a HW reset in order to clear a SW reset error.
 				
 			}//end else if
@@ -4635,7 +4732,8 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 		
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
-//TEMPLATE		
+//LEFT OFF HERE
+//TEMPLATE, similar to normal operations
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;			

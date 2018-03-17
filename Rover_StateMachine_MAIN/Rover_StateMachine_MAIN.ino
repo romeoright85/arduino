@@ -193,7 +193,7 @@ void InterruptDispatch_WakeUpArduino();//For RoverSleeper
 
 
 //============Debugging: Print Wakeup Status
-//Uncomment the flag below in order to print the HW Reset Status
+//Uncomment the flag below in order to print the Wake Up Status
 //#define _DEBUG_PRINT_SLEEPING_AND_WAKEUP_STATUS //Normally commented out during normal operations.
 
 
@@ -4127,7 +4127,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				
 				queuedState = CONTROL_OUTPUTS;//Go to CONTROL_OUTPUTS in order to wake NAVI and AUXI from sleep and to restore the motor prev state. Overriding the default next state, which was RX_COMMUNICATIONS.
 
-				//Restore previous motor state: enable_mtr_pwr = motor_power_prev_state
+				//Restore previous motor power state: enable_mtr_pwr = motor_power_prev_state
 				if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_MTR_PREV_STATE_) )
 				{
 					BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
@@ -4162,13 +4162,10 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				//COMM will wake up MAIN from the sleep.				
 				sleeperMAIN->hasAwoken();//This updates the status and detaches the interrupt for MAIN once MAIN is awaken externally by COMM.
 				
-				//Note: Make sure to begin (again) any Software Serial here
-				//No SW Serials used for MAIN
-
-
 				delay(100);// let everybody get up and running for a sec
 
 				//Run wake up tasks. (i.e. begin SW serial as needed, etc.)
+					//Note: Make sure to begin (again) any Software Serial here
 					//No SW Serials used for MAIN
 					//Do nothing for now. Place holder.
 				
