@@ -680,13 +680,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
-					error_origin = ROVERCOMM_MAIN;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch
@@ -730,13 +724,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
-					error_origin = ROVERCOMM_MAIN;
+				default: //default mode					 
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch			
@@ -776,13 +764,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					 //Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
-					error_origin = ROVERCOMM_MAIN;
+				default: //default mode					 
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -822,13 +804,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
-					error_origin = ROVERCOMM_MAIN;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -868,13 +844,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
-					error_origin = ROVERCOMM_MAIN;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -914,13 +884,7 @@ void loop() {
 					currentMode = SYSTEM_ERROR;//Default Next Mode. This may be overridden by the runModeFunction...()
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
-					error_origin = ROVERCOMM_MAIN;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -966,13 +930,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
-					error_origin = ROVERCOMM_MAIN;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -1012,13 +970,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
-					error_origin = ROVERCOMM_MAIN;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -1058,13 +1010,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);				
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					//shut down motor when in error for safety
-					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
-					error_origin = ROVERCOMM_MAIN;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -1073,13 +1019,7 @@ void loop() {
 			
 			break;
 		default: //default state
-			_PRINT_STATE_(F("STATE: default"));
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes							
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
-			//shut down motor when in error for safety
-			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
-			error_origin = ROVERCOMM_MAIN;
+			_PRINT_STATE_(F("STATE: default"));			
 			nextState = RUN_HOUSEKEEPING_TASKS;//this is the same for every mode of this state
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -1552,7 +1492,13 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//initialize/reset shared counter before use
 		timeout_counter = 0;
 		
-		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*	
+		currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+		//error_origin was already set to originRoverCommType (above)
+		//commandDirector() is called in PROCESS_DATA, which has a next state of CONTROL_OUTPUTS already. So no need to set the next queuedState to CONTROL_OUTPUTS
+		
+		
+		
+		
 		//shut down motor when in error for safety
 		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);					
 					
@@ -2492,8 +2438,7 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;			
-		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+		default: //default state			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -2543,8 +2488,7 @@ void runModeFunction_INITIALIZATION(byte currentState)
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)				
 			break;
-		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+		default: //default state			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -2879,6 +2823,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 					//if MAIN has been stuck in SYNCHRONIZATION for a long time while waiting on NAVI, AUXI, or COMM, it will send a sync error status
 					if(timeout_counter >= MAIN_SYNC_TIMEOUT_VALUE)
 					{
+						//PROCESS_DATA has a next state of CONTROL_OUTPUTS already. So no need to set the next queuedState to CONTROL_OUTPUTS		
 						currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 						//shut down motor when in error for safety
 						error_origin = ROVERCOMM_MAIN;
@@ -2987,8 +2932,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//reset the first transmission flag
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
 			break;				
-		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+		default: //default state			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -3557,8 +3501,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				}//end else			
 			}//end else
 			break;				
-		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+		default: //default state			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -3623,8 +3566,7 @@ void runModeFunction_HW_RESETTING(byte currentState)
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)						
 			break;
-		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+		default: //default state			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -4188,8 +4130,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			*/
 			
 			break;				
-		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+		default: //default state			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -4293,8 +4234,7 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//Nothing to do here.
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)				
 			break;			
-		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+		default: //default state			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -4824,8 +4764,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			*/		
 		
 			break;				
-		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+		default: //default state			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -5529,8 +5468,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			}//end else		
 		
 			break;				
-		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+		default: //default state			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -5546,19 +5484,18 @@ void runModeFunction_default()
 	auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 	
 	comm_cmnc_destination_selection = ROVERCOMM_COMM;
-				
+		
+	
+	queuedState = CONTROL_OUTPUTS;
+	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 	error_origin = ROVERCOMM_MAIN;
-
-	//Set the mode to SYSTEM_ERROR (though it might already be set to that in certain circumstances)
-	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
-	//Note: For now don't set the queuedState. But if it doesn't work as expected (i.e. there is a programming logic error), set it to CONTROL_OUTPUTS.
+	
 	//shut down motor when in error for safety
 	BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);		
-	
-	
+		
 		
 	//Set Invalid State Error Flag
-	//Note: The Invalid State Error Flag cann only be cleared with a sw reset or hw reset
+	//Note: The Invalid State Error Flag can only be cleared with a sw reset or hw reset
 	BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_INVALID_STATE_OR_MODE_ERROR_);
 
 	//initialize/reset shared counter before use

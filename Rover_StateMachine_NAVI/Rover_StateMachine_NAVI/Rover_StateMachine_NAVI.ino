@@ -817,13 +817,7 @@ void loop() {
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
 				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-					
-					error_origin = ROVERCOMM_NAVI;
-					runModeFunction_default();//no state needed, all states do the same thing
-					
+					runModeFunction_default();//no state needed, all states do the same thing					
 					break;
 			}//end switch
 			
@@ -854,18 +848,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch			
@@ -893,18 +876,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -932,19 +904,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -966,18 +926,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes				
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -1005,18 +954,7 @@ void loop() {
 					currentMode = SYSTEM_ERROR;//Default Next Mode. This may be overridden by the runModeFunction...()
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -1032,18 +970,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -1059,18 +986,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_NORMAL_OPERATIONS(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -1116,18 +1032,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch	
@@ -1167,18 +1072,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing
 					break;
 			}//end switch
@@ -1218,18 +1112,7 @@ void loop() {
 					//Keep the currentMode the same (unchanged)	
 					runModeFunction_SYSTEM_ERROR(currentState);			
 					break;
-				default: //default mode
-					//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-					queuedState = CONTROL_OUTPUTS;
-					currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-					//Set motor controller signals to stop and center
-
-					//Set gimbal controller middle and center
-
-					//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-					error_origin = ROVERCOMM_NAVI;
+				default: //default mode					
 					runModeFunction_default();//no state needed, all states do the same thing			
 					break;
 			}//end switch	
@@ -1238,18 +1121,7 @@ void loop() {
 			
 			break;
 		default: //default state
-			_PRINT_STATE_(F("STATE: default"));
-			//Set the states and modes before calling runModeFunction...() as this function may override the default next/queued state and modes								
-			queuedState = CONTROL_OUTPUTS;
-			currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
-//WRITE ME LATER, ERROR
-			//Set motor controller signals to stop and center
-
-			//Set gimbal controller middle and center
-
-			//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-					
-			error_origin = ROVERCOMM_NAVI;
+			_PRINT_STATE_(F("STATE: default"));			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -1452,6 +1324,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
+//LEFT OFF HERE	
 //WRITE LATER	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 				
@@ -2403,7 +2276,7 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;			
 		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+			 //This code should never execute, if it does, there is a logical or programming error			 
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -2464,7 +2337,7 @@ void runModeFunction_INITIALIZATION(byte currentState)
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;			
 		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -2638,7 +2511,20 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 					#ifndef _DEBUG_DISABLE_NAVI_SYNC_TIMEOUT //normally the timeout code would run. Can disable it for debugging purposes.
 						if(timeout_counter >= NAVI_SYNC_TIMEOUT_VALUE)
 						{
-							currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
+							currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
+							//PROCESS_DATA has a next state of CONTROL_OUTPUTS already. So no need to set the next queuedState to CONTROL_OUTPUTS						
+														
+							//Set motor controller signals to stop and center
+							motor_turn_value = SET_GO_STRAIGHT;
+							motor_speed_value = SET_STOP_SPEED;
+
+							//Set gimbal controller middle and center
+							gimbal_pan_value = SET_CENTER_PAN;
+							gimbal_tilt_value = SET_MIDDLE_TILT;
+
+							//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
+							drive_setting = AUTONOMOUS_DRIVE;							
+							
 							error_origin = ROVERCOMM_NAVI;
 							main_pri_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
 							pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
@@ -2822,7 +2708,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 	
 			break;			
 		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -3483,7 +3369,7 @@ i.e.
 			break;		
 		default: //default state
 //TEMPLATE		
-			 //This code should never execute, if it does, there is a logical or programming error
+			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 		
@@ -3758,7 +3644,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			break;			
 		default: //default state
 //TEMPLATE		
-			 //This code should never execute, if it does, there is a logical or programming error
+			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 
@@ -3871,7 +3757,7 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 		default: //default state
 	
 //TEMPLATE		
-			 //This code should never execute, if it does, there is a logical or programming error
+			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 
@@ -4055,7 +3941,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			break;			
 		default: //default state
 //TEMPLATE		
-			 //This code should never execute, if it does, there is a logical or programming error
+			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -4826,7 +4712,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			}//end else		
 			break;			
 		default: //default state
-			 //This code should never execute, if it does, there is a logical or programming error
+			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
 	}//end switch
@@ -4837,30 +4723,31 @@ void runModeFunction_default()
 {
 	_PRINT_MODE_(F("MODE: default"));
 
-//LEFT OFF HERE
-//WRITE ME LATER
-
 	_PRINT_MODE_(F("MODE: default"));
 	_SERIAL_DEBUG_CHANNEL_.println(F("UnExpErr"));//unexpected error
 	//No switch case needed for the states, all states do the same thing
 	
-/* TEMPLATE
-	
-	comm_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to COMM (first), which will process it, then send a copy to CMNC
+	main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//to be sent to MAIN (first), which will process it, then sent to COMM (next), which will process it, and then send a copy to CMNC
  	pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS;
-	navi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
-	auxi_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 	
-	comm_cmnc_destination_selection = ROVERCOMM_COMM;
-				
-	error_origin = ROVERCOMM_MAIN;
+	pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
+			
+	queuedState = CONTROL_OUTPUTS;
+	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 
-	//Set the mode to SYSTEM_ERROR (though it might already be set to that in certain circumstances)
-	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*
-	//Note: For now don't set the queuedState. But if it doesn't work as expected (i.e. there is a programming logic error), set it to CONTROL_OUTPUTS.
-	//shut down motor when in error for safety
-	BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);		
+	error_origin = ROVERCOMM_NAVI;
+
 	
+	//Set motor controller signals to stop and center
+	motor_turn_value = SET_GO_STRAIGHT;
+	motor_speed_value = SET_STOP_SPEED;
+
+	//Set gimbal controller middle and center
+	gimbal_pan_value = SET_CENTER_PAN;
+	gimbal_tilt_value = SET_MIDDLE_TILT;
+
+	//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
+	drive_setting = AUTONOMOUS_DRIVE;
 	
 		
 	//Set Invalid State Error Flag
@@ -4870,8 +4757,6 @@ void runModeFunction_default()
 	//initialize/reset shared counter before use
 	timeout_counter = 0;
 
-*/
-	
 	
 }//end of runStateFunction_default
 

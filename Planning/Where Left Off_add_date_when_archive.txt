@@ -118,7 +118,7 @@ PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER
 [WHERE LEFT OFF 1 --- IN PROGRESS]
 	
 			
-#LEFT OFF HERE, START HERE->Rover_StateMachine_NAVI:
+Rover_StateMachine_NAVI:
 
 			[IN PROGRESS] Set up the framework for Rover_StateMachine_NAVI
 				
@@ -136,18 +136,9 @@ SATURDAY:
 					
 					
 					
-				[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
-						In RoverConfig, add more to the #define _LED_SET_TYPES
-						used prev_headlightassy_setting, prev_foglight_setting, etc.
-				
-				
-				
-				[LEFT OFF, at runModeFunction_NORMAL_OPERATIONS at RUN_HOUSEKEEPING_TASKS] Work on Rover States and Modes		
-					[IN PROGRESS] Left off at READ_INPUTS for SYSTEM_SLEEPING
-
-						
-							
-				
+	
+				Work on Rover States and Modes		
+						[DONE] Left off at READ_INPUTS for SYSTEM_SLEEPING
 						[DONE] POWER_ON_AND_HW_RESET
 						[DONE] INITIALIZATION
 						[DONE] SYNCHRONIZATION					
@@ -155,22 +146,25 @@ SATURDAY:
 						[DONE] CONTROL_OUTPUTS
 						[DONE] CREATE_DATA
 						[DONE] TX_COMMUNICATIONS
+						[DONE] write runModeFunction_default()
 						
-[IN PROGRESS, 3 more days]-------------------------------------------------------------------------------------------------------
-
-													
-
+[IN PROGRESS, 4 more days]-------------------------------------------------------------------------------------------------------
 						
-						*1 day*
-						[NEED TO DO] write runModeFunction_default()
+						
+						#LEFT OFF HERE *3 days*
+						[NEED TO DO] write the code for all the commands in commandDirector()
+						[NEED TO DO] write the code for all the commands in createDataFromQueueFor()
 						[NEED TO DO] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
 						At first glance I don't think you need two, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???			
 
 						
-						*2 days*
-						[NEED TO DO] write the code for all the commands in commandDirector()
-						[NEED TO DO] write the code for all the commands in createDataFromQueueFor()
 						
+						[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
+						In RoverConfig, add more to the #define _LED_SET_TYPES
+						used prev_headlightassy_setting, prev_foglight_setting, etc.
+				
+				
+				
 ------------------------------------------------------------------------------------------------------------------------
 
 
