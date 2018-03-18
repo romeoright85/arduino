@@ -1815,9 +1815,11 @@ At POR (defaults):
 				pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN//default
 				sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN//default
 			first_transmission = true //reset the flag
+			
 			//Note: If MAIN misses this message, MAIN will go into SW reset error and re-request for a SW reset			
+			
 			//Troubleshooting tip: If MAIN keeps missing this message, can send it twice through the main_pri_msg_queue and then the main_sec_msg_queue as well.
-			Mode: INITIALIZATION *begin*		
+			Mode: INITIALIZATION *begin*
 			set next state to RUN_HOUSEKEEPING_TASKS
 		
 		

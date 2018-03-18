@@ -157,9 +157,6 @@ SATURDAY:
 						[DONE] TX_COMMUNICATIONS
 						
 [IN PROGRESS, 3 more days]-------------------------------------------------------------------------------------------------------
-
-													
-
 						
 						*1 day*
 						[NEED TO DO] write runModeFunction_default()

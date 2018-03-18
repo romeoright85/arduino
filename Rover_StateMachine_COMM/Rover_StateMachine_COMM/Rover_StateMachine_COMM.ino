@@ -2660,6 +2660,7 @@ void runModeFunction_SECURING_LINK(byte currentState)
 				else//the desired delay has not been reached yet, so just increment the count
 				{
 					transmission_delay_cnt++;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
 				}//end else			
 			}//end else
 			break;
@@ -2919,6 +2920,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				else//the desired delay has not been reached yet, so just increment the count
 				{
 					transmission_delay_cnt++;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
 				}//end else			
 			}//end else		
 			break;
@@ -3978,6 +3980,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				else//the desired delay has not been reached yet, so just increment the count
 				{
 					transmission_delay_cnt++;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
 				}//end else			
 			}//end else		
 			break;

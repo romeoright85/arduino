@@ -3477,6 +3477,7 @@ i.e.
 				else//the desired delay has not been reached yet, so just increment the count
 				{
 					transmission_delay_cnt++;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
 				}//end else			
 			}//end else
 			break;		
@@ -4019,10 +4020,38 @@ void runModeFunction_SW_RESETTING(byte currentState)
 		
 			break;
 		case TX_COMMUNICATIONS: //Mode: SW_RESETTING
-//LEFT OFF HERE
-//TEMPLATE, similar to SYNCHRONIZATION
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+		
+			//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+
+			//1. Sends data to PC_USB
+			if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
+			}//end if
+			//2. Sends data to MAIN (primary queue)
+			if (main_pri_msg_queue != CMD_TAG_NO_MSG)
+			{
+				txData(txMsgBuffer_Pri_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
+			}//end if
+			
+			//Only the primary message queue is sent (the system ready msg to MAIN), and everything else can be ignored since the system is still synching up.
+			
+			//3. Clears message queue(s)
+			pc_usb_msg_queue = CMD_TAG_NO_MSG;
+			main_pri_msg_queue = CMD_TAG_NO_MSG;
+			main_sec_msg_queue = CMD_TAG_NO_MSG;
+			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+			sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN			
+						
+			//4. Reset the first transmission flag
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);						
+			//Note: If MAIN misses this message, MAIN will go into SW reset error and re-request for a SW reset			
+			
+			//Troubleshooting tip: If MAIN keeps missing this message, can send it twice through the main_pri_msg_queue and then the main_sec_msg_queue as well.
+
+			currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*		
+			//By Default: The next state is RX_COMMUNICATIONS	
+	
 			break;			
 		default: //default state
 //TEMPLATE		
@@ -4732,13 +4761,71 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 		
 			break;
 		case TX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
-//LEFT OFF HERE
-//TEMPLATE, similar to normal operations
-			//Nothing to do here.
-			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
+
+			//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+	
+			//Interweave primary transmissions and the secondary transmission, to allow the receiving end have time to process each incoming data
+	
+			if(BooleanBitFlags::flagIsSet(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_))//check to see if this is the first transmission
+			{		
+			
+				//1. Sends data to PC_USB
+				if (pc_usb_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_PC_USB, ROVERCOMM_PC_USB);
+				}//end if
+				//2. Sends data to MAIN (primary queue)
+				if (main_pri_msg_queue != CMD_TAG_NO_MSG)
+				{
+					txData(txMsgBuffer_Pri_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
+				}//end if
+				//3. Check to see if there are any second messages to send
+				if ( main_sec_msg_queue != CMD_TAG_NO_MSG )		
+				{
+					BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);//clear the flag
+					//reset the counter before use
+					transmission_delay_cnt = 0;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
+				}//end if
+				else//there is no second transmission, move on
+				{					
+					//clears message queue(s)
+					pc_usb_msg_queue = CMD_TAG_NO_MSG;
+					main_pri_msg_queue = CMD_TAG_NO_MSG;
+					main_sec_msg_queue = CMD_TAG_NO_MSG;
+					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+					sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN			
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);						
+				}//end else					
+			}//end if			
+			else//this is not the first transmission
+			{
+					
+				if(transmission_delay_cnt >= CONCURRENT_TRANSMISSION_DELAY) //once the desired delay has been reached, continue with the code
+				{								
+			
+				
+					txData(txMsgBuffer_Sec_MAIN, ROVERCOMM_MAIN);//Note: This just sends the data as created through the MAIN channel. Whether it goes to COMM, CMNC, MAIN, or AUXI that would be determined in the createDataFromQueueFor().
+				
+					//clears message queue(s)
+					pc_usb_msg_queue = CMD_TAG_NO_MSG;
+					main_pri_msg_queue = CMD_TAG_NO_MSG;
+					main_sec_msg_queue = CMD_TAG_NO_MSG;
+					pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN
+					sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN			
+					//reset the first transmission flag
+					BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);
+							
+				}//end if
+				else//the desired delay has not been reached yet, so just increment the count
+				{
+					transmission_delay_cnt++;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
+				}//end else			
+			}//end else		
 			break;			
 		default: //default state
-//TEMPLATE		
 			 //This code should never execute, if it does, there is a logical or programming error
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;

@@ -3553,6 +3553,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 				else//the desired delay has not been reached yet, so just increment the count
 				{
 					transmission_delay_cnt++;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
 				}//end else			
 			}//end else
 			break;				
@@ -4808,6 +4809,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 				
 				//MAIN SW resets itself once the request from MAIN to COMM for COMM to sw reset itself has been sent
 				//TROUBLESHOOT TIP: If this COMM sw reset request is missed by COMM, then COMM will need to start the All SW Reset Request process again since MAIN already SW resetted and should be waiting in the SYNCHRONIZATION mode
+				
 				currentMode = INITIALIZATION;//Set mode to INITIALIZATION *begin*		
 				//By Default: The next state is RX_COMMUNICATIONS
 				
@@ -5522,6 +5524,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				else//the desired delay has not been reached yet, so just increment the count
 				{
 					transmission_delay_cnt++;
+					queuedState = TX_COMMUNICATIONS;//override the default state (usually would be RX_COMMUNICATIONS)
 				}//end else			
 			}//end else		
 		
