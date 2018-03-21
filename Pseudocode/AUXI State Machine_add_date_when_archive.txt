@@ -1457,6 +1457,7 @@ Conflicting Functions Ordered By Priority
 			Set enable_left_laser = false
 			Set enable_right_laser = false
 			Mode: SW_RESETTING *begin*		
+			//Note: The actual SW reset will happen after TX_COMMUNICATIONS where it goes into INITIALIZATION.
 
 			
 		//Note: No Received Generic Health Error for AUXI since Health Errors Originate from AUXI.

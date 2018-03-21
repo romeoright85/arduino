@@ -1835,7 +1835,7 @@ Conflicting Functions Ordered By Priority
 		
 		set enable_mtr_pwr = false //shut down motor when sw resetting for safety						
 		Mode: SW_RESETTING *begin*	
-		
+		//Note: The actual SW reset will happen after TX_COMMUNICATIONS where it goes into INITIALIZATION.
 		
 	SW Reset Acknowledgement (usually from NAVI or AUXI)
 		//Check to see where the command was from

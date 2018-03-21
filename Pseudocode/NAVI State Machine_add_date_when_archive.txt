@@ -631,8 +631,10 @@ At POR (defaults):
 
 					Set gimbal controller middle and center
 
-					Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
+					Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to overrride this if desired, and set it to manual)
 					
+					Set drive setting to autonomous drive (since it's at SYSTEM_ERROR and the rover should have control)
+										
 					error_origin = ROVERCOMM_NAVI
 					main_pri_msg_queue == GENERIC_SYSTEM_ERROR //send a generic system error to main which will send a copy to comm, then to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
 					pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
@@ -944,8 +946,10 @@ At POR (defaults):
 
 			//Since Navigation is skipped for SYNCHRONIZATION, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
 						
-				buffer_remote_ctrl_selected = false //turn buffer select to auto control
+				buffer_remote_ctrl_selected = false //turn buffer select to non-remote (local) control
 					
+				drive_setting = AUTONOMOUS_DRIVE;//since it's at SYNCHRONIZATION and the rover should have control		
+				
 				//Set motor and gimbal to default values
 				motor_turn_value = SET_GO_STRAIGHT				
 				motor_speed_value = SET_STOP_SPEED			
@@ -957,7 +961,7 @@ At POR (defaults):
 				if buffer_remote_ctrl_selected //should be buffer_remote_ctrl_selected = false for SYNCHRONIZATION
 						turn buffer select to manual remote control					
 				else
-						turn buffer select to auto control
+						turn buffer select to non-remote (local) control
 						
 						//Turn off motors and gimbal for SYNCHRONIZATION
 						Control Motor Controller's Turn
@@ -980,7 +984,7 @@ At POR (defaults):
 				if buffer_remote_ctrl_selected //i.e. for full manual or when semi-auto is allowing manual controls
 					turn buffer select to manual remote control					
 				else
-					turn buffer select to auto control
+					turn buffer select to non-remote (local) control
 					navigate the rover based on it's most updated path (i.e. from the PLAN_ROUTE state or the OBJECT_AVOIDANCE state)
 
 					Control Motor Controller's Turn
@@ -1001,8 +1005,10 @@ At POR (defaults):
 		
 			//Since Navigation is skipped for SYSTEM_SLEEPING, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
 						
-				buffer_remote_ctrl_selected = false //turn buffer select to auto control
+				buffer_remote_ctrl_selected = false //turn buffer select to non-remote (local) control
 					
+				drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_SLEEPING and the rover should have control							
+				
 				//Set motor and gimbal to default values
 				motor_turn_value = SET_GO_STRAIGHT				
 				motor_speed_value = SET_STOP_SPEED			
@@ -1013,7 +1019,7 @@ At POR (defaults):
 				if buffer_remote_ctrl_selected //should be buffer_remote_ctrl_selected = false for SYSTEM_SLEEPING
 						turn buffer select to manual remote control					
 				else
-						turn buffer select to auto control
+						turn buffer select to non-remote (local) control
 						
 						//Turn off motors and gimbal for SYSTEM_SLEEPING
 						Control Motor Controller's Turn
@@ -1034,7 +1040,9 @@ At POR (defaults):
 		SYSTEM_WAKING
 			//Since Navigation is skipped for SYSTEM_WAKING, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
 						
-				buffer_remote_ctrl_selected = false //turn buffer select to auto control
+				buffer_remote_ctrl_selected = false //turn buffer select to non-remote (local) control
+					
+				drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_WAKING and the rover should have control
 					
 				//Set motor and gimbal to default values
 				motor_turn_value = SET_GO_STRAIGHT				
@@ -1068,8 +1076,10 @@ At POR (defaults):
 
 			//Since Navigation is skipped for SW_RESETTING, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
 						
-				buffer_remote_ctrl_selected = false //turn buffer select to auto control
+				buffer_remote_ctrl_selected = false //turn buffer select to non-remote (local) control
 					
+				drive_setting = AUTONOMOUS_DRIVE;//since it's at SW_RESETTING and the rover should have control
+
 				//Set motor and gimbal to default values
 				motor_turn_value = SET_GO_STRAIGHT				
 				motor_speed_value = SET_STOP_SPEED			
@@ -1099,16 +1109,9 @@ At POR (defaults):
 			set next state to CREATE_DATA
 			go to RUN_HOUSEKEEPING_TASKS	
 		SYSTEM_ERROR
-			//Since Navigation is skipped for SYSTEM_ERROR, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
-						
-				buffer_remote_ctrl_selected = false //turn buffer select to auto control
-					
-				//Set motor and gimbal to default values
-				motor_turn_value = SET_GO_STRAIGHT				
-				motor_speed_value = SET_STOP_SPEED			
-				gimbal_pan_value = SET_CENTER_PAN
-				gimbal_tilt_value = SET_MIDDLE_TILT
-		
+			
+			//Don't set default values for motors and gimbal here. Instead set it where SYSTEM_ERROR begins. And allow user to manually override it,
+			
 			Control Buffer Select
 				if buffer_remote_ctrl_selected //should be buffer_remote_ctrl_selected = false for SYSTEM_ERROR
 					turn buffer select to manual remote control					
@@ -1879,13 +1882,15 @@ At POR (defaults):
 			end if
 		DEFAULT:
 			Set mode to SYSTEM_ERROR *begin*
-			
+
 			Set motor controller signals to stop and center
 
 			Set gimbal controller middle and center
 
-			Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)			
-			
+			Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to override this if desired, and set it to manual)
+
+			Set drive setting to autonomous drive (since it's at SYSTEM_ERROR and the rover should have control)
+
 			
 			error_origin = ROVERCOMM_NAVI
 			pc_usb_msg_queue = CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS //send error out through the PC_USB for debugging
@@ -1960,23 +1965,20 @@ Conflicting Functions Ordered By Priority
 		
 		pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 		
-		//Turn off outputs, since the next state from here will be CONTROL_OUTPUTS
-		motor_turn_value = SET_GO_STRAIGHT
-		motor_speed_value = SET_STOP_SPEED
-		gimbal_pan_value = SET_CENTER_PAN
-		gimbal_tilt_value = SET_MIDDLE_TILT
-		drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
-		buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
-		headlightassy_setting = LED_SET_ALL_DEFAULT
-		foglight_setting = LED_SET_ALL_DEFAULT
-		left_signal_light_setting = LED_SET_ALL_DEFAULT
-		right_signal_light_setting = LED_SET_ALL_DEFAULT
-		underglow_lights_setting = LED_SET_ALL_DEFAULT
-		reverse_lights_setting = LED_SET_ALL_DEFAULT
-		blue_beacon_lights_setting = LED_SET_ALL_DEFAULT
-		ir_beacon_lights_setting = LED_SET_ALL_DEFAULT	
+		//Set all LEDs to default/off, since it will be refreshed at RUN_HOUSEKEEPING_TASKS. (Note: The gimbal, motor, drive setting, and buffer will be set to default and controlled in the next state, CONTROL_OUTPUTS)
+				
+		universal_led_mode = LED_SET_ALL_DEFAULT
+		hazard_light_state = LED_SET_ALL_DEFAULT
+		fog_light_state = LED_SET_ALL_DEFAULT
+		underglow_light_state = LED_SET_ALL_DEFAULT
+		ir_beaon_state = LED_SET_ALL_DEFAULT
+		blue_beacon_state = LED_SET_ALL_DEFAULT
+		blue_beacon_led_direction = LED_SET_ALL_DEFAULT
+		rover_motion = LED_SET_ALL_DEFAULT
+
 		Set next state to CONTROL_OUTPUTS
-		Set mode to SW_RESETTING *begin*		
+		Set mode to SW_RESETTING *begin*
+		//Note: The actual SW reset will happen after TX_COMMUNICATIONS where it goes into INITIALIZATION.
 		
 	Received Generic Health Error (from AUXI through MAIN)
 		//If the error goes away in AUXI, the system should come back to normal.

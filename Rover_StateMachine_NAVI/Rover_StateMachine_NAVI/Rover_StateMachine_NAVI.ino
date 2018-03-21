@@ -282,7 +282,7 @@ byte gimbal_pan_value = SET_CENTER_PAN;
 byte prev_gimbal_pan_value = SET_CENTER_PAN; //used to hold the previous state, before going to sleep
 byte gimbal_tilt_value = SET_MIDDLE_TILT;
 byte prev_gimbal_tilt_value = SET_MIDDLE_TILT; //used to hold the previous state, before going to sleep
-byte drive_setting = AUTONOMOUS_DRIVE;//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
+byte drive_setting = AUTONOMOUS_DRIVE;//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE. //this is independent of the _BTFG_REMOTE_CTRL_SELECTED_ flag (i.e. buffer_remote_ctrl_selected), since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
 byte prev_drive_setting = AUTONOMOUS_DRIVE;//used to hold the previous state, before going to sleep
 
 
@@ -1327,6 +1327,28 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 //LEFT OFF HERE	
 //WRITE LATER	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+
+
+	//Create first message here and regenerate later on as needed
+	main_pri_msg_queue = CMD_TAG_SW_IS_RESETTING_ACK;//Send status back to MAIN
+
+	pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
+	
+	
+	//Set all LEDs to default/off, since it will be refreshed at RUN_HOUSEKEEPING_TASKS. (Note: The gimbal, motor, drive setting, and buffer will be set to default and controlled in the next state, CONTROL_OUTPUTS)
+		
+	universal_led_mode = LED_SET_ALL_DEFAULT;
+	hazard_light_state = LED_SET_ALL_DEFAULT;
+	fog_light_state = LED_SET_ALL_DEFAULT;
+	underglow_light_state = LED_SET_ALL_DEFAULT;
+	ir_beaon_state = LED_SET_ALL_DEFAULT;
+	blue_beacon_state = LED_SET_ALL_DEFAULT;
+	blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
+	rover_motion = LED_SET_ALL_DEFAULT;
+
+
+	currentMode = SW_RESETTING;//Set mode to SW_RESETTING *begin*
+	//Note: The actual SW reset will happen after TX_COMMUNICATIONS where it goes into INITIALIZATION.
 				
 	}//end else if	
 	 //Received Generic Health Error
@@ -1337,7 +1359,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-	
+//LEFT OFF HERE	
 //WRITE LATER	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		
@@ -2522,8 +2544,10 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 							gimbal_pan_value = SET_CENTER_PAN;
 							gimbal_tilt_value = SET_MIDDLE_TILT;
 
-							//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-							drive_setting = AUTONOMOUS_DRIVE;							
+							//Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to overrride this if desired, and set it to manual)
+							BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+											
+							drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_ERROR and the rover should have control
 							
 							error_origin = ROVERCOMM_NAVI;
 							main_pri_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
@@ -2583,14 +2607,21 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 		
 			//Since Navigation is skipped for SYNCHRONIZATION, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
 
-			//turn buffer select to auto control
-			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
-				
+	
 			//Set motor and gimbal to default values
 			motor_turn_value = SET_GO_STRAIGHT;
 			motor_speed_value = SET_STOP_SPEED;
 			gimbal_pan_value = SET_CENTER_PAN;
 			gimbal_tilt_value = SET_MIDDLE_TILT;
+			
+			//turn buffer select to non-remote (local) control
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+			
+			drive_setting = AUTONOMOUS_DRIVE;//since it's at SYNCHRONIZATION and the rover should have control				
+				
+			
+			
+			
 
 			//Control Buffer Select
 			//if buffer_remote_ctrl_selected == true
@@ -3422,14 +3453,18 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 		
 			//Since Navigation is skipped for SYSTEM_SLEEPING, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
 
-			//turn buffer select to auto control
-			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
-				
+
 			//Set motor and gimbal to default values
 			motor_turn_value = SET_GO_STRAIGHT;
 			motor_speed_value = SET_STOP_SPEED;
 			gimbal_pan_value = SET_CENTER_PAN;
 			gimbal_tilt_value = SET_MIDDLE_TILT;
+			
+			//turn buffer select to non-remote (local) control
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+				
+			drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_SLEEPING and the rover should have control
+				
 
 			//Control Buffer Select
 			//if buffer_remote_ctrl_selected == true
@@ -3563,6 +3598,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				//Gimbal Settings
 				gimbal_pan_value = prev_gimbal_pan_value;
 				gimbal_tilt_value = prev_gimbal_tilt_value;
+				
 				//Drive Settings
 				drive_setting = prev_drive_setting;				
 				
@@ -3697,14 +3733,17 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 		
 			//Since Navigation is skipped for SYSTEM_WAKING, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
 
-			//turn buffer select to auto control
-			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
-				
 			//Set motor and gimbal to default values
 			motor_turn_value = SET_GO_STRAIGHT;
 			motor_speed_value = SET_STOP_SPEED;
 			gimbal_pan_value = SET_CENTER_PAN;
 			gimbal_tilt_value = SET_MIDDLE_TILT;
+			
+			//turn buffer select to non-remote (local) control
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+				
+			drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_WAKING and the rover should have control
+							
 
 			//Control Buffer Select
 			//if buffer_remote_ctrl_selected == true
@@ -3809,8 +3848,10 @@ void runModeFunction_SW_RESETTING(byte currentState)
 		
 			//Since Navigation is skipped for SYNCHRONIZATION, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
 
-			//turn buffer select to auto control
+			//turn buffer select to non-remote (local) control
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+
+			drive_setting = AUTONOMOUS_DRIVE;//since it's at SW_RESETTING and the rover should have control
 				
 			//Set motor and gimbal to default values
 			motor_turn_value = SET_GO_STRAIGHT;
@@ -4342,7 +4383,7 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 
 			//Since Navigation is skipped for SYNCHRONIZATION, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
 
-			//turn buffer select to auto control
+			//turn buffer select to non-remote (local) control
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
 				
 			//Set motor and gimbal to default values
@@ -4746,8 +4787,11 @@ void runModeFunction_default()
 	gimbal_pan_value = SET_CENTER_PAN;
 	gimbal_tilt_value = SET_MIDDLE_TILT;
 
-	//Set buffer select to auto drive to so the rover is in control of the emergency stop (but this state will allow commands to set it to manual)
-	drive_setting = AUTONOMOUS_DRIVE;
+	//Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to override this if desired, and set it to manual)
+	BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+					
+	drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_ERROR and the rover should have control
+		
 	
 		
 	//Set Invalid State Error Flag

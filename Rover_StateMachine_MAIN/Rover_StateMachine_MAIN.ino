@@ -1419,7 +1419,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//shut down motor when sw resetting for safety
 		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
 		
-		currentMode = SW_RESETTING;//Set mode to SW_RESETTING *begin*				
+		currentMode = SW_RESETTING;//Set mode to SW_RESETTING *begin*
+		//Note: The actual SW reset will happen after TX_COMMUNICATIONS where it goes into INITIALIZATION.
 
 	}//end else if
 	//SW Reset Acknowledgement (usually from NAVI or AUXI)

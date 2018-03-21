@@ -154,11 +154,10 @@ SATURDAY:
 						#LEFT OFF HERE *3 days*
 						[NEED TO DO] write the code for all the commands in commandDirector()
 						[NEED TO DO] write the code for all the commands in createDataFromQueueFor()
+						
+						
 						[NEED TO DO] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
-						At first glance I don't think you need two, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???			
-
-						
-						
+						At first glance I don't think you need two, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???					
 						[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
 						In RoverConfig, add more to the #define _LED_SET_TYPES
 						used prev_headlightassy_setting, prev_foglight_setting, etc.

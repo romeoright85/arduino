@@ -1277,7 +1277,8 @@ Conflicting Functions Ordered By Priority
 			main_navi_auxi_destination_selection = ROVERCOMM_MAIN;
 			//initialize/reset shared counter before use
 			timeout_counter = 0;
-			Mode: SW_RESETTING *begin*				
+			Mode: SW_RESETTING *begin*
+			//Note: The actual SW reset will happen when COMM SW Reset Request is received and processed by commandDirector() at PROCESS_DATA.
 		Received Generic Health Error
 			Set mode to SYSTEM_ERROR *begin*
 			

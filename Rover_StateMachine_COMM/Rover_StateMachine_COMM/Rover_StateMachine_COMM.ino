@@ -1284,6 +1284,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 		//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft
 		currentMode = SW_RESETTING;//Set mode to SW_RESETTING *begin*				
+		//Note: The actual SW reset will happen when COMM SW Reset Request is received and processed by commandDirector() at PROCESS_DATA.
 		cmnc_msg_queue = CMD_TAG_SW_IS_RESETTING_ACK;
 		main_msg_queue = CMD_TAG_ALL_SW_RESET_REQUEST;//to be sent to MAIN
 		
