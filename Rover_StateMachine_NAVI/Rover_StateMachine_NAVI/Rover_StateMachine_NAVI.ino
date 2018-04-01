@@ -303,7 +303,8 @@ byte blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
 byte prev_blue_beacon_led_direction = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 byte rover_motion = LED_SET_ALL_DEFAULT;
 byte prev_rover_motion = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-
+byte rover_error_type = LED_SET_ALL_DEFAULT;
+byte prev_rover_error_type = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 				
 				
 
@@ -608,13 +609,26 @@ char programMem2RAMBuffer[_MAX_PROGMEM_BUFF_STR_LEN_];//Buffer to use for Messag
 const static char msg_strg_0[] PROGMEM = "nodata";//getMsgString(0)
 const static char msg_strg_1[] PROGMEM = "invlcmd";//getMsgString(1)
 const static char msg_strg_2[] PROGMEM = "error";//getMsgString(2)
+const static char msg_strg_3[] PROGMEM = "semi";//getMsgString(3)
+const static char msg_strg_4[] PROGMEM = "manu";//getMsgString(4)
+const static char msg_strg_5[] PROGMEM = "auto";//getMsgString(5)
+const static char msg_strg_6[] PROGMEM = "on";//getMsgString(6)
+const static char msg_strg_7[] PROGMEM = "off";//getMsgString(7)
+
+
+
 //Note: Make sure to update  the msg_str_table[] array
 
 //Table of Fixed Commaned Strings (array of strings stored in flash)
 const char* const msg_str_table[] PROGMEM = {
 	msg_strg_0,
 	msg_strg_1,
-	msg_strg_2
+	msg_strg_2,
+	msg_strg_3,
+	msg_strg_4,
+	msg_strg_5,
+	msg_strg_6,
+	msg_strg_7
 };
 
 
@@ -1324,34 +1338,30 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)	 
 	{
-//LEFT OFF HERE	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 
+		//Create first message here and regenerate later on as needed
+		main_pri_msg_queue = CMD_TAG_SW_IS_RESETTING_ACK;//Send status back to MAIN
 
-	//Create first message here and regenerate later on as needed
-	main_pri_msg_queue = CMD_TAG_SW_IS_RESETTING_ACK;//Send status back to MAIN
-
-	pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
-	
-	
-	//Set all LEDs to default/off, since it will be refreshed at RUN_HOUSEKEEPING_TASKS. (Note: The gimbal, motor, drive setting, and buffer will be set to default and controlled in the next state, CONTROL_OUTPUTS)
+		pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
 		
-	universal_led_mode = LED_SET_ALL_DEFAULT;
-	hazard_light_state = LED_SET_ALL_DEFAULT;
-	fog_light_state = LED_SET_ALL_DEFAULT;
-	underglow_light_state = LED_SET_ALL_DEFAULT;
-	ir_beaon_state = LED_SET_ALL_DEFAULT;
-	blue_beacon_state = LED_SET_ALL_DEFAULT;
-	blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
-	rover_motion = LED_SET_ALL_DEFAULT;
+		
+		//Set all LEDs to default/off, since it will be refreshed at RUN_HOUSEKEEPING_TASKS. (Note: The gimbal, motor, drive setting, and buffer will be set to default and controlled in the next state, CONTROL_OUTPUTS)
+			
+		universal_led_mode = LED_SET_ALL_DEFAULT;
+		hazard_light_state = LED_SET_ALL_DEFAULT;
+		fog_light_state = LED_SET_ALL_DEFAULT;
+		underglow_light_state = LED_SET_ALL_DEFAULT;
+		ir_beaon_state = LED_SET_ALL_DEFAULT;
+		blue_beacon_state = LED_SET_ALL_DEFAULT;
+		blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
+		rover_motion = LED_SET_ALL_DEFAULT;
+		rover_error_type = LED_SET_ALL_DEFAULT;
 
-
-	currentMode = SW_RESETTING;//Set mode to SW_RESETTING *begin*
-	//Note: The actual SW reset will happen after TX_COMMUNICATIONS where it goes into INITIALIZATION.
-				
+		currentMode = SW_RESETTING;//Set mode to SW_RESETTING *begin*
+		//Note: The actual SW reset will happen after TX_COMMUNICATIONS where it goes into INITIALIZATION.
+					
 	}//end else if	
-	 //Received Generic Health Error
+	//Received Generic Health Error
 	else if (commandTag == CMD_TAG_GENERIC_HEALTH_STATUS_ERROR &&
 			(
 				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet1_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GENERICHEALTHERROR_) )
@@ -1359,9 +1369,69 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-//LEFT OFF HERE	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+	
+		//If the error goes away in AUXI, the system should come back to normal.
+		//AUXI will keep sending NAVI a GENERIC_HEALTH_STATUS_ERROR as long as AUXI has a health error. As soon as this message is gone, everything should go back to normal. 
+		//The next state should be PLAN_ROUTE as normal (though motors will turn off, it can still keep calculating)		
+		//Turn off all LEDs and motors when there is a generic health error. But no need to put the system in error.		
+		motor_turn_value = SET_GO_STRAIGHT;
+		motor_speed_value = SET_STOP_SPEED;		
+		gimbal_pan_value = SET_CENTER_PAN;
+		gimbal_tilt_value = SET_MIDDLE_TILT;		
+		
+		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
+		
+		drive_setting = AUTONOMOUS_DRIVE;//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
+		
+		//Put LEDs to error pattern
+		universal_led_mode = LED_SET_GENERIC_HEALTH_ERROR;
+		rover_error_type = LED_SET_GENERIC_HEALTH_ERROR;
+				
+		//Create first message here and regenerate later on as needed
+		pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR; //send error out through the PC_USB for debugging
+
+		
+		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+		{
+			 main_pri_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+			 
+			 pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
+		}//end if			
+	
+		
+		//set generic_health_error = true
+		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);			
+		//(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)		
+
+		//Assign the error_origin to where the data was generated from
+		if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
+		{
+			 error_origin = ROVERCOMM_CMNC;
+		}//end else if		
+		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			error_origin = ROVERCOMM_NAVI;
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//If command was from AUXI
+		{
+			error_origin = ROVERCOMM_AUXI;
+		}//end else if		
+		else if (originRoverCommType == ROVERCOMM_MAIN)//If command was from MAIN
+		{
+			error_origin = ROVERCOMM_MAIN;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_COMM)//else if command was from COMM
+		{
+			error_origin = ROVERCOMM_COMM;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_PC_USB)//else if command was from COMM
+		{
+			error_origin = ROVERCOMM_PC_USB;
+		}//end else if
+		else
+		{
+			error_origin = ROVERCOMM_NONE;
+		}//end else
 		
 	}//end else if	
 	//Received Generic System Error
@@ -1373,8 +1443,60 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//For now just forward it to MAIN (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.	
+	
+		//Create first message here and regenerate later on as needed
+		
+		pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+		
+		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+		{
+			main_pri_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+			
+			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
+			
+		}//end if
+				
+		
+		//set generic_system_error = true
+		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_);
+			//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+		
+		//Assign the error_origin to where the data was generated from
+		if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
+		{
+			 error_origin = ROVERCOMM_CMNC;
+		}//end else if		
+		else if (originRoverCommType == ROVERCOMM_NAVI)//If command was from NAVI
+		{
+			error_origin = ROVERCOMM_NAVI;
+		}//end if
+		else if (originRoverCommType == ROVERCOMM_AUXI)//If command was from AUXI
+		{
+			error_origin = ROVERCOMM_AUXI;
+		}//end else if		
+		else if (originRoverCommType == ROVERCOMM_MAIN)//If command was from MAIN
+		{
+			error_origin = ROVERCOMM_MAIN;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_COMM)//else if command was from COMM
+		{
+			error_origin = ROVERCOMM_COMM;
+		}//end else if
+		else if (originRoverCommType == ROVERCOMM_PC_USB)//else if command was from PC_USB
+		{
+			error_origin = ROVERCOMM_PC_USB;
+		}//end else if
+		else
+		{
+			error_origin = ROVERCOMM_NONE;
+		}//end else		
+		
+		
+		//All errors from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB should be redirected to MAIN, and MAIN will redirect it to CMNC
+		//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
+		//Improvement Tip: NAVI can go into error mode if it gets an error message from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB		
+		
 		
 	}//end if	
 	//System Go
@@ -1386,8 +1508,13 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//set system go flag
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_);
+		//Set mode to NORMAL_OPERATIONS *begin*
+		currentMode = NORMAL_OPERATIONS;
+		//initialize/reset shared counter before use
+		timeout_counter = 0;
+		
 		
 	}//end else if	
 	//MAIN System Ready
@@ -1398,9 +1525,13 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		
+		BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_READY_);//main_system_ready = true
+		//(so it can stop checking for this message since the MAIN system is known to be ready)
+		
+		//initialize/reset shared counter before use
+		timeout_counter = 0;//for future use
+		//NOTE: Since this is a non-conflicting command, if resetting the timeout_counter here causes an issue, then take that out of the code
 		
 	}//end else if	
 	//NAVI Sleep Request
@@ -1412,8 +1543,35 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+
+		//save the motor, gimbal buffer states before shutting them off to go to sleep
+		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_);
+		
+		prev_motor_turn_value = motor_turn_value;
+		prev_motor_speed_value = motor_speed_value;
+		prev_gimbal_pan_value = gimbal_pan_value;
+		prev_gimbal_tilt_value = gimbal_tilt_value;
+		prev_drive_setting = drive_setting;		
+		//Restore previous buffer remote control: prev_buffer_remote_ctrl_selected = buffer_remote_ctrl_selected
+		if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_) )
+		{
+			BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);
+		}//end if
+		else
+		{
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);
+		}//end else
+		
+		motor_turn_value = SET_GO_STRAIGHT;
+		motor_speed_value = SET_STOP_SPEED;
+		gimbal_pan_value = SET_CENTER_PAN;
+		gimbal_tilt_value = SET_MIDDLE_TILT;
+		drive_setting = AUTONOMOUS_DRIVE;
+		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
+				
+		pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
+
+		currentMode = SYSTEM_SLEEPING;//Set mode to SYSTEM_SLEEPING *begin*	
 		
 	}//end else if
 	//Get Drive Setting
@@ -1424,10 +1582,24 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_DRIVE_SETTING_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_DRIVE_SETTING_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+	
 	}//end else if	
 	//Set Drive Setting
 	else if (commandTag == CMD_TAG_SET_DRIVE_SETTING &&
@@ -1438,11 +1610,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		if(strcmp( commandData, getMsgString(3) ) == 0)//commandData == "semi"
+		{
+			drive_setting = SEMI_AUTO_DRIVE;		
+		}//end if
+		else if(strcmp( commandData, getMsgString(4) ) == 0)//commandData == "manu"
+		{
+			drive_setting = MANUAL_DRIVE;
+		}//end else if
+		else if(strcmp( commandData, getMsgString(5) ) == 0)////commandData == "auto"
+		{
+			drive_setting = AUTONOMOUS_DRIVE;
+		}//end else if
+		//else do nothing since invalid choice
 		
 	}//end else if		
-	//Set Motor Power Status
+	//Set Motor Power Status (received from MAIN)
 	else if (commandTag == CMD_TAG_MTR_PWR_STATUS &&
 			(
 				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERSTATUS_) )
@@ -1450,21 +1633,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 
-//Set or clear status flag, _BTFG_MTR_POWER_IS_ON_ depending on the data received
+		//Set or clear status flag for Motor Power Status, _BTFG_MTR_POWER_IS_ON_ depending on the data received from MAIN
+		if(strcmp( commandData, getMsgString(6) ) == 0)//commandData == "on"
+		{
+			BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_MTR_POWER_IS_ON_);
+		}//end if
+		else if(strcmp( commandData, getMsgString(7) ) == 0)//commandData == "off"
+		{
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_MTR_POWER_IS_ON_);
+		}//end else if
+		//else do nothing since invalid choice
 		
 	}//end else if		
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	//Set Mid Right Encoder Status (Status Received from MAIN)
 	else if (commandTag == CMD_TAG_ENC_STATUS_MID_RIGHT &&
@@ -1474,7 +1655,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-	
+//LEFT OFF HERE	
 //WRITE LATER	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 		
@@ -2186,7 +2367,7 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 
 
 
-//LEFT OFF HERE			
+//LEFT OFF HERE
 //WRiTE ME LATER
 //ADD MORE LATER			
 			
@@ -3621,7 +3802,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				prev_blue_beacon_state = blue_beacon_state;
 				prev_blue_beacon_led_direction = blue_beacon_led_direction;
 				prev_rover_motion = rover_motion;
-								
+				prev_rover_error_type = rover_error_type;
 
 				
 	
@@ -3640,7 +3821,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				prev_blue_beacon_state = LED_SET_ALL_DEFAULT;
 				prev_blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
 				prev_rover_motion = LED_SET_ALL_DEFAULT;
-				
+				prev_rover_error_type = LED_SET_ALL_DEFAULT;
 				
 
 				//Run other pre-sleep tasks. (i.e. end software serial, as needed)

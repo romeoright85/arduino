@@ -203,7 +203,6 @@ void setup() {
 	delay(50);
 	
 	
-	
 	ledController_NAVI->setUniversalLEDMode(LED_STARTUP_MODE);//Note: Comment out this line if you want to run _DEBUG_TURN_ON_ALL_LEDS_AT_POR_
 	
 	

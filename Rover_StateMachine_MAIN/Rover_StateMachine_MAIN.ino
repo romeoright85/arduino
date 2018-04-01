@@ -1596,6 +1596,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			comm_cmnc_destination_selection = ROVERCOMM_COMM;
 			//reset the timeout counter
 			timeout_counter = 0;
+			//set system go flag
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_ALL_SYSTEMS_GO_);
 			currentMode = NORMAL_OPERATIONS;//Set mode to NORMAL_OPERATIONS *begin*				
 		}//end if
@@ -1636,7 +1637,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//set to shut down motor when sleeping for safety
 		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_ENABLE_MTR_POWER_);
 		
-		currentMode = SYSTEM_SLEEPING;//Set mode to SYSTEM_SLEEPING *begin*				
+		currentMode = SYSTEM_SLEEPING;//Set mode to SYSTEM_SLEEPING *begin*	
 		
 
 	}//end else if

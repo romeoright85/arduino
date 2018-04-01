@@ -349,7 +349,7 @@
 			//(Note: The option above will be overrided when in LED_HAZARD_MODE)
 		#define LED_MOTION_REVERSE								4//used when reversing		
 		//LED Error Types
-		#define LED_ERROR_TYPE_NONE												0
+		#define LED_ERROR_TYPE_NONE												0//default
 		#define LED_ERROR_TYPE_GENERIC_HEALTH								1
 		#define LED_ERROR_TYPE_GENERIC_SYSTEM							2
 		#define LED_ERROR_TYPE_SW_RESET										3
@@ -402,6 +402,7 @@
 	//Used for NAVI State Machine
 	#ifdef _LED_SET_TYPES
 		#define LED_SET_ALL_DEFAULT		0//used to set the default (LED off, direction none, or motion standard
+		#define LED_SET_GENERIC_HEALTH_ERROR	1//used to set the default (LED off, direction none, or motion standard
 		
 		
 //ADD MORE LATER		

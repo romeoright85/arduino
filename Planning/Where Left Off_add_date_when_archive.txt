@@ -10,10 +10,10 @@ Rover_StateMachine_NAVI (get the rover rolling)
 	Get Framework up
 	12/27, 12/28 (slacked off a bit), 12/29 (had to fix autodata algorithm, and slacked a bit), 12/30 (had to fix autodata algorithm), 12/31 (had to fix autodata algorithm), 1/1 take day off to relax), 1/6 (had to fix autodata algorithm), 1/7 (had to fix autodata algorithm)/finish framework
 	Write States and Modes (on average 1 day per mode, except default)
-	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27 (spent some time planning my bday), 1/28 (stayed up late coding late night), 2/3 (late day since friday had happy hour and made time to hang with my bear), 2/4 (start taxes, John's party), 2/9 (sick so coded a bit, watched tv, and cooked), 2/10 (sick and cooked, break from coding to work on resume), 2/11 (coded a bit but was sick and also cooked, resume too), 2/17 (resume/taxes), 2/18 (resume/hr defense vs josh), 2/23 (dealing with used camera return), 2/24 (resume, gym, code some, fixing complier errors), 2/25, 3/3 (sick so apply for more jobs), 3/4  (sick so apply for more jobs), 3/9 (go to work today to make up for job fair on march 14th), 3/10 (went to work today), 3/11 (went to work today), 3/12, 3/13, 3/14 (job fair today, code part day afterwards), 3/17 (distraction with photography shopping), 3/18, 3/23 (go to work today to make up for job fair on march 21st), 3/24 (Rachel's Bday party), 3/25, 3/31
+	1/12 (Car pcv problems), 1/13 (Go to dentist and get Car fixed), 1/14 (catching up on gym since skipped earlier due to car problems and sick, no code), 1/20 (slow start to coding due to work and catching up on gym), 1/21 (tested drone today), 1/26 (had to work part day to make up for stomach flu the day before), 1/27 (spent some time planning my bday), 1/28 (stayed up late coding late night), 2/3 (late day since friday had happy hour and made time to hang with my bear), 2/4 (start taxes, John's party), 2/9 (sick so coded a bit, watched tv, and cooked), 2/10 (sick and cooked, break from coding to work on resume), 2/11 (coded a bit but was sick and also cooked, resume too), 2/17 (resume/taxes), 2/18 (resume/hr defense vs josh), 2/23 (dealing with used camera return), 2/24 (resume, gym, code some, fixing complier errors), 2/25, 3/3 (sick so apply for more jobs), 3/4  (sick so apply for more jobs), 3/9 (go to work today to make up for job fair on march 14th), 3/10 (went to work today), 3/11 (went to work today), 3/12, 3/13, 3/14 (job fair today, code part day afterwards), 3/17 (distraction with photography shopping), 3/18, 3/21 (code some today), 3/23 (go to work today to make up for now day on 3/21), 3/24 (take a break day, CCR run, catching up on gym Rachel's Bday party), 3/25 (take a break today to catch up on chores and gym/run and prep for job meeting with paul), 3/31 (gym/run, test new lens), 4/1 (gym, car maintanence, catching up on notes, heavy workouts drain my energy, got bored of coding so stopped early), 4/6, 4/7
 	
 	Develop Navigation Code (i.e. PLAN_ROUTE, OBJECT_AVOIDANCE): (5 days)
-	4/1, 4/6, 4/7, 4/8, 4/14 (my birthday party)
+	4/8, 4/14 (my birthday party), +3 more days
 
 
 
@@ -148,16 +148,20 @@ SATURDAY:
 						[DONE] TX_COMMUNICATIONS
 						[DONE] write runModeFunction_default()
 						
-[IN PROGRESS, 4 more days]-------------------------------------------------------------------------------------------------------
+[IN PROGRESS, 7 more days]-------------------------------------------------------------------------------------------------------
 						
 						
-						#LEFT OFF HERE *3 days*
+						#LEFT OFF HERE *4 days*
 						[NEED TO DO] write the code for all the commands in commandDirector()
+							46 commands or about 12 commands a day
+							
+						#LEFT OFF HERE *3 days*
 						[NEED TO DO] write the code for all the commands in createDataFromQueueFor()
+			
+							
+							
 						
 						
-						[NEED TO DO] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
-						At first glance I don't think you need two, as the commandDirector uses just the one roverDataForMAIN and any auto generated data uses the other? And if there is no data, then ???					
 						[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
 						In RoverConfig, add more to the #define _LED_SET_TYPES
 						used prev_headlightassy_setting, prev_foglight_setting, etc.
@@ -2146,3 +2150,15 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 						[NAH, maybe later]-allow the user to send commands to turn on and off certain LEDs, userDiscreteLEDControl()
 						[NAH, maybe later]-create a new command to turn on/off LEDs
 							[NAH, maybe later]-take the LED type in the command message so you don't need a bunch of separate commands
+							
+							
+					[DONE] Evaluation if you need a pri and second rover data pointer or just the one roverDataForMAIN.
+						
+						
+						
+						At first glance I don't think you need two, as the commandDirector uses just the one roverDataForMAIN for any received data through roverDataCh1_COMM (PC to NAVI) or roverDataCh2_COMM (MAIN to NAVI). Yes if both are going to MAIN, then only one will get through, but this is normal for all the Arduinos regardless of pri and sec queues or just one queue.
+						
+						For auto generated data, the data is created in CREATE_DATA without the need for createDataFromQueueFor.
+						
+							i.e. main_pri_msg_queue = auto_NAVI_to_COMM_data_array[auto_NAVI_to_COMM_data_cnt];
+													

@@ -147,7 +147,9 @@ At POR (defaults):
 	byte prev_blue_beacon_led_direction = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 	byte rover_motion = LED_SET_ALL_DEFAULT;
 	byte prev_rover_motion = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-
+	byte rover_error_type = LED_SET_ALL_DEFAULT;
+	byte prev_rover_error_type = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+				
 	
 	byte wheelEncoder_MidLeft_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
 	byte wheelEncoder_MidRight_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
@@ -650,7 +652,7 @@ At POR (defaults):
 					gimbal_pan_value = SET_CENTER_PAN
 					gimbal_tilt_value = SET_MIDDLE_TILT
 					drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
-					buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
+					buffer_remote_ctrl_selected = false
 					//Put LEDs to error pattern
 					headlightassy_setting = LIGHTS_SYSTEM_ERROR
 					foglight_setting = LIGHTS_SYSTEM_ERROR
@@ -1975,7 +1977,8 @@ Conflicting Functions Ordered By Priority
 		blue_beacon_state = LED_SET_ALL_DEFAULT
 		blue_beacon_led_direction = LED_SET_ALL_DEFAULT
 		rover_motion = LED_SET_ALL_DEFAULT
-
+		rover_error_type = LED_SET_ALL_DEFAULT
+		
 		Set next state to CONTROL_OUTPUTS
 		Set mode to SW_RESETTING *begin*
 		//Note: The actual SW reset will happen after TX_COMMUNICATIONS where it goes into INITIALIZATION.
@@ -1991,15 +1994,11 @@ Conflicting Functions Ordered By Priority
 		gimbal_tilt_value = SET_MIDDLE_TILT
 		drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
 		buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
+		
 		//Put LEDs to error pattern
-		headlightassy_setting = LIGHTS_HEALTH_ERROR
-		foglight_setting = LIGHTS_HEALTH_ERROR
-		left_signal_light_setting = LIGHTS_HEALTH_ERROR
-		right_signal_light_setting = LIGHTS_HEALTH_ERROR
-		underglow_lights_setting = LIGHTS_HEALTH_ERROR
-		reverse_lights_setting = LIGHTS_HEALTH_ERROR
-		blue_beacon_lights_setting = LIGHTS_HEALTH_ERROR
-		ir_beacon_lights_setting = LIGHTS_HEALTH_ERROR							
+		universal_led_mode = LED_SET_GENERIC_HEALTH_ERROR;
+		rover_error_type = LED_SET_GENERIC_HEALTH_ERROR;				
+
 
 		//Create first message here and regenerate later on as needed
 		pc_usb_msg_queue = GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
@@ -2014,7 +2013,6 @@ Conflicting Functions Ordered By Priority
 		
 		set generic_health_error = true
 			(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)			
-		
 		
 		//Assign the error_origin to where the data was generated from
 		If command was from CMNC
@@ -2031,7 +2029,7 @@ Conflicting Functions Ordered By Priority
 			Set error_origin = ROVERCOMM_PC_USB							
 		else
 			Set error_origin = ROVERCOMM_NONE							
-		end if		
+		end if
 		
 	Received Generic System Error
 
@@ -2092,40 +2090,46 @@ Conflicting Functions Ordered By Priority
 		//save the motor, gimbal buffer states before shutting them off to go to sleep
 		clear system go flag
 		prev_motor_turn_value = motor_turn_value
-		motor_turn_value = SET_GO_STRAIGHT
 		prev_motor_speed_value = motor_speed_value
-		motor_speed_value = SET_STOP_SPEED
 		prev_gimbal_pan_value = gimbal_pan_value
-		gimbal_pan_value = SET_CENTER_PAN
 		prev_gimbal_tilt_value = gimbal_tilt_value
-		gimbal_tilt_value = SET_MIDDLE_TILT
 		prev_drive_setting = drive_setting
-		drive_setting = AUTONOMOUS_DRIVE
 		prev_buffer_remote_ctrl_selected = buffer_remote_ctrl_selected
+		
+		motor_turn_value = SET_GO_STRAIGHT
+		motor_speed_value = SET_STOP_SPEED
+		gimbal_pan_value = SET_CENTER_PAN
+		gimbal_tilt_value = SET_MIDDLE_TILT
+		drive_setting = AUTONOMOUS_DRIVE
 		buffer_remote_ctrl_selected = false
 		
+		
 		//save the LED enable states before shutting them off to go to sleep
-		prev_headlightassy_setting = headlightassy_setting
-		headlightassy_setting = LED_SET_ALL_DEFAULT
-		prev_foglight_setting = foglight_setting
-		foglight_setting = LED_SET_ALL_DEFAULT
-		prev_left_signal_light_setting = left_signal_light_setting
-		left_signal_light_setting = LED_SET_ALL_DEFAULT
-		prev_right_signal_light_setting = right_signal_light_setting
-		right_signal_light_setting = LED_SET_ALL_DEFAULT
-		prev_underglow_lights_setting = underglow_lights_setting
-		underglow_lights_setting = LED_SET_ALL_DEFAULT
-		prev_reverse_lights_setting = reverse_lights_setting
-		reverse_lights_setting = LED_SET_ALL_DEFAULT
-		prev_blue_beacon_lights_setting = blue_beacon_lights_setting
-		blue_beacon_lights_setting = LED_SET_ALL_DEFAULT
-		prev_ir_beacon_lights_setting = ir_beacon_lights_setting
-		ir_beacon_lights_setting = LED_SET_ALL_DEFAULT
-		main_pri_msg_queue = SYSTEM_IS_SLEEPING//Send status back to MAIN
+
+		universal_led_mode = prev_universal_led_mode;
+		hazard_light_state = prev_hazard_light_state;
+		fog_light_state = prev_fog_light_state;
+		underglow_light_state = prev_underglow_light_state;
+		ir_beaon_state = prev_ir_beaon_state;
+		blue_beacon_state = prev_blue_beacon_state;
+		blue_beacon_led_direction = prev_blue_beacon_led_direction;
+		rover_motion = prev_rover_motion;
+		rover_error_type = prev_rover_error_type;
+		
+		universal_led_mode = LED_SET_ALL_DEFAULT;
+		hazard_light_state = LED_SET_ALL_DEFAULT;
+		fog_light_state = LED_SET_ALL_DEFAULT;
+		underglow_light_state = LED_SET_ALL_DEFAULT;
+		ir_beaon_state = LED_SET_ALL_DEFAULT;
+		blue_beacon_state = LED_SET_ALL_DEFAULT;
+		blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
+		rover_motion = LED_SET_ALL_DEFAULT;
+		rover_error_type = LED_SET_ALL_DEFAULT;	
+
 		
 		pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 		
-		Set next state to CONTROL_OUTPUTS
+		Set next state to CONTROL_OUTPUTS (which is the default next state after PROCESS_DATA already)
 		Mode: SYSTEM_SLEEPING *begin*	
 
 
