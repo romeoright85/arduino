@@ -16,6 +16,8 @@
 
 #include <RoverConfig.h>
 
+//Note: This is used to package and unpackage Rover Encoder data into a message that can be sent around from Arduino to Arduino or CMNC.
+
 class RoverMessagePackager {
 public:
 	RoverMessagePackager();//constructor

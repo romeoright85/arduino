@@ -502,6 +502,14 @@
 		#define MTR_ENABLED 1	
 	#endif
 	
+		//definition for Drive Settings
+	#ifdef _DRIVESETTING_DEFINITIONS
+		#define AUTONOMOUS_DRIVE	0
+		#define SEMI_AUTO_DRIVE	1
+		#define MANUAL_DRIVE	2
+	#endif
+	
+
 
 	//definition for BufferSelect
 	#ifdef _BUFFERSELECT_MODES
@@ -546,6 +554,7 @@
 //TEMPLATE//		#define SW_RESET_ERROR_TIMEOUT_VALUE 50//time to waiting and resend the AUXI's or NAVI's SW Reset (Re-)Requests from MAIN before MAIN should just error out itself. Note: SW_RESET_ERROR_TIMEOUT_VALUE should be a greater value than SW_RESET_RESEND_TIMEOUT_VALUE
 //TEMPLATE//		#define SW_RESET_RESEND_TIMEOUT_VALUE		50//time to wait for AUXI's or NAVI's SW Reset Acknowledgement to MAIN before restarting the SW Reset, by sending a NAVI or AUXI SW Request again.
 //TEMPLATE//		#define MAIN_SYSTEM_ERROR_TIMEOUT_VALUE 50//time for MAIN to wait in SYSTEM_ERROR before it should reset a hw reset from COMM			
+
 		
 	#endif
 

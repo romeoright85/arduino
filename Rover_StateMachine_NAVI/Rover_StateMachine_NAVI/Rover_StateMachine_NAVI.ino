@@ -51,6 +51,9 @@ Can send:
 #ifndef _ARD_1_NAVI_H
 #define _ARD_1_NAVI_H //Must define this before calling RoverConfig.h (either directly or through another header file), define this flag to turn on COMM definitions
 #endif
+#ifndef _DRIVESETTING_DEFINITIONS
+#define _DRIVESETTING_DEFINITIONS //For RoverConfig.h
+#endif
 #ifndef _NAVI_BIT_FLAGS_
 #define _NAVI_BIT_FLAGS_ //For RoverBitFlags.h
 #endif
@@ -312,11 +315,11 @@ byte prev_rover_error_type = LED_SET_ALL_DEFAULT;//used to hold the previous sta
 
 
 //TEMPLATE//byte wheelEncoder_MidLeft_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
-//TEMPLATE//byte wheelEncoder_MidRight_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
+byte wheelEncoder_MidRight_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
 //TEMPLATE//int wheelEncoder_MidLeft_Speed = 0;//used to store values passed in from MAIN
-//TEMPLATE//int wheelEncoder_MidRight_Speed = 0;//used to store values passed in from MAIN
+int wheelEncoder_MidRight_Speed = 0;//used to store values passed in from MAIN
 //TEMPLATE//int wheelEncoder_MidLeft_Footage = 0;//used to store values passed in from MAIN
-//TEMPLATE//int wheelEncoder_MidRight_Footage = 0;//used to store values passed in from MAIN
+int wheelEncoder_MidRight_Footage = 0;//used to store values passed in from MAIN
 
 	
 	
@@ -467,9 +470,9 @@ UltrasonicSensor * uSon_SideLeft = new UltrasonicSensor(SIDE_LEFT_ULTSNC_TRIG_PI
 
 int uSonDistanceMeasured[ULTRASONIC_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
 int irDistanceMeasured[INFRARED_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
-byte allWheelEncodersDirection[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
-byte allWheelEncodersFootage[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
-byte allWheelEncodersSpeed[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
+byte allWheelEncodersDirection[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder direction values from MAIN as well as from NAVI. Note: A MOTOR_STOPPED value is 0 for Direction.
+byte allWheelEncodersFootage[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder values from MAIN as well as from NAVI. Note: A 0 value for Footage is 0 for Footage.
+byte allWheelEncodersSpeed[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder values from MAIN as well as from NAVI. Note: A 0 value for Speed is 0 for Speed.
 
 
 //------------------From IrDistanceSensorTest
@@ -1310,7 +1313,9 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	byte destinationRoverCommType;//holds the received data's destination
 	byte commandTag;//holds received data's command tag
 	char commandData[_MAX_ROVER_COMMAND_DATA_LEN_];//holds the received data's command data
-
+	byte commandDataLength;//length of the commandData
+	
+	
 	//Get the received data's origin and destination
 	originRoverCommType = roverDataPointer->getOriginCommType();
 	destinationRoverCommType = roverDataPointer->getDestinationCommType();
@@ -1318,8 +1323,9 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get the command tag from the Rover Data Object
 	commandTag = roverDataPointer->getCommandTag();
 	//Get the command data from the Rover Data Object	
-	strncpy(commandData, roverDataPointer->getCommandData(), roverDataPointer->getCommandDataLength());
-
+	commandDataLength = roverDataPointer->getCommandDataLength();
+	strncpy(commandData, roverDataPointer->getCommandData(), commandDataLength);	
+	
 	//Setting the roverDataPointer in order to route where the rover command data will be routed to
 	//Clears/resets all data pointers before setting them.
 	clearRoverDataPointers();
@@ -1447,13 +1453,13 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	
 		//Create first message here and regenerate later on as needed
 		
-		pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+		pc_usb_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
 		
 		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 		{
-			main_pri_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+			main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
 			
-			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
+			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
 			
 		}//end if
 				
@@ -1655,23 +1661,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-//LEFT OFF HERE	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-		
-		
-		/*
-		
-		See and use RoverMessagePackager()
-		
-		
-		TEMPLATE/SUGGESTION
-			allWheelEncodersDirection[WHEEL_ENC_MID_RIGHT] = <<PARSED RXD DATA HERE>>//As defined in RoverConfig.h under "//Motor Directions"
-			allWheelEncodersFootage[WHEEL_ENC_MID_RIGHT] = <<PARSED RXD DATA HERE>>;//distance travelled in feet
-			allWheelEncodersSpeed[WHEEL_ENC_MID_RIGHT] = <<PARSED RXD DATA HERE>>;//in inches per second
-		
-		*/
+	
+		RoverMessagePackager::unpackEncoderStatus(commandData, commandDataLength, allWheelEncodersDirection[WHEEL_ENC_MID_RIGHT], allWheelEncodersSpeed[WHEEL_ENC_MID_RIGHT], allWheelEncodersFootage[WHEEL_ENC_MID_RIGHT]);
 		
 	}//end else if				
 	//Set Mid Left Encoder Status (Status Received from MAIN)
@@ -1683,25 +1674,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-		
-		/*
-		TEMPLATE/SUGGESTION
-		
-		See and use RoverMessagePackager()
-		
-			allWheelEncodersDirection[WHEEL_ENC_MID_LEFT] = <<PARSED RXD DATA HERE>>//As defined in RoverConfig.h under "//Motor Directions"
-			allWheelEncodersFootage[WHEEL_ENC_MID_LEFT] = <<PARSED RXD DATA HERE>>;//distance travelled in feet
-			allWheelEncodersSpeed[WHEEL_ENC_MID_LEFT] = <<PARSED RXD DATA HERE>>;//in inches per second
-		
-		*/		
-		
-		
-		
-		
-		
+		RoverMessagePackager::unpackEncoderStatus(commandData, commandDataLength, allWheelEncodersDirection[WHEEL_ENC_MID_LEFT], allWheelEncodersSpeed[WHEEL_ENC_MID_LEFT], allWheelEncodersFootage[WHEEL_ENC_MID_LEFT]);
 		
 	}//end else if				
 	//Set Heading (Status Received from AUXI)
@@ -1716,8 +1689,13 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 //WRITE LATER	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
 
+//LEFT OFF HERE
 
 //Parse data
+//take in the commandData
+//validate it
+//then set it to tempHeadingData (global)
+//where later processHeading(tempHeadingData) will be called to save it and average it
 	//SEE NavigationTester_NAVI.ino for example code ( i.e. rxCompassData() )
 //Check to see if it's valid heading data (i.e. within range)
 	//See ImuSensor.cpp, getCorrectedHeading(), etc.

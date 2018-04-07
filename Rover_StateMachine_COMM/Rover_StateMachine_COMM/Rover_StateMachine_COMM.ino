@@ -1220,16 +1220,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	byte commandTag;//holds received data's command tag
 	char commandData[_MAX_ROVER_COMMAND_DATA_LEN_];//holds the received data's command data
 		//Note: For COMM, commandData is not used for comparison in any of the code in commandDirector yet, but it might be in the future. So keep it here as a place holder but can remove it if you hit the memory limit.
-
-					//Get the received data's origin and destination
+	byte commandDataLength;//length of the commandData
+	
+	
+	//Get the received data's origin and destination
 	originRoverCommType = roverDataPointer->getOriginCommType();
 	destinationRoverCommType = roverDataPointer->getDestinationCommType();
 
 	//Get the command tag from the Rover Data Object
 	commandTag = roverDataPointer->getCommandTag();
 	//Get the command data from the Rover Data Object	
-	strncpy(commandData, roverDataPointer->getCommandData(), roverDataPointer->getCommandDataLength());
-
+	commandDataLength = roverDataPointer->getCommandDataLength();
+	strncpy(commandData, roverDataPointer->getCommandData(), commandDataLength);	
+		
 	//Setting the roverDataPointer in order to route where the rover command data will be routed to
 	//Clears/resets all data pointers before setting them.
 	clearRoverDataPointers();

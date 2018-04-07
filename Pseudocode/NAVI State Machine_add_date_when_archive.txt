@@ -151,6 +151,12 @@ At POR (defaults):
 	byte prev_rover_error_type = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 				
 	
+	
+	
+	allWheelEncodersDirection[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE];//used to store wheel encoder direction values for NAVI and MAIN encoders. See _WHEEL_ENCODER_DEFINITIONS in RoverConfig.h.
+	allWheelEncodersFootage[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE];//used to store wheel encoder footage values for NAVI and MAIN encoders. See _WHEEL_ENCODER_DEFINITIONS in RoverConfig.h.
+	allWheelEncodersSpeed[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE];//used to store wheel encoder speed values for NAVI and MAIN encoders. See _WHEEL_ENCODER_DEFINITIONS in RoverConfig.h.
+	
 	byte wheelEncoder_MidLeft_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
 	byte wheelEncoder_MidRight_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
 	int wheelEncoder_MidLeft_Speed = 0;//used to store values passed in from MAIN
