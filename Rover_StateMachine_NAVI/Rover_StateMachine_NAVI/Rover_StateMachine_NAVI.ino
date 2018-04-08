@@ -285,7 +285,8 @@ byte gimbal_pan_value = SET_CENTER_PAN;
 byte prev_gimbal_pan_value = SET_CENTER_PAN; //used to hold the previous state, before going to sleep
 byte gimbal_tilt_value = SET_MIDDLE_TILT;
 byte prev_gimbal_tilt_value = SET_MIDDLE_TILT; //used to hold the previous state, before going to sleep
-byte drive_setting = AUTONOMOUS_DRIVE;//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE. //this is independent of the _BTFG_REMOTE_CTRL_SELECTED_ flag (i.e. buffer_remote_ctrl_selected), since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
+byte drive_setting = AUTONOMOUS_DRIVE;//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE. 
+	//this is independent of the _BTFG_REMOTE_CTRL_SELECTED_ flag (i.e. buffer_remote_ctrl_selected), since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
 byte prev_drive_setting = AUTONOMOUS_DRIVE;//used to hold the previous state, before going to sleep
 
 
@@ -298,12 +299,12 @@ byte fog_light_state = LED_SET_ALL_DEFAULT;
 byte prev_fog_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 byte underglow_light_state = LED_SET_ALL_DEFAULT;
 byte prev_underglow_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-byte ir_beaon_state = LED_SET_ALL_DEFAULT;
-byte prev_ir_beaon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte ir_beacon_state = LED_SET_ALL_DEFAULT;
+byte prev_ir_beacon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 byte blue_beacon_state = LED_SET_ALL_DEFAULT;
 byte prev_blue_beacon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-byte blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
-byte prev_blue_beacon_led_direction = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte beacon_led_direction = LED_SET_ALL_DEFAULT;
+byte prev_beacon_led_direction = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 byte rover_motion = LED_SET_ALL_DEFAULT;
 byte prev_rover_motion = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 byte rover_error_type = LED_SET_ALL_DEFAULT;
@@ -494,7 +495,7 @@ double latitudeArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores latitude (in decim
 double longitudeArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores longitude (in decimal-degrees) samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 //array to hold the heading samples
 double headingArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
-double tempHeadingData;//holds the temp heading data returned by rxCompassData(). It will get verified for validity before it's assigned to the headingArray.
+double tempHeadingData;//holds the temp heading data taken from the command data received by AUXI. It will get verified for validity before it's assigned to the headingArray.
 
 //------------------From LedController_NAVI_Tester
 DelayCounter * ledControllerDelayCounter = new DelayCounter(DELAY_100_PERIODS);//initialize it to count to 100 periods (so 100 periods x 5ms = 500ms). This is only the initial/default delay. It may change in the code dynamically as needed.
@@ -1357,9 +1358,9 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		hazard_light_state = LED_SET_ALL_DEFAULT;
 		fog_light_state = LED_SET_ALL_DEFAULT;
 		underglow_light_state = LED_SET_ALL_DEFAULT;
-		ir_beaon_state = LED_SET_ALL_DEFAULT;
+		ir_beacon_state = LED_SET_ALL_DEFAULT;
 		blue_beacon_state = LED_SET_ALL_DEFAULT;
-		blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
+		beacon_led_direction = LED_SET_ALL_DEFAULT;
 		rover_motion = LED_SET_ALL_DEFAULT;
 		rover_error_type = LED_SET_ALL_DEFAULT;
 
@@ -1686,34 +1687,28 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-
-//LEFT OFF HERE
-
-//Parse data
-//take in the commandData
-//validate it
-//then set it to tempHeadingData (global)
-//where later processHeading(tempHeadingData) will be called to save it and average it
-	//SEE NavigationTester_NAVI.ino for example code ( i.e. rxCompassData() )
-//Check to see if it's valid heading data (i.e. within range)
-	//See ImuSensor.cpp, getCorrectedHeading(), etc.
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		
+		tempHeadingData = atof(commandData);//convert the character array to a double/float value
+		
+		//IMPROVEMENT TIP: This assumes all numbers were received. It may error if any characters are received. Currently there are no checks or error corrections. Can implement one later.
 	
-//Then if valid, save data to the global tempHeadingData.
-/*
-if data is valid, set status flag
-	BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_HEADING_DATA_READY_);
-else clear status flag
-	BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_HEADING_DATA_READY_);
-end if
-*/
-//Then tempHeadingData will get processed further in PROCESS_DATA by processHeading()
+		if(tempHeadingData >= 0.0 && tempHeadingData <= 360.0)//checks to see if the heading value is within range
+		{	
+			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_HEADING_DATA_READY_);//set the valid data flag if the data is within range
 
+			//Note: Then tempHeadingData will get processed further in PROCESS_DATA by processHeading() for any data with a valid data flag
+
+		}//end if
+		else
+		{
+			BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_HEADING_DATA_READY_);//else clear the valid data flag if the data is out of range
+		}//end else
 		
 	}//end else if					
 	
-	
+//LEFT OFF HERE	
 	//Run Motor Calibration
 	else if (commandTag == CMD_TAG_CALIBRATE_MOTOR_CONTROLLER &&
 			(
@@ -1723,8 +1718,69 @@ end if
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+			//WARNING: Make sure to run motor calibration when the rover is lifted and the wheels are off the ground.
+	
+			//Note: When motor calibration is ran, it will reset the motor states, drive settings, as well as the LED states to default states.
+			
+			//Note: Since Run Motor Calibration is a special step, it won't wait for the CONTROL_OUTPUTS state. It will just do all of it's work in this function, then return the rover to a default state. (in order to make the state machine easier to code)
+			
+			_SERIAL_DEBUG_CHANNEL_.println(F("Mtr Cal Strtng"));//Send start status message
+			
+			
+			//LEDs - Set to default (directly - without going through variables like motor_turn_value, etc.) - Control the LEDS in real time (don't wait for the CONTROL_OUTPUTS state)	
+			ledController_NAVI->setUniversalLEDMode(LED_ALL_OFF_MODE);
+			ledController_NAVI->setHazardLightsMode(LED_HAZARDS_OFF);
+			ledController_NAVI->setFogLightMode(LED_FOG_OFF);
+			ledController_NAVI->setUnderglowLightMode(LED_UNDERGLOW_OFF);
+			ledController_NAVI->setIRBeaconLightMode(LED_IR_BEACON_ALL_OFF);
+			ledController_NAVI->setBlueBeaconLightMode(LED_BLUE_BEACON_ALL_OFF);
+			ledController_NAVI->setBeaconDirection(LED_DIRECTION_NONE);
+			ledController_NAVI->setRoverMotion(LED_MOTION_STANDARD);
+			ledController_NAVI->setErrorType(LED_ERROR_TYPE_NONE);
+
+			
+			//Motors - Stop motors (directly - without going through variables like universal_led_mode, etc.) - Control the motors in real time (don't wait for the CONTROL_OUTPUTS state)
+			motorControllerSetSteering(SET_GO_STRAIGHT);
+			motorControllerSetThrottle(SET_STOP_SPEED);
+			
+			
+			//Rover Buffer - Set Rover buffer to auto drive (directly - without going through variables like drive_setting, _BTFG_REMOTE_CTRL_SELECTED_, etc.) - Control the rover buffer in real time (don't wait for the CONTROL_OUTPUTS, PLAN_ROUTE, or OBJECT_AVOIDANCE states).
+			roverBuffer->driverMode(AUTO_DRIVE);
+			//Note: The motor calibration only runs if the roverBuffer is in auto drive. See motorControllerPowerOnCalibration() in MotorController.cpp
+
+			//Delay to allow rover to stop any motion/momentum
+			delay(2000);//wait for 2 seconds
+		
+			//Run motor calibration
+			//Run motor controller calibration
+			motorControllerPowerOnCalibration(roverBuffer);//calibrate if buffer select is in auto mode, else do nothing (defined in MotorController.h - where MotorController.h/MotorController.cpp are not classes)
+			
+			//Delay to allow rover to stop any motion/momentum
+			delay(500);//wait for 0.5 seconds
+			
+			//Once Motor Calibration is done, return the LEDs, motors, rover buffer, and drive settings to default again
+			//LEDs - Set to default
+			universal_led_mode = LED_SET_ALL_DEFAULT;
+			hazard_light_state = LED_SET_ALL_DEFAULT;
+			fog_light_state = LED_SET_ALL_DEFAULT;
+			underglow_light_state = LED_SET_ALL_DEFAULT;
+			ir_beacon_state = LED_SET_ALL_DEFAULT;
+			blue_beacon_state = LED_SET_ALL_DEFAULT;
+			beacon_led_direction = LED_SET_ALL_DEFAULT;
+			rover_motion = LED_SET_ALL_DEFAULT;
+			rover_error_type = LED_SET_ALL_DEFAULT;	
+			//Motors - Set to default
+			motor_turn_value = SET_GO_STRAIGHT;
+			motor_speed_value = SET_STOP_SPEED;			
+			//Rover Buffer - Set to Auto Drive - Clear the flag (default)
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
+			//Drive Settings - to Autonomous Drive
+			drive_setting = AUTONOMOUS_DRIVE;
+			
+			_SERIAL_DEBUG_CHANNEL_.println(F("Mtr Cal Cmpltd"));//Send completion status message
+			
+			//DEBUG TIP: Not sure what will happen since I am controlling all the outputs and adding delays in this function. Also I return motors, etc. to default. Not sure if that will break the state machine. Can debug it later if it's an issue because the assumptions are wrong.
+		
 		
 	}//end else if				
 	
@@ -1737,10 +1793,18 @@ end if
 			)
 		)		 	 
 	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
+		//Note: When gimbal demo is ran, it will reset the gimbal states.
+
+//LEFT OFF HERE		
+//Stop Gimbal
+//Add delay
+		//Run Gimbal Demo
+//WRITE ME LATER
+
+		//Once Gimbal Demo is done, set Gimbal Settings to Default
+		gimbal_pan_value = SET_CENTER_PAN;
+		gimbal_tilt_value = SET_MIDDLE_TILT;				
+
 	}//end else if			
 	//Set Gimbal Pan
 	else if (commandTag == CMD_TAG_SET_PAN_VALUE &&
@@ -3776,9 +3840,9 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				prev_hazard_light_state = hazard_light_state;
 				prev_fog_light_state = fog_light_state;
 				prev_underglow_light_state = underglow_light_state;
-				prev_ir_beaon_state = ir_beaon_state;
+				prev_ir_beacon_state = ir_beacon_state;
 				prev_blue_beacon_state = blue_beacon_state;
-				prev_blue_beacon_led_direction = blue_beacon_led_direction;
+				prev_beacon_led_direction = beacon_led_direction;
 				prev_rover_motion = rover_motion;
 				prev_rover_error_type = rover_error_type;
 
@@ -3795,9 +3859,9 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				prev_hazard_light_state = LED_SET_ALL_DEFAULT;
 				prev_fog_light_state = LED_SET_ALL_DEFAULT;
 				prev_underglow_light_state = LED_SET_ALL_DEFAULT;
-				prev_ir_beaon_state = LED_SET_ALL_DEFAULT;
+				prev_ir_beacon_state = LED_SET_ALL_DEFAULT;
 				prev_blue_beacon_state = LED_SET_ALL_DEFAULT;
-				prev_blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
+				prev_beacon_led_direction = LED_SET_ALL_DEFAULT;
 				prev_rover_motion = LED_SET_ALL_DEFAULT;
 				prev_rover_error_type = LED_SET_ALL_DEFAULT;
 				

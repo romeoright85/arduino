@@ -139,12 +139,12 @@ At POR (defaults):
 	byte prev_fog_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 	byte underglow_light_state = LED_SET_ALL_DEFAULT;
 	byte prev_underglow_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-	byte ir_beaon_state = LED_SET_ALL_DEFAULT;
-	byte prev_ir_beaon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+	byte ir_beacon_state = LED_SET_ALL_DEFAULT;
+	byte prev_ir_beacon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 	byte blue_beacon_state = LED_SET_ALL_DEFAULT;
 	byte prev_blue_beacon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-	byte blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
-	byte prev_blue_beacon_led_direction = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+	byte beacon_led_direction = LED_SET_ALL_DEFAULT;
+	byte prev_beacon_led_direction = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 	byte rover_motion = LED_SET_ALL_DEFAULT;
 	byte prev_rover_motion = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 	byte rover_error_type = LED_SET_ALL_DEFAULT;
@@ -1979,9 +1979,9 @@ Conflicting Functions Ordered By Priority
 		hazard_light_state = LED_SET_ALL_DEFAULT
 		fog_light_state = LED_SET_ALL_DEFAULT
 		underglow_light_state = LED_SET_ALL_DEFAULT
-		ir_beaon_state = LED_SET_ALL_DEFAULT
+		ir_beacon_state = LED_SET_ALL_DEFAULT
 		blue_beacon_state = LED_SET_ALL_DEFAULT
-		blue_beacon_led_direction = LED_SET_ALL_DEFAULT
+		beacon_led_direction = LED_SET_ALL_DEFAULT
 		rover_motion = LED_SET_ALL_DEFAULT
 		rover_error_type = LED_SET_ALL_DEFAULT
 		
@@ -2116,9 +2116,9 @@ Conflicting Functions Ordered By Priority
 		hazard_light_state = prev_hazard_light_state;
 		fog_light_state = prev_fog_light_state;
 		underglow_light_state = prev_underglow_light_state;
-		ir_beaon_state = prev_ir_beaon_state;
+		ir_beacon_state = prev_ir_beacon_state;
 		blue_beacon_state = prev_blue_beacon_state;
-		blue_beacon_led_direction = prev_blue_beacon_led_direction;
+		beacon_led_direction = prev_beacon_led_direction;
 		rover_motion = prev_rover_motion;
 		rover_error_type = prev_rover_error_type;
 		
@@ -2126,9 +2126,9 @@ Conflicting Functions Ordered By Priority
 		hazard_light_state = LED_SET_ALL_DEFAULT;
 		fog_light_state = LED_SET_ALL_DEFAULT;
 		underglow_light_state = LED_SET_ALL_DEFAULT;
-		ir_beaon_state = LED_SET_ALL_DEFAULT;
+		ir_beacon_state = LED_SET_ALL_DEFAULT;
 		blue_beacon_state = LED_SET_ALL_DEFAULT;
-		blue_beacon_led_direction = LED_SET_ALL_DEFAULT;
+		beacon_led_direction = LED_SET_ALL_DEFAULT;
 		rover_motion = LED_SET_ALL_DEFAULT;
 		rover_error_type = LED_SET_ALL_DEFAULT;	
 

@@ -267,7 +267,7 @@ void loop() {
 		{
 			headingDataCounter = 0;//reset the global counter
 			double avgHeading = BubbleSort::getMedian(headingArray[0], headingArray[1], headingArray[2], headingArray[3], headingArray[4], headingArray[5], headingArray[6]);
-			if(avgHeading >= 0.0 && avgHeading <= 360.0)//check to see that the heading value is within valid range
+			if(avgHeading >= 0.0 && avgHeading <= 360.0)//check (again) to see that the heading value is within valid range and makes sense. If there was an error a 9999.9 would have been set. Though the rxCompassData() would return a false, just in case that's not checked, then the 9999.9 would indicate bad data as well.
 			{
 				roverNavigation->setHeadingDeg(avgHeading);//set it to the actual/official heading value
 				
@@ -529,29 +529,37 @@ boolean rxCompassData(double &headingValue) {
 				else
 				{
 					_PC_USB_SERIAL_.println(F("CmpBuffOvrFlw"));
-					headingValue = 999.9;//default error value
+					headingValue = 9999.9;//default error value
 					return false;//return false since buffer overflow
 				}//end else
 			}//end while
 		}
 		else//if no start character was found and time out has occurred, do nothing
 		{
-			headingValue = 999.9;//default error value
+			headingValue = 9999.9;//default error value
 			return false;//return false since did not receive the start of data
 		}//end else
 	}//end if
 	else//if no data received over serial
 	{
-		headingValue = 999.9;//default error value
+		headingValue = 9999.9;//default error value
 		return false;//return true since using default data
 	}//end else
 
-	CharArray::Trim(rxData);//truim any white spaces in the character array
+	CharArray::Trim(rxData);//trim any white spaces in the character array
 		
 	headingValue = atof(rxData);
+	//IMPROVEMENT TIP: This assumes all numbers were received. It may error if any characters are received. Currently there are no checks or error corrections. Can implement one later.
 	
-	return true;//return true once all data is received properly
-	
+	if(headingValue >= 0.0 && headingValue <= 360.0)//checks to see if the heading value is within range
+	{	
+		return true;//return true once all data is received properly				
+	}//end if
+	else
+	{
+		headingValue = 9999.9;//default error value
+		return false;//return true since using default data
+	}//end else
 
 }
 
