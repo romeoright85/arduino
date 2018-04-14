@@ -30,7 +30,7 @@ Configure (define) flags before calling #include <RoverConfig.h>
 #define _SERVOSIGNAL_CALIBRATIONS
 #define _GIMBALCONTROLLER_CALIBRATIONS
 #include <RoverCalibration.h>
-
+#include <BufferSelect.h>
 
 
 
@@ -167,8 +167,13 @@ void gimbalCalibrationSetAsMiddle()
 	
 	
 
-void gimbalFunctionalDemo()
+void gimbalFunctionalDemo(BufferSelect * roverBuffer)
 {
+	
+	//Only run the gimbal functional demo if the roverBuffer is set to auto mode, else do nothing, since in manual mode, the demo is done with the R/C remote controller
+	if(roverBuffer->inAutoMode())
+	{
+		
 		//Start at center and middle
 		gimbalSetPan(GC_CENTER_POSITION_IDEAL);
 		gimbalSetTilt(GC_MIDDLE_POSITION_IDEAL);		
@@ -239,6 +244,6 @@ void gimbalFunctionalDemo()
 			Serial.println(GC_MIDDLE_POSITION_IDEAL);
 		#endif		
 		Serial.println(F("Gimbal Demo - Done"));
-
+	}//end if
 }
 	

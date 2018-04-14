@@ -129,7 +129,7 @@ void setup() {
 	delay(1000);
 
 	//Run Gimbal Functional Demo
-	gimbalFunctionalDemo();//defined in GimbalController.h - where GimbalController.h/GimbalController.cpp are not classes)
+	gimbalFunctionalDemo(roverBuffer);//defined in GimbalController.h - where GimbalController.h/GimbalController.cpp are not classes)
 	
 
 

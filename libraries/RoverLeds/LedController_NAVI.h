@@ -213,7 +213,7 @@ public:
 	void setBeaconDirection(byte);//(which Beacon LED Direction) used in IR/blue beacon directional mode
 	void setRoverMotion(byte);//(which Rover Motion) used for LED motions
 	void setErrorType(byte);//(which LED Error Types) used for Error Mode
-	void userDiscreteLEDControl(byte, byte);//(which led name, desired led state). This function should only be called when there is a received command (i.e. from CMNC) to control the LEDs. Ultimately this function just calls the private function discreteLEDControl() but after using some logic to ensure it's in the right mode (i.e. LED_DEBUG_MODE)	
+	void userDiscreteLEDControl(byte, byte);//(which led name, desired led state). This function should only be called when there is a received command (i.e. from CMNC) to control the LEDs. Ultimately this function just calls the private function discreteLEDControl() but after using some logic to ensure it's in the right mode (i.e. LED_DEBUG_MODE). The LED state is either LED_OFF or LED_ON.
 	virtual void reset();//software reset, virtual (but not pure virtual, so it has an implementation of it's own but can be overridden)
 private:
 	//Non-SW Resettable

@@ -395,6 +395,16 @@
 		#define LED_NAME_RIGHT_SIDE_SIGNAL_LIGHT			28
 		#define LED_NAME_LEFT_SIDE_SIGNAL_LIGHT				29
 	
+	/*
+		[not yet implemented]
+		//LED Assembly Names - To be used for commandDirector Control
+		#define NONE					0
+		#define BEACON_LED_SET		1
+		#define HEADLIGHT_LED_SET		2
+		#define TAILLIGHT_LED_SET		3
+		#define UNDERGLOW_LED_SET		4
+		#define SIDE_SIGNAL_LIGHT_LED_SET		5
+	*/
 	
 	#endif
 	
@@ -513,8 +523,8 @@
 
 	//definition for BufferSelect
 	#ifdef _BUFFERSELECT_MODES
-		#define MANUAL_DRIVE 0
-		#define AUTO_DRIVE 1
+		#define MANUAL_DRIVE 0 //Manual mode. It's not just drive for the motors, but also the servos of the gimbal.
+		#define AUTO_DRIVE 1 //Auto mode. It's not just drive for the motors, but also the servos of the gimbal.
 	#endif
 	
 	

@@ -113,6 +113,7 @@ Can send:
 #include <RoverGpsSensor.h>
 #include <CharArray.h>
 #include <BubbleSort.h>
+#include <DataType.h>
 #include <LedController_NAVI.h>
 //WRITE MORE LATER
 //ADD MORE LATER
@@ -1559,7 +1560,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		prev_gimbal_pan_value = gimbal_pan_value;
 		prev_gimbal_tilt_value = gimbal_tilt_value;
 		prev_drive_setting = drive_setting;		
-		//Restore previous buffer remote control: prev_buffer_remote_ctrl_selected = buffer_remote_ctrl_selected
+		//Save previous buffer remote control: prev_buffer_remote_ctrl_selected = buffer_remote_ctrl_selected
 		if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_) )
 		{
 			BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);
@@ -1688,8 +1689,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{	
 	
 		CharArray::Trim(commandData);//trim any white spaces in the character array
-		
-		
+				
 		tempHeadingData = atof(commandData);//convert the character array to a double/float value
 		
 		//IMPROVEMENT TIP: This assumes all numbers were received. It may error if any characters are received. Currently there are no checks or error corrections. Can implement one later.
@@ -1707,8 +1707,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		}//end else
 		
 	}//end else if					
-	
-//LEFT OFF HERE	
+
 	//Run Motor Calibration
 	else if (commandTag == CMD_TAG_CALIBRATE_MOTOR_CONTROLLER &&
 			(
@@ -1722,9 +1721,9 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	
 			//Note: When motor calibration is ran, it will reset the motor states, drive settings, as well as the LED states to default states.
 			
-			//Note: Since Run Motor Calibration is a special step, it won't wait for the CONTROL_OUTPUTS state. It will just do all of it's work in this function, then return the rover to a default state. (in order to make the state machine easier to code)
+			//Note: Since Run Motor Calibration is a special step, it won't wait for the CONTROL_OUTPUTS state. It will just do all of its work in this function, then return the rover to a default state. (in order to make the state machine easier to code)
 			
-			_SERIAL_DEBUG_CHANNEL_.println(F("Mtr Cal Strtng"));//Send start status message
+			_SERIAL_DEBUG_CHANNEL_.println(F("Mtr Cal Start"));//Send start status message
 			
 			
 			//LEDs - Set to default (directly - without going through variables like motor_turn_value, etc.) - Control the LEDS in real time (don't wait for the CONTROL_OUTPUTS state)	
@@ -1743,13 +1742,14 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			motorControllerSetSteering(SET_GO_STRAIGHT);
 			motorControllerSetThrottle(SET_STOP_SPEED);
 			
+			//Note: The previous _BTFG_REMOTE_CTRL_SELECTED_ (i.e. buffer_remote_ctrl_selected isn't saved for motor calibration. It will just be set to default when the motor calibration is done)
 			
 			//Rover Buffer - Set Rover buffer to auto drive (directly - without going through variables like drive_setting, _BTFG_REMOTE_CTRL_SELECTED_, etc.) - Control the rover buffer in real time (don't wait for the CONTROL_OUTPUTS, PLAN_ROUTE, or OBJECT_AVOIDANCE states).
 			roverBuffer->driverMode(AUTO_DRIVE);
 			//Note: The motor calibration only runs if the roverBuffer is in auto drive. See motorControllerPowerOnCalibration() in MotorController.cpp
 
 			//Delay to allow rover to stop any motion/momentum
-			delay(2000);//wait for 2 seconds
+			delay(1000);//wait for 1 seconds
 		
 			//Run motor calibration
 			//Run motor controller calibration
@@ -1759,6 +1759,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			delay(500);//wait for 0.5 seconds
 			
 			//Once Motor Calibration is done, return the LEDs, motors, rover buffer, and drive settings to default again
+			
 			//LEDs - Set to default
 			universal_led_mode = LED_SET_ALL_DEFAULT;
 			hazard_light_state = LED_SET_ALL_DEFAULT;
@@ -1793,17 +1794,76 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-		//Note: When gimbal demo is ran, it will reset the gimbal states.
+		//Note: When gimbal demo is ran, it will restore the gimbal states and rover buffer.
 
-//LEFT OFF HERE		
-//Stop Gimbal
-//Add delay
+		//Note: Since Run Gimbal Calibration is a special step, it won't wait for the CONTROL_OUTPUTS state. It will just do all of its work in this function, then return the rover to a default state. (in order to make the state machine easier to code)		
+		
+		_SERIAL_DEBUG_CHANNEL_.println(F("Gimbal Demo Start"));//Send start status message
+		
+		
+		//Save the previous gimbal values
+		prev_gimbal_pan_value = gimbal_pan_value;
+		prev_gimbal_tilt_value = gimbal_tilt_value;
+		
+		
+		//Save previous buffer remote control: prev_buffer_remote_ctrl_selected = buffer_remote_ctrl_selected, so it can be restored after the Gimbal Demo
+		if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_) )
+		{
+			BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);
+		}//end if
+		else
+		{
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);
+		}//end else
+
+		//Now for this Gimbal Demo, set it to auto mode (buffer_remote_ctrl_selected = false)
+		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
+		
+		//Rover Buffer - Set Rover buffer to auto drive (directly - without going through variables like drive_setting, _BTFG_REMOTE_CTRL_SELECTED_, etc.) - Control the rover buffer in real time (don't wait for the CONTROL_OUTPUTS, PLAN_ROUTE, or OBJECT_AVOIDANCE states).
+		roverBuffer->driverMode(AUTO_DRIVE);
+			//Note: The gimbal demo only runs if the roverBuffer is in auto drive. See gimbalFunctionalDemo() in GimbalController.cpp		
+		
+		//Gimbals - Set to center and middle before running the demo. (directly - without going through variables like gimbal_pan_value, etc.) - Control the gimbal in real time (don't wait for the CONTROL_OUTPUTS state)
+				
+		//Control Gimbal Controller's Pan			
+		gimbalSetPan(SET_CENTER_PAN);
+		//Control Gimbal Controller's Tilt			
+		gimbalSetTilt(SET_MIDDLE_TILT);
+		
+		//Delay to allow rover to stop any motion/momentum
+		delay(1000);//wait for 1 seconds
+		
 		//Run Gimbal Demo
-//WRITE ME LATER
+		gimbalFunctionalDemo(roverBuffer);
+		//run gimbal demo if buffer select is in auto mode, else do nothing (defined in GimbalController.h - where GimbalController.h/GimbalController.cpp are not classes)
+			
+		//Delay to allow rover to stop any motion/momentum
+		delay(500);//wait for 0.5 second
+			
+			
+		//Once Gimbal Demo is done, return the rover buffer to it's previous state and return the 
 
-		//Once Gimbal Demo is done, set Gimbal Settings to Default
-		gimbal_pan_value = SET_CENTER_PAN;
-		gimbal_tilt_value = SET_MIDDLE_TILT;				
+		//Restore previous buffer remote control: buffer_remote_ctrl_selected = prev_buffer_remote_ctrl_selected
+		if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_) )
+		{
+			BooleanBitFlags::setFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
+			roverBuffer->driverMode(AUTO_DRIVE);
+		}//end if
+		else
+		{
+			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
+			roverBuffer->driverMode(MANUAL_DRIVE);
+		}//end else
+		
+		//Restore the Gimbal Settings
+		gimbal_pan_value = prev_gimbal_pan_value;
+		gimbal_tilt_value = prev_gimbal_tilt_value;
+
+		//Control Gimbal Controller's Pan to restore the previous position	
+		gimbalSetPan(gimbal_pan_value);
+		//Control Gimbal Controller's Tilt to restore the previous position		
+		gimbalSetTilt(gimbal_tilt_value);
+		
 
 	}//end else if			
 	//Set Gimbal Pan
@@ -1815,9 +1875,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		byte tempData;//holds the data temporarily until it can be verified
 		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		if(tempData >= 0 && tempData <= 180)//checks to see if the value is within range
+		{	
+			gimbal_pan_value = tempData;
+		}//end if
+		//else the data is invalid and rejected so do nothing
+				
 	}//end else if			
 	//Get Gimbal Pan Status
 	else if (commandTag == CMD_TAG_GIMBAL_PAN_STATUS &&
@@ -1827,9 +1897,23 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_GIMBAL_PAN_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_GIMBAL_PAN_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
 		
 	}//end else if		
 	//Set Gimbal Tilt
@@ -1841,9 +1925,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		byte tempData;//holds the data temporarily until it can be verified
 		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		if(tempData >= 0 && tempData <= 180)//checks to see if the value is within range
+		{	
+			gimbal_tilt_value = tempData;
+		}//end if
+		//else the data is invalid and rejected so do nothing
+				
 	}//end else if			
 	//Get Gimbal Tilt Status
 	else if (commandTag == CMD_TAG_GIMBAL_TILT_STATUS &&
@@ -1854,9 +1948,23 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_GIMBAL_TILT_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_GIMBAL_TILT_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+				
 	}//end else if			
 	//Set Motor Speed
 	else if (commandTag == CMD_TAG_SET_MOTOR_SPEED &&
@@ -1867,9 +1975,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		byte tempData;//holds the data temporarily until it can be verified
 		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		if(tempData >= 0 && tempData <= 180)//checks to see if the value is within range
+		{	
+			motor_speed_value = tempData;
+		}//end if
+		//else the data is invalid and rejected so do nothing
+				
 	}//end else if				
 	//Get Motor Speed Status
 	else if (commandTag == CMD_TAG_MOTOR_SPEED_STATUS &&
@@ -1880,8 +1998,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_MOTOR_SPEED_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_MOTOR_SPEED_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing		
 		
 	}//end else if				
 	//Set Motor Turn
@@ -1893,8 +2025,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		byte tempData;//holds the data temporarily until it can be verified
+		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		if(tempData >= 0 && tempData <= 180)//checks to see if the value is within range
+		{	
+			motor_turn_value = tempData;
+		}//end if
+		//else the data is invalid and rejected so do nothing
+		
 		
 	}//end else if		
 	//Get Motor Turn Status
@@ -1906,114 +2049,42 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_MOTOR_TURN_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_MOTOR_TURN_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
 		
 	}//end else if		
-	//Set Headlights
-	else if (commandTag == CMD_TAG_SET_LED_HEADLIGHTS &&
-			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETHEADLIGHTS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETHEADLIGHTS_))		
-			)
-		)		 	 
-	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-	}//end else if				
-	//Set Foglights
-	else if (commandTag == CMD_TAG_SET_LED_FOGLIGHTS &&
-			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETFOGLIGHTS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETFOGLIGHTS_))		
-			)
-		)		 	 
-	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-	}//end else if				
-	//Set Underglow Lights
-	else if (commandTag == CMD_TAG_SET_LED_UNDERGLOW_LIGHTS &&
-			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETUNDERGLOWLIGHTS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETUNDERGLOWLIGHTS_))		
-			)
-		)		 	 
-	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-	}//end else if				
-	//Set Right Signal Lights
-	else if (commandTag == CMD_TAG_SET_LED_SET_RIGHT_SIGNAL_LIGHTS &&
-			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETRIGHTSIGNALLIGHTS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETRIGHTSIGNALLIGHTS_))		
-			)
-		)		 	 
-	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-	}//end else if		
-	//Set Left Signal Lights
-	else if (commandTag == CMD_TAG_SET_LED_SET_LEFT_SIGNAL_LIGHTS &&
-			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEFTSIGNALLIGHTS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLEFTSIGNALLIGHTS_))		
-			)
-		)		 	 
-	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-	}//end else if		
-	//Set Reverse Lights
-	else if (commandTag == CMD_TAG_SET_LED_REVERSE_LIGHTS &&
-			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETREVERSELIGHTS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETREVERSELIGHTS_))		
-			)
-		)		 	 
-	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-	}//end else if				
-	//Set Blue Beacon Lights
-	else if (commandTag == CMD_TAG_SET_LED_BLUE_BEACON_LIGHTS &&
-			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETBLUEBEACONLIGHTS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETBLUEBEACONLIGHTS_))		
-			)
-		)		 	 
-	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-	}//end else if			
-	//Set IR Beacon lights
-	else if (commandTag == CMD_TAG_SET_LED_IR_BEACONLIGHTS &&
-			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETIRBEACONLIGHTS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETIRBEACONLIGHTS_))		
-			)
-		)		 	 
-	{	
-	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
-	}//end else if			
+	/*
+	IMPROVEMENT TIP
+	Set Rover into LED Debug Mode
+		In LED debug mode, the rover sets Universal LED Mode to Default,required before user can control LEDs discretely with userDiscreteLEDControl().
+		It prevents the rover from overriding the LEDs until the debug mode is removed
+		Allow the user to set on or off for any LEDs.
+		But use packaged data in order to reduce the number of required commands.
+		See "LED Names (for discrete control)" in RoverConfig.h
+		Have a command for setting
+			Beacon LED Set
+			Headlight LED Set
+			Taillights LED Set
+			Underglow LED Set
+			Side Signal Light LED Set
+			Maybe the packaged commandData can be in the following format
+			
+		Reference NAVI State Machine_add_date_when_archive.txt
+	*/
 	//Get Latitude
 	else if (commandTag == CMD_TAG_LATITUDE_STATUS &&
 			(
@@ -2022,6 +2093,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
+
+//LEFT OFF HERE
 	
 //WRITE LATER	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
@@ -2289,7 +2362,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	}//end else if
 	 //else output nothing	
 
-	return;	
+	return;
 
 }//end of commandDirector()
 void createDataFromQueueFor(byte roverCommType, byte queueSelection)

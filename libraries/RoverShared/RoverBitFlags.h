@@ -218,14 +218,7 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_							0x80
 		
 		//Command Filter Options: Set 4: Used in commandFilterOptionsSet4_PC_USB, commandFilterOptionsSet4_MAIN
-		#define _BTFG_COMMAND_ENABLE_OPTION_SETHEADLIGHTS_							0x01
-		#define _BTFG_COMMAND_ENABLE_OPTION_SETFOGLIGHTS_							0x02
-		#define _BTFG_COMMAND_ENABLE_OPTION_SETUNDERGLOWLIGHTS_							0x04
-		#define _BTFG_COMMAND_ENABLE_OPTION_SETRIGHTSIGNALLIGHTS_							0x08
-		#define _BTFG_COMMAND_ENABLE_OPTION_SETLEFTSIGNALLIGHTS_							0x10
-		#define _BTFG_COMMAND_ENABLE_OPTION_SETREVERSELIGHTS_							0x20
-		#define _BTFG_COMMAND_ENABLE_OPTION_SETBLUEBEACONLIGHTS_							0x40
-		#define _BTFG_COMMAND_ENABLE_OPTION_SETIRBEACONLIGHTS_							0x80
+		//Reserved for LED options. Not implement for now due to time savings.
 
 		//Command Filter Options: Set 5: Used in commandFilterOptionsSet5_PC_USB, commandFilterOptionsSet5_MAIN
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_							0x01

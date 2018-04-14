@@ -6,7 +6,7 @@
 	#include <RoverDebug.h>
 	#include <RoverReset.h>
 	#include <Servo.h>
-	
+	#include <BufferSelect.h>
 	
 	/*******************************************************************
 	Configure (define) flags before calling #include <RoverConfig.h>
@@ -46,7 +46,7 @@
 	void gimbalCalibratePan(int);// (steering amount to get the center position, ideal is 90)
 	void gimbalCalibrateTilt(int);// (throttle amount to get the stop position, ideal is 90)
 	int gimbalBoundToServoLimits(int);//bounds the amount (steering or calibration) to the limits of the servo
-	void gimbalFunctionalDemo();//demos the functionality of the gimbal pan and tilt (good for demo and/or testing)
+	void gimbalFunctionalDemo(BufferSelect *);//demos the functionality of the gimbal pan and tilt (good for demo and/or testing). Will only work when Rover Buffer is in Auto Mode.
 	
 	//Non-SW Resettable
 	byte gimbalPanPin;

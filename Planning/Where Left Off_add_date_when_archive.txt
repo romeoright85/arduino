@@ -148,12 +148,12 @@ SATURDAY:
 						[DONE] TX_COMMUNICATIONS
 						[DONE] write runModeFunction_default()
 						
-[IN PROGRESS, 7 more days]-------------------------------------------------------------------------------------------------------
+[IN PROGRESS, 5 more days]-------------------------------------------------------------------------------------------------------
 						
 						
-						#LEFT OFF HERE *4 days*
+						#LEFT OFF HERE *2 days*
 						[NEED TO DO] write the code for all the commands in commandDirector()
-							46 commands or about 12 commands a day
+							15 commands left
 							
 						#LEFT OFF HERE *3 days*
 						[NEED TO DO] write the code for all the commands in createDataFromQueueFor()

@@ -1,6 +1,6 @@
 //uncomment to print debugging information
 //Note: Since MotorController.cpp isn't calling MotorController.h (since global variables define it in and can't have duplication since MotorController.h is called by the main .ino file already), then put this debug verbose flag here
-#define _DEBUG_VERBOSE
+//#define _DEBUG_VERBOSE
 
 
 
@@ -184,6 +184,6 @@ void motorControllerPowerOnCalibration(BufferSelect * roverBuffer)
 		//Return to stop		
 		motorControllerSetThrottle(MC_NO_THROTTLE_IDEAL);				
 		Serial.println(F("Pwr On Mtr Cal - Done"));
-	}	
+	}//end if
 }
 
