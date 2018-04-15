@@ -84,6 +84,11 @@ Can send:
 #ifndef _LED_SET_TYPES
 #define _LED_SET_TYPES
 #endif
+#ifndef _ROVER_WAYPOINT_DESTINATIONS_
+#define _ROVER_WAYPOINT_DESTINATIONS_
+#endif
+
+
 
 
 //#includes
@@ -102,7 +107,6 @@ Can send:
 #include <RoverCalibration.h>
 #include <RoverSleeperServer.h>
 #include <RoverSleeperClient.h>
-#include <RoverConfig.h>	
 #include <UltrasonicSensor.h>
 #include <IrDistanceSensor.h>
 #include <RoverMessagePackager.h>
@@ -115,6 +119,7 @@ Can send:
 #include <BubbleSort.h>
 #include <DataType.h>
 #include <LedController_NAVI.h>
+#include <RoverConfig.h>	
 //WRITE MORE LATER
 //ADD MORE LATER
 
@@ -497,6 +502,9 @@ double longitudeArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores longitude (in dec
 //array to hold the heading samples
 double headingArray[_BUBBLESORT_MEDIAN_ARRAY_SIZE_];//stores heading samples for sort and median, size is fixed to 7 due to the fixed (hardcoded) size of the getMedian function
 double tempHeadingData;//holds the temp heading data taken from the command data received by AUXI. It will get verified for validity before it's assigned to the headingArray.
+
+//IMPROVEMENT TIP: Allow the rover to add more than one destination coordinate in the future.
+
 
 //------------------From LedController_NAVI_Tester
 DelayCounter * ledControllerDelayCounter = new DelayCounter(DELAY_100_PERIODS);//initialize it to count to 100 periods (so 100 periods x 5ms = 500ms). This is only the initial/default delay. It may change in the code dynamically as needed.
@@ -1692,7 +1700,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 				
 		tempHeadingData = atof(commandData);//convert the character array to a double/float value
 		
-		//IMPROVEMENT TIP: This assumes all numbers were received. It may error if any characters are received. Currently there are no checks or error corrections. Can implement one later.
+		//IMPROVEMENT TIP: This assumes only numbers were received. It may error if any characters are received. Currently there are no checks or error corrections. Can implement one later.
 	
 		if(tempHeadingData >= 0.0 && tempHeadingData <= 360.0)//checks to see if the heading value is within range
 		{	
@@ -2094,11 +2102,23 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 
-//LEFT OFF HERE
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_LATITUDE_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_LATITUDE_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
 	}//end else if			
 	//Get Longitude
 	else if (commandTag == CMD_TAG_LONGITUDE_STATUS &&
@@ -2109,8 +2129,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_LONGITUDE_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_LONGITUDE_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
 		
 	}//end else if		
 	//Get GPS Fix Quality
@@ -2122,8 +2156,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_GPS_FIX_QUALITY_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_GPS_FIX_QUALITY_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
 		
 	}//end else if			
 	//Get GPS Satellites Tracked
@@ -2135,8 +2183,23 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_GPS_SATELLITES_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_GPS_SATELLITES_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
 		
 	}//end else if			
 	//Set Latitude Destination
@@ -2148,8 +2211,18 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		byte tempData;//holds the data temporarily until it can be verified
+		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+				
+		tempData = atof(commandData);//convert the character array to a double/float value
+		
+		//IMPROVEMENT TIP: This assumes only numbers were received. It may error if any characters are received. Currently there are no checks or error corrections. Can implement one later.
+	
+		if(tempData >= -90.0 && tempData <= 90.0)//checks to see if the value is within range
+		{	
+			roverNavigation->setLatitudeDeg(tempData, TYPE_DESIRED);
+		}//end if
 		
 	}//end else if			
 	//Set Longitude Destination
@@ -2160,9 +2233,19 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
+		
+		byte tempData;//holds the data temporarily until it can be verified
+		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+				
+		tempData = atof(commandData);//convert the character array to a double/float value
+		
+		//IMPROVEMENT TIP: This assumes only numbers were received. It may error if any characters are received. Currently there are no checks or error corrections. Can implement one later.
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		if(tempData >= -180.0 && tempData <= 180.0)//checks to see if the value is within range
+		{	
+			roverNavigation->setLongitudeDeg(tempData, TYPE_DESIRED);
+		}//end if
 		
 	}//end else if			
 	//Get Ultrasonic Distance Forward Left
@@ -2173,10 +2256,12 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			)
 		)		 	 
 	{	
-	
+
+//LEFT OFF HERE	
 //WRITE LATER	
 //CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
+
+	
 	}//end else if					
 	//Get Ultrasonic Distance Forward Center
 	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_FWD_CTR_STATUS &&

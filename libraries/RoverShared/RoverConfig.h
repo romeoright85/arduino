@@ -145,6 +145,12 @@
 		#define _BUBBLESORT_MEDIAN_ARRAY_SIZE_ 7//this is hardcoded to 7, as it takes in 7 parameters in the function
 	#endif	
 	
+	
+	#ifdef _ROVER_WAYPOINT_DESTINATIONS_
+		#define _WAYPOINT_DESTINATION_ARRAY_SIZE_		10
+	#endif	
+	
+	
 	//definition for 
 	#ifdef _ROVERHEALTHANDSTATUS_DEFINITONS
 		//Hold States

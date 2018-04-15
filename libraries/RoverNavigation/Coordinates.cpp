@@ -17,7 +17,7 @@ Coordinates::~Coordinates()
 }
 void Coordinates::setLatitudeDeg(double latitudeDeg)
 {
-	if( latitudeDeg  >= -90 && latitudeDeg <= 90 )
+	if( latitudeDeg  >= -90.0 && latitudeDeg <= 90.0 )
 	{
 		this->_latitudeDeg = latitudeDeg;
 	}
@@ -29,7 +29,7 @@ void Coordinates::setLatitudeDeg(double latitudeDeg)
 }
 void Coordinates::setLongitudeDeg(double longitudeDeg)
 {
-	if( longitudeDeg  >= -180 && longitudeDeg <= 180 )
+	if( longitudeDeg  >= -180.0 && longitudeDeg <= 180.0 )
 	{
 		this->_longitudeDeg = longitudeDeg;
 	}
