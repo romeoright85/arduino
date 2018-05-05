@@ -205,7 +205,7 @@ while referencing State Machine Plans from:
 			
 put code to measure loop time, then use it as the message delay between a message and a redirect
 When debugging the state machines, make sure things that shouldn't be filtered out aren't, vice versa.
-Watch out for glitches with missed acknowledgements and one system going ahead or behind another.
+Watch out for glitches with missed acknowledgments and one system going ahead or behind another.
 Watch for vicious loops, or messages overtaking all lower priority ones causes the lower priority stuff to never run.
 Check for things going to the wrong state (as you might have redesigned the order, etc.)
 Make sure I didn't forget to code any of the steps in the well planned state machine. A missed step could break the machine as it was well thought out.
@@ -226,7 +226,7 @@ then put other objects in
 	Arduino Specific:
 	-MAIN: monitor status
 	-NAVI: drive rover/navigate
-	-AUXI: control auxillaries
+	-AUXI: control auxiliaries
 	-COMM: sleep/pir/communicate/reset control (HW/SW command and control), controller hack proof validator
 		For controller hack proof validator, see "#Tamper Proof" below.
 

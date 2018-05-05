@@ -478,8 +478,8 @@ UltrasonicSensor * uSon_SideLeft = new UltrasonicSensor(SIDE_LEFT_ULTSNC_TRIG_PI
 int uSonDistanceMeasured[ULTRASONIC_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
 int irDistanceMeasured[INFRARED_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
 byte allWheelEncodersDirection[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder direction values from MAIN as well as from NAVI. Note: A MOTOR_STOPPED value is 0 for Direction.
-byte allWheelEncodersFootage[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder values from MAIN as well as from NAVI. Note: A 0 value for Footage is 0 for Footage.
-byte allWheelEncodersSpeed[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder values from MAIN as well as from NAVI. Note: A 0 value for Speed is 0 for Speed.
+int allWheelEncodersFootage[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder values from MAIN as well as from NAVI. Note: A 0 value for Footage is 0 for Footage.
+int allWheelEncodersSpeed[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder values from MAIN as well as from NAVI. Note: A 0 value for Speed is 0 for Speed.
 
 
 //------------------From IrDistanceSensorTest
@@ -3282,7 +3282,7 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 			{
 			
 					allWheelEncodersDirection[i] = naviWheelEncoders[i]->getDirection();//As defined in RoverConfig.h under "//Motor Directions"
-					allWheelEncodersFootage[i] = naviWheelEncoders[i]->getFootage();//distance travelled in feet
+					allWheelEncodersFootage[i] = naviWheelEncoders[i]->getFootage();//distance traveled in feet
 					allWheelEncodersSpeed[i] = naviWheelEncoders[i]->getSpeed();//in inches per second
 
 			}//end for		
