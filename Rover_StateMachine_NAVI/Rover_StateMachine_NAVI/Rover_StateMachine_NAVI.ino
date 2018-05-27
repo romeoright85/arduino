@@ -1355,7 +1355,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)	 
 	{
 
-		//Create first message here and regenerate later on as needed
+		//Create first (and only) sleeping acknowledgment here. Since for NAVI/AUXI, it will only send out one acknowledgment then do a SW reset.
 		main_pri_msg_queue = CMD_TAG_SW_IS_RESETTING_ACK;//Send status back to MAIN
 
 		pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
@@ -1585,8 +1585,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		drive_setting = AUTONOMOUS_DRIVE;
 		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
 				
+				
+		//Create first (and only) sleeping acknowledgment here. Since for NAVI/AUXI, it will only send out one acknowledgment then go to sleep.
+		main_pri_msg_queue = CMD_TAG_SYSTEM_IS_SLEEPING_ACK;//Send status back to MAIN
+		
 		pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
-
 		currentMode = SYSTEM_SLEEPING;//Set mode to SYSTEM_SLEEPING *begin*	
 		
 	}//end else if
@@ -2257,10 +2260,23 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 
-//LEFT OFF HERE	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ULTSNC_DISTANCE_FWD_LT_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ULTSNC_DISTANCE_FWD_LT_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+	
 	
 	}//end else if					
 	//Get Ultrasonic Distance Forward Center
@@ -2272,9 +2288,24 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
-		
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ULTSNC_DISTANCE_FWD_CTR_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ULTSNC_DISTANCE_FWD_CTR_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+	
 	}//end else if						
 	//Get Ultrasonic Distance Forward Right	
 	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_FWD_RT_STATUS &&
@@ -2285,8 +2316,24 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ULTSNC_DISTANCE_FWD_RT_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ULTSNC_DISTANCE_FWD_RT_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing	
+	
 		
 	}//end else if		
 	//Get Ultrasonic Distance Side Right
@@ -2298,8 +2345,23 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ULTSNC_DISTANCE_SIDE_RT_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ULTSNC_DISTANCE_SIDE_RT_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing	
+	
 		
 	}//end else if				
 	//Get Ultrasonic Distance Side Left
@@ -2311,8 +2373,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ULTSNC_DISTANCE_SIDE_LT_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ULTSNC_DISTANCE_SIDE_LT_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing	
 		
 	}//end else if		
 	//Get Ultrasonic Distance Rear Center
@@ -2324,8 +2400,23 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing	
 		
 	}//end else if		
 	//Get IR Distance Forward Center Status
@@ -2337,8 +2428,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing	
 		
 	}//end else if		
 	//Get IR Distance Side Right Status
@@ -2350,8 +2455,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_IR_DISTANCE_SIDE_RT_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_IR_DISTANCE_SIDE_RT_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing		
 		
 	}//end else if		
 	//Get IR Distance Side Left Status
@@ -2363,8 +2482,22 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_IR_DISTANCE_SIDE_LT_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_IR_DISTANCE_SIDE_LT_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
 		
 	}//end else if		
 	//Get IR Distance Rear Center Status
@@ -2376,8 +2509,23 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		)		 	 
 	{	
 	
-//WRITE LATER	
-//CHECK MY LOGIC LATER/TEST THIS CODE LATER-wrote a quick template, draft	
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_IR_DISTANCE_REAR_CTR_STATUS;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_IR_DISTANCE_REAR_CTR_STATUS;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+		
 		
 	}//end else if
 	 //Hi Command - DEBUG
@@ -2458,6 +2606,7 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 
 	
 	//Note:
+	//queueSelection is only used for AUXI and NAVI since they are "leaves" at the end of the network "tree"
 	//The queueSelection is as defined in RoverConfig.h under:
 	//	_ROVER_SHARED_QUEUE_DEFINITIONS
 	//i.e.
@@ -2471,13 +2620,14 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 
 	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string
-	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command (createdCommand is the output of the method call RoverCommandCreator::createCmd)
+	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//created command string (char array) (createdCommand is the output of the method call RoverCommandCreator::createCmd)
 					
 	//Create variables needed for the data packaging (i.e. encoder status)
 	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];//used with the RoverMessagePackager
 	byte commandDataCharArraySize;//used with the RoverMessagePackager
 	byte roverCommActualDestination;//holds the actual/final destination of the data
 				
+	//Note: The queueSelection is which data queue/variable is being used to store the data. Where as the roverCommActualDestination is a value that is encoded in the data itself and sent out as a string. The queueSelection is used to allow this Arduino to send multiple different messages by storing different messages in different queues.
 				
 	//Based on the roverCommType of interest, set which queue and rover data the outgoing message should be based on
 	if (roverCommType == ROVERCOMM_PC_USB)
@@ -2487,12 +2637,13 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 		{
 			queueOfInterest = pc_usb_msg_queue;
 		}//end if
-		else//invalid state, error out
+		else//invalid state, error out (since for PC_USB it should only go to the pc_usb_msg_queue)
 		{
 			_SERIAL_DEBUG_CHANNEL_.println(F("ErrUnkQueueSel"));//error, unknown Queue Selection
 		}//end else	
 		
 		roverCommActualDestination = roverCommType;//the rover comm type will be the actual destination for ROVERCOMM_PC_USB since it's the only destination for that data channel.
+		
 		if (roverDataForPC_USB != NULL)//make sure the roverDataPointer is not NULL
 		{
 			commandDataOfInterest = roverDataForPC_USB->getCommandData();
@@ -2537,13 +2688,115 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 	switch (queueOfInterest)
 	{
 
-
+		/*
+			Note:
+			These commands don't always mirror commandDirector() received commands. Instead, sometimes they are acknowledgments instead of requests/commands. So go through all the outgoing queues and make sure you get the right name.
+			i.e. use "CMD_TAG_SW_IS_RESETTING_ACK" instead of "CMD_TAG_NAVI_SW_RESET_REQUEST" for createDataFromQueueFor() for the NAVI Arduino.
+		*/
+		
 		//Externally Received Commands	
 		
-//LEFT OFF HERE		
+
+
+
+//LEFT OFF HERE
+//COME BACK TO THIS LATER AFTER FIXING ALL THE CASES BELOW
+		case CMD_TAG_SW_IS_RESETTING_ACK:
+//WRiTE ME LATER		
+			break;
+		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:
+//WRiTE ME LATER		
+			break;	
+		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:
+//WRiTE ME LATER		
+			break;	
+		case CMD_TAG_SYSTEM_IS_SLEEPING_ACK:
+//WRiTE ME LATER		
+			break;	
+		
+
+
+
+		
+//LEFT OFF HERE
+//FIX THESE CASES FIRST
 //WRiTE ME LATER		
 //ADD MORE LATER
+//FIX ME BELOW THIS LINE
+/*	
+GUESSED COMMANDS. SOME OF THESE CREATE DATA should be acknowledgments and not commands. i.e. It should be "CMD_TAG_SW_IS_RESETTING_ACK" and not "CMD_TAG_NAVI_SW_RESET_REQUEST" (this particular example has already been fixed).
+So go through the rest of the commands and compare them with what is set in the outgoing queues to see what cases (in the switch statement) needs to change, what can stay, and what should be deleted.
 
+	
+		case CMD_TAG_DRIVE_SETTING_STATUS:
+			break;	
+		case CMD_TAG_SET_DRIVE_SETTING:
+			break;	
+		case CMD_TAG_MTR_PWR_STATUS:
+			break;	
+		case CMD_TAG_ENC_STATUS_MID_RIGHT:
+			break;	
+		case CMD_TAG_ENC_STATUS_MID_LEFT:
+			break;	
+		case CMD_TAG_SET_HEADING:
+			break;	
+		case CMD_TAG_CALIBRATE_MOTOR_CONTROLLER:
+			break;	
+		case CMD_TAG_RUN_GIMBAL_DEMO:
+			break;	
+		case CMD_TAG_SET_PAN_VALUE:
+			break;	
+		case CMD_TAG_SET_TILT_VALUE:
+			break;	
+		case CMD_TAG_GIMBAL_PAN_STATUS:
+			break;	
+		case CMD_TAG_SET_TILT_VALUE:
+			break;	
+		case CMD_TAG_GIMBAL_TILT_STATUS:
+			break;	
+		case CMD_TAG_SET_MOTOR_SPEED:
+			break;	
+		case CMD_TAG_MOTOR_SPEED_STATUS:
+			break;	
+		case CMD_TAG_SET_MOTOR_TURN:
+			break;	
+		case CMD_TAG_MOTOR_TURN_STATUS:
+			break;	
+		case CMD_TAG_LATITUDE_STATUS:
+			break;	
+		case CMD_TAG_LONGITUDE_STATUS:
+			break;	
+		case CMD_TAG_GPS_FIX_QUALITY_STATUS:
+			break;	
+		case CMD_TAG_GPS_SATELLITES_STATUS:
+			break;	
+		case CMD_TAG_SET_LATITUDE_DEST:
+			break;	
+		case CMD_TAG_SET_LONGITUDE_DEST:
+			break;	
+		case CMD_TAG_ULTSNC_DISTANCE_FWD_LT_STATUS:
+			break;	
+		case CMD_TAG_ULTSNC_DISTANCE_FWD_CTR_STATUS:
+			break;	
+		case CMD_TAG_ULTSNC_DISTANCE_FWD_RT_STATUS:
+			break;	
+		case CMD_TAG_ULTSNC_DISTANCE_SIDE_RT_STATUS:
+			break;	
+		case CMD_TAG_ULTSNC_DISTANCE_SIDE_LT_STATUS:
+			break;	
+		case CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS:
+			break;	
+		case CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS:
+			break;	
+		case CMD_TAG_IR_DISTANCE_SIDE_RT_STATUS:
+			break;	
+		case CMD_TAG_IR_DISTANCE_SIDE_LT_STATUS:
+			break;	
+		case CMD_TAG_IR_DISTANCE_REAR_CTR_STATUS:
+			break;
+*/
+			
+			
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
 				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);
 			break;

@@ -1719,7 +1719,7 @@ void createDataFromQueueFor(byte roverCommType)
 
 	byte queueOfInterest;
 	char * commandDataOfInterest;//holds the rover's command data string
-	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//holds the pointer to the created command (createdCommand is the output of the method call RoverCommandCreator::createCmd)
+	char createdCommand[ROVER_COMM_SENTENCE_LENGTH];//created command string (char array) (createdCommand is the output of the method call RoverCommandCreator::createCmd)
 	
 	
 	//Create variables needed for the data packaging (i.e. encoder status)
@@ -1782,6 +1782,12 @@ void createDataFromQueueFor(byte roverCommType)
 	switch (queueOfInterest)
 	{
 
+		/*
+			Note:
+			These commands don't always mirror commandDirector() received commands. Instead, sometimes they are acknowledgments instead of requests/commands. So go through all the outgoing queues and make sure you get the right name.
+			i.e. use "CMD_TAG_SW_IS_RESETTING_ACK" instead of "CMD_TAG_NAVI_SW_RESET_REQUEST" for createDataFromQueueFor() for the NAVI Arduino.
+		*/
+		
 		//Externally Received Commands	
 		case CMD_TAG_COMM_HW_RESET_REQUEST:
 				RoverCommandCreator::createCmd(ROVERCOMM_COMM, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_COMM_HW_RESET_REQUEST, getMsgString(0), createdCommand);
@@ -3458,7 +3464,9 @@ void runModeFunction_SW_RESETTING(byte currentState)
 
 			//If COMM SW Reset Request was not received from MAIN yet
 			if( ! BooleanBitFlags::flagIsSet(flagSet_SystemStatus2, _BTFG_COMM_SW_RESET_REQUESTED_) )
-			{				
+			{			
+
+				
 				timeout_counter++;
 				//if COMM has waited for a really long time, it should error out itself
 								
@@ -3482,6 +3490,8 @@ void runModeFunction_SW_RESETTING(byte currentState)
 					else if(timeout_counter >= SW_RESET_RESEND_TIMEOUT_VALUE)
 					{
 						//Note: It should send the request periodically and not continuously so the system has time to process the request and it doesn't get stuck in a loop
+						
+						//So regenerate the messages as needed
 						cmnc_msg_queue == CMD_TAG_SW_IS_RESETTING_ACK;//Resend this message to CMNC to show that it's attempting to SW reset the system again
 						main_msg_queue == CMD_TAG_ALL_SW_RESET_REQUEST;//to be sent to MAIN, resending this request to MAIN
 						
