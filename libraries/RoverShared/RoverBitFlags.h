@@ -204,10 +204,18 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_SETMIDRIGHTENCODERSTATUS_							0x08
 		#define _BTFG_COMMAND_ENABLE_OPTION_SETMIDLEFTENCODERSTATUS_							0x10
 		#define _BTFG_COMMAND_ENABLE_OPTION_SETHEADING_							0x20
-		#define _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_							0x40
-		#define _BTFG_COMMAND_ENABLE_OPTION_RUNGIMBALDEMO_							0x80
-
+		
 		//Command Filter Options: Set 3: Used in commandFilterOptionsSet3_PC_USB, commandFilterOptionsSet3_MAIN
+		#define _BTFG_COMMAND_ENABLE_OPTION_FRONTLEFTENCODERSTATUS_				0x01
+		#define _BTFG_COMMAND_ENABLE_OPTION_FRONTRIGHTENCODERSTATUS_				0x02
+		#define _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_				0x04
+		#define _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_				0x08
+		#define _BTFG_COMMAND_ENABLE_OPTION_REARLEFTENCODERSTATUS_				0x10
+		#define _BTFG_COMMAND_ENABLE_OPTION_REARRIGHTENCODERSTATUS_				0x20
+		#define _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_				0x40
+		#define _BTFG_COMMAND_ENABLE_OPTION_RUNGIMBALDEMO_				0x80
+		
+		//Command Filter Options: Set 4: Used in commandFilterOptionsSet4_PC_USB, commandFilterOptionsSet4_MAIN
 		#define _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALPAN_							0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_							0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALTILT_							0x04
@@ -216,11 +224,11 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_							0x20
 		#define _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_							0x40
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_							0x80
-		
-		//Command Filter Options: Set 4: Used in commandFilterOptionsSet4_PC_USB, commandFilterOptionsSet4_MAIN
-		//Reserved for LED options. Not implement for now due to time savings.
 
-		//Command Filter Options: Set 5: Used in commandFilterOptionsSet5_PC_USB, commandFilterOptionsSet5_MAIN
+		//Command Filter Options: Set 5: Used in commandFilterOptionsSet5_PC_USB, commandFilterOptionsSet4_MAIN
+			//Reserved for LED options. Not implement for now due to time savings.
+
+		//Command Filter Options: Set 6: Used in commandFilterOptionsSet6_PC_USB, commandFilterOptionsSet5_MAIN
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_							0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_							0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_							0x04
@@ -228,7 +236,7 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_SETLATITUDEDESTINATION_							0x10
 		#define _BTFG_COMMAND_ENABLE_OPTION_SETLONGITUDEDESTINATION_							0x20
 
-		//Command Filter Options: Set 6: Used in commandFilterOptionsSet6_PC_USB, commandFilterOptionsSet6_MAIN
+		//Command Filter Options: Set 7: Used in commandFilterOptionsSet7_PC_USB, commandFilterOptionsSet7_MAIN
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_							0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_							0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_							0x04
@@ -236,7 +244,7 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_							0x10
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_							0x20
 
-		//Command Filter Options: Set 7: Used in commandFilterOptionsSet7_PC_USB, commandFilterOptionsSet7_MAIN
+		//Command Filter Options: Set 8: Used in commandFilterOptionsSet8_PC_USB, commandFilterOptionsSet8_MAIN
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_						0x01
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_						0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_						0x04

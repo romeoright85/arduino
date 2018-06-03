@@ -520,9 +520,9 @@
 	
 		//definition for Drive Settings
 	#ifdef _DRIVESETTING_DEFINITIONS
-		#define AUTONOMOUS_DRIVE	0
-		#define SEMI_AUTO_DRIVE	1
-		#define MANUAL_DRIVE	2
+		#define AUTONOMOUS_DRIVE_SETTING	0
+		#define SEMI_AUTO_DRIVE_SETTING	1
+		#define MANUAL_DRIVE_SETTING	2
 	#endif
 	
 
@@ -657,6 +657,7 @@
 		#define	ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE 6//number of wheel encoders from MAIN (qty 2) and NAVI (qty 4)
 		//Wheel Encoder Names
 		//From NAVI
+		//Note: The encoders are grouped by Arduino (though out of order by position) to make looping through an Arduino easier.
 		#define WHEEL_ENC_FRONT_LEFT				0
 		#define WHEEL_ENC_FRONT_RIGHT			1
 		#define WHEEL_ENC_REAR_LEFT				2

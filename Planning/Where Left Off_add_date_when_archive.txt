@@ -123,59 +123,36 @@ Rover_StateMachine_NAVI:
 
 			[IN PROGRESS] Set up the framework for Rover_StateMachine_NAVI
 				
-				
-				[DONE] Start the framework for commandDirector()
-
-				
-				
-SATURDAY:
-				[DONE] Set up the framework for createDataFromQueueFor()				
-				[DONE] clearRoverDataPointers()
-				[DONE] setRoverDataPointer()
+		
 				
 											
-					
-					
-					
-	
-				Work on Rover States and Modes		
-						[DONE] Left off at READ_INPUTS for SYSTEM_SLEEPING
-						[DONE] POWER_ON_AND_HW_RESET
-						[DONE] INITIALIZATION
-						[DONE] SYNCHRONIZATION					
-						[DONE] PROCESS_DATA
-						[DONE] CONTROL_OUTPUTS
-						[DONE] CREATE_DATA
-						[DONE] TX_COMMUNICATIONS
-						[DONE] write runModeFunction_default()
-						[DONE] write the code for all the commands in commandDirector()
-						
-[IN PROGRESS, 4 more days]-------------------------------------------------------------------------------------------------------
-						
-													
-						#LEFT OFF HERE *3 days*
+						#LEFT OFF HERE *1 day*
 						[NEED TO DO] write the code for all the commands in createDataFromQueueFor()
 			
 						
-						#LEFT OFF HERE *1 day*
-						[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
-						In RoverConfig, add more to the #define _LED_SET_TYPES
-						used prev_headlightassy_setting, prev_foglight_setting, etc.
-				
-							Note: Use LedController_NAVI_Tester.ino as a reference.
+
 				
 ------------------------------------------------------------------------------------------------------------------------
 
-
+#LEFT OFF HERE *5 days*
 Then Develop Navigation Code (5 days)
 	PLAN_ROUTE
 	OBJECT_AVOIDANCE
 	
 
 
+------------------------------------------------------------------------------------------------------------------------
 
+	#LEFT OFF HERE *1 day*
+	[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
+	In RoverConfig, add more to the #define _LED_SET_TYPES
+	used prev_headlightassy_setting, prev_foglight_setting, etc.
+
+		Note: Use LedController_NAVI_Tester.ino as a reference.
 
 	
+------------------------------------------------------------------------------------------------------------------------
+
 							
 							
 				
@@ -2158,3 +2135,20 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 						
 							i.e. main_pri_msg_queue = auto_NAVI_to_COMM_data_array[auto_NAVI_to_COMM_data_cnt];
 													
+													
+																	[DONE] Start the framework for commandDirector()
+				[DONE] Set up the framework for createDataFromQueueFor()				
+				[DONE] clearRoverDataPointers()
+				[DONE] setRoverDataPointer()
+	
+				Work on Rover States and Modes		
+						[DONE] Left off at READ_INPUTS for SYSTEM_SLEEPING
+						[DONE] POWER_ON_AND_HW_RESET
+						[DONE] INITIALIZATION
+						[DONE] SYNCHRONIZATION					
+						[DONE] PROCESS_DATA
+						[DONE] CONTROL_OUTPUTS
+						[DONE] CREATE_DATA
+						[DONE] TX_COMMUNICATIONS
+						[DONE] write runModeFunction_default()
+						[DONE] write the code for all the commands in commandDirector()

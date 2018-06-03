@@ -291,9 +291,9 @@ byte gimbal_pan_value = SET_CENTER_PAN;
 byte prev_gimbal_pan_value = SET_CENTER_PAN; //used to hold the previous state, before going to sleep
 byte gimbal_tilt_value = SET_MIDDLE_TILT;
 byte prev_gimbal_tilt_value = SET_MIDDLE_TILT; //used to hold the previous state, before going to sleep
-byte drive_setting = AUTONOMOUS_DRIVE;//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE. 
+byte drive_setting = AUTONOMOUS_DRIVE_SETTING;//can be AUTONOMOUS_DRIVE_SETTING, SEMI_AUTO_DRIVE_SETTING, or MANUAL_DRIVE_SETTING. 
 	//this is independent of the _BTFG_REMOTE_CTRL_SELECTED_ flag (i.e. buffer_remote_ctrl_selected), since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
-byte prev_drive_setting = AUTONOMOUS_DRIVE;//used to hold the previous state, before going to sleep
+byte prev_drive_setting = AUTONOMOUS_DRIVE_SETTING;//used to hold the previous state, before going to sleep
 
 
 
@@ -316,19 +316,7 @@ byte prev_rover_motion = LED_SET_ALL_DEFAULT;//used to hold the previous state, 
 byte rover_error_type = LED_SET_ALL_DEFAULT;
 byte prev_rover_error_type = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 				
-				
 
-
-
-
-//TEMPLATE//byte wheelEncoder_MidLeft_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
-byte wheelEncoder_MidRight_Direction = MOTOR_STOPPED;//used to store values passed in from MAIN
-//TEMPLATE//int wheelEncoder_MidLeft_Speed = 0;//used to store values passed in from MAIN
-int wheelEncoder_MidRight_Speed = 0;//used to store values passed in from MAIN
-//TEMPLATE//int wheelEncoder_MidLeft_Footage = 0;//used to store values passed in from MAIN
-int wheelEncoder_MidRight_Footage = 0;//used to store values passed in from MAIN
-
-	
 	
 
 //Error Origin (used to send out the origin of the error with the error message)
@@ -356,6 +344,8 @@ byte commandFilterOptionsSet5_PC_USB = _BTFG_NONE_;
 byte commandFilterOptionsSet6_PC_USB = _BTFG_NONE_;
 //Command Filter Options for PC_USB: Set 7
 byte commandFilterOptionsSet7_PC_USB = _BTFG_NONE_;
+//Command Filter Options for PC_USB: Set 8
+byte commandFilterOptionsSet8_PC_USB = _BTFG_NONE_;
 //Command Filter Options for MAIN: Set 1
 byte commandFilterOptionsSet1_MAIN = _BTFG_NONE_;
 //Command Filter Options for MAIN: Set 2
@@ -370,7 +360,8 @@ byte commandFilterOptionsSet5_MAIN = _BTFG_NONE_;
 byte commandFilterOptionsSet6_MAIN = _BTFG_NONE_;
 //Command Filter Options for MAIN: Set 7
 byte commandFilterOptionsSet7_MAIN = _BTFG_NONE_;
-
+//Command Filter Options for MAIN: Set 8
+byte commandFilterOptionsSet8_MAIN = _BTFG_NONE_;
 
 
 //Flag(s) - System Controls
@@ -477,9 +468,13 @@ UltrasonicSensor * uSon_SideLeft = new UltrasonicSensor(SIDE_LEFT_ULTSNC_TRIG_PI
 
 int uSonDistanceMeasured[ULTRASONIC_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
 int irDistanceMeasured[INFRARED_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
+
+//Note: Values for wheelEncoder_MidLeft and wheelEncoder_MidRight are received/passed in from MAIN and stored in NAVI for processing (navigation algorithms)
 byte allWheelEncodersDirection[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder direction values from MAIN as well as from NAVI. Note: A MOTOR_STOPPED value is 0 for Direction.
-int allWheelEncodersFootage[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder values from MAIN as well as from NAVI. Note: A 0 value for Footage is 0 for Footage.
 int allWheelEncodersSpeed[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder values from MAIN as well as from NAVI. Note: A 0 value for Speed is 0 for Speed.
+int allWheelEncodersFootage[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder values from MAIN as well as from NAVI. Note: A 0 value for Footage is 0 for Footage.
+
+
 
 
 //------------------From IrDistanceSensorTest
@@ -584,6 +579,8 @@ byte auto_NAVI_to_COMM_data_array[] = {
 byte auto_NAVI_to_CMNC_data_array[] = {
 	CMD_TAG_ENC_STATUS_FRT_LEFT,
 	CMD_TAG_ENC_STATUS_FRT_RIGHT,
+	CMD_TAG_ENC_STATUS_MID_LEFT,
+	CMD_TAG_ENC_STATUS_MID_RIGHT,	
 	CMD_TAG_ENC_STATUS_REAR_LEFT,
 	CMD_TAG_ENC_STATUS_REAR_RIGHT,
 	CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS,
@@ -627,6 +624,7 @@ const static char msg_strg_4[] PROGMEM = "manu";//getMsgString(4)
 const static char msg_strg_5[] PROGMEM = "auto";//getMsgString(5)
 const static char msg_strg_6[] PROGMEM = "on";//getMsgString(6)
 const static char msg_strg_7[] PROGMEM = "off";//getMsgString(7)
+const static char msg_strg_8[] PROGMEM = "unk";//getMsgString(8)
 
 
 
@@ -641,7 +639,8 @@ const char* const msg_str_table[] PROGMEM = {
 	msg_strg_4,
 	msg_strg_5,
 	msg_strg_6,
-	msg_strg_7
+	msg_strg_7,
+	msg_strg_8
 };
 
 
@@ -1397,28 +1396,12 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		
 		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
 		
-		drive_setting = AUTONOMOUS_DRIVE;//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
+		drive_setting = AUTONOMOUS_DRIVE_SETTING;//can be AUTONOMOUS_DRIVE_SETTING, SEMI_AUTO_DRIVE_SETTING, or MANUAL_DRIVE_SETTING
 		
 		//Put LEDs to error pattern
 		universal_led_mode = LED_SET_GENERIC_HEALTH_ERROR;
 		rover_error_type = LED_SET_GENERIC_HEALTH_ERROR;
-				
-		//Create first message here and regenerate later on as needed
-		pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR; //send error out through the PC_USB for debugging
-
-		
-		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
-		{
-			 main_pri_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
-			 
-			 pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
-		}//end if			
 	
-		
-		//set generic_health_error = true
-		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);			
-		//(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)		
-
 		//Assign the error_origin to where the data was generated from
 		if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
 		{
@@ -1448,6 +1431,27 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		{
 			error_origin = ROVERCOMM_NONE;
 		}//end else
+				
+		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+		{
+			 main_pri_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+			 
+			 pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
+		}//end if		
+		
+					
+		//Create first message here and regenerate later on as needed
+		pc_usb_msg_queue = CMD_TAG_GENERIC_HEALTH_STATUS_ERROR; //send error out through the PC_USB for debugging
+		
+		//set generic_health_error = true
+		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_HEALTH_ERROR_);			
+		//(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)		
+
+		//All errors from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB should be redirected to MAIN, and MAIN will redirect it to CMNC
+		//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
+		//Improvement Tip: NAVI can go into error mode if it gets an error message from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB		
+		
+		
 		
 	}//end else if	
 	//Received Generic System Error
@@ -1460,24 +1464,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{	
 	
 		//For now just forward it to MAIN (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.	
-	
-		//Create first message here and regenerate later on as needed
-		
-		pc_usb_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
-		
-		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
-		{
-			main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
-			
-			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
-			
-		}//end if
-				
-		
-		//set generic_system_error = true
-		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_);
-			//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
-		
+
 		//Assign the error_origin to where the data was generated from
 		if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
 		{
@@ -1513,6 +1500,23 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
 		//Improvement Tip: NAVI can go into error mode if it gets an error message from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB		
 		
+		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+		{
+			main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+			
+			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
+			
+		}//end if
+
+		
+		//Create first message here and regenerate later on as needed
+		pc_usb_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;
+		
+		//set generic_system_error = true
+		BooleanBitFlags::setFlagBit(flagSet_Error1, _BTFG_GENERIC_SYSTEM_ERROR_);
+			//(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+
+
 		
 	}//end if	
 	//System Go
@@ -1582,7 +1586,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		motor_speed_value = SET_STOP_SPEED;
 		gimbal_pan_value = SET_CENTER_PAN;
 		gimbal_tilt_value = SET_MIDDLE_TILT;
-		drive_setting = AUTONOMOUS_DRIVE;
+		drive_setting = AUTONOMOUS_DRIVE_SETTING;
 		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
 				
 				
@@ -1631,15 +1635,15 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	
 		if(strcmp( commandData, getMsgString(3) ) == 0)//commandData == "semi"
 		{
-			drive_setting = SEMI_AUTO_DRIVE;		
+			drive_setting = SEMI_AUTO_DRIVE_SETTING;		
 		}//end if
 		else if(strcmp( commandData, getMsgString(4) ) == 0)//commandData == "manu"
 		{
-			drive_setting = MANUAL_DRIVE;
+			drive_setting = MANUAL_DRIVE_SETTING;
 		}//end else if
 		else if(strcmp( commandData, getMsgString(5) ) == 0)////commandData == "auto"
 		{
-			drive_setting = AUTONOMOUS_DRIVE;
+			drive_setting = AUTONOMOUS_DRIVE_SETTING;
 		}//end else if
 		//else do nothing since invalid choice
 		
@@ -1667,7 +1671,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	}//end else if		
 	
 	//Set Mid Right Encoder Status (Status Received from MAIN)
-	else if (commandTag == CMD_TAG_ENC_STATUS_MID_RIGHT &&
+	else if (commandTag == CMD_TAG_ENC_SET_STATUS_MID_RIGHT &&
 			(
 				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMIDRIGHTENCODERSTATUS_) )
 				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMIDRIGHTENCODERSTATUS_))		
@@ -1679,7 +1683,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		
 	}//end else if				
 	//Set Mid Left Encoder Status (Status Received from MAIN)
-	else if (commandTag == CMD_TAG_ENC_STATUS_MID_LEFT &&
+	else if (commandTag == CMD_TAG_ENC_SET_STATUS_MID_LEFT  &&
 			(
 				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMIDLEFTENCODERSTATUS_) )
 				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMIDLEFTENCODERSTATUS_))		
@@ -1718,12 +1722,173 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		}//end else
 		
 	}//end else if					
-
+	//Get Front Left Encoder Status
+	else if (commandTag == CMD_TAG_ENC_STATUS_FRT_LEFT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_FRONTLEFTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_FRONTLEFTENCODERSTATUS_))		
+			)
+		)		 	 
+	{	
+		
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ENC_STATUS_FRT_LEFT;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ENC_STATUS_FRT_LEFT;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+	
+	}//end else if		
+	//Get Front Right Encoder Status
+	else if (commandTag == CMD_TAG_ENC_STATUS_FRT_RIGHT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_FRONTRIGHTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_FRONTRIGHTENCODERSTATUS_))		
+			)
+		)		 	 
+	{	
+		
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ENC_STATUS_FRT_RIGHT;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ENC_STATUS_FRT_RIGHT;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+	
+	}//end else if	
+	//Get Mid Left Encoder Status
+	else if (commandTag == CMD_TAG_ENC_STATUS_MID_LEFT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_))		
+			)
+		)		 	 
+	{	
+		
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ENC_STATUS_MID_LEFT;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ENC_STATUS_MID_LEFT;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+	
+	}//end else if	
+	//Get Mid Right Encoder Status
+	else if (commandTag == CMD_TAG_ENC_STATUS_MID_RIGHT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_))		
+			)
+		)		 	 
+	{	
+		
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ENC_STATUS_MID_RIGHT;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+	
+	}//end else if	
+	//Get Rear Left Encoder Status
+	else if (commandTag == CMD_TAG_ENC_STATUS_REAR_LEFT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_REARLEFTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_REARLEFTENCODERSTATUS_))		
+			)
+		)		 	 
+	{	
+		
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ENC_STATUS_REAR_LEFT;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ENC_STATUS_REAR_LEFT;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+	
+	}//end else if		
+	//Get Rear Right Encoder Status
+	else if (commandTag == CMD_TAG_ENC_STATUS_REAR_RIGHT &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_REARRIGHTENCODERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_REARRIGHTENCODERSTATUS_))		
+			)
+		)		 	 
+	{	
+		
+		//Check to see where the command was from
+		if (originRoverCommType == ROVERCOMM_PC_USB)//If command was from PC_USB
+		{
+			pc_usb_msg_queue = CMD_TAG_ENC_STATUS_REAR_RIGHT;
+		}//end else if		
+		else if (
+			originRoverCommType == ROVERCOMM_CMNC ||
+			originRoverCommType == ROVERCOMM_COMM ||
+			originRoverCommType == ROVERCOMM_MAIN ||
+			originRoverCommType == ROVERCOMM_AUXI
+		)//If command was from CMNC, COMM, MAIN, AUXI
+		{
+			main_pri_msg_queue = CMD_TAG_ENC_STATUS_REAR_RIGHT;
+			pri_comm_cmnc_main_auxi_destination_selection = originRoverCommType;
+		}//end if
+		//else do nothing
+	
+	}//end else if			
 	//Run Motor Calibration
 	else if (commandTag == CMD_TAG_CALIBRATE_MOTOR_CONTROLLER &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_))		
 			)
 		)		 	 
 	{	
@@ -1787,7 +1952,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			//Rover Buffer - Set to Auto Drive - Clear the flag (default)
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
 			//Drive Settings - to Autonomous Drive
-			drive_setting = AUTONOMOUS_DRIVE;
+			drive_setting = AUTONOMOUS_DRIVE_SETTING;
 			
 			_SERIAL_DEBUG_CHANNEL_.println(F("Mtr Cal Cmpltd"));//Send completion status message
 			
@@ -1800,8 +1965,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Run Gimbal Demo
 	else if (commandTag == CMD_TAG_RUN_GIMBAL_DEMO &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_RUNGIMBALDEMO_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RUNGIMBALDEMO_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_RUNGIMBALDEMO_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RUNGIMBALDEMO_))		
 			)
 		)		 	 
 	{	
@@ -1880,8 +2045,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Set Gimbal Pan
 	else if (commandTag == CMD_TAG_SET_PAN_VALUE &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALPAN_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALPAN_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALPAN_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALPAN_))		
 			)
 		)		 	 
 	{	
@@ -1903,8 +2068,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Gimbal Pan Status
 	else if (commandTag == CMD_TAG_GIMBAL_PAN_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_))		
 			)
 		)		 	 
 	{	
@@ -1930,8 +2095,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Set Gimbal Tilt
 	else if (commandTag == CMD_TAG_SET_TILT_VALUE &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALTILT_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALTILT_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALTILT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALTILT_))		
 			)
 		)		 	 
 	{	
@@ -1953,8 +2118,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Gimbal Tilt Status
 	else if (commandTag == CMD_TAG_GIMBAL_TILT_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_))		
 			)
 		)		 	 
 	{	
@@ -1980,8 +2145,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Set Motor Speed
 	else if (commandTag == CMD_TAG_SET_MOTOR_SPEED &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_))		
 			)
 		)		 	 
 	{	
@@ -2003,8 +2168,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Motor Speed Status
 	else if (commandTag == CMD_TAG_MOTOR_SPEED_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_))		
 			)
 		)		 	 
 	{	
@@ -2030,8 +2195,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Set Motor Turn
 	else if (commandTag == CMD_TAG_SET_MOTOR_TURN &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_))		
 			)
 		)		 	 
 	{	
@@ -2054,8 +2219,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Motor Turn Status
 	else if (commandTag == CMD_TAG_MOTOR_TURN_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_))		
 			)
 		)		 	 
 	{	
@@ -2099,8 +2264,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Latitude
 	else if (commandTag == CMD_TAG_LATITUDE_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_))		
 			)
 		)		 	 
 	{	
@@ -2126,8 +2291,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Longitude
 	else if (commandTag == CMD_TAG_LONGITUDE_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_))		
 			)
 		)		 	 
 	{	
@@ -2153,8 +2318,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get GPS Fix Quality
 	else if (commandTag == CMD_TAG_GPS_FIX_QUALITY_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_))		
 			)
 		)		 	 
 	{	
@@ -2180,8 +2345,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get GPS Satellites Tracked
 	else if (commandTag == CMD_TAG_GPS_SATELLITES_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_))		
 			)
 		)		 	 
 	{	
@@ -2208,8 +2373,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Set Latitude Destination
 	else if (commandTag == CMD_TAG_SET_LATITUDE_DEST &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLATITUDEDESTINATION_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLATITUDEDESTINATION_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLATITUDEDESTINATION_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLATITUDEDESTINATION_))		
 			)
 		)		 	 
 	{	
@@ -2231,8 +2396,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Set Longitude Destination
 	else if (commandTag == CMD_TAG_SET_LONGITUDE_DEST &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLONGITUDEDESTINATION_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLONGITUDEDESTINATION_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLONGITUDEDESTINATION_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLONGITUDEDESTINATION_))		
 			)
 		)		 	 
 	{	
@@ -2254,8 +2419,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Ultrasonic Distance Forward Left
 	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_FWD_LT_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_))		
 			)
 		)		 	 
 	{	
@@ -2282,8 +2447,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Ultrasonic Distance Forward Center
 	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_FWD_CTR_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_))		
 			)
 		)		 	 
 	{	
@@ -2310,8 +2475,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Ultrasonic Distance Forward Right	
 	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_FWD_RT_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_))		
 			)
 		)		 	 
 	{	
@@ -2339,8 +2504,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Ultrasonic Distance Side Right
 	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_SIDE_RT_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_))		
 			)
 		)		 	 
 	{	
@@ -2367,8 +2532,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Ultrasonic Distance Side Left
 	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_SIDE_LT_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_))		
 			)
 		)		 	 
 	{	
@@ -2394,8 +2559,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get Ultrasonic Distance Rear Center
 	else if (commandTag == CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_))		
 			)
 		)		 	 
 	{	
@@ -2574,8 +2739,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	 //Invalid - DEBUG
 	else if (
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_INVALID_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_INVALID_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))		
 			)	
 		)
 	{
@@ -2704,35 +2869,95 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 		*/
 		
 		//Externally Received Commands	
-//LEFT OFF HERE
 		case CMD_TAG_SW_IS_RESETTING_ACK:
-//WRITE ME LATER		
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SW_IS_RESETTING_ACK, getMsgString(0), createdCommand);
 			break;
 		case CMD_TAG_GENERIC_HEALTH_STATUS_ERROR:
-//WRITE ME LATER		
+			RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_HEALTH_STATUS_ERROR, getMsgString(2), createdCommand);
 			break;	
 		case CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS:
-//WRITE ME LATER		
+			RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;	
 		case CMD_TAG_SYSTEM_IS_SLEEPING_ACK:
-//WRITE ME LATER		
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYSTEM_IS_SLEEPING_ACK, getMsgString(0), createdCommand);
 			break;	
 		case CMD_TAG_DRIVE_SETTING_STATUS:
-//WRITE ME LATER
-			break;	
-		case CMD_TAG_SET_DRIVE_SETTING:
-//WRITE ME LATER		
-			break;	
-		case CMD_TAG_MTR_PWR_STATUS:
-//WRITE ME LATER		
-			break;	
-		case CMD_TAG_ENC_STATUS_MID_RIGHT:
-//WRITE ME LATER		
-			break;	
+			switch(drive_setting)
+			{
+				case SEMI_AUTO_DRIVE_SETTING:
+					RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DRIVE_SETTING_STATUS, getMsgString(3), createdCommand);
+				break;
+				case MANUAL_DRIVE_SETTING:
+					RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DRIVE_SETTING_STATUS, getMsgString(4), createdCommand);
+				break;		
+				case AUTONOMOUS_DRIVE_SETTING:
+					RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DRIVE_SETTING_STATUS, getMsgString(5), createdCommand);
+				break;
+				default:
+					RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DRIVE_SETTING_STATUS, getMsgString(8), createdCommand);	
+				break;
+			}//end switch
+			break;			
+		case CMD_TAG_ENC_STATUS_FRT_LEFT:
+
+				//Construct the message for direction, distance, and speed
+				RoverMessagePackager::packEncoderStatus(allWheelEncodersDirection[WHEEL_ENC_FRONT_LEFT], allWheelEncodersSpeed[WHEEL_ENC_FRONT_LEFT], allWheelEncodersFootage[WHEEL_ENC_FRONT_LEFT], commandDataCharArray, commandDataCharArraySize);
+				
+				//Create the rover command message with the packaged encoder status
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_FRT_LEFT, commandDataCharArray, createdCommand);
+				
+			break;				
+		case CMD_TAG_ENC_STATUS_FRT_RIGHT:
+		
+				//Construct the message for direction, distance, and speed
+				RoverMessagePackager::packEncoderStatus(allWheelEncodersDirection[WHEEL_ENC_FRONT_RIGHT], allWheelEncodersSpeed[WHEEL_ENC_FRONT_RIGHT], allWheelEncodersFootage[WHEEL_ENC_FRONT_RIGHT], commandDataCharArray, commandDataCharArraySize);
+				
+				//Create the rover command message with the packaged encoder status
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_FRT_RIGHT, commandDataCharArray, createdCommand);
+
+			break;
 		case CMD_TAG_ENC_STATUS_MID_LEFT:
-//WRITE ME LATER		
+		
+				//Note: Although this value can be requested directly from MAIIN (as this encoder is attached to the MAIN Arduino, it can be requested from NAVI as well for uniformity)
+
+				//Construct the message for direction, distance, and speed
+				RoverMessagePackager::packEncoderStatus(allWheelEncodersDirection[WHEEL_ENC_MID_LEFT], allWheelEncodersSpeed[WHEEL_ENC_MID_LEFT], allWheelEncodersFootage[WHEEL_ENC_MID_LEFT], commandDataCharArray, commandDataCharArraySize);
+				
+				//Create the rover command message with the packaged encoder status
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_LEFT, commandDataCharArray, createdCommand);
+				
+			break;				
+		case CMD_TAG_ENC_STATUS_MID_RIGHT:
+		
+				//Note: Although this value can be requested directly from MAIIN (as this encoder is attached to the MAIN Arduino, it can be requested from NAVI as well for uniformity)
+
+				//Construct the message for direction, distance, and speed
+				RoverMessagePackager::packEncoderStatus(allWheelEncodersDirection[WHEEL_ENC_MID_RIGHT], allWheelEncodersSpeed[WHEEL_ENC_MID_RIGHT], allWheelEncodersFootage[WHEEL_ENC_MID_RIGHT], commandDataCharArray, commandDataCharArraySize);
+				
+				//Create the rover command message with the packaged encoder status
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_RIGHT, commandDataCharArray, createdCommand);
+				
 			break;	
+		case CMD_TAG_ENC_STATUS_REAR_LEFT:
+
+				//Construct the message for direction, distance, and speed
+				RoverMessagePackager::packEncoderStatus(allWheelEncodersDirection[WHEEL_ENC_REAR_LEFT], allWheelEncodersSpeed[WHEEL_ENC_REAR_LEFT], allWheelEncodersFootage[WHEEL_ENC_REAR_LEFT], commandDataCharArray, commandDataCharArraySize);
+				
+				//Create the rover command message with the packaged encoder status
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_MID_LEFT, commandDataCharArray, createdCommand);
+				
+			break;				
+		case CMD_TAG_ENC_STATUS_REAR_RIGHT:
+		
+				//Construct the message for direction, distance, and speed
+				RoverMessagePackager::packEncoderStatus(allWheelEncodersDirection[WHEEL_ENC_REAR_RIGHT], allWheelEncodersSpeed[WHEEL_ENC_REAR_RIGHT], allWheelEncodersFootage[WHEEL_ENC_REAR_RIGHT], commandDataCharArray, commandDataCharArraySize);
+				
+				//Create the rover command message with the packaged encoder status
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ENC_STATUS_REAR_RIGHT, commandDataCharArray, createdCommand);
+
+			break;
 		case CMD_TAG_GIMBAL_PAN_STATUS:
+//LEFT OFF HERE		
 //WRITE ME LATER		
 			break;	
 		case CMD_TAG_GIMBAL_TILT_STATUS:
@@ -2805,13 +3030,13 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 				//else do nothing. CMD_TAG_INVALID_STATE_OR_MODE_ERROR_STATUS should not be sent to other Arduino channels other than ROVERCOMM_PC_USB and ROVERCOMM_CMNC (through MAIN, then COMM) as other Arduinos are not currently programmed to handle that type of message.
 			break;
 		case CMD_TAG_SYNC_ERROR_STATUS:
-			//WRITE ME LATER		
+			RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SYNC_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;
 		case CMD_TAG_SLEEP_ERROR_STATUS:
-			//WRITE ME LATER		
+			RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SLEEP_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;			
 		case CMD_TAG_SW_RESET_ERROR_STATUS:
-			//WRiTE ME LATER
+			RoverCommandCreator::createCmd(error_origin, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_SW_RESET_ERROR_STATUS, getMsgString(2), createdCommand);
 			break;				
 		default:
 				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_INVALID_CMD, getMsgString(1), createdCommand);//output invalid command
@@ -3169,7 +3394,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 							//Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to overrride this if desired, and set it to manual)
 							BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
 											
-							drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_ERROR and the rover should have control
+							drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_ERROR and the rover should have control
 							
 							error_origin = ROVERCOMM_NAVI;
 							main_pri_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
@@ -3239,7 +3464,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			//turn buffer select to non-remote (local) control
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
 			
-			drive_setting = AUTONOMOUS_DRIVE;//since it's at SYNCHRONIZATION and the rover should have control				
+			drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYNCHRONIZATION and the rover should have control				
 				
 			
 			
@@ -4085,7 +4310,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			//turn buffer select to non-remote (local) control
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
 				
-			drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_SLEEPING and the rover should have control
+			drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_SLEEPING and the rover should have control
 				
 
 			//Control Buffer Select
@@ -4252,7 +4477,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				prev_motor_speed_value = SET_STOP_SPEED;
 				prev_gimbal_pan_value = SET_CENTER_PAN;
 				prev_gimbal_tilt_value = SET_MIDDLE_TILT;
-				prev_drive_setting = AUTONOMOUS_DRIVE;
+				prev_drive_setting = AUTONOMOUS_DRIVE_SETTING;
 				BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);//prev_buffer_remote_ctrl_selected = false
 				prev_universal_led_mode = LED_SET_ALL_DEFAULT;
 				prev_hazard_light_state = LED_SET_ALL_DEFAULT;
@@ -4364,7 +4589,7 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//turn buffer select to non-remote (local) control
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
 				
-			drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_WAKING and the rover should have control
+			drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_WAKING and the rover should have control
 							
 
 			//Control Buffer Select
@@ -4473,7 +4698,7 @@ void runModeFunction_SW_RESETTING(byte currentState)
 			//turn buffer select to non-remote (local) control
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
 
-			drive_setting = AUTONOMOUS_DRIVE;//since it's at SW_RESETTING and the rover should have control
+			drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SW_RESETTING and the rover should have control
 				
 			//Set motor and gimbal to default values
 			motor_turn_value = SET_GO_STRAIGHT;
@@ -4710,32 +4935,32 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMIDLEFTENCODERSTATUS_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETHEADING_);
 			
-			//Flag Set 3
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_);
 			//Flag Set 4
-			//None
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_);
 			//Flag Set 5
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet5_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_);
+			//None
 			//Flag Set 6
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_);
 			//Flag Set 7
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_);
+			//Flag Set 8
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_);
 			
 		
 			//Transmit data and/or execute command
@@ -5412,7 +5637,7 @@ void runModeFunction_default()
 	//Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to override this if desired, and set it to manual)
 	BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
 					
-	drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_ERROR and the rover should have control
+	drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_ERROR and the rover should have control
 		
 	
 		

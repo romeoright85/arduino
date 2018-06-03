@@ -10,9 +10,9 @@ Note: Once the system goes into the state, SYSTEM_ERROR, it can only be fixed wi
 
 #define NAVI_SYNC_TIMEOUT_VALUE ??
 #define CONCURRENT_TRANSMISSION_DELAY		??//delay for about 1-5ms or so between potentially sending messages out again to the same arduino
-#define AUTONOMOUS_DRIVE	??
-#define SEMI_AUTO_DRIVE	??
-#define MANUAL_DRIVE		??
+#define AUTONOMOUS_DRIVE_SETTING	??
+#define SEMI_AUTO_DRIVE_SETTING	??
+#define MANUAL_DRIVE_SETTING		??
 
 
 //LED Patterns
@@ -123,8 +123,8 @@ At POR (defaults):
 	prev_gimbal_tilt_value = SET_MIDDLE_TILT //used to hold the previous state, before going to sleep
 	
 	
-	drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
-	prev_drive_setting = AUTONOMOUS_DRIVE//used to hold the previous state, before going to sleep
+	drive_setting = AUTONOMOUS_DRIVE_SETTING//can be AUTONOMOUS_DRIVE_SETTING, SEMI_AUTO_DRIVE_SETTING, or MANUAL_DRIVE_SETTING
+	prev_drive_setting = AUTONOMOUS_DRIVE_SETTING//used to hold the previous state, before going to sleep
 	
 	buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
 	
@@ -657,7 +657,7 @@ At POR (defaults):
 					motor_speed_value = SET_STOP_SPEED
 					gimbal_pan_value = SET_CENTER_PAN
 					gimbal_tilt_value = SET_MIDDLE_TILT
-					drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
+					drive_setting = AUTONOMOUS_DRIVE_SETTING//can be AUTONOMOUS_DRIVE_SETTING, SEMI_AUTO_DRIVE_SETTING, or MANUAL_DRIVE_SETTING
 					buffer_remote_ctrl_selected = false
 					//Put LEDs to error pattern
 					headlightassy_setting = LIGHTS_SYSTEM_ERROR
@@ -889,13 +889,13 @@ At POR (defaults):
 		SYNCHRONIZATION	
 			do nothing			
 		NORMAL_OPERATIONS			
-			if drive_setting == AUTONOMOUS_DRIVE
+			if drive_setting == AUTONOMOUS_DRIVE_SETTING
 				buffer_remote_ctrl_selected = false //the rover will be purely operated autonomously
 				Calculate where the rover should go based on waypoint (i.e. as if there were no objects in its way)
 				Calculate the corresponding LED patterns				
 			else
 				buffer_remote_ctrl_selected = true //the rover is either fully manual, or semi-auto
-				//Note: No need to plan any route for SEMI_AUTO_DRIVE or MANUAL_DRIVE
+				//Note: No need to plan any route for SEMI_AUTO_DRIVE_SETTING or MANUAL_DRIVE_SETTING
 			end if
 			
 			Unless overridden,
@@ -920,14 +920,14 @@ At POR (defaults):
 		SYNCHRONIZATION	
 			do nothing
 		NORMAL_OPERATIONS			
-			if drive_setting != MANUAL_DRIVE
+			if drive_setting != MANUAL_DRIVE_SETTING
 				detect objects
 				if there is an object in the path
-					buffer_remote_ctrl_selected = false//overrides any buffer_remote_ctrl_selected = true from SEMI_AUTO_DRIVE, or stays true if was in AUTONOMOUS_DRIVE
+					buffer_remote_ctrl_selected = false//overrides any buffer_remote_ctrl_selected = true from SEMI_AUTO_DRIVE_SETTING, or stays true if was in AUTONOMOUS_DRIVE_SETTING
 					if there are objects in the way, calculcate a different path to navigate the rover around any objects
 					calculate and override the corresponding LED patterns
 				end if
-				//Else, no need to calculate a different path when in MANUAL_DRIVE or when there are no objects in the way
+				//Else, no need to calculate a different path when in MANUAL_DRIVE_SETTING or when there are no objects in the way
 			end if	
 
 
@@ -956,7 +956,7 @@ At POR (defaults):
 						
 				buffer_remote_ctrl_selected = false //turn buffer select to non-remote (local) control
 					
-				drive_setting = AUTONOMOUS_DRIVE;//since it's at SYNCHRONIZATION and the rover should have control		
+				drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYNCHRONIZATION and the rover should have control		
 				
 				//Set motor and gimbal to default values
 				motor_turn_value = SET_GO_STRAIGHT				
@@ -1015,7 +1015,7 @@ At POR (defaults):
 						
 				buffer_remote_ctrl_selected = false //turn buffer select to non-remote (local) control
 					
-				drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_SLEEPING and the rover should have control							
+				drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_SLEEPING and the rover should have control							
 				
 				//Set motor and gimbal to default values
 				motor_turn_value = SET_GO_STRAIGHT				
@@ -1050,7 +1050,7 @@ At POR (defaults):
 						
 				buffer_remote_ctrl_selected = false //turn buffer select to non-remote (local) control
 					
-				drive_setting = AUTONOMOUS_DRIVE;//since it's at SYSTEM_WAKING and the rover should have control
+				drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_WAKING and the rover should have control
 					
 				//Set motor and gimbal to default values
 				motor_turn_value = SET_GO_STRAIGHT				
@@ -1086,7 +1086,7 @@ At POR (defaults):
 						
 				buffer_remote_ctrl_selected = false //turn buffer select to non-remote (local) control
 					
-				drive_setting = AUTONOMOUS_DRIVE;//since it's at SW_RESETTING and the rover should have control
+				drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SW_RESETTING and the rover should have control
 
 				//Set motor and gimbal to default values
 				motor_turn_value = SET_GO_STRAIGHT				
@@ -1778,7 +1778,7 @@ At POR (defaults):
 				prev_motor_speed_value = SET_STOP_SPEED
 				prev_gimbal_pan_value = SET_CENTER_PAN
 				prev_gimbal_tilt_value = SET_MIDDLE_TILT
-				prev_drive_setting = AUTONOMOUS_DRIVE
+				prev_drive_setting = AUTONOMOUS_DRIVE_SETTING
 				prev_buffer_remote_ctrl_selected = false
 				prev_headlightassy_setting = LED_SET_ALL_DEFAULT
 				prev_foglight_setting = LED_SET_ALL_DEFAULT
@@ -1998,7 +1998,7 @@ Conflicting Functions Ordered By Priority
 		motor_speed_value = SET_STOP_SPEED
 		gimbal_pan_value = SET_CENTER_PAN
 		gimbal_tilt_value = SET_MIDDLE_TILT
-		drive_setting = AUTONOMOUS_DRIVE//can be AUTONOMOUS_DRIVE, SEMI_AUTO_DRIVE, or MANUAL_DRIVE
+		drive_setting = AUTONOMOUS_DRIVE_SETTING//can be AUTONOMOUS_DRIVE_SETTING, SEMI_AUTO_DRIVE_SETTING, or MANUAL_DRIVE_SETTING
 		buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
 		
 		//Put LEDs to error pattern
@@ -2006,20 +2006,6 @@ Conflicting Functions Ordered By Priority
 		rover_error_type = LED_SET_GENERIC_HEALTH_ERROR;				
 
 
-		//Create first message here and regenerate later on as needed
-		pc_usb_msg_queue = GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
-						
-		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
-		{
-			main_pri_msg_queue = GENERIC_HEALTH_STATUS_ERROR;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
-			
-			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
-			
-		}//end if
-		
-		set generic_health_error = true
-			(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)			
-		
 		//Assign the error_origin to where the data was generated from
 		If command was from CMNC
 			Set error_origin = ROVERCOMM_CMNC
@@ -2037,27 +2023,33 @@ Conflicting Functions Ordered By Priority
 			Set error_origin = ROVERCOMM_NONE							
 		end if
 		
-	Received Generic System Error
-
-		//For now just forward it to MAIN (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.	
-		
-		//Create first message here and regenerate later on as needed
-		
-		pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
-		
 		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 		{
-			main_pri_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+			main_pri_msg_queue = GENERIC_HEALTH_STATUS_ERROR;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
 			
 			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 			
 		}//end if
-				
 		
-		generic_system_error = true
-		(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+		//Create first message here and regenerate later on as needed
+		pc_usb_msg_queue = GENERIC_HEALTH_STATUS_ERROR //send error out through the PC_USB for debugging
 		
 		
+		set generic_health_error = true
+			(Note: the generic_health_error flag can only be cleared with a sw reset or hw reset)			
+		
+		
+		//All errors from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB should be redirected to MAIN, and MAIN will redirect it to CMNC
+		//Then CMNC will talk to COMM where it can then allow hw and sw resets, etc.
+		Improvement Tip: NAVI can go into error mode if it gets an error message from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB
+		
+		
+		
+	Received Generic System Error
+
+		//For now just forward it to MAIN (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.	
+		
+	
 		//Assign the error_origin to where the data was generated from
 		If command was from CMNC
 			Set error_origin = ROVERCOMM_CMNC
@@ -2074,6 +2066,24 @@ Conflicting Functions Ordered By Priority
 		else
 			Set error_origin = ROVERCOMM_NONE							
 		end if		
+		
+			if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+		{
+			main_pri_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
+			
+			pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
+			
+		}//end if
+				
+			
+		//Create first message here and regenerate later on as needed
+		
+		pc_usb_msg_queue = GENERIC_SYSTEM_ERROR_STATUS
+	
+	
+		generic_system_error = true
+		(Note: the generic_system_error flag can only be cleared with a sw reset or hw reset)
+		
 		
 		
 		//All errors from MAIN, NAVI, AUXI, COMM, CMNC, PC_USB should be redirected to MAIN, and MAIN will redirect it to CMNC
@@ -2106,7 +2116,7 @@ Conflicting Functions Ordered By Priority
 		motor_speed_value = SET_STOP_SPEED
 		gimbal_pan_value = SET_CENTER_PAN
 		gimbal_tilt_value = SET_MIDDLE_TILT
-		drive_setting = AUTONOMOUS_DRIVE
+		drive_setting = AUTONOMOUS_DRIVE_SETTING
 		buffer_remote_ctrl_selected = false
 		
 		
@@ -2160,13 +2170,13 @@ Conflicting Functions Ordered By Priority
 		end if		
 		
 	Set Drive Setting
-		Controls the buffer select through the drive_setting variable
+		Sets the drive setting. Then depending on objects detected and drive setting, the the buffer select will alter states internally.
 		if manual requested
-			drive_setting = MANUAL_DRIVE
+			drive_setting = MANUAL_DRIVE_SETTING
 		else if semi-auto requested
-			drive_setting = SEMI_AUTO_DRIVE
+			drive_setting = SEMI_AUTO_DRIVE_SETTING
 		else//auto requested
-			drive_setting = AUTONOMOUS_DRIVE		
+			drive_setting = AUTONOMOUS_DRIVE_SETTING		
 			
 	Set Motor Power Status (Status Received from MAIN)
 		Process motor power save status
@@ -2179,8 +2189,131 @@ Conflicting Functions Ordered By Priority
 			Set values for wheelEncoder_MidLeft_Direction, wheelEncoder_MidLeft_Speed, wheelEncoder_MidLeft_Footage
 	Set Heading (Status Received from AUXI)
 		Saves the heading value from AUXI's message	
-
+	Get Front Left Encoder Status
+		//will create the data in the CREATE_DATA state
+		main_pri_msg_queue = ENC_STATUS_MID_LEFT//Send status back to the requester
+				
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if		
+	
+	Get Front Right Encoder Status
+		//will create the data in the CREATE_DATA state
+		main_pri_msg_queue = ENC_STATUS_MID_RIGHT//Send status back to the requester
+				
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if			
+	Get Mid Left Encoder Status
+		//Note: Although this value can be requested directly from MAIIN (as this encoder is attached to the MAIN Arduino, it can be requested from NAVI as well for uniformity)
 		
+		//will create the data in the CREATE_DATA state
+		main_pri_msg_queue = ENC_STATUS_MID_LEFT//Send status back to the requester
+				
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if				
+
+	Get Mid Right Encoder Status
+		//Note: Although this value can be requested directly from MAIIN (as this encoder is attached to the MAIN Arduino, it can be requested from NAVI as well for uniformity)
+
+		//will create the data in the CREATE_DATA state
+		main_pri_msg_queue = ENC_STATUS_MID_RIGHT//Send status back to the requester
+				
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if	
+
+	Get Rear Left Encoder Status
+	
+		//will create the data in the CREATE_DATA state
+		main_pri_msg_queue = ENC_STATUS_MID_LEFT//Send status back to the requester
+				
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if	
+			
+	Get Rear Right Encoder Status
+		
+		//will create the data in the CREATE_DATA state
+		main_pri_msg_queue = ENC_STATUS_MID_RIGHT//Send status back to the requester
+				
+		If command was from CMNC
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC		
+		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
+				Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI			
+		else if command was from AUXI
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+		else if command was from MAIN
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
+		else if command was from COMM
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_COMM							
+		else if command was from PC_USB
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_PC_USB							
+		else
+			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
+		end if				
+			
 	Run Motor Calibration
 		main_pri_msg_queue = CMD_TAG_CALIBRATE_MOTOR_CONTROLLER//Send status back to the requester
 		
@@ -2206,7 +2339,7 @@ Conflicting Functions Ordered By Priority
 		Note:
 			Before running Motor Calibration:
 			1) Motor Power Control Enable should be sent first to MAIN or the HW switch for the Motor Power Control Enable should be turned on
-			2) Set Drive Setting to AUTONOMOUS_DRIVE so the servo signals to the motor controller are coming from NAVI and not the remote controller
+			2) Set Drive Setting to AUTONOMOUS_DRIVE_SETTING so the servo signals to the motor controller are coming from NAVI and not the remote controller
 		*/
 		//IMPROVEMENT TIP, maybe NAVI and request the motor to turn on by AUXI and maybe even get an acknowledgement. But this requires a lot of code (i.e. closed loop feedbacK). So for now skip it to keep it basic.
 	Run Gimbal Demo
@@ -2233,13 +2366,15 @@ Conflicting Functions Ordered By Priority
 		/*
 		Note:
 			Before running the Gimbal Demo:
-			1) Set Drive Setting to AUTONOMOUS_DRIVE so the servo signals to the gimbal are coming from NAVI and not the remote controller
+			1) Set Drive Setting to AUTONOMOUS_DRIVE_SETTING so the servo signals to the gimbal are coming from NAVI and not the remote controller
 		*/
 
 		
 	Set Gimbal Pan
 		Set gimbal_pan
 	Get Gimbal Pan Status
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = GIMBAL_PAN_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2262,6 +2397,8 @@ Conflicting Functions Ordered By Priority
 	Set Gimbal Tilt
 		Set gimbal_tilt
 	Get Gimbal Tilt Status
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = GIMBAL_TILT_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2282,6 +2419,8 @@ Conflicting Functions Ordered By Priority
 	Set Motor Speed
 		Set motor_speed
 	Get Motor Speed Status
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = MOTOR_SPEED_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2302,6 +2441,8 @@ Conflicting Functions Ordered By Priority
 	Set Motor Turn
 		Set motor_turn
 	Get Motor Turn Status
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = MOTOR_TURN_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2336,6 +2477,8 @@ Conflicting Functions Ordered By Priority
 		
 		
 	Get Latitude
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = LATITUDE_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2356,6 +2499,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get Longitude
+		
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = LONGITUDE_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2378,6 +2523,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get GPS Fix Quality
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = GPS_FIX_QUALITY_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2398,6 +2545,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get GPS Satellites Tracked
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = GPS_SATELLITES_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2422,6 +2571,8 @@ Conflicting Functions Ordered By Priority
 	Set Longitude Destination
 		Set longitude
 	Get Ultrasonic Distance Forward Left
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = ULTSNC_DISTANCE_FWD_LT_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2442,6 +2593,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get Ultrasonic Distance Forward Center
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = ULTSNC_DISTANCE_FWD_CTR_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2462,6 +2615,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get Ultrasonic Distance Forward Right	
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = ULTSNC_DISTANCE_FWD_RT_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2482,6 +2637,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get Ultrasonic Distance Side Right
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = ULTSNC_DISTANCE_SIDE_RT_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2502,6 +2659,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get Ultrasonic Distance Side Left
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = ULTSNC_DISTANCE_SIDE_LT_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2522,6 +2681,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get Ultrasonic Distance Rear Center
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = ULTSNC_DISTANCE_REAR_CTR_STATUS//Send status back to the requester
 		
 		If command was from CMNC
@@ -2541,6 +2702,8 @@ Conflicting Functions Ordered By Priority
 		end if
 
 	Get IR Distance Forward Center Status
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = IR_DISTANCE_FWD_CTR_STATUS
 		
 		If command was from CMNC
@@ -2561,6 +2724,8 @@ Conflicting Functions Ordered By Priority
 
 			
 	Get IR Distance Side Right Status
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = IR_DISTANCE_SIDE_RT_STATUS
 		
 		If command was from CMNC
@@ -2581,6 +2746,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get IR Distance Side Left Status
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = IR_DISTANCE_SIDE_LT_STATUS
 		
 		If command was from CMNC
@@ -2601,6 +2768,8 @@ Conflicting Functions Ordered By Priority
 
 		
 	Get IR Distance Rear Center Status
+	
+		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = IR_DISTANCE_REAR_CTR_STATUS
 		
 		If command was from CMNC
