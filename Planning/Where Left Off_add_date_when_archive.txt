@@ -127,7 +127,7 @@ Rover_StateMachine_NAVI:
 				
 											
 						#LEFT OFF HERE *1 day*
-						[NEED TO DO] write the code for all the commands in createDataFromQueueFor()
+						[IN PROGRESS] write the code for all the commands in createDataFromQueueFor()
 			
 						
 

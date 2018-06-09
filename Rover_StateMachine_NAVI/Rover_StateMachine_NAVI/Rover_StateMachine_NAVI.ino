@@ -2791,7 +2791,9 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];//used with the RoverMessagePackager
 	byte commandDataCharArraySize;//used with the RoverMessagePackager
 	byte roverCommActualDestination;//holds the actual/final destination of the data
-				
+	
+	char byte2CharTempArray[4] = "";//Used to hold any byte values that are converted to a char array. size for since bytes can be up to three characters long and 1 null terminator.
+	
 	//Note: The queueSelection is which data queue/variable is being used to store the data. Where as the roverCommActualDestination is a value that is encoded in the data itself and sent out as a string. The queueSelection is used to allow this Arduino to send multiple different messages by storing different messages in different queues.
 				
 	//Based on the roverCommType of interest, set which queue and rover data the outgoing message should be based on
@@ -2957,19 +2959,66 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 
 			break;
 		case CMD_TAG_GIMBAL_PAN_STATUS:
-//LEFT OFF HERE		
-//WRITE ME LATER		
+			//Returns the current gimbal pan value
+						
+			if(DataType::byteToChars(gimbal_pan_value, byte2CharTempArray, sizeof(byte2CharTempArray)))//Note: DataType returns 1 if there were no errors
+			{
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GIMBAL_PAN_STATUS, byte2CharTempArray, createdCommand);
+			}//end if
+			else
+			{
+				//return an error due to an error with byte to char array conversion
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GIMBAL_PAN_STATUS, getMsgString(2), createdCommand);
+			}//end else
+				
 			break;	
 		case CMD_TAG_GIMBAL_TILT_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current gimbal tilt value
+						
+			if(DataType::byteToChars(gimbal_tilt_value, byte2CharTempArray, sizeof(byte2CharTempArray)))//Note: DataType returns 1 if there were no errors
+			{
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GIMBAL_TILT_STATUS, byte2CharTempArray, createdCommand);
+			}//end if
+			else
+			{
+				//return an error due to an error with byte to char array conversion
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GIMBAL_TILT_STATUS, getMsgString(2), createdCommand);
+			}//end else
+		
 			break;	
 		case CMD_TAG_MOTOR_SPEED_STATUS:
-//WRITE ME LATER		
+		
+			//Returns the current motor speed value
+						
+			if(DataType::byteToChars(motor_speed_value, byte2CharTempArray, sizeof(byte2CharTempArray)))//Note: DataType returns 1 if there were no errors
+			{
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_SPEED_STATUS, byte2CharTempArray, createdCommand);
+			}//end if
+			else
+			{
+				//return an error due to an error with byte to char array conversion
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_SPEED_STATUS, getMsgString(2), createdCommand);
+			}//end else
+			
 			break;	
 		case CMD_TAG_MOTOR_TURN_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current motor turn value
+						
+			if(DataType::byteToChars(motor_turn_value, byte2CharTempArray, sizeof(byte2CharTempArray)))//Note: DataType returns 1 if there were no errors
+			{
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_TURN_STATUS, byte2CharTempArray, createdCommand);
+			}//end if
+			else
+			{
+				//return an error due to an error with byte to char array conversion
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_TURN_STATUS, getMsgString(2), createdCommand);
+			}//end else			
+		
 			break;	
 		case CMD_TAG_LATITUDE_STATUS:
+//LEFT OFF HERE	
 //WRITE ME LATER		
 			break;	
 		case CMD_TAG_LONGITUDE_STATUS:
