@@ -124,22 +124,6 @@ Rover_StateMachine_NAVI:
 			[IN PROGRESS] Set up the framework for Rover_StateMachine_NAVI
 				
 		
-				
-											
-						#LEFT OFF HERE *1 day*
-						[IN PROGRESS] write the code for all the commands in createDataFromQueueFor()
-			
-						
-
-				
-------------------------------------------------------------------------------------------------------------------------
-
-#LEFT OFF HERE *5 days*
-Then Develop Navigation Code (5 days)
-	PLAN_ROUTE
-	OBJECT_AVOIDANCE
-	
-
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -149,6 +133,16 @@ Then Develop Navigation Code (5 days)
 	used prev_headlightassy_setting, prev_foglight_setting, etc.
 
 		Note: Use LedController_NAVI_Tester.ino as a reference.
+
+		
+						
+------------------------------------------------------------------------------------------------------------------------
+
+#LEFT OFF HERE *5 days*
+Then Develop Navigation Code (5 days)
+	PLAN_ROUTE
+	OBJECT_AVOIDANCE
+	
 
 	
 ------------------------------------------------------------------------------------------------------------------------
@@ -2152,3 +2146,4 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 						[DONE] TX_COMMUNICATIONS
 						[DONE] write runModeFunction_default()
 						[DONE] write the code for all the commands in commandDirector()
+						[DONE] write the code for all the commands in createDataFromQueueFor()

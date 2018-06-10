@@ -990,9 +990,9 @@
 		#define  INFRARED_SENSORS_ARRAY_SIZE 4//number of IR distance sensors
 		//IR Distance Sensor Names
 		#define INFRARED_SENSOR_FWD_CENTER						0
-		#define INFRARED_SENSOR_FWD_SIDE_RIGHT			1
+		#define INFRARED_SENSOR_SIDE_RIGHT			1
 		#define INFRARED_SENSOR_REAR_CENTER				2
-		#define INFRARED_SENSOR_FWD_SIDE_LEFT		3
+		#define INFRARED_SENSOR_SIDE_LEFT		3
 	#endif
 	
 	//definitions for ArrayFunctions

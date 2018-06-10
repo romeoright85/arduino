@@ -466,8 +466,8 @@ UltrasonicSensor * uSon_RearCenter = new UltrasonicSensor(REAR_CENTER_ULTSNC_TRI
 UltrasonicSensor * uSon_SideLeft = new UltrasonicSensor(SIDE_LEFT_ULTSNC_TRIG_PIN, SIDE_LEFT_ULTSNC_ECHO_PIN);
 
 
-int uSonDistanceMeasured[ULTRASONIC_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
-int irDistanceMeasured[INFRARED_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero
+int uSonDistanceMeasured[ULTRASONIC_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. See "Ultrasonic Sensor Names" in RoverConfig.h.
+int irDistanceMeasured[INFRARED_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. See "IR Distance Sensor Names" in RoverConfig.h.
 
 //Note: Values for wheelEncoder_MidLeft and wheelEncoder_MidRight are received/passed in from MAIN and stored in NAVI for processing (navigation algorithms)
 byte allWheelEncodersDirection[ALL_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE] = {0};//initialize all elements to zero. Stores wheel encoder direction values from MAIN as well as from NAVI. Note: A MOTOR_STOPPED value is 0 for Direction.
@@ -713,9 +713,9 @@ void setup() {
 
 	//Assigning object pointers to the IR Distance Sensor Array
 	irDistanceSensors[INFRARED_SENSOR_FWD_CENTER] = irDistanceForwardCenter;
-	irDistanceSensors[INFRARED_SENSOR_FWD_SIDE_RIGHT] = irDistanceSideRight;
+	irDistanceSensors[INFRARED_SENSOR_SIDE_RIGHT] = irDistanceSideRight;
 	irDistanceSensors[INFRARED_SENSOR_REAR_CENTER] = irDistanceRearCenter;
-	irDistanceSensors[INFRARED_SENSOR_FWD_SIDE_LEFT] = irDistanceSideLeft;
+	irDistanceSensors[INFRARED_SENSOR_SIDE_LEFT] = irDistanceSideLeft;
 
 	//Assigning object pointers to the NAVI Wheel Encoders Array
 	naviWheelEncoders[WHEEL_ENC_FRONT_LEFT] = wheelEncoder_FrontLeft;
@@ -2791,8 +2791,14 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 	char commandDataCharArray[_MAX_ROVER_COMMAND_DATA_LEN_];//used with the RoverMessagePackager
 	byte commandDataCharArraySize;//used with the RoverMessagePackager
 	byte roverCommActualDestination;//holds the actual/final destination of the data
-	
-	char byte2CharTempArray[4] = "";//Used to hold any byte values that are converted to a char array. size for since bytes can be up to three characters long and 1 null terminator.
+		
+	char tempCharArray[_MAX_ROVER_COMMAND_DATA_LEN_] = ""; //Used to hold any double or byte values that are converted to a char array. Allow the size to be the max length of the command data.
+	/*
+		Notes:
+			Size for bytes can be up to three characters long and 1 null terminator.
+			Size for doubles was not calculated. But it's estimated to be 6 decimal places (arbitrary chosen) + 1 for the decimal point + 3 max for the integers + 1 for the sign (positive or negative) = 6 + 1 + 3 + 1 = 11
+	*/
+	//DEBUGGING TIP: If for some reason the latitude or longitude double/float data is longer than the "_MAX_ROVER_COMMAND_DATA_LEN_" then it may cause issues. In the interest of time, I didn't calculate the max length at this time but just made a guess.
 	
 	//Note: The queueSelection is which data queue/variable is being used to store the data. Where as the roverCommActualDestination is a value that is encoded in the data itself and sent out as a string. The queueSelection is used to allow this Arduino to send multiple different messages by storing different messages in different queues.
 				
@@ -2961,9 +2967,9 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 		case CMD_TAG_GIMBAL_PAN_STATUS:
 			//Returns the current gimbal pan value
 						
-			if(DataType::byteToChars(gimbal_pan_value, byte2CharTempArray, sizeof(byte2CharTempArray)))//Note: DataType returns 1 if there were no errors
+			if(DataType::byteToChars(gimbal_pan_value, tempCharArray, sizeof(tempCharArray)))//Note: DataType returns 1 if there were no errors
 			{
-				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GIMBAL_PAN_STATUS, byte2CharTempArray, createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GIMBAL_PAN_STATUS, tempCharArray, createdCommand);
 			}//end if
 			else
 			{
@@ -2976,9 +2982,9 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 
 			//Returns the current gimbal tilt value
 						
-			if(DataType::byteToChars(gimbal_tilt_value, byte2CharTempArray, sizeof(byte2CharTempArray)))//Note: DataType returns 1 if there were no errors
+			if(DataType::byteToChars(gimbal_tilt_value, tempCharArray, sizeof(tempCharArray)))//Note: DataType returns 1 if there were no errors
 			{
-				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GIMBAL_TILT_STATUS, byte2CharTempArray, createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GIMBAL_TILT_STATUS, tempCharArray, createdCommand);
 			}//end if
 			else
 			{
@@ -2991,9 +2997,9 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 		
 			//Returns the current motor speed value
 						
-			if(DataType::byteToChars(motor_speed_value, byte2CharTempArray, sizeof(byte2CharTempArray)))//Note: DataType returns 1 if there were no errors
+			if(DataType::byteToChars(motor_speed_value, tempCharArray, sizeof(tempCharArray)))//Note: DataType returns 1 if there were no errors
 			{
-				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_SPEED_STATUS, byte2CharTempArray, createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_SPEED_STATUS, tempCharArray, createdCommand);
 			}//end if
 			else
 			{
@@ -3006,9 +3012,9 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 
 			//Returns the current motor turn value
 						
-			if(DataType::byteToChars(motor_turn_value, byte2CharTempArray, sizeof(byte2CharTempArray)))//Note: DataType returns 1 if there were no errors
+			if(DataType::byteToChars(motor_turn_value, tempCharArray, sizeof(tempCharArray)))//Note: DataType returns 1 if there were no errors
 			{
-				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_TURN_STATUS, byte2CharTempArray, createdCommand);
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_MOTOR_TURN_STATUS, tempCharArray, createdCommand);
 			}//end if
 			else
 			{
@@ -3017,48 +3023,148 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 			}//end else			
 		
 			break;	
+
 		case CMD_TAG_LATITUDE_STATUS:
-//LEFT OFF HERE	
-//WRITE ME LATER		
+		
+			//Returns the current latitude
+			dtostrf(roverNavigation->getLatitude(TYPE_ACTUAL, UNIT_DEGREES), 7, 6, tempCharArray);//the output char array is tempCharArray
+			//Example: Lat/Long in Decimal Degrees - 39.268761, -76.606402 (lower right corner of Riverside Park in South Baltimore)
+			//See NavigationTester_NAVI for more info.
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_LATITUDE_STATUS, tempCharArray, createdCommand);
+	
 			break;	
 		case CMD_TAG_LONGITUDE_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current longitude
+			dtostrf(roverNavigation->getLongitude(TYPE_ACTUAL, UNIT_DEGREES), 7, 6, tempCharArray);//the output char array is tempCharArray
+			//Example: Lat/Long in Decimal Degrees - 39.268761, -76.606402 (lower right corner of Riverside Park in South Baltimore)
+			//See NavigationTester_NAVI for more info.
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_LONGITUDE_STATUS, tempCharArray, createdCommand);
+	
 			break;	
 		case CMD_TAG_GPS_FIX_QUALITY_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current GPS fix quality
+												
+												
+			//Note: The Fix Quality is only one char, but using byteToChars instead of byteToChar to be consistent with all the other code for ease of maintainability.
+			if(DataType::byteToChars(roverGps->getGpsFixQuality(), tempCharArray, sizeof(tempCharArray)))//Note: DataType returns 1 if there were no errors.
+			{
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GPS_FIX_QUALITY_STATUS, tempCharArray, createdCommand);
+			}//end if
+			else
+			{
+				//return an error due to an error with byte to char array conversion
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GPS_FIX_QUALITY_STATUS, getMsgString(2), createdCommand);
+			}//end else			
+				
 			break;	
 		case CMD_TAG_GPS_SATELLITES_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current GPS satellites tracked
+						
+			if(DataType::byteToChars(roverGps->getGpsSatellitesTracked(), tempCharArray, sizeof(tempCharArray)))//Note: DataType returns 1 if there were no errors
+			{
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GPS_SATELLITES_STATUS, tempCharArray, createdCommand);
+			}//end if
+			else
+			{
+				//return an error due to an error with byte to char array conversion
+				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_GPS_SATELLITES_STATUS, getMsgString(2), createdCommand);
+			}//end else		
+		
 			break;	
 		case CMD_TAG_ULTSNC_DISTANCE_FWD_LT_STATUS:
-//WRITE ME LATER		
+		
+			//Returns the current ultrasonic distance for forward left
+			
+			itoa(uSonDistanceMeasured[ULTRASONIC_FWD_LEFT], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ULTSNC_DISTANCE_FWD_LT_STATUS, tempCharArray, createdCommand);
+
 			break;	
 		case CMD_TAG_ULTSNC_DISTANCE_FWD_CTR_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current ultrasonic distance for forward center
+			
+			itoa(uSonDistanceMeasured[ULTRASONIC_FWD_CENTER], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ULTSNC_DISTANCE_FWD_CTR_STATUS, tempCharArray, createdCommand);
+
 			break;	
 		case CMD_TAG_ULTSNC_DISTANCE_FWD_RT_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current ultrasonic distance for forward right
+			
+			itoa(uSonDistanceMeasured[ULTRASONIC_FWD_RIGHT], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ULTSNC_DISTANCE_FWD_RT_STATUS, tempCharArray, createdCommand);
+				
 			break;	
 		case CMD_TAG_ULTSNC_DISTANCE_SIDE_RT_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current ultrasonic distance for side right
+			
+			itoa(uSonDistanceMeasured[ULTRASONIC_SIDE_RIGHT], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ULTSNC_DISTANCE_SIDE_RT_STATUS, tempCharArray, createdCommand);
+			
 			break;	
 		case CMD_TAG_ULTSNC_DISTANCE_SIDE_LT_STATUS:
-//WRITE ME LATER		
+		
+			//Returns the current ultrasonic distance for side left
+			
+			itoa(uSonDistanceMeasured[ULTRASONIC_SIDE_LEFT], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ULTSNC_DISTANCE_SIDE_LT_STATUS, tempCharArray, createdCommand);
+				
 			break;	
 		case CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current ultrasonic distance for rear center
+			
+			itoa(uSonDistanceMeasured[ULTRASONIC_REAR_CENTER], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS, tempCharArray, createdCommand);
+						
 			break;	
 		case CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current IR distance for forward center
+			
+			itoa(irDistanceMeasured[INFRARED_SENSOR_FWD_CENTER], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS, tempCharArray, createdCommand);
+			
 			break;	
 		case CMD_TAG_IR_DISTANCE_SIDE_RT_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current IR distance for side right
+			
+			itoa(irDistanceMeasured[INFRARED_SENSOR_SIDE_RIGHT], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS, tempCharArray, createdCommand);
+					
 			break;	
 		case CMD_TAG_IR_DISTANCE_SIDE_LT_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current IR distance for side left
+			
+			itoa(irDistanceMeasured[INFRARED_SENSOR_SIDE_LEFT], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_IR_DISTANCE_SIDE_LT_STATUS, tempCharArray, createdCommand);
+		
 			break;	
 		case CMD_TAG_IR_DISTANCE_REAR_CTR_STATUS:
-//WRITE ME LATER		
+
+			//Returns the current IR distance for rear center
+			
+			itoa(irDistanceMeasured[INFRARED_SENSOR_REAR_CENTER], tempCharArray, 10);//where 10 is for base 10
+			
+			RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_IR_DISTANCE_REAR_CTR_STATUS, tempCharArray, createdCommand);
+			
 			break;
 		case CMD_TAG_DEBUG_HI_TEST_MSG:
 				RoverCommandCreator::createCmd(ROVERCOMM_NAVI, roverCommActualDestination, CMD_PRI_LVL_0, CMD_TAG_DEBUG_HI_TEST_MSG, commandDataOfInterest, createdCommand);

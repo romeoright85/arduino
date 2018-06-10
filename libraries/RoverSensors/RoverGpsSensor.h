@@ -107,7 +107,7 @@ public:
 	double getGpsLongitude(byte);//(format: DEC_DEG or DMS_NMEA) returns the gps longitude either in decimal degrees when DEC_DEG is passed, else in degrees minutes seconds in NMEA format, when DEC_DEC_NMEA is passed: ddmm.mmmm
 	char * getGpsLongitudeDirection();//returns the gps longitude direction (and the terminal character of the character array)
 	byte getGpsLongitudeDirectionLength();//returns the length of the corresponding string, which should be 2, the character of the direction and the terminating character for the character array
-	byte getGpsFixQuality(); //returns the gps fix quality (gps fix quality types defined in RoverConfig)
+	byte getGpsFixQuality(); //returns the gps fix quality (gps fix quality types defined in RoverConfig). The values range from 0 to 8. Reference: http://www.gpsinformation.org/dale/nmea.htm
 	byte getGpsSatellitesTracked();//returns the number of gps satellites being tracked	
 	char * getGoogleMapsCoordinates();//returns the latitude, longitude, and corresponding directions in Google Maps Friendly Format
 	byte getGoogleMapsCoordinatesLength();//returns the length of the corresponding string
