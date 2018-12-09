@@ -575,6 +575,7 @@ WheelEncoderSensor * naviWheelEncoders[NAVI_WHEEL_ENCODERS_SENSORS_ARRAY_SIZE];/
 
 
 byte auto_NAVI_to_COMM_data_array[] = {
+	NULL // placeholder
 };
 byte auto_NAVI_to_CMNC_data_array[] = {
 	CMD_TAG_ENC_STATUS_FRT_LEFT,
@@ -601,8 +602,10 @@ byte auto_NAVI_to_CMNC_data_array[] = {
 	CMD_TAG_ULTSNC_DISTANCE_REAR_CTR_STATUS
 };
 byte auto_NAVI_to_MAIN_data_array[] = {
+	NULL // placeholder
 };
 byte auto_NAVI_to_AUXI_data_array[] = {
+	NULL // placeholder
 };
 
 

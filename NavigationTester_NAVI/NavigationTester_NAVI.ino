@@ -122,7 +122,7 @@ Distance 61.5m
 (True) Bearing = 302.86 degrees
 
 
-When compared to the rover calculatations is:
+When compared to the rover calculations is:
 
 Distance: 63.2529
 True Bearing: 299.3965
