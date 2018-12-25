@@ -54,13 +54,14 @@ void LedController_NAVI::runLedController()
 			//Sets the delay period (just in case it has changed, like with hazards)
 			this->_counterPtr->setStopValue(this->_periodsForLongDelay);
 		
+			//Pattern Index controlling code
 			//Note: This mode uses the delay counter.
 			if (this->_counterPtr->countReached())
 			{
 				
 				this->_counterPtr->counterReset();//reset the counter
 				
-				
+				//Each time the set delay has been reached (i.e. this->_counterPtr->countReached()) change the pattern index
 				if(this->_universalLEDModePatternIndexCounter <= 4)//It will count from 0 to 4, so it will have 5 elements
 				{
 					//auto-increment pattern index counter. (it will reset the counter automatically once it rolls over)
@@ -71,6 +72,7 @@ void LedController_NAVI::runLedController()
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.			
 			
+			//LED controlling code, based on the current pattern index
 			//Startup Code
 			if( this->_universalLEDModePatternIndexCounter < 4 )//for the first 4 elements in the array (since 4 elements x 500 ms delay (from _periodsForLongDelay) = 2 seconds of LED on time for the LED_STARTUP_MODE)
 			{
@@ -121,6 +123,7 @@ void LedController_NAVI::runLedController()
 			this->_counterPtr->setStopValue(this->_periodsForLongDelay);
 		
 		
+			//Pattern Index controlling code
 			//Note: This mode uses the delay counter.
 			if (this->_counterPtr->countReached())
 			{
@@ -133,6 +136,7 @@ void LedController_NAVI::runLedController()
 			}//end if
 			//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.
 			
+			//LED controlling code, based on the current pattern index			
 			if( this->_universalLEDModePatternIndexCounter == 0)//for the first element in the array
 			{
 								
@@ -152,6 +156,7 @@ void LedController_NAVI::runLedController()
 			//Sets the delay period (just in case it has changed, like with hazards)
 			this->_counterPtr->setStopValue(this->_periodsForLongDelay);
 
+			//Pattern Index controlling code
 			//Note: This mode uses the delay counter.
 			if (this->_counterPtr->countReached())
 			{
@@ -166,7 +171,8 @@ void LedController_NAVI::runLedController()
 			
 			
 			//Depending on which error type, blink certain LEDs and light on (solid) other LEDs
-			
+
+			//LED controlling code, based on the current pattern index			
 			//Blink Code
 			if( this->_universalLEDModePatternIndexCounter == 0)
 			{
@@ -249,7 +255,8 @@ void LedController_NAVI::runLedController()
 				//Do nothing that is recurring.
 				break;		
 			case LED_HAZARDS_ON:
-							
+						
+					//Pattern Index controlling code						
 					//Note: This mode uses the delay counter.
 					if (this->_counterPtr->countReached())
 					{
@@ -262,6 +269,7 @@ void LedController_NAVI::runLedController()
 					}//end if
 					//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.	
 					
+					//LED controlling code, based on the current pattern index
 					//Set the LEDs based on the pattern index counter value
 					switch(this->_hazardLightsPatternIndexCounter)
 					{
@@ -303,7 +311,7 @@ void LedController_NAVI::runLedController()
 			this->_currentUniversalLEDMode == LED_STANDARD_DAY_TIME_MODE ||
 			this->_currentUniversalLEDMode == LED_NIGHT_TIME_MODE ) &&
 			this->_currentHazardLightsState == LED_HAZARDS_OFF
-	)//For these modes, allow Rover Motion to override the LED controls (i.e. turn signal lights, brake lights, etc. on the headlight, side signal, and tail lights)
+	)//For these modes, allow any Rover Motion related LED patterns to override the LED controls (i.e. if the rover is turning and the tail lights were on from hight time, show the turning signals as a priority over the tail lights. Examples of such cases are: turn signal lights, brake lights, etc. on the headlight, side signal, and tail lights)
 
 	{
 
@@ -317,6 +325,7 @@ void LedController_NAVI::runLedController()
 					//Sets the delay period (just in case it has changed, like with hazards)
 					this->_counterPtr->setStopValue(this->_periodsForShortDelay);
 					
+					//Pattern Index controlling code
 					//Note: This mode uses the delay counter.
 					if (this->_counterPtr->countReached())
 					{
@@ -330,7 +339,7 @@ void LedController_NAVI::runLedController()
 					}//end if
 					//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.					
 					
-					
+					//LED controlling code, based on the current pattern index
 					//Set the LEDs based on the pattern index counter value
 					switch(this->_roverMotionPatternIndexCounter)
 					{
@@ -378,7 +387,7 @@ void LedController_NAVI::runLedController()
 							
 							//Right Tail Light - Turn Off
 							//Do Nothing
-							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 							
 							break;
 						case 1:
@@ -425,7 +434,7 @@ void LedController_NAVI::runLedController()
 							
 							//Right Tail Light - Turn Off
 							//Do Nothing
-							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 							
 							break;
 						case 2:
@@ -472,7 +481,7 @@ void LedController_NAVI::runLedController()
 							
 							//Right Tail Light - Turn Off
 							//Do Nothing
-							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 							
 							break;	
 						case 3:
@@ -519,7 +528,7 @@ void LedController_NAVI::runLedController()
 							
 							//Right Tail Light - Turn Off
 							//Do Nothing
-							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 							
 							break;
 						case 4:
@@ -566,7 +575,7 @@ void LedController_NAVI::runLedController()
 							
 							//Right Tail Light - Turn Off
 							//Do Nothing
-							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 							
 							break;
 						case 5:
@@ -613,7 +622,7 @@ void LedController_NAVI::runLedController()
 							
 							//Right Tail Light - Turn Off
 							//Do Nothing
-							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 							
 							break;
 						case 6:
@@ -660,7 +669,7 @@ void LedController_NAVI::runLedController()
 							
 							//Right Tail Light - Turn Off
 							//Do Nothing
-							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 							
 							break;							
 						case 7:
@@ -707,7 +716,7 @@ void LedController_NAVI::runLedController()
 							
 							//Right Tail Light - Turn Off
 							//Do Nothing
-							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The right tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 							
 							break;							
 						default:
@@ -721,6 +730,7 @@ void LedController_NAVI::runLedController()
 					//Sets the delay period (just in case it has changed, like with hazards)
 					this->_counterPtr->setStopValue(this->_periodsForShortDelay);
 					
+					//Pattern Index controlling code
 					//Note: This mode uses the delay counter.
 					if (this->_counterPtr->countReached())
 					{
@@ -735,7 +745,7 @@ void LedController_NAVI::runLedController()
 					
 					
 
-
+					//LED controlling code, based on the current pattern index
 					//Set the LEDs based on the pattern index counter value
 					switch(this->_roverMotionPatternIndexCounter)
 					{
@@ -767,7 +777,7 @@ void LedController_NAVI::runLedController()
 							
 							//Left Tail Light - Turn Off
 							//Do Nothing
-							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 
 							//Right Tail Light - Turn Off
 							//Part 1 - Turn Off
@@ -815,7 +825,7 @@ void LedController_NAVI::runLedController()
 							
 							//Left Tail Light - Turn Off
 							//Do Nothing
-							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 
 							//Right Tail Light
 							//Part 1 - Turn On
@@ -863,7 +873,7 @@ void LedController_NAVI::runLedController()
 							
 							//Left Tail Light - Turn Off
 							//Do Nothing
-							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 
 							//Right Tail Light
 							//Part 1 - Turn Off
@@ -911,7 +921,7 @@ void LedController_NAVI::runLedController()
 							
 							//Left Tail Light - Turn Off
 							//Do Nothing
-							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 							
 							//Right Tail Light
 							//Part 1 - Turn Off
@@ -959,7 +969,7 @@ void LedController_NAVI::runLedController()
 							
 							//Left Tail Light - Turn Off
 							//Do Nothing
-							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 
 							//Right Tail Light - Turn Off
 							//Part 1 - Turn Off
@@ -1007,7 +1017,7 @@ void LedController_NAVI::runLedController()
 							
 							//Left Tail Light - Turn Off
 							//Do Nothing
-							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 
 							//Right Tail Light
 							//Part 1 - Turn On
@@ -1054,7 +1064,7 @@ void LedController_NAVI::runLedController()
 							
 							//Left Tail Light - Turn Off
 							//Do Nothing
-							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 
 							//Right Tail Light
 							//Part 1 - Turn Off
@@ -1101,7 +1111,7 @@ void LedController_NAVI::runLedController()
 							
 							//Left Tail Light - Turn Off
 							//Do Nothing
-							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overriden with code from above)
+							//Note: The left tail light's signal should already be turned off by setRoverMotion()'s initialization. (though it can be overridden with code from above)
 
 							//Right Tail Light
 							//Part 1 - Turn Off
@@ -1131,6 +1141,7 @@ void LedController_NAVI::runLedController()
 					//Sets the delay period (just in case it has changed, like with hazards)
 					this->_counterPtr->setStopValue(this->_periodsForShortDelay);
 					
+					//Pattern Index controlling code
 					//Note: This mode uses the delay counter.
 					if (this->_counterPtr->countReached())
 					{
@@ -1149,7 +1160,7 @@ void LedController_NAVI::runLedController()
 					}//end if
 					//else do nothing, keep waiting until the count is reached. The counter is external and is incremented externally by its associated GlobalDelayTimer.	
 					
-					
+					//LED controlling code, based on the current pattern index
 					//Set the LEDs based on the pattern index counter value
 					switch(this->_roverMotionPatternIndexCounter)
 					{
