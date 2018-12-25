@@ -447,7 +447,7 @@ GlobalDelayTimer * rearRightSyncTimer = new GlobalDelayTimer(DELAY_TIMER_RES_5ms
 
 
 
-//Note: Remember to update all fields of the constructor. All the fields are unique to/distinct for each motor. You can't share the counter, because it gets reset for each one. And each timer get's only one counter, so you need a timer for each one as well.
+//Note: Remember to update all fields of the constructor. All the fields are unique to/distinct for each motor. You can't share the counter, because it gets reset for each one. And each timer gets only one counter, so you need a timer for each one as well.
 WheelEncoderSensor * wheelEncoder_FrontLeft = new WheelEncoderSensor(ENCODER_A_FRONT_LEFT, ENCODER_B_FRONT_LEFT, LEFT_MOUNTED, &InterruptDispatch_wheelEncoder_FrontLeft, frontLeftSyncCounter);
 WheelEncoderSensor * wheelEncoder_FrontRight = new WheelEncoderSensor(ENCODER_A_FRONT_RIGHT, ENCODER_B_FRONT_RIGHT, RIGHT_MOUNTED, &InterruptDispatch_wheelEncoder_FrontRight, frontRightSyncCounter);
 WheelEncoderSensor * wheelEncoder_RearLeft = new WheelEncoderSensor(ENCODER_A_REAR_LEFT, ENCODER_B_REAR_LEFT, LEFT_MOUNTED, &InterruptDispatch_wheelEncoder_RearLeft, rearLeftSyncCounter);
@@ -648,7 +648,7 @@ const char* const msg_str_table[] PROGMEM = {
 
 
 
-//States //(these states will not be re-initialized in initializeVariables() as when it's SW resetted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
+//States //(these states will not be re-initialized in initializeVariables() as when it's SW reseted with the COMM SW Reset Request in PROCESS_DATA's commandDirector(), it will already be going to RUN_HOUSEKEEPING_TASKS afterwards)
 	
 	//Current State
 	byte currentState = RUN_HOUSEKEEPING_TASKS;
@@ -784,9 +784,6 @@ void loop() {
 	uSonSensors[ULTRASONIC_REAR_CENTER] = uSon_RearCenter;
 	uSonSensors[ULTRASONIC_FWD_RIGHT] = uSon_FwdRight;
 	uSonSensors[ULTRASONIC_SIDE_LEFT] = uSon_SideLeft;
-
-
-
 	
 
 	//State Machine
