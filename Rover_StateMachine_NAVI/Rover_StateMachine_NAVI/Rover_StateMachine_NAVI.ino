@@ -656,7 +656,7 @@ const char* const msg_str_table[] PROGMEM = {
 	byte nextState = RUN_HOUSEKEEPING_TASKS;
 
 
-	//Queued State
+	//Queued State (where queuedState is the next state)
 	#ifdef _DEBUG_SKIP_RIGHT_TO_NORMAL_OPERATIONS_//the debug case (i.e. to test auto data)
 		byte queuedState = RX_COMMUNICATIONS;//DEBUG
 	#else //The normal case
@@ -1564,9 +1564,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	{	
 	
 
-		//save the motor, gimbal buffer states before shutting them off to go to sleep
+		//clear system go flag
 		BooleanBitFlags::clearFlagBit(flagSet_SystemStatus1, _BTFG_MAIN_SYSTEM_GO_);
 		
+		
+		//save the motor, gimbal buffer states before shutting them off to go to sleep
 		prev_motor_turn_value = motor_turn_value;
 		prev_motor_speed_value = motor_speed_value;
 		prev_gimbal_pan_value = gimbal_pan_value;
@@ -1581,7 +1583,21 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		{
 			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);
 		}//end else
-		
+	
+
+		//save the LED enable states before shutting them off to go to sleep
+		universal_led_mode = prev_universal_led_mode;
+		hazard_light_state = prev_hazard_light_state;
+		fog_light_state = prev_fog_light_state;
+		underglow_light_state = prev_underglow_light_state;
+		ir_beacon_state = prev_ir_beacon_state;
+		blue_beacon_state = prev_blue_beacon_state;
+		beacon_led_direction = prev_beacon_led_direction;
+		rover_motion = prev_rover_motion;
+		rover_error_type = prev_rover_error_type;
+				
+	
+		//Set motors and gimbal to stop and center before going to sleep. (the variables are being staged here and will execute at the CONTROL_OUTPUTS state in the SYSTEM_SLEEPING mode)
 		motor_turn_value = SET_GO_STRAIGHT;
 		motor_speed_value = SET_STOP_SPEED;
 		gimbal_pan_value = SET_CENTER_PAN;
@@ -1589,7 +1605,18 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		drive_setting = AUTONOMOUS_DRIVE_SETTING;
 		BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
 				
+		//Set all LEDS to off before going to sleep. (the variables are being staged here and will execute at the CONTROL_OUTPUTS state in the SYSTEM_SLEEPING mode)
+		universal_led_mode = LED_SET_ALL_DEFAULT;
+		hazard_light_state = LED_SET_ALL_DEFAULT;
+		fog_light_state = LED_SET_ALL_DEFAULT;
+		underglow_light_state = LED_SET_ALL_DEFAULT;
+		ir_beacon_state = LED_SET_ALL_DEFAULT;
+		blue_beacon_state = LED_SET_ALL_DEFAULT;
+		beacon_led_direction = LED_SET_ALL_DEFAULT;
+		rover_motion = LED_SET_ALL_DEFAULT;
+		rover_error_type = LED_SET_ALL_DEFAULT;
 				
+			
 		//Create first (and only) sleeping acknowledgment here. Since for NAVI/AUXI, it will only send out one acknowledgment then go to sleep.
 		main_pri_msg_queue = CMD_TAG_SYSTEM_IS_SLEEPING_ACK;//Send status back to MAIN
 		
@@ -2246,7 +2273,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	/*
 	IMPROVEMENT TIP
 	Set Rover into LED Debug Mode
-		In LED debug mode, the rover sets Universal LED Mode to Default,required before user can control LEDs discretely with userDiscreteLEDControl().
+		In LED debug mode, the rover sets Universal LED Mode to Default, required before user can control LEDs discretely with userDiscreteLEDControl().
 		It prevents the rover from overriding the LEDs until the debug mode is removed
 		Allow the user to set on or off for any LEDs.
 		But use packaged data in order to reduce the number of required commands.
@@ -3753,10 +3780,6 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: NORMAL_OPERATIONS"));
 
-//LEFT OFF HERE
-//WRITE ME LATER
-
-
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
@@ -3991,6 +4014,8 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 		
 
 			break;
+//LEFT OFF HERE
+//WRITE ME LATER
 /* TEMPLATE			
 		case PLAN_ROUTE: //Mode: NORMAL_OPERATIONS
 //TEMPLATE		
@@ -4401,7 +4426,6 @@ i.e.
 			}//end else
 			break;		
 		default: //default state
-//TEMPLATE		
 			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -4412,10 +4436,6 @@ i.e.
 void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYSTEM_SLEEPING"));
-
-//LEFT OFF HERE
-//WRITE ME LATER
-
 
 	switch (currentState)
 	{
@@ -4453,24 +4473,13 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 		
 		case CONTROL_OUTPUTS: //Mode: SYSTEM_SLEEPING
 		
-			//Since Navigation is skipped for SYSTEM_SLEEPING, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
-
-
-			//Set motor and gimbal to default values
-			motor_turn_value = SET_GO_STRAIGHT;
-			motor_speed_value = SET_STOP_SPEED;
-			gimbal_pan_value = SET_CENTER_PAN;
-			gimbal_tilt_value = SET_MIDDLE_TILT;
+			//Note: The default values for motors, gimbals, and LEDs (i.e. off, center, stop) were set/staged in the "NAVI Sleep Request (usually from MAIN)". Also note that the PLAN_ROUTE and OBJECT_AVOIDANCE states are skipped for the SYSTEM_SLEEPING mode.
+	
+			//Note: Reference "NAVI Sleep Request (usually from MAIN)" in this code for the values the variables "should be" below.
 			
-			//turn buffer select to non-remote (local) control
-			BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
-				
-			drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_SLEEPING and the rover should have control
-				
-
 			//Control Buffer Select
 			//if buffer_remote_ctrl_selected == true
-			if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_))
+			if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_))//Note: Should be buffer_remote_ctrl_selected = false for SYSTEM_SLEEPING
 			{
 				#ifdef _DEBUG_OUTPUT_DRIVE_SELECTION_STATUS
 					_SERIAL_DEBUG_CHANNEL_.println(F("MANUAL DRIVE"));
@@ -4502,6 +4511,16 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			
 			}//end else
 
+			//Note: The LEDS should be in the following states (they will be controlled in the RUN_HOUSEKEEPING_TASKS as mentioned below):
+				//universal_led_mode = LED_SET_ALL_DEFAULT;
+				//hazard_light_state = LED_SET_ALL_DEFAULT;
+				//fog_light_state = LED_SET_ALL_DEFAULT;
+				//underglow_light_state = LED_SET_ALL_DEFAULT;
+				//ir_beacon_state = LED_SET_ALL_DEFAULT;
+				//blue_beacon_state = LED_SET_ALL_DEFAULT;
+				//beacon_led_direction = LED_SET_ALL_DEFAULT;
+				//rover_motion = LED_SET_ALL_DEFAULT;
+				//rover_error_type = LED_SET_ALL_DEFAULT;	
 				
 			//LEDs will be controlled by RUN_HOUSEKEEPING_TASKS (i.e. runBackgroundTasks()) since it requires attention with every loop
 			
@@ -4581,7 +4600,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 			BooleanBitFlags::setFlagBit(flagSet_SystemStatus1, _BTFG_FIRST_TRANSMISSION_);						
 			
 	
-			//Note: If MAIN misses this message, MAIN will go into sleeping error and would require a SW reset or HW reset to take the Rover out of this error. (AUXI can't resend the sleeping acknowledgement since it already went to sleep)	
+			//Note: If MAIN misses this message, MAIN will go into sleeping error and would require a SW reset or HW reset to take the Rover out of this error. (AUXI can't resend the sleeping acknowledgment since it already went to sleep)	
 	
 			//Troubleshooting tip: If MAIN keeps missing this message, can send it twice through the main_pri_msg_queue and then the main_sec_msg_queue as well.
 
@@ -4594,16 +4613,22 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				queuedState = CONTROL_OUTPUTS;//Go to CONTROL_OUTPUTS in order to restore previous laser states
 
 				//Restore previous states
+				//NOTE: These settings are just being staged, they will not be executed until it goes to CONTROL_OUTPUTS in the SYSTEM_WAKING mode, after waking up.
+				
+				//--Begin of states restorage--//
+				
 				//Motor Turn/Speed Settings
 				motor_turn_value = prev_motor_turn_value;
 				motor_speed_value = prev_motor_speed_value;
+				
 				//Gimbal Settings
 				gimbal_pan_value = prev_gimbal_pan_value;
 				gimbal_tilt_value = prev_gimbal_tilt_value;
 				
 				//Drive Settings
-				drive_setting = prev_drive_setting;				
+				drive_setting = prev_drive_setting;
 				
+				//Buffer remote control settings
 				//Restore previous buffer remote control: buffer_remote_ctrl_selected = prev_buffer_remote_ctrl_selected
 				if( BooleanBitFlags::flagIsSet(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_) )
 				{
@@ -4613,26 +4638,26 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				{
 					BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);
 				}//end else
-							
+					
 				//LED States
-				prev_universal_led_mode = universal_led_mode;
-				prev_hazard_light_state = hazard_light_state;
-				prev_fog_light_state = fog_light_state;
-				prev_underglow_light_state = underglow_light_state;
-				prev_ir_beacon_state = ir_beacon_state;
-				prev_blue_beacon_state = blue_beacon_state;
-				prev_beacon_led_direction = beacon_led_direction;
-				prev_rover_motion = rover_motion;
-				prev_rover_error_type = rover_error_type;
+				universal_led_mode = prev_universal_led_mode;
+				hazard_light_state = prev_hazard_light_state;
+				fog_light_state = prev_fog_light_state;
+				underglow_light_state = prev_underglow_light_state;
+				ir_beacon_state = prev_ir_beacon_state;
+				blue_beacon_state = prev_blue_beacon_state;
+				beacon_led_direction = prev_beacon_led_direction;
+				rover_motion = prev_rover_motion;
+				rover_error_type = prev_rover_error_type;
 
-				
+				//--End of states restorage--//
 	
 				//clear the flags for future reuse
 				prev_motor_turn_value = SET_GO_STRAIGHT;
 				prev_motor_speed_value = SET_STOP_SPEED;
 				prev_gimbal_pan_value = SET_CENTER_PAN;
 				prev_gimbal_tilt_value = SET_MIDDLE_TILT;
-				prev_drive_setting = AUTONOMOUS_DRIVE_SETTING;
+				prev_drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_SLEEPING and the rover should have control
 				BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);//prev_buffer_remote_ctrl_selected = false
 				prev_universal_led_mode = LED_SET_ALL_DEFAULT;
 				prev_hazard_light_state = LED_SET_ALL_DEFAULT;
@@ -4663,7 +4688,7 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				//Don't switch states yet. Go to sleep in the current TX_COMMUNICATIONS state.
 
 			//WAKING UP
-				//MAIN will wake up NAVI from the sleep.
+				//MAIN will wake up NAVI from the sleep at this point in the code.
 				sleeperNAVI->hasAwoken();//This updates the status and detaches the interrupt for NAVI once NAVI is awaken externally by MAIN.
 				
 				delay(100);// let everybody get up and running for a sec
@@ -4676,12 +4701,11 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 					
 				_PRINT_SLEEPING_AND_WAKEUP_STATUS_(F("NAVI_Wake"));//output to PC for debug
 										
-				//While in the SYSTEM_WAKING mode, after going to RUN_HOUSEKEEPING_TASKS, it will go to the next state, which is set to CONTROL_OUTPUTS
+				//While in the SYSTEM_WAKING mode, after going to RUN_HOUSEKEEPING_TASKS, it will go to the next state, which is set to CONTROL_OUTPUTS (where the restored commands that were staged above will be executed)
 
 				
 			break;			
 		default: //default state
-//TEMPLATE		
 			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -4693,9 +4717,6 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 void runModeFunction_SYSTEM_WAKING(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYSTEM_WAKING"));
-
-//LEFT OFF HERE
-//WRITE ME LATER
 
 
 	switch (currentState)
@@ -4796,8 +4817,6 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 			//Keep as a place holder. (also to define the state so it doesn't go into default and then error out)	
 			break;			
 		default: //default state
-	
-//TEMPLATE		
 			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -4809,9 +4828,6 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 void runModeFunction_SW_RESETTING(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SW_RESETTING"));
-//LEFT OFF HERE
-//WRITE ME LATER
-
 
 	switch (currentState)
 	{
@@ -4983,7 +4999,6 @@ void runModeFunction_SW_RESETTING(byte currentState)
 	
 			break;			
 		default: //default state
-//TEMPLATE		
 			 //This code should never execute, if it does, there is a logical or programming error			
 			runModeFunction_default();//no state needed, all states do the same thing
 			break;
@@ -4994,14 +5009,10 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 {
 	_PRINT_MODE_(F("MODE: SYSTEM_ERROR"));
 
-//LEFT OFF HERE
-//WRITE ME LATER
-
-
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_ERROR
-//WRITE LATER
+			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_ERROR
 		

@@ -4,7 +4,7 @@ Note: For redirects, it assumes only one arduino will be redirected to another. 
 	This is a design weakness that may be able to be improved later.
 	For now keep it this way to reduce the complexity of the code and memory usage.
 	So right now each transmission cycle will send up to two messages. One for internal messages going out, and the other for external messages being redirected to another external destination.
-Note: For command tags, see command creator excel in K:\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes
+Note: For command tags, see command creator excel in D:\Data\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes\Command Creator
 Note: Once the system goes into the state, SYSTEM_ERROR, it can only be fixed with a HW or SW reset.
 
 
@@ -55,15 +55,15 @@ At POR (defaults):
 	Current Mode: POWER_ON_AND_HW_RESET *begin*
 	Next Mode: POWER_ON_AND_HW_RESET 
 	
-	pc_usb_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // PC_USB won't get autodata, as it would make the code really complex with a lot of duplication. If needed, you can always reroute the serial channels using #ifdef
+	pc_usb_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since used by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // PC_USB won't get autodata, as it would make the code really complex with a lot of duplication. If needed, you can always reroute the serial channels using #ifdef
 	
-	main_pri_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // primary message queue
+	main_pri_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since used by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) // primary message queue
 	
-	main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since use by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
+	main_sec_msg_queue = CMD_TAG_NO_MSG (command tag, not boolean since used by CREATE_DATA to generate messages as well as TX_COMMUNICATIONS as a flag) //secondary message queue
 	
-	pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN, as you don't want just any data leaking out to CMNC (data security)
+	pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN, selects where the data from the primary and secondary main queues should go, as you don't want just any data leaking out to CMNC (data security)
 
-	sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN, as you don't want just any data leaking out to CMNC (data security)
+	sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;//default to MAIN, selects where the data from the primary and secondary main queues should go, as you don't want just any data leaking out to CMNC (data security)
 	
 	
 	auto_NAVI_to_CMNC_data_array[] = {
@@ -185,7 +185,7 @@ At POR (defaults):
 					switch case headlightassy_setting
 						control LEDs accordingly
 				Control LED Foglights
-					switch case foglight_setting
+					switch case foglight_state
 						control LEDs accordingly				
 				Control LED Underglow
 					switch case underglow_lights_setting
@@ -220,7 +220,7 @@ At POR (defaults):
 					switch case headlightassy_setting
 						control LEDs accordingly
 				Control LED Foglights
-					switch case foglight_setting
+					switch case foglight_state
 						control LEDs accordingly				
 				Control LED Underglow
 					switch case underglow_lights_setting
@@ -255,7 +255,7 @@ At POR (defaults):
 					switch case headlightassy_setting
 						control LEDs accordingly
 				Control LED Foglights
-					switch case foglight_setting
+					switch case foglight_state
 						control LEDs accordingly				
 				Control LED Underglow
 					switch case underglow_lights_setting
@@ -285,7 +285,7 @@ At POR (defaults):
 					switch case headlightassy_setting
 						control LEDs accordingly
 				Control LED Foglights
-					switch case foglight_setting
+					switch case foglight_state
 						control LEDs accordingly				
 				Control LED Underglow
 					switch case underglow_lights_setting
@@ -316,7 +316,7 @@ At POR (defaults):
 					switch case headlightassy_setting
 						control LEDs accordingly
 				Control LED Foglights
-					switch case foglight_setting
+					switch case foglight_state
 						control LEDs accordingly				
 				Control LED Underglow
 					switch case underglow_lights_setting
@@ -346,7 +346,7 @@ At POR (defaults):
 					switch case headlightassy_setting
 						control LEDs accordingly
 				Control LED Foglights
-					switch case foglight_setting
+					switch case foglight_state
 						control LEDs accordingly				
 				Control LED Underglow
 					switch case underglow_lights_setting
@@ -376,7 +376,7 @@ At POR (defaults):
 					switch case headlightassy_setting
 						control LEDs accordingly
 				Control LED Foglights
-					switch case foglight_setting
+					switch case foglight_state
 						control LEDs accordingly				
 				Control LED Underglow
 					switch case underglow_lights_setting
@@ -406,7 +406,7 @@ At POR (defaults):
 					switch case headlightassy_setting
 						control LEDs accordingly
 				Control LED Foglights
-					switch case foglight_setting
+					switch case foglight_state
 						control LEDs accordingly				
 				Control LED Underglow
 					switch case underglow_lights_setting
@@ -639,7 +639,7 @@ At POR (defaults):
 
 					Set gimbal controller middle and center
 
-					Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to overrride this if desired, and set it to manual)
+					Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to override this if desired, and set it to manual)
 					
 					Set drive setting to autonomous drive (since it's at SYSTEM_ERROR and the rover should have control)
 										
@@ -661,7 +661,7 @@ At POR (defaults):
 					buffer_remote_ctrl_selected = false
 					//Put LEDs to error pattern
 					headlightassy_setting = LIGHTS_SYSTEM_ERROR
-					foglight_setting = LIGHTS_SYSTEM_ERROR
+					foglight_state = LIGHTS_SYSTEM_ERROR
 					left_signal_light_setting = LIGHTS_SYSTEM_ERROR
 					right_signal_light_setting = LIGHTS_SYSTEM_ERROR
 					underglow_lights_setting = LIGHTS_SYSTEM_ERROR
@@ -778,8 +778,7 @@ At POR (defaults):
 							
 							
 							pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
-			
-			
+					
 			
 						}//end if						
 						(Note: the sync_error flag can only be cleared with a sw reset or hw reset)													
@@ -788,6 +787,7 @@ At POR (defaults):
 						
 						if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 						{
+						
 							main_pri_msg_queue = CMD_TAG_GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to comm, then to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
 							
 							pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
@@ -924,12 +924,11 @@ At POR (defaults):
 				detect objects
 				if there is an object in the path
 					buffer_remote_ctrl_selected = false//overrides any buffer_remote_ctrl_selected = true from SEMI_AUTO_DRIVE_SETTING, or stays true if was in AUTONOMOUS_DRIVE_SETTING
-					if there are objects in the way, calculcate a different path to navigate the rover around any objects
+					if there are objects in the way, calculate a different path to navigate the rover around any objects
 					calculate and override the corresponding LED patterns
 				end if
 				//Else, no need to calculate a different path when in MANUAL_DRIVE_SETTING or when there are no objects in the way
 			end if	
-
 
 			Unless overridden,
 				set next state to CONTROL_OUTPUTS			
@@ -975,7 +974,7 @@ At POR (defaults):
 						Control Motor Controller's Turn
 							Should be motor_turn_value = SET_GO_STRAIGHT				
 						Control Motor Controller's Speed
-							Should be motor_speed_value = SET_STOP_SPEED			
+							Should be motor_speed_value = SET_STOP_SPEED
 						Control Gimbal Controller's Pan
 							Should be gimbal_pan_value = SET_CENTER_PAN
 						Control Gimbal Controller's Tilt
@@ -996,13 +995,13 @@ At POR (defaults):
 					navigate the rover based on it's most updated path (i.e. from the PLAN_ROUTE state or the OBJECT_AVOIDANCE state)
 
 					Control Motor Controller's Turn
-						Should be motor_turn_value = (whatever value  determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state)
+						Should be motor_turn_value = (whatever value determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state)
 					Control Motor Controller's Speed
-						Should be motor_speed_value =  (whatever value  determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state)
+						Should be motor_speed_value =  (whatever value determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state)
 					Control Gimbal Controller's Pan
-						Should be gimbal_pan_value = (whatever value  determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state)
+						Should be gimbal_pan_value = (whatever value determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state)
 					Control Gimbal Controller's Tilt
-						Should be gimbal_tilt_value =  (whatever value  determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state)
+						Should be gimbal_tilt_value =  (whatever value determined by the PLAN_ROUTE and/or OBJECT_AVOIDANCE state)
 				end if
 			//Note: LEDs will be controlled by RUN_HOUSEKEEPING_TASKS since it requires attention with every loop			
 			//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process
@@ -1011,18 +1010,10 @@ At POR (defaults):
 			go to RUN_HOUSEKEEPING_TASKS				
 		SYSTEM_SLEEPING	
 		
-			//Since Navigation is skipped for SYSTEM_SLEEPING, set default values for motors and gimbal here at the CONTROL_OUTPUTS state
+			//Note: The default values for motors, gimbals, and LEDs (i.e. off, center, stop) were set/staged in the "NAVI Sleep Request (usually from MAIN)". Also note that the PLAN_ROUTE and OBJECT_AVOIDANCE states are skipped for the SYSTEM_SLEEPING mode.
 						
-				buffer_remote_ctrl_selected = false //turn buffer select to non-remote (local) control
-					
-				drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_SLEEPING and the rover should have control							
-				
-				//Set motor and gimbal to default values
-				motor_turn_value = SET_GO_STRAIGHT				
-				motor_speed_value = SET_STOP_SPEED			
-				gimbal_pan_value = SET_CENTER_PAN
-				gimbal_tilt_value = SET_MIDDLE_TILT
-		
+			//Note: Reference "NAVI Sleep Request (usually from MAIN)" in this code for the values the variables "should be" below.
+			
 			Control Buffer Select
 				if buffer_remote_ctrl_selected //should be buffer_remote_ctrl_selected = false for SYSTEM_SLEEPING
 						turn buffer select to manual remote control					
@@ -1040,6 +1031,18 @@ At POR (defaults):
 							Should be gimbal_tilt_value = SET_MIDDLE_TILT
 				end if			
 			
+			//Note: The LEDS should be in the following states (they will be controlled in the RUN_HOUSEKEEPING_TASKS as mentioned below):
+				//universal_led_mode = LED_SET_ALL_DEFAULT;
+				//hazard_light_state = LED_SET_ALL_DEFAULT;
+				//fog_light_state = LED_SET_ALL_DEFAULT;
+				//underglow_light_state = LED_SET_ALL_DEFAULT;
+				//ir_beacon_state = LED_SET_ALL_DEFAULT;
+				//blue_beacon_state = LED_SET_ALL_DEFAULT;
+				//beacon_led_direction = LED_SET_ALL_DEFAULT;
+				//rover_motion = LED_SET_ALL_DEFAULT;
+				//rover_error_type = LED_SET_ALL_DEFAULT;	
+		
+		
 			//Note: LEDs will be controlled by RUN_HOUSEKEEPING_TASKS since it requires attention with every loop			
 			//The Ultrasonic's trigger will be controlled when the sensor is read, since the trigger is part of the reading process
 			Mode: SYSTEM_SLEEPING					
@@ -1118,7 +1121,7 @@ At POR (defaults):
 			go to RUN_HOUSEKEEPING_TASKS	
 		SYSTEM_ERROR
 			
-			//Don't set default values for motors and gimbal here. Instead set it where SYSTEM_ERROR begins. And allow user to manually override it,
+			//Don't set default values for motors and gimbal here. Instead set it where SYSTEM_ERROR begins. And allow user to manually override it
 			
 			Control Buffer Select
 				if buffer_remote_ctrl_selected //should be buffer_remote_ctrl_selected = false for SYSTEM_ERROR
@@ -1375,17 +1378,17 @@ At POR (defaults):
 			if main_pri_msg_queue != CMD_TAG_NO_MSG//Since main_pri_msg_queue = SYSTEM_IS_SLEEPING
 			
 				if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//This code should not execute. Just have it there for consistency.
-					Create NAVI Sleeping Acknowledgement to COMM				
+					Create NAVI Sleeping acknowledgment to COMM				
 				
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_CMNC)//This code should not execute. Just have it there for consistency.
-					Create NAVI Sleeping Acknowledgement to CMNC		
+					Create NAVI Sleeping acknowledgment to CMNC		
 					
 				//And since pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN)
-					Create NAVI Sleeping Acknowledgement to MAIN
+					Create NAVI Sleeping acknowledgment to MAIN
 								
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute. Just have it there for consistency.
-					Create NAVI Sleeping Acknowledgement to AUXI
+					Create NAVI Sleeping acknowledgment to AUXI
 					
 				else
 					Send error message. As it's an unknown destination.
@@ -1412,17 +1415,17 @@ At POR (defaults):
 			if main_pri_msg_queue != CMD_TAG_NO_MSG//Since main_pri_msg_queue = SW_IS_RESETTING	
 			
 				if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
-					Create NAVI SW Resetting Acknowledgement to COMM
+					Create NAVI SW Resetting acknowledgment to COMM
 				
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_CMNC)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
-					Create NAVI SW Resetting Acknowledgement to CMNC
+					Create NAVI SW Resetting acknowledgment to CMNC
 				
 				//And since pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_MAIN)
-					Create NAVI SW Resetting Acknowledgement to MAIN
+					Create NAVI SW Resetting acknowledgment to MAIN
 				
 				else if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_AUXI)//This code should not execute when in SYNCHRONIZATION. Just have it there for consistency.
-					Create NAVI SW Resetting Acknowledgement to AUXI
+					Create NAVI SW Resetting acknowledgment to AUXI
 					
 				else
 					Send error message. As it's an unknown destination.
@@ -1448,7 +1451,6 @@ At POR (defaults):
 			//Send up to two auto datas between the two queues (primary and secondary)
 			
 			if main_pri_msg_queue != CMD_TAG_NO_MSG
-
 										
 				if(pri_comm_cmnc_main_auxi_destination_selection == ROVERCOMM_COMM)//This code should not execute. Just have it there for consistency.
 					create any msg(s) for COMM as needed based on main_pri_msg_queue					
@@ -1732,10 +1734,10 @@ At POR (defaults):
 				Sends internally generated msg(s) to PC_USB
 			end if							
 			If main_pri_msg_queue != CMD_TAG_NO_MSG
-				Sends internally generated msg(s) to MAIN//Sends the sleeping acknowledgement
+				Sends internally generated msg(s) to MAIN//Sends the sleeping acknowledgment
 			end if			
 			
-			//Only the primary message queue is sent (the sleeping acknowledgement to MAIN), and everything else can be ignored since the system is going to sleep anyways.
+			//Only the primary message queue is sent (the sleeping acknowledgment to MAIN), and everything else can be ignored since the system is going to sleep anyways.
 			
 			clear message queues
 				pc_usb_msg_queue = CMD_TAG_NO_MSG
@@ -1745,7 +1747,7 @@ At POR (defaults):
 				sec_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN//default
 			first_transmission = true //reset the flag
 			
-			//Note: If MAIN misses this message, MAIN will go into sleeping error and would require a SW reset or HW reset to take the Rover out of this error. (AUXI can't resend the sleeping acknowledgement since it already went to sleep)
+			//Note: If MAIN misses this message, MAIN will go into sleeping error and would require a SW reset or HW reset to take the Rover out of this error. (AUXI can't resend the sleeping acknowledgment since it already went to sleep)
 			
 			//Troubleshooting tip: If MAIN keeps missing this message, can send it twice through the main_pri_msg_queue and then the main_sec_msg_queue as well.
 
@@ -1755,24 +1757,37 @@ At POR (defaults):
 				
 				set next state to CONTROL_OUTPUTS //Go to CONTROL_OUTPUTS in order to restore previous laser states
 				
-				//Restore previous states			
+				//Restore previous states
+				//NOTE: These settings are just being staged, they will not be executed until it goes to CONTROL_OUTPUTS in the SYSTEM_WAKING mode, after waking up.
+				
+				//--Begin of states restorage--//
+				
+				//Motor Turn/Speed Settings
 				motor_turn_value = prev_motor_turn_value
 				motor_speed_value = prev_motor_speed_value
+				
+				//Gimbal Settings
 				gimbal_pan_value = prev_gimbal_pan_value
 				gimbal_tilt_value = prev_gimbal_tilt_value
+				
+				//Drive Settings
 				drive_setting = prev_drive_setting
+				//Buffer remote control settings
 				buffer_remote_ctrl_selected = prev_buffer_remote_ctrl_selected
-							
-				prev_headlightassy_setting = headlightassy_setting			
-				prev_foglight_setting = foglight_setting			
-				prev_left_signal_light_setting = left_signal_light_setting
-				prev_right_signal_light_setting = right_signal_light_setting
-				prev_underglow_lights_setting = underglow_lights_setting
-				prev_reverse_lights_setting = reverse_lights_setting
-				prev_blue_beacon_lights_setting = blue_beacon_lights_setting
-				prev_ir_beacon_lights_setting = ir_beacon_lights_setting
-			
-			
+				
+				//LED States
+				universal_led_mode = prev_universal_led_mode;
+				hazard_light_state = prev_hazard_light_state;
+				fog_light_state = prev_fog_light_state;
+				underglow_light_state = prev_underglow_light_state;
+				ir_beacon_state = prev_ir_beacon_state;
+				blue_beacon_state = prev_blue_beacon_state;
+				beacon_led_direction = prev_beacon_led_direction;
+				rover_motion = prev_rover_motion;
+				rover_error_type = prev_rover_error_type;
+
+				//--End of states restorage--//
+				
 				//clear the flags for future reuse
 				prev_motor_turn_value = SET_GO_STRAIGHT
 				prev_motor_speed_value = SET_STOP_SPEED
@@ -1780,17 +1795,16 @@ At POR (defaults):
 				prev_gimbal_tilt_value = SET_MIDDLE_TILT
 				prev_drive_setting = AUTONOMOUS_DRIVE_SETTING
 				prev_buffer_remote_ctrl_selected = false
-				prev_headlightassy_setting = LED_SET_ALL_DEFAULT
-				prev_foglight_setting = LED_SET_ALL_DEFAULT
-				left_signal_light_setting = LED_SET_ALL_DEFAULT
-				right_signal_light_setting = LED_SET_ALL_DEFAULT			
-				underglow_lights_setting = LED_SET_ALL_DEFAULT			
-				reverse_lights_setting = LED_SET_ALL_DEFAULT			
-				blue_beacon_lights_setting = LED_SET_ALL_DEFAULT			
-				ir_beacon_lights_setting = LED_SET_ALL_DEFAULT			
-				
-			
-
+				prev_universal_led_mode = LED_SET_ALL_DEFAULT
+				prev_hazard_light_state = LED_SET_ALL_DEFAULT
+				prev_fog_light_state = LED_SET_ALL_DEFAULT
+				prev_underglow_light_state = LED_SET_ALL_DEFAULT
+				prev_ir_beacon_state = LED_SET_ALL_DEFAULT
+				prev_blue_beacon_state = LED_SET_ALL_DEFAULT
+				prev_beacon_led_direction = LED_SET_ALL_DEFAULT
+				prev_rover_motion = LED_SET_ALL_DEFAULT
+				prev_rover_error_type = LED_SET_ALL_DEFAULT
+					
 				Run other pre-sleep tasks. (i.e. end software serial, as needed)
 			//END OF SETUP FOR WAKEUP
 					
@@ -1800,11 +1814,11 @@ At POR (defaults):
 				Don't switch states yet. Go to sleep in the current TX_COMMUNICATIONS state.
 
 			//WAKING UP
-			MAIN will wake up NAVI from the sleep.
+			//MAIN will wake up NAVI from the sleep at this point in the code.
 
 			Run wake up tasks. (i.e. begin SW serial as needed, etc.)
 							
-			While in the SYSTEM_WAKING mode, after going to RUN_HOUSEKEEPING_TASKS, it will go to the next state, which is set to CONTROL_OUTPUTS			
+			While in the SYSTEM_WAKING mode, after going to RUN_HOUSEKEEPING_TASKS, it will go to the next state, which is set to CONTROL_OUTPUTS (where the restored commands that were staged above will be executed)
 		SYSTEM_WAKING
 			do nothing	
 		SW_RESETTING				
@@ -1814,10 +1828,10 @@ At POR (defaults):
 				Sends internally generated msg(s) to PC_USB
 			end if					
 			If main_pri_msg_queue != CMD_TAG_NO_MSG
-				Sends internally generated msg(s) to MAIN//Sends the SW reset acknowledgement
+				Sends internally generated msg(s) to MAIN//Sends the SW reset acknowledgment
 			end if		
 			
-			//Only the primary message queue is sent (the sw reset acknowledgement to MAIN), and everything else can be ignored since the system is going to sw resetting anyways.						
+			//Only the primary message queue is sent (the sw reset acknowledgment to MAIN), and everything else can be ignored since the system is going to sw resetting anyways.						
 			
 			clear message queues
 				pc_usb_msg_queue = CMD_TAG_NO_MSG	
@@ -2103,8 +2117,10 @@ Conflicting Functions Ordered By Priority
 		timeout_counter = 0 (for future use)		
 	
 	NAVI Sleep Request (usually from MAIN)			
-		//save the motor, gimbal buffer states before shutting them off to go to sleep
+		
 		clear system go flag
+		
+		//save the motor, gimbal buffer states before shutting them off to go to sleep
 		prev_motor_turn_value = motor_turn_value
 		prev_motor_speed_value = motor_speed_value
 		prev_gimbal_pan_value = gimbal_pan_value
@@ -2112,16 +2128,7 @@ Conflicting Functions Ordered By Priority
 		prev_drive_setting = drive_setting
 		prev_buffer_remote_ctrl_selected = buffer_remote_ctrl_selected
 		
-		motor_turn_value = SET_GO_STRAIGHT
-		motor_speed_value = SET_STOP_SPEED
-		gimbal_pan_value = SET_CENTER_PAN
-		gimbal_tilt_value = SET_MIDDLE_TILT
-		drive_setting = AUTONOMOUS_DRIVE_SETTING
-		buffer_remote_ctrl_selected = false
-		
-		
 		//save the LED enable states before shutting them off to go to sleep
-
 		universal_led_mode = prev_universal_led_mode;
 		hazard_light_state = prev_hazard_light_state;
 		fog_light_state = prev_fog_light_state;
@@ -2132,6 +2139,15 @@ Conflicting Functions Ordered By Priority
 		rover_motion = prev_rover_motion;
 		rover_error_type = prev_rover_error_type;
 		
+		//Set motors and gimbal to stop and center before going to sleep. (the variables are being staged here and will execute at the CONTROL_OUTPUTS state in the SYSTEM_SLEEPING mode)
+		motor_turn_value = SET_GO_STRAIGHT
+		motor_speed_value = SET_STOP_SPEED
+		gimbal_pan_value = SET_CENTER_PAN
+		gimbal_tilt_value = SET_MIDDLE_TILT
+		drive_setting = AUTONOMOUS_DRIVE_SETTING
+		buffer_remote_ctrl_selected = false
+		
+		//Set all LEDS to off before going to sleep. (the variables are being staged here and will execute at the CONTROL_OUTPUTS state in the SYSTEM_SLEEPING mode)
 		universal_led_mode = LED_SET_ALL_DEFAULT;
 		hazard_light_state = LED_SET_ALL_DEFAULT;
 		fog_light_state = LED_SET_ALL_DEFAULT;
@@ -2142,6 +2158,8 @@ Conflicting Functions Ordered By Priority
 		rover_motion = LED_SET_ALL_DEFAULT;
 		rover_error_type = LED_SET_ALL_DEFAULT;	
 
+		//Create first (and only) sleeping acknowledgment here. Since for NAVI/AUXI, it will only send out one acknowledgment then go to sleep.
+		main_pri_msg_queue = CMD_TAG_SYSTEM_IS_SLEEPING_ACK//Send status back to MAIN
 		
 		pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN
 		
@@ -2341,7 +2359,7 @@ Conflicting Functions Ordered By Priority
 			1) Motor Power Control Enable should be sent first to MAIN or the HW switch for the Motor Power Control Enable should be turned on
 			2) Set Drive Setting to AUTONOMOUS_DRIVE_SETTING so the servo signals to the motor controller are coming from NAVI and not the remote controller
 		*/
-		//IMPROVEMENT TIP, maybe NAVI and request the motor to turn on by AUXI and maybe even get an acknowledgement. But this requires a lot of code (i.e. closed loop feedbacK). So for now skip it to keep it basic.
+		//IMPROVEMENT TIP, maybe NAVI and request the motor to turn on by AUXI and maybe even get an acknowledgment. But this requires a lot of code (i.e. closed loop feedbacK). So for now skip it to keep it basic.
 	Run Gimbal Demo
 		main_pri_msg_queue = CMD_TAG_RUN_GIMBAL_DEMO
 		
