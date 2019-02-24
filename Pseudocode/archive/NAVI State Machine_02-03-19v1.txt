@@ -643,9 +643,6 @@ At POR (defaults):
 					
 					Set drive setting to autonomous drive (since it's at SYSTEM_ERROR and the rover should have control)
 										
-										
-					universal_led_mode = LED_ERROR_MODE
-					rover_error_type = LED_SET_SYNC_ERROR
 					error_origin = ROVERCOMM_NAVI
 					main_pri_msg_queue == GENERIC_SYSTEM_ERROR //send a generic system error to main which will send a copy to comm, then to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
 					pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
@@ -2019,8 +2016,8 @@ Conflicting Functions Ordered By Priority
 		buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
 		
 		//Put LEDs to generic health error pattern
-		universal_led_mode = LED_ERROR_MODE
-		rover_error_type = LED_SET_GENERIC_HEALTH_ERROR	
+		universal_led_mode = LED_SET_GENERIC_HEALTH_ERROR;
+		rover_error_type = LED_SET_GENERIC_HEALTH_ERROR;				
 
 
 		//Assign the error_origin to where the data was generated from
@@ -2067,8 +2064,8 @@ Conflicting Functions Ordered By Priority
 		//For now just forward it to MAIN (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.	
 		
 		//Put LEDs to generic system error pattern
-		universal_led_mode = LED_ERROR_MODE
-		rover_error_type = LED_SET_GENERIC_SYSTEM_ERROR			
+		universal_led_mode = LED_SET_GENERIC_SYSTEM_ERROR;
+		rover_error_type = LED_SET_GENERIC_SYSTEM_ERROR;				
 
 		
 		//Assign the error_origin to where the data was generated from
@@ -2740,7 +2737,7 @@ Conflicting Functions Ordered By Priority
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM
@@ -2762,7 +2759,7 @@ Conflicting Functions Ordered By Priority
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM
@@ -2784,7 +2781,7 @@ Conflicting Functions Ordered By Priority
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM
@@ -2806,7 +2803,7 @@ Conflicting Functions Ordered By Priority
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM

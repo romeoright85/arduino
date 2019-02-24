@@ -643,9 +643,6 @@ At POR (defaults):
 					
 					Set drive setting to autonomous drive (since it's at SYSTEM_ERROR and the rover should have control)
 										
-										
-					universal_led_mode = LED_ERROR_MODE
-					rover_error_type = LED_SET_SYNC_ERROR
 					error_origin = ROVERCOMM_NAVI
 					main_pri_msg_queue == GENERIC_SYSTEM_ERROR //send a generic system error to main which will send a copy to comm, then to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
 					pc_usb_msg_queue = SYNC_ERROR_STATUS //send error out through the PC_USB for debugging
@@ -895,7 +892,7 @@ At POR (defaults):
 			if drive_setting == AUTONOMOUS_DRIVE_SETTING
 				buffer_remote_ctrl_selected = false //the rover will be purely operated autonomously
 				Calculate where the rover should go based on waypoint (i.e. as if there were no objects in its way)
-				Calculate the corresponding LED patterns	
+				Calculate the corresponding LED patterns				
 			else
 				buffer_remote_ctrl_selected = true //the rover is either fully manual, or semi-auto
 				//Note: No need to plan any route for SEMI_AUTO_DRIVE_SETTING or MANUAL_DRIVE_SETTING
@@ -928,7 +925,7 @@ At POR (defaults):
 				if there is an object in the path
 					buffer_remote_ctrl_selected = false//overrides any buffer_remote_ctrl_selected = true from SEMI_AUTO_DRIVE_SETTING, or stays true if was in AUTONOMOUS_DRIVE_SETTING
 					if there are objects in the way, calculate a different path to navigate the rover around any objects
-					Calculate the corresponding LED patterns	
+					calculate and override the corresponding LED patterns
 				end if
 				//Else, no need to calculate a different path when in MANUAL_DRIVE_SETTING or when there are no objects in the way
 			end if	
@@ -2018,9 +2015,9 @@ Conflicting Functions Ordered By Priority
 		drive_setting = AUTONOMOUS_DRIVE_SETTING//can be AUTONOMOUS_DRIVE_SETTING, SEMI_AUTO_DRIVE_SETTING, or MANUAL_DRIVE_SETTING
 		buffer_remote_ctrl_selected = false //this is independent of the drive_setting, since for semi-auto the drive setting stays the same but the buffer select might change if while the rover is manually controlled, an object is detected and the rover takes over. The buffer select can only be controlled internally through the drive setting option and not directly.
 		
-		//Put LEDs to generic health error pattern
-		universal_led_mode = LED_ERROR_MODE
-		rover_error_type = LED_SET_GENERIC_HEALTH_ERROR	
+		//Put LEDs to error pattern
+		universal_led_mode = LED_SET_GENERIC_HEALTH_ERROR;
+		rover_error_type = LED_SET_GENERIC_HEALTH_ERROR;				
 
 
 		//Assign the error_origin to where the data was generated from
@@ -2066,11 +2063,7 @@ Conflicting Functions Ordered By Priority
 
 		//For now just forward it to MAIN (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.	
 		
-		//Put LEDs to generic system error pattern
-		universal_led_mode = LED_ERROR_MODE
-		rover_error_type = LED_SET_GENERIC_SYSTEM_ERROR			
-
-		
+	
 		//Assign the error_origin to where the data was generated from
 		If command was from CMNC
 			Set error_origin = ROVERCOMM_CMNC
@@ -2088,7 +2081,7 @@ Conflicting Functions Ordered By Priority
 			Set error_origin = ROVERCOMM_NONE							
 		end if		
 		
-		if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
+			if( error_origin != ROVERCOMM_MAIN)//Make sure don't send it back to itself to avoid an infinite loop
 		{
 			main_pri_msg_queue = GENERIC_SYSTEM_ERROR_STATUS;//send a generic system error to main which will send a copy to cmnc as well (MAIN only accepts generic health and generic system errors at the moment. Also only generic health and generic system errors are usually left unfiltered in many states like SYNCHRONIZATION. else you have to send a message that should redirect to cmnc directly, but it would bypass MAIN and won't error MAIN out. Sometimes you want MAIN to error out on any error.)
 			
@@ -2340,8 +2333,6 @@ Conflicting Functions Ordered By Priority
 		end if				
 			
 	Run Motor Calibration
-	
-		//will create the data in the CREATE_DATA state
 		main_pri_msg_queue = CMD_TAG_CALIBRATE_MOTOR_CONTROLLER//Send status back to the requester
 		
 		If command was from CMNC
@@ -2370,9 +2361,7 @@ Conflicting Functions Ordered By Priority
 		*/
 		//IMPROVEMENT TIP, maybe NAVI and request the motor to turn on by AUXI and maybe even get an acknowledgment. But this requires a lot of code (i.e. closed loop feedbacK). So for now skip it to keep it basic.
 	Run Gimbal Demo
-	
-		//will create the data in the CREATE_DATA state
-		main_pri_msg_queue = CMD_TAG_RUN_GIMBAL_DEMO//Send status back to the requester
+		main_pri_msg_queue = CMD_TAG_RUN_GIMBAL_DEMO
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
@@ -2733,14 +2722,14 @@ Conflicting Functions Ordered By Priority
 	Get IR Distance Forward Center Status
 	
 		//will create the data in the CREATE_DATA state
-		main_pri_msg_queue = IR_DISTANCE_FWD_CTR_STATUS//Send status back to the requester
+		main_pri_msg_queue = IR_DISTANCE_FWD_CTR_STATUS
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM
@@ -2755,14 +2744,14 @@ Conflicting Functions Ordered By Priority
 	Get IR Distance Side Right Status
 	
 		//will create the data in the CREATE_DATA state
-		main_pri_msg_queue = IR_DISTANCE_SIDE_RT_STATUS//Send status back to the requester
+		main_pri_msg_queue = IR_DISTANCE_SIDE_RT_STATUS
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM
@@ -2777,14 +2766,14 @@ Conflicting Functions Ordered By Priority
 	Get IR Distance Side Left Status
 	
 		//will create the data in the CREATE_DATA state
-		main_pri_msg_queue = IR_DISTANCE_SIDE_LT_STATUS//Send status back to the requester
+		main_pri_msg_queue = IR_DISTANCE_SIDE_LT_STATUS
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM
@@ -2799,14 +2788,14 @@ Conflicting Functions Ordered By Priority
 	Get IR Distance Rear Center Status
 	
 		//will create the data in the CREATE_DATA state
-		main_pri_msg_queue = IR_DISTANCE_REAR_CTR_STATUS//Send status back to the requester
+		main_pri_msg_queue = IR_DISTANCE_REAR_CTR_STATUS
 		
 		If command was from CMNC
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_CMNC
 		else if command was from NAVI (though this wouldn't happen as it would come from itself. just keep it there for consistency)
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NAVI
 		else if command was from AUXI
-			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_AUXI
+			Set error_origin = ROVERCOMM_AUXI
 		else if command was from MAIN
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN			
 		else if command was from COMM

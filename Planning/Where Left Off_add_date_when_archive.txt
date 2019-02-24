@@ -135,26 +135,49 @@ Rover_StateMachine_NAVI:
 
 	Also see "//WRITE ME LATER" and "//LEFT OFF HERE" sections of the Rover_StateMachine_NAVI.ino code
 	
-	Note: LEDs will be set/staged/changed (logically) prior to (i.e. at the "NAVI Sleep Request" command, "TX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING" state, etc.) or in the "runModeFunction_<MODE>" in the "RUN_HOUSEKEEPING_TASKS" state. Also it will be (electrically) controlled/(pattern)updated in the RUN_HOUSEKEEPING_TASKS using the runBackgroundTasks() function by calling ledController_NAVI->runLedController() in that function since it requires attention with every loop (use Rover_StateMachine_COMM as a reference with heart LED) 
-		Note: This was a bit of a design flaw. It should be set/staged in control outputs instead. But for some cases like initialization to synchronization, currently it never goes to the control output stage. So since the only thing that always happens is the run housekeeping tasks, the led control was put there for now. It works, but it just isn't technically correct. In order to fix this you'd have to redo the state machine on all Arduinos to be consistent and have it always go through the control outputs state, and then set/stage the leds in the control outputs state.
+	Note on staging the LEDs (logically):
+		Definition: Staged means it can be overridden. Like CSS pages on a webpage. Overwritten with higher priority or newer update.
+		LEDs will be staged (logically) prior to (i.e. at the "NAVI Sleep Request" command, "TX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING" state, etc.), anywhere where there are errors, or in the OBJECT_AVOIDANCE or PLAN_ROUTE states.
 	
-	So set these LED state variables in RUN_HOUSEKEEPING_TASKS (use Rover_StateMachine_COMM as a reference with heart LED) 
-		i.e.
-		universal_led_mode
-		hazard_light_state
-		fog_light_state
-		underglow_light_state
-		ir_beacon_state
-		blue_beacon_state
-		beacon_led_direction
-		rover_motion
-		rover_error_type
+	Note on setting the LEDs logically:
+		Definition: Set means it's committed. Like with git commit. It's not executed yet, since setting the LED sets what pattern to execute. But the pattern itself can be complex so it has to be tracked and controlled elsewhere.
+		The LEDs will be set, logically, (aka go from stage to set) in the "runModeFunction_<MODE>" in the "RUN_HOUSEKEEPING_TASKS" and the next state (aka the queuedState) is CONTROL_OUTPUTS since that's when the direction change will be happening anyways. But also it should change for modes that don't go through the CONTROL_OUTPUTS state but still need LED changes (i.e. POWER_ON_AND_HW_RESET and INITIALIZATION)
+		This isn't technically correct/consistent. But in order to fix this you'd have to redo the state machine on NAVI have all modes always go through the CONTROL_OUTPUTS states so they the LEDs can always be set logically in that state.
+		
+	
+	Note on Controlling LEDs patterns (electrically):
+		Definition: Controlling the LEDs means taking the set pattern and now executing it out. (i.e. a flashing pattern)
+		Also the LEDs will be (electrically) controlled/(pattern)updated every loop in the RUN_HOUSEKEEPING_TASKS using the runBackgroundTasks() function by calling ledController_NAVI->runLedController() in that function since it requires attention with every loop (use Rover_StateMachine_COMM as a reference with heart LED) 
+		
+	Note on Setting (logically):
+		This was a bit of a design flaw. It should be set (logically) in RUN_HOUSEKEEPING_TASKS if the next state (aka the queuedState) is CONTROL_OUTPUTS. But for some modes like POWER_ON_AND_HW_RESET and INITIALIZATION, it doesn't have the CONTROL_OUTPUTS state. But since you want to update the LEDs in those modes as well, then you have to account for those modes as well.
+				
+		Note on Staging (logically): Only the NAVI has OBJECT_AVOIDANCE and PLAN_ROUTE, so it would be inconsistent across Arduinos to stage all LED logically in those states. Also errors can occur anywhere, so they should be staged at the point of error.
+			Although the only other Arduino that controls LEDs is the COMM with the heart LED. The Heart LED isn't direction based so it would care about OBJECT_AVOIDANCE or PLAN_ROUTE.
+		
+		
+	SUMMARY:
+		Example LED variables:
+			universal_led_mode
+			hazard_light_state
+			fog_light_state
+			underglow_light_state
+			ir_beacon_state
+			blue_beacon_state
+			beacon_led_direction
+			rover_motion
+			rover_error_type
+		
+		-So stage these LED variables where there are errors, or in OBJECT_AVOIDANCE or PLAN_ROUTE.	
+		-Set the variables in RUN_HOUSEKEEPING_TASKS when the next state (aka queuedState) is CONTROL_OUTPUTS or when the mode is POWER_ON_AND_HW_RESET and INITIALIZATION do it in any state.
+		-Execute the LED pattern in RUN_HOUSEKEEPING_TASKS for any mode, in runBackgroundTasks(). (use Rover_StateMachine_COMM as a reference with heart LED) 
 	
 	
-		UPDATE:
-		-use Rover_StateMachine_COMM as a reference for controlling LEDs.
-		-It probably should be set in CONTROL_OUTPUTS stage. (i.e. if the rover is to turn right, it will set the LEDs right, unless it's in error mode, etc.)
-		-You may have to fix the pseudocode for NAVI as well.
+		*LEFT OFF HERE* UPDATE:
+		[DONE] -go back and anywhere a mode is set to be in error, also stage the leds for that error. (use error_origin as a guide to find where the errors are set)
+		[DONE]-You may have to fix the pseudocode for NAVI as well.
+		-See summary above for actions to take.		
+		-use Rover_StateMachine_COMM as a reference for controlling LEDs and LedController_NAVI_Tester for setting error leds.
 		-Make sure to control the heart LED as well by sending commands of status (and then in COMM, the heart LED should be controlled by checking the status in the CONTROL_OUTPUTS stage. You may have to fix the pseudocode and code for COMM.
 	
 	Then I need to figure out how they should be used (i.e. a switch case somewhere in the code where it makes sense, probably where/when it needs to switch. i.e. when an error is generated, set the led state to error. when it's turning, set the beacon direction, etc.)

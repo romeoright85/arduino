@@ -315,12 +315,10 @@ byte rover_motion = LED_SET_ALL_DEFAULT;
 byte prev_rover_motion = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 byte rover_error_type = LED_SET_ALL_DEFAULT;
 byte prev_rover_error_type = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-				
 
-	
 
 //Error Origin (used to send out the origin of the error with the error message)
-byte error_origin = ROVERCOMM_NONE;
+byte error_origin = ROVERCOMM_NONE;//default
 
 
 //Flag(s) - Error
@@ -1398,8 +1396,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		
 		drive_setting = AUTONOMOUS_DRIVE_SETTING;//can be AUTONOMOUS_DRIVE_SETTING, SEMI_AUTO_DRIVE_SETTING, or MANUAL_DRIVE_SETTING
 		
-		//Put LEDs to error pattern
-		universal_led_mode = LED_SET_GENERIC_HEALTH_ERROR;
+		//Put LEDs to generic health error pattern
+		universal_led_mode = LED_ERROR_MODE;
 		rover_error_type = LED_SET_GENERIC_HEALTH_ERROR;
 	
 		//Assign the error_origin to where the data was generated from
@@ -1465,6 +1463,10 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	
 		//For now just forward it to MAIN (CMNC) and PC_USB (as well as other Arduinos), keeping the original destination. No need to go into SYSTEM_ERROR mode just yet. Only health errors need to go to SYSTEM_ERROR mode. Only health errors need to go to SYSTEM_ERROR mode. Though NAVI and AUXI might go to SYSTEM_ERROR mode.	
 
+		//Put LEDs to generic system error pattern
+		universal_led_mode = LED_ERROR_MODE;
+		rover_error_type = LED_SET_GENERIC_SYSTEM_ERROR;	
+		
 		//Assign the error_origin to where the data was generated from
 		if (originRoverCommType == ROVERCOMM_CMNC)//If command was from CMNC
 		{
@@ -3578,7 +3580,12 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 											
 							drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_ERROR and the rover should have control
 							
+							//Put LEDs to sync status error pattern
+							universal_led_mode = LED_ERROR_MODE;
+							rover_error_type = LED_SET_SYNC_ERROR;
+							
 							error_origin = ROVERCOMM_NAVI;
+							
 							main_pri_msg_queue == CMD_TAG_SYNC_ERROR_STATUS;
 							pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_MAIN;
 							//set sync_error = true
@@ -5789,6 +5796,10 @@ void runModeFunction_default()
 	queuedState = CONTROL_OUTPUTS;
 	currentMode = SYSTEM_ERROR;//Set mode to SYSTEM_ERROR *begin*		
 
+	//Put LEDs to generic system error pattern
+	universal_led_mode = LED_ERROR_MODE;
+	rover_error_type = LED_SET_GENERIC_SYSTEM_ERROR;	
+	
 	error_origin = ROVERCOMM_NAVI;
 
 	

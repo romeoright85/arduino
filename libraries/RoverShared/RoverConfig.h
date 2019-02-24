@@ -418,7 +418,9 @@
 	//Used for NAVI State Machine
 	#ifdef _LED_SET_TYPES
 		#define LED_SET_ALL_DEFAULT		0//used to set the default (LED off, direction none, or motion standard)
-		#define LED_SET_GENERIC_HEALTH_ERROR	1//used to set the default (LED off, direction none, or motion standard)
+		#define LED_SET_GENERIC_HEALTH_ERROR	1//To Be Defined Later
+		#define LED_SET_GENERIC_SYSTEM_ERROR	2//To Be Defined Later
+		#define LED_SET_SYNC_ERROR	3//To Be Defined Later
 		
 		
 //ADD MORE LATER		
