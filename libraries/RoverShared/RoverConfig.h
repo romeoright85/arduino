@@ -289,13 +289,13 @@
 		//Universal LED Modes
 		#define LED_ALL_OFF_MODE									0//Default for the LedController_NAVI class since the most universal/safe case you want everything to always turn off. But when the code is in use, often LED_STANDARD_DAY_TIME_MODE is set to run on startup. And then LED_ALL_OFF_MODE will take place after LED_STARTUP_MODE is complete, it will keep LEDs off until the mode is changed to something else
 		#define LED_ALL_ON_MODE									1//it will keep LEDs on until the mode is changed to something else
-		#define LED_STARTUP_MODE 				2//Typically set to this mode on power up/reset. It should turn on all the LEDs for about 2 seconds (so the user can see that all the LEDs are working, then it should turn it off and go into LED_ALL_OFF_MODE.
+		#define LED_STARTUP_MODE 				2//Typically set to this mode on power up/reset. It should turn on all the LEDs for about 2 seconds (so the user can see that all the LEDs are working, then it should turn it off and go into LED_ALL_OFF_MODE automatically afterwards.
 		#define LED_STANDARD_DAY_TIME_MODE 				3
 		#define LED_NIGHT_TIME_MODE								4//turns on headlights and tail lights
 		#define LED_DEMO_MODE										5//The Rover will turn on one led at a time and cycle through all of them on the rover
 		#define LED_ERROR_MODE										6//To indicate that the Rover is in error, all the blue beacons will all blink on and off. All other lights are off.
 		#define LED_STEALTH_MODE									7//This mode turns off all the LEDs and make sure they stay off.
-		#define LED_DEBUG_MODE										8//Allow any temporary debugging code to control the LEDs discretely. All LEDs in this mode should only be controlled manually by userDiscreteLEDControl().
+		#define LED_DEBUG_MODE										8//(Note: This is not currently implemented.) Allow any temporary debugging code to control the LEDs discretely. All LEDs in this mode should only be controlled manually by userDiscreteLEDControl().
 		
 		
 		//Hazard Lights State

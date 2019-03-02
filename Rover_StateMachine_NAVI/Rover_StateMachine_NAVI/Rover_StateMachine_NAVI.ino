@@ -299,16 +299,16 @@ byte prev_drive_setting = AUTONOMOUS_DRIVE_SETTING;//used to hold the previous s
 
 byte universal_led_mode = LED_SET_ALL_DEFAULT;
 byte prev_universal_led_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-byte hazard_light_state = LED_SET_ALL_DEFAULT;
-byte prev_hazard_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-byte fog_light_state = LED_SET_ALL_DEFAULT;
-byte prev_fog_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-byte underglow_light_state = LED_SET_ALL_DEFAULT;
-byte prev_underglow_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-byte ir_beacon_state = LED_SET_ALL_DEFAULT;
-byte prev_ir_beacon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-byte blue_beacon_state = LED_SET_ALL_DEFAULT;
-byte prev_blue_beacon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte hazard_light_mode = LED_SET_ALL_DEFAULT;
+byte prev_hazard_light_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte foglight_mode = LED_SET_ALL_DEFAULT;
+byte prev_foglight_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte underglow_light_mode = LED_SET_ALL_DEFAULT;
+byte prev_underglow_light_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte ir_beacon_mode = LED_SET_ALL_DEFAULT;
+byte prev_ir_beacon_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+byte blue_beacon_mode = LED_SET_ALL_DEFAULT;
+byte prev_blue_beacon_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 byte beacon_led_direction = LED_SET_ALL_DEFAULT;
 byte prev_beacon_led_direction = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 byte rover_motion = LED_SET_ALL_DEFAULT;
@@ -1167,17 +1167,34 @@ void loop() {
 void runPORTasks()
 {
 	//run POR tasks
+	
+	universal_led_mode = LED_STARTUP_MODE;//Turn On all LEDs initially for about 2 seconds (to make sure they're all working). Then turn them all off by doing into LED_ALL_OFF_MODE. It will automatically set the mode LED_ALL_OFF_MODE when done, as well.
+		
 //place holder: Add things here as needed.
 
 }//runPORTasks()
 void initializeVariables()
 {
 	//(re)initialize most global variables (i.e. for software reset)
-	ledController_NAVI->setUniversalLEDMode(LED_STARTUP_MODE);
 
 //WRITE ME LATER
 
 } //end of initializeVariables()
+//LEFT OFF HERE
+void setLEDVariables()
+{
+	//Take the staged LED variables at this moment in time and set them to the LED controller
+	ledController_NAVI->setUniversalLEDMode(universal_led_mode);		
+	ledController_NAVI->setHazardLightsMode(hazard_light_mode);
+	ledController_NAVI->setFogLightMode(foglight_mode);
+	ledController_NAVI->setUnderglowLightMode(underglow_light_mode);
+	ledController_NAVI->setIRBeaconLightMode(ir_beacon_mode);
+	ledController_NAVI->setBlueBeaconLightMode(blue_beacon_mode);
+	ledController_NAVI->setRoverMotion(rover_motion);
+	ledController_NAVI->setErrorType(rover_error_type);	
+
+	
+}//end of setLEDVariables()
 void startBackgroundTasks()
 {
 	//start background tasks
@@ -1187,7 +1204,7 @@ void runBackgroundTasks()
 {
 	//run background tasks
 	
-	//Control the LEDs of the Arduino
+	//Control/execute the LEDs of the Arduino (in every loop) based on what is set in setLEDVariables()
 	ledController_NAVI->runLedController();
 	
 	//Wheel Encoders
@@ -1361,11 +1378,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//Set all LEDs to default/off, since it will be refreshed at RUN_HOUSEKEEPING_TASKS. (Note: The gimbal, motor, drive setting, and buffer will be set to default and controlled in the next state, CONTROL_OUTPUTS)
 			
 		universal_led_mode = LED_SET_ALL_DEFAULT;
-		hazard_light_state = LED_SET_ALL_DEFAULT;
-		fog_light_state = LED_SET_ALL_DEFAULT;
-		underglow_light_state = LED_SET_ALL_DEFAULT;
-		ir_beacon_state = LED_SET_ALL_DEFAULT;
-		blue_beacon_state = LED_SET_ALL_DEFAULT;
+		hazard_light_mode = LED_SET_ALL_DEFAULT;
+		foglight_mode = LED_SET_ALL_DEFAULT;
+		underglow_light_mode = LED_SET_ALL_DEFAULT;
+		ir_beacon_mode = LED_SET_ALL_DEFAULT;
+		blue_beacon_mode = LED_SET_ALL_DEFAULT;
 		beacon_led_direction = LED_SET_ALL_DEFAULT;
 		rover_motion = LED_SET_ALL_DEFAULT;
 		rover_error_type = LED_SET_ALL_DEFAULT;
@@ -1589,11 +1606,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 
 		//save the LED enable states before shutting them off to go to sleep
 		universal_led_mode = prev_universal_led_mode;
-		hazard_light_state = prev_hazard_light_state;
-		fog_light_state = prev_fog_light_state;
-		underglow_light_state = prev_underglow_light_state;
-		ir_beacon_state = prev_ir_beacon_state;
-		blue_beacon_state = prev_blue_beacon_state;
+		hazard_light_mode = prev_hazard_light_mode;
+		foglight_mode = prev_foglight_mode;
+		underglow_light_mode = prev_underglow_light_mode;
+		ir_beacon_mode = prev_ir_beacon_mode;
+		blue_beacon_mode = prev_blue_beacon_mode;
 		beacon_led_direction = prev_beacon_led_direction;
 		rover_motion = prev_rover_motion;
 		rover_error_type = prev_rover_error_type;
@@ -1609,11 +1626,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 				
 		//Set all LEDS to off before going to sleep. (the variables are being staged here and will execute at the CONTROL_OUTPUTS state in the SYSTEM_SLEEPING mode)
 		universal_led_mode = LED_SET_ALL_DEFAULT;
-		hazard_light_state = LED_SET_ALL_DEFAULT;
-		fog_light_state = LED_SET_ALL_DEFAULT;
-		underglow_light_state = LED_SET_ALL_DEFAULT;
-		ir_beacon_state = LED_SET_ALL_DEFAULT;
-		blue_beacon_state = LED_SET_ALL_DEFAULT;
+		hazard_light_mode = LED_SET_ALL_DEFAULT;
+		foglight_mode = LED_SET_ALL_DEFAULT;
+		underglow_light_mode = LED_SET_ALL_DEFAULT;
+		ir_beacon_mode = LED_SET_ALL_DEFAULT;
+		blue_beacon_mode = LED_SET_ALL_DEFAULT;
 		beacon_led_direction = LED_SET_ALL_DEFAULT;
 		rover_motion = LED_SET_ALL_DEFAULT;
 		rover_error_type = LED_SET_ALL_DEFAULT;
@@ -1967,11 +1984,11 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 			
 			//LEDs - Set to default
 			universal_led_mode = LED_SET_ALL_DEFAULT;
-			hazard_light_state = LED_SET_ALL_DEFAULT;
-			fog_light_state = LED_SET_ALL_DEFAULT;
-			underglow_light_state = LED_SET_ALL_DEFAULT;
-			ir_beacon_state = LED_SET_ALL_DEFAULT;
-			blue_beacon_state = LED_SET_ALL_DEFAULT;
+			hazard_light_mode = LED_SET_ALL_DEFAULT;
+			foglight_mode = LED_SET_ALL_DEFAULT;
+			underglow_light_mode = LED_SET_ALL_DEFAULT;
+			ir_beacon_mode = LED_SET_ALL_DEFAULT;
+			blue_beacon_mode = LED_SET_ALL_DEFAULT;
 			beacon_led_direction = LED_SET_ALL_DEFAULT;
 			rover_motion = LED_SET_ALL_DEFAULT;
 			rover_error_type = LED_SET_ALL_DEFAULT;	
@@ -2274,7 +2291,7 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	}//end else if		
 	/*
 	IMPROVEMENT TIP
-	Set Rover into LED Debug Mode
+	Set Rover into LED Debug Mode (LED_DEBUG_MODE). <- this is not currently implemented.
 		In LED debug mode, the rover sets Universal LED Mode to Default, required before user can control LEDs discretely with userDiscreteLEDControl().
 		It prevents the rover from overriding the LEDs until the debug mode is removed
 		Allow the user to set on or off for any LEDs.
@@ -3287,6 +3304,10 @@ void runModeFunction_POWER_ON_AND_HW_RESET(byte currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: POWER_ON_AND_HW_RESET
 			runPORTasks();
+			
+			//Set LED Variables based on staged variables (as applicable)
+			setLEDVariables();
+			
 			break;
 		case RX_COMMUNICATIONS: //Mode: POWER_ON_AND_HW_RESET
 			//Nothing to do here.
@@ -3343,6 +3364,10 @@ void runModeFunction_INITIALIZATION(byte currentState)
 		case RUN_HOUSEKEEPING_TASKS: //Mode: INITIALIZATION
 			//initialize / reinitialize all variables
 			initializeVariables();
+			
+			//Set LED Variables based on staged variables (as applicable)
+			setLEDVariables();
+			
 			//start background tasks
 			startBackgroundTasks();
 			runBackgroundTasks();
@@ -3404,6 +3429,10 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: SYNCHRONIZATION
+		
+			//Set LED Variables based on staged variables (as applicable)
+			setLEDVariables();
+			
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYNCHRONIZATION
@@ -3790,6 +3819,9 @@ void runModeFunction_NORMAL_OPERATIONS(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: NORMAL_OPERATIONS
+			//Set LED Variables based on staged variables (as applicable)
+			setLEDVariables();
+		
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: NORMAL_OPERATIONS
@@ -4447,6 +4479,9 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_SLEEPING
+			//Set LED Variables based on staged variables (as applicable)
+			setLEDVariables();
+		
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_SLEEPING
@@ -4520,11 +4555,11 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 
 			//Note: The LEDS should be in the following states (they will be controlled in the RUN_HOUSEKEEPING_TASKS as mentioned below):
 				//universal_led_mode = LED_SET_ALL_DEFAULT;
-				//hazard_light_state = LED_SET_ALL_DEFAULT;
-				//fog_light_state = LED_SET_ALL_DEFAULT;
-				//underglow_light_state = LED_SET_ALL_DEFAULT;
-				//ir_beacon_state = LED_SET_ALL_DEFAULT;
-				//blue_beacon_state = LED_SET_ALL_DEFAULT;
+				//hazard_light_mode = LED_SET_ALL_DEFAULT;
+				//foglight_mode = LED_SET_ALL_DEFAULT;
+				//underglow_light_mode = LED_SET_ALL_DEFAULT;
+				//ir_beacon_mode = LED_SET_ALL_DEFAULT;
+				//blue_beacon_mode = LED_SET_ALL_DEFAULT;
 				//beacon_led_direction = LED_SET_ALL_DEFAULT;
 				//rover_motion = LED_SET_ALL_DEFAULT;
 				//rover_error_type = LED_SET_ALL_DEFAULT;	
@@ -4648,11 +4683,11 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 					
 				//LED States
 				universal_led_mode = prev_universal_led_mode;
-				hazard_light_state = prev_hazard_light_state;
-				fog_light_state = prev_fog_light_state;
-				underglow_light_state = prev_underglow_light_state;
-				ir_beacon_state = prev_ir_beacon_state;
-				blue_beacon_state = prev_blue_beacon_state;
+				hazard_light_mode = prev_hazard_light_mode;
+				foglight_mode = prev_foglight_mode;
+				underglow_light_mode = prev_underglow_light_mode;
+				ir_beacon_mode = prev_ir_beacon_mode;
+				blue_beacon_mode = prev_blue_beacon_mode;
 				beacon_led_direction = prev_beacon_led_direction;
 				rover_motion = prev_rover_motion;
 				rover_error_type = prev_rover_error_type;
@@ -4667,11 +4702,11 @@ void runModeFunction_SYSTEM_SLEEPING(byte currentState)
 				prev_drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_SLEEPING and the rover should have control
 				BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_PREV_REMOTE_CTRL_SELECTED_);//prev_buffer_remote_ctrl_selected = false
 				prev_universal_led_mode = LED_SET_ALL_DEFAULT;
-				prev_hazard_light_state = LED_SET_ALL_DEFAULT;
-				prev_fog_light_state = LED_SET_ALL_DEFAULT;
-				prev_underglow_light_state = LED_SET_ALL_DEFAULT;
-				prev_ir_beacon_state = LED_SET_ALL_DEFAULT;
-				prev_blue_beacon_state = LED_SET_ALL_DEFAULT;
+				prev_hazard_light_mode = LED_SET_ALL_DEFAULT;
+				prev_foglight_mode = LED_SET_ALL_DEFAULT;
+				prev_underglow_light_mode = LED_SET_ALL_DEFAULT;
+				prev_ir_beacon_mode = LED_SET_ALL_DEFAULT;
+				prev_blue_beacon_mode = LED_SET_ALL_DEFAULT;
 				prev_beacon_led_direction = LED_SET_ALL_DEFAULT;
 				prev_rover_motion = LED_SET_ALL_DEFAULT;
 				prev_rover_error_type = LED_SET_ALL_DEFAULT;
@@ -4729,6 +4764,9 @@ void runModeFunction_SYSTEM_WAKING(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_WAKING
+			//Set LED Variables based on staged variables (as applicable)
+			setLEDVariables();
+			
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_WAKING
@@ -4839,6 +4877,9 @@ void runModeFunction_SW_RESETTING(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: SW_RESETTING
+			//Set LED Variables based on staged variables (as applicable)
+			setLEDVariables();
+			
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SW_RESETTING
@@ -5019,6 +5060,9 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 	switch (currentState)
 	{
 		case RUN_HOUSEKEEPING_TASKS: //Mode: SYSTEM_ERROR
+			//Set LED Variables based on staged variables (as applicable)
+			setLEDVariables();
+			
 			runBackgroundTasks();
 			break;
 		case RX_COMMUNICATIONS: //Mode: SYSTEM_ERROR

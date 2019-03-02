@@ -133,16 +133,16 @@ At POR (defaults):
 	
 	byte universal_led_mode = LED_SET_ALL_DEFAULT;
 	byte prev_universal_led_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-	byte hazard_light_state = LED_SET_ALL_DEFAULT;
-	byte prev_hazard_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-	byte fog_light_state = LED_SET_ALL_DEFAULT;
-	byte prev_fog_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-	byte underglow_light_state = LED_SET_ALL_DEFAULT;
-	byte prev_underglow_light_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-	byte ir_beacon_state = LED_SET_ALL_DEFAULT;
-	byte prev_ir_beacon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
-	byte blue_beacon_state = LED_SET_ALL_DEFAULT;
-	byte prev_blue_beacon_state = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+	byte hazard_light_mode = LED_SET_ALL_DEFAULT;
+	byte prev_hazard_light_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+	byte foglight_mode = LED_SET_ALL_DEFAULT;
+	byte prev_foglight_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+	byte underglow_light_mode = LED_SET_ALL_DEFAULT;
+	byte prev_underglow_light_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+	byte ir_beacon_mode = LED_SET_ALL_DEFAULT;
+	byte prev_ir_beacon_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
+	byte blue_beacon_mode = LED_SET_ALL_DEFAULT;
+	byte prev_blue_beacon_mode = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 	byte beacon_led_direction = LED_SET_ALL_DEFAULT;
 	byte prev_beacon_led_direction = LED_SET_ALL_DEFAULT;//used to hold the previous state, before going to sleep
 	byte rover_motion = LED_SET_ALL_DEFAULT;
@@ -1036,11 +1036,11 @@ At POR (defaults):
 			
 			//Note: The LEDS should be in the following states (they will be controlled in the RUN_HOUSEKEEPING_TASKS as mentioned below):
 				//universal_led_mode = LED_SET_ALL_DEFAULT;
-				//hazard_light_state = LED_SET_ALL_DEFAULT;
-				//fog_light_state = LED_SET_ALL_DEFAULT;
-				//underglow_light_state = LED_SET_ALL_DEFAULT;
-				//ir_beacon_state = LED_SET_ALL_DEFAULT;
-				//blue_beacon_state = LED_SET_ALL_DEFAULT;
+				//hazard_light_mode = LED_SET_ALL_DEFAULT;
+				//foglight_mode = LED_SET_ALL_DEFAULT;
+				//underglow_light_mode = LED_SET_ALL_DEFAULT;
+				//ir_beacon_mode = LED_SET_ALL_DEFAULT;
+				//blue_beacon_mode = LED_SET_ALL_DEFAULT;
 				//beacon_led_direction = LED_SET_ALL_DEFAULT;
 				//rover_motion = LED_SET_ALL_DEFAULT;
 				//rover_error_type = LED_SET_ALL_DEFAULT;	
@@ -1780,11 +1780,11 @@ At POR (defaults):
 				
 				//LED States
 				universal_led_mode = prev_universal_led_mode;
-				hazard_light_state = prev_hazard_light_state;
-				fog_light_state = prev_fog_light_state;
-				underglow_light_state = prev_underglow_light_state;
-				ir_beacon_state = prev_ir_beacon_state;
-				blue_beacon_state = prev_blue_beacon_state;
+				hazard_light_mode = prev_hazard_light_mode;
+				foglight_mode = prev_foglight_mode;
+				underglow_light_mode = prev_underglow_light_mode;
+				ir_beacon_mode = prev_ir_beacon_mode;
+				blue_beacon_mode = prev_blue_beacon_mode;
 				beacon_led_direction = prev_beacon_led_direction;
 				rover_motion = prev_rover_motion;
 				rover_error_type = prev_rover_error_type;
@@ -1799,11 +1799,11 @@ At POR (defaults):
 				prev_drive_setting = AUTONOMOUS_DRIVE_SETTING
 				prev_buffer_remote_ctrl_selected = false
 				prev_universal_led_mode = LED_SET_ALL_DEFAULT
-				prev_hazard_light_state = LED_SET_ALL_DEFAULT
-				prev_fog_light_state = LED_SET_ALL_DEFAULT
-				prev_underglow_light_state = LED_SET_ALL_DEFAULT
-				prev_ir_beacon_state = LED_SET_ALL_DEFAULT
-				prev_blue_beacon_state = LED_SET_ALL_DEFAULT
+				prev_hazard_light_mode = LED_SET_ALL_DEFAULT
+				prev_foglight_mode = LED_SET_ALL_DEFAULT
+				prev_underglow_light_mode = LED_SET_ALL_DEFAULT
+				prev_ir_beacon_mode = LED_SET_ALL_DEFAULT
+				prev_blue_beacon_mode = LED_SET_ALL_DEFAULT
 				prev_beacon_led_direction = LED_SET_ALL_DEFAULT
 				prev_rover_motion = LED_SET_ALL_DEFAULT
 				prev_rover_error_type = LED_SET_ALL_DEFAULT
@@ -1993,11 +1993,11 @@ Conflicting Functions Ordered By Priority
 		//Set all LEDs to default/off, since it will be refreshed at RUN_HOUSEKEEPING_TASKS. (Note: The gimbal, motor, drive setting, and buffer will be set to default and controlled in the next state, CONTROL_OUTPUTS)
 				
 		universal_led_mode = LED_SET_ALL_DEFAULT
-		hazard_light_state = LED_SET_ALL_DEFAULT
-		fog_light_state = LED_SET_ALL_DEFAULT
-		underglow_light_state = LED_SET_ALL_DEFAULT
-		ir_beacon_state = LED_SET_ALL_DEFAULT
-		blue_beacon_state = LED_SET_ALL_DEFAULT
+		hazard_light_mode = LED_SET_ALL_DEFAULT
+		foglight_mode = LED_SET_ALL_DEFAULT
+		underglow_light_mode = LED_SET_ALL_DEFAULT
+		ir_beacon_mode = LED_SET_ALL_DEFAULT
+		blue_beacon_mode = LED_SET_ALL_DEFAULT
 		beacon_led_direction = LED_SET_ALL_DEFAULT
 		rover_motion = LED_SET_ALL_DEFAULT
 		rover_error_type = LED_SET_ALL_DEFAULT
@@ -2137,11 +2137,11 @@ Conflicting Functions Ordered By Priority
 		
 		//save the LED enable states before shutting them off to go to sleep
 		universal_led_mode = prev_universal_led_mode;
-		hazard_light_state = prev_hazard_light_state;
-		fog_light_state = prev_fog_light_state;
-		underglow_light_state = prev_underglow_light_state;
-		ir_beacon_state = prev_ir_beacon_state;
-		blue_beacon_state = prev_blue_beacon_state;
+		hazard_light_mode = prev_hazard_light_mode;
+		foglight_mode = prev_foglight_mode;
+		underglow_light_mode = prev_underglow_light_mode;
+		ir_beacon_mode = prev_ir_beacon_mode;
+		blue_beacon_mode = prev_blue_beacon_mode;
 		beacon_led_direction = prev_beacon_led_direction;
 		rover_motion = prev_rover_motion;
 		rover_error_type = prev_rover_error_type;
@@ -2156,11 +2156,11 @@ Conflicting Functions Ordered By Priority
 		
 		//Set all LEDS to off before going to sleep. (the variables are being staged here and will execute at the CONTROL_OUTPUTS state in the SYSTEM_SLEEPING mode)
 		universal_led_mode = LED_SET_ALL_DEFAULT;
-		hazard_light_state = LED_SET_ALL_DEFAULT;
-		fog_light_state = LED_SET_ALL_DEFAULT;
-		underglow_light_state = LED_SET_ALL_DEFAULT;
-		ir_beacon_state = LED_SET_ALL_DEFAULT;
-		blue_beacon_state = LED_SET_ALL_DEFAULT;
+		hazard_light_mode = LED_SET_ALL_DEFAULT;
+		foglight_mode = LED_SET_ALL_DEFAULT;
+		underglow_light_mode = LED_SET_ALL_DEFAULT;
+		ir_beacon_mode = LED_SET_ALL_DEFAULT;
+		blue_beacon_mode = LED_SET_ALL_DEFAULT;
 		beacon_led_direction = LED_SET_ALL_DEFAULT;
 		rover_motion = LED_SET_ALL_DEFAULT;
 		rover_error_type = LED_SET_ALL_DEFAULT;	

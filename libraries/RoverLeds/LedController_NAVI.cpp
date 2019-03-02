@@ -49,7 +49,7 @@ void LedController_NAVI::runLedController()
 			}//end for
 			break;
 		case LED_STARTUP_MODE:
-			//Turn On all LEDs initially for about 2 seconds (to make sure they're all working). Then turn them all off by doing into LED_ALL_OFF_MODE.
+			//Turn On all LEDs initially for about 2 seconds (to make sure they're all working). Then turn them all off by doing into LED_ALL_OFF_MODE. It will automatically set the mode LED_ALL_OFF_MODE when done, as well.
 			
 			//Sets the delay period (just in case it has changed, like with hazards)
 			this->_counterPtr->setStopValue(this->_periodsForLongDelay);
@@ -97,7 +97,7 @@ void LedController_NAVI::runLedController()
 				#else
 					_PC_USB_SERIAL_.println(F("Startup"));
 				#endif
-				//And change the mode to LED_ALL_OFF_MODE
+				//And change the mode to LED_ALL_OFF_MODE automatically when done with the startup mode
 				this->setUniversalLEDMode(LED_ALL_OFF_MODE);		
 			}//end else
 		case LED_STANDARD_DAY_TIME_MODE:
