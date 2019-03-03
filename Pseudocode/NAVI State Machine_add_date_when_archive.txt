@@ -533,16 +533,26 @@ At POR (defaults):
 				//Note: There is no hw reset requests for NAVI. It would have to be done by COMM.
 				navi sw reset requests message(s) from MAIN
 				generic health error messages
-				generic system error message
-				set drive setting (so you can switch to auto or manual drive)
+				generic system error message				
+				Get drive setting (to get the latest drive setting status)
+				Get drive setting (so you can switch to auto or manual drive)
 					(Note: all other set functions will be set to safety defaults when SYSTEM_ERROR begins and held at that value to prevent user from making the issue worse)
-					Set Motor Power Status (Status Received from MAIN)
-					Set Mid Right Encoder Status (Status Received from MAIN)
-					Set Mid Left Encoder Status (Status Received from MAIN)	
-					Set Heading (Status Received from AUXI)
+				Set Motor Power Status (Status Received from MAIN)
+				Set Mid Right Encoder Status (Status Received from MAIN)
+				Set Mid Left Encoder Status (Status Received from MAIN)	
+				Set Heading (Status Received from AUXI)
 				Any of the status requests (i.e. Get Longitude, Get Latitude, etc.)
 				Any external status data (i.e. motor power status from MAIN, wheel encoder data from MAIN, heading data from AUXI)
-				s
+				Run Motor Calibration
+				Set Gimbal Pan/Tilt
+				Set Motor Speed
+				Set Motor Turn
+				Set LED Universal Mode
+				Set LED Underglow
+				Set LED Fog Lights
+				Set LED Hazard Mode
+				Set IR Beacon Mode
+				Set Blue Beacon Mode
 				
 				
 			Mode: SYSTEM_ERROR
@@ -2817,3 +2827,23 @@ Conflicting Functions Ordered By Priority
 			Set pri_comm_cmnc_main_auxi_destination_selection = ROVERCOMM_NONE							
 		end if
 			
+	
+		Set LED Universal Mode
+			Set universal_led_mode (i.e. LED_ALL_OFF_MODE, LED_DEMO_MODE, LED_STEALTH_MODE, LED_STANDARD_DAY_TIME_MODE, LED_NIGHT_TIME_MODE, LED_ALL_ON_MODE)
+			
+			//IMPROVEMENT TIP: Can create a function in the ledController_NAVI to intake photo sensor data and turn lights from daytime to nighttime automatically.
+			
+		Set LED Underglow
+			Set universal_led_mode (i.e. LED_UNDERGLOW_OFF, LED_UNDERGLOW_ON, LED_UNDERGLOW_NEUTRAL)
+			
+		Set LED Fog Lights
+			Set foglight_mode (i.e. LED_FOG_OFF, LED_FOG_ON, LED_FOG_NEUTRAL)
+			
+		Set LED Hazard Mode
+			Set hazard_light_mode (i.e. LED_HAZARDS_OFF, LED_HAZARDS_ON, LED_HAZARDS_NEUTRAL)
+			
+		Set IR Beacon Mode
+			Set ir_beacon_mode (i.e. LED_IR_BEACON_ALL_OFF, LED_IR_BEACON_ALL_ON, LED_IR_BEACON_DIRECTIONAL_MODE, LED_IR_BEACON_ALL_NEUTRAL)
+			
+		Set Blue Beacon Mode
+			Set beacon_led_direction (i.e. LED_BLUE_BEACON_ALL_OFF, LED_BLUE_BEACON_ALL_ON, LED_BLUE_BEACON_DIRECTIONAL_MODE, LED_BLUE_BEACON_ALL_NEUTRAL)

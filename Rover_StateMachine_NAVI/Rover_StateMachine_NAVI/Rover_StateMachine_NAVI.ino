@@ -344,6 +344,13 @@ byte commandFilterOptionsSet6_PC_USB = _BTFG_NONE_;
 byte commandFilterOptionsSet7_PC_USB = _BTFG_NONE_;
 //Command Filter Options for PC_USB: Set 8
 byte commandFilterOptionsSet8_PC_USB = _BTFG_NONE_;
+//Command Filter Options for PC_USB: Set 9
+byte commandFilterOptionsSet9_PC_USB = _BTFG_NONE_;
+//Command Filter Options for PC_USB: Set 10
+byte commandFilterOptionsSet10_PC_USB = _BTFG_NONE_;
+
+
+
 //Command Filter Options for MAIN: Set 1
 byte commandFilterOptionsSet1_MAIN = _BTFG_NONE_;
 //Command Filter Options for MAIN: Set 2
@@ -360,6 +367,10 @@ byte commandFilterOptionsSet6_MAIN = _BTFG_NONE_;
 byte commandFilterOptionsSet7_MAIN = _BTFG_NONE_;
 //Command Filter Options for MAIN: Set 8
 byte commandFilterOptionsSet8_MAIN = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 9
+byte commandFilterOptionsSet9_MAIN = _BTFG_NONE_;
+//Command Filter Options for MAIN: Set 10
+byte commandFilterOptionsSet10_MAIN = _BTFG_NONE_;
 
 
 //Flag(s) - System Controls
@@ -2633,8 +2644,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get IR Distance Forward Center Status
 	else if (commandTag == CMD_TAG_IR_DISTANCE_FWD_CTR_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_))		
 			)
 		)		 	 
 	{	
@@ -2660,8 +2671,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get IR Distance Side Right Status
 	else if (commandTag == CMD_TAG_IR_DISTANCE_SIDE_RT_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_))		
 			)
 		)		 	 
 	{	
@@ -2687,8 +2698,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get IR Distance Side Left Status
 	else if (commandTag == CMD_TAG_IR_DISTANCE_SIDE_LT_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_))		
 			)
 		)		 	 
 	{	
@@ -2714,8 +2725,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	//Get IR Distance Rear Center Status
 	else if (commandTag == CMD_TAG_IR_DISTANCE_REAR_CTR_STATUS &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_))		
 			)
 		)		 	 
 	{	
@@ -2738,12 +2749,191 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 		//else do nothing
 		
 		
-	}//end else if
+	}//end else if	
+	//Set LED Universal Mode
+	else if (commandTag ==  CMD_TAG_SET_LED_UNIVERSAL_MODE &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDUNIVERSALMODE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLEDUNIVERSALMODE_))		
+			)
+		)		 	 
+	{	
+
+		byte tempData;//holds the data temporarily until it can be verified
+		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		//Refer to "Universal LED Modes" in RoverConfig.h		
+		//Note: for now only allow all on, all off, Daytime, Nighttime, Stealth, Demo mode to be set manually via commands)
+		if(
+				tempData == LED_ALL_OFF_MODE ||
+				tempData == LED_ALL_ON_MODE ||
+				tempData == LED_STANDARD_DAY_TIME_MODE ||
+				tempData == LED_NIGHT_TIME_MODE ||
+				tempData == LED_DEMO_MODE ||
+				tempData == LED_STEALTH_MODE
+			)
+		{	
+			universal_led_mode = tempData;
+		}//end if
+		//else the data is invalid or not allowed, so reject it and do nothing
+	
+	}//end else if				
+	//Set LED Underglow
+	else if (commandTag ==  CMD_TAG_SET_LED_UNDERGLOW &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDUNDERGLOW_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLEDUNDERGLOW_))		
+			)
+		)		 	 
+	{	
+
+		byte tempData;//holds the data temporarily until it can be verified
+		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		//Refer to "Underglow Light State" in RoverConfig.h		
+		//Note: for now only allow all on, all off, Daytime, Nighttime, Stealth, Demo mode to be set manually via commands)
+		if(
+				tempData == LED_UNDERGLOW_OFF ||
+				tempData == LED_UNDERGLOW_ON ||
+				tempData == LED_UNDERGLOW_NEUTRAL
+			)
+		{	
+			underglow_light_mode = tempData;
+		}//end if
+		//else the data is invalid or not allowed, so reject it and do nothing
+	
+	}//end else if				
+	//Set LED Fog Lights
+	else if (commandTag ==  CMD_TAG_SET_LED_FOG_LIGHTS &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDFOGLIGHTS_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLEDFOGLIGHTS_))		
+			)
+		)		 	 
+	{	
+
+		byte tempData;//holds the data temporarily until it can be verified
+		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		//Refer to "Fog Lights State" in RoverConfig.h		
+		//Note: for now only allow all on, all off, Daytime, Nighttime, Stealth, Demo mode to be set manually via commands)
+		if(
+				tempData == LED_FOG_OFF ||
+				tempData == LED_FOG_ON ||
+				tempData == LED_FOG_NEUTRAL
+			)
+		{	
+			foglight_mode = tempData;
+		}//end if
+		//else the data is invalid or not allowed, so reject it and do nothing
+	
+	}//end else if			
+	//Set LED Hazard Mode
+	else if (commandTag ==  CMD_TAG_SET_LED_HAZARD_MODE &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDHAZARDMODE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLEDHAZARDMODE_))		
+			)
+		)		 	 
+	{	
+
+		byte tempData;//holds the data temporarily until it can be verified
+		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		//Refer to "Hazard Lights State" in RoverConfig.h		
+		//Note: for now only allow all on, all off, Daytime, Nighttime, Stealth, Demo mode to be set manually via commands)
+		if(
+				tempData == LED_HAZARDS_OFF ||
+				tempData == LED_HAZARDS_ON ||
+				tempData == LED_HAZARDS_NEUTRAL
+			)
+		{	
+			hazard_light_mode = tempData;
+		}//end if
+		//else the data is invalid or not allowed, so reject it and do nothing
+	
+	}//end else if	
+	//Set IR Beacon Mode
+	else if (commandTag ==  CMD_TAG_SET_IR_BEACON_MODE &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDIRBEACONMODE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLEDIRBEACONMODE_))		
+			)
+		)		 	 
+	{	
+
+		byte tempData;//holds the data temporarily until it can be verified
+		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		//Refer to "IR Beacon State" in RoverConfig.h		
+		//Note: for now only allow all on, all off, Daytime, Nighttime, Stealth, Demo mode to be set manually via commands)
+		if(
+				tempData == LED_IR_BEACON_ALL_OFF ||
+				tempData == LED_IR_BEACON_ALL_ON ||
+				tempData == LED_IR_BEACON_DIRECTIONAL_MODE ||
+				tempData == LED_IR_BEACON_ALL_NEUTRAL
+			)
+		{	
+			ir_beacon_mode = tempData;
+		}//end if
+		//else the data is invalid or not allowed, so reject it and do nothing
+	
+	}//end else if	
+	//Set Blue Beacon Mode
+	else if (commandTag ==  CMD_TAG_SET_BLUE_BEACON_MODE &&
+			(
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDBLUEBEACONMODE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet9_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLEDBLUEBEACONMODE_))		
+			)
+		)		 	 
+	{	
+
+		byte tempData;//holds the data temporarily until it can be verified
+		
+		CharArray::Trim(commandData);//trim any white spaces in the character array
+		
+		tempData = DataType::charsToByte(commandData);
+		
+		//Verify the data
+		//Refer to "Blue Beacon State" in RoverConfig.h		
+		//Note: for now only allow all on, all off, Daytime, Nighttime, Stealth, Demo mode to be set manually via commands)
+		if(
+				tempData == LED_BLUE_BEACON_ALL_OFF ||
+				tempData == LED_BLUE_BEACON_ALL_ON ||
+				tempData == LED_BLUE_BEACON_DIRECTIONAL_MODE ||
+				tempData == LED_BLUE_BEACON_ALL_NEUTRAL
+			)
+		{	
+			blue_beacon_mode = tempData;
+		}//end if
+		//else the data is invalid or not allowed, so reject it and do nothing
+	
+	}//end else if	
 	 //Hi Command - DEBUG
 	else if (commandTag == CMD_TAG_DEBUG_HI_TEST_MSG &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_HI_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HI_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet10_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_HI_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet10_MAIN, _BTFG_COMMAND_ENABLE_OPTION_HI_))		
 			)
 		)		 	 
 	{
@@ -2763,8 +2953,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	 //Bye Command - DEBUG
 	else if (commandTag == CMD_TAG_DEBUG_BYE_TEST_MSG &&
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_BYE_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_BYE_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet10_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_BYE_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet10_MAIN, _BTFG_COMMAND_ENABLE_OPTION_BYE_))		
 			)
 		)		 	 
 	{
@@ -2785,8 +2975,8 @@ void commandDirector(RoverData * roverDataPointer, byte roverComm)
 	 //Invalid - DEBUG
 	else if (
 			(
-				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_INVALID_) )
-				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))		
+				(roverComm == ROVERCOMM_PC_USB && BooleanBitFlags::flagIsSet(commandFilterOptionsSet10_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_INVALID_) )
+				|| (roverComm == ROVERCOMM_MAIN && BooleanBitFlags::flagIsSet(commandFilterOptionsSet10_MAIN, _BTFG_COMMAND_ENABLE_OPTION_INVALID_))		
 			)	
 		)
 	{
@@ -3604,7 +3794,7 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 							gimbal_pan_value = SET_CENTER_PAN;
 							gimbal_tilt_value = SET_MIDDLE_TILT;
 
-							//Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to overrride this if desired, and set it to manual)
+							//Set buffer select to remote control selected = false so the rover is in control of the emergency stop (but the SYSTEM_ERROR state will allow commands to override this if desired, and set it to manual)
 							BooleanBitFlags::clearFlagBit(flagSet_SystemControls1, _BTFG_REMOTE_CTRL_SELECTED_);//buffer_remote_ctrl_selected = false 
 											
 							drive_setting = AUTONOMOUS_DRIVE_SETTING;//since it's at SYSTEM_ERROR and the rover should have control
@@ -3641,8 +3831,23 @@ void runModeFunction_SYNCHRONIZATION(byte currentState)
 			}//end if			
 			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
 				
-				//Note: Either you should get no data, system ready messages, system go messages, navi sw reset requests, generic health errors, generic system errors. as everything else was filtered out.
+				/*
+				Note: Either you should get:
+					-no data
+					-system ready message(s) from MAIN
+					-system go message(s) from MAIN
+					-navi sw reset requests message(s) from MAIN				
+					-generic health error messages
+					-generic system error messages
+					
+				as everything else was filtered out.
+				*/
+				
+				
+				
+				
 				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
+				
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_))//If there was data from MAIN (Ch2), and it was for NAVI
 			{
 			//Run the command director to process the allowed commands (i.e. sets flags, prepares message queues, changes modes/states, etc.)			
@@ -5150,15 +5355,24 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORPOWERSTATUS_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMIDRIGHTENCODERSTATUS_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMIDLEFTENCODERSTATUS_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETHEADING_);
-			
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet2_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETHEADING_);			
+			//Flag Set 3
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_FRONTLEFTENCODERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_FRONTRIGHTENCODERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_MIDLEFTENCODERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_MIDRIGHTENCODERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_REARLEFTENCODERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_REARRIGHTENCODERSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet3_MAIN, _BTFG_COMMAND_ENABLE_OPTION_RUNMOTORCALIBRATION_);						
 			//Flag Set 4
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALPAN_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALPANSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETGIMBALTILT_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGIMBALTILTSTATUS_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORSPEED_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORSPEEDSTATUS_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETMOTORTURN_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet4_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_);					
 			//Flag Set 5
 			//None
 			//Flag Set 6
@@ -5166,19 +5380,30 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETLONGITUDE_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSFIXQUALITY_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETGPSSATELLITESTRACKED_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLATITUDEDESTINATION_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet6_MAIN, _BTFG_COMMAND_ENABLE_OPTION_SETLONGITUDEDESTINATION_);		
 			//Flag Set 7
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDLEFT_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDCENTER_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEFORWARDRIGHT_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDERIGHT_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCESIDELEFT_);
-			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet7_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETULTRASONICDISTANCEREARCENTER_);				
 			//Flag Set 8
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEFORWARDCENTERSTATUS_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_);
 			BooleanBitFlags::setFlagBit(commandFilterOptionsSet8_MAIN, _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_);
-			
+			//Flag Set 9
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDUNIVERSALMODE_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDUNDERGLOW_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDFOGLIGHTS_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDHAZARDMODE_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDIRBEACONMODE_);
+			BooleanBitFlags::setFlagBit(commandFilterOptionsSet9_PC_USB, _BTFG_COMMAND_ENABLE_OPTION_SETLEDBLUEBEACONMODE_);					
+			//Flag Set 10
+			//None
+		
 		
 			//Transmit data and/or execute command
 						
@@ -5287,7 +5512,37 @@ void runModeFunction_SYSTEM_ERROR(byte currentState)
 				commandDirector(roverDataCh1_COMM, ROVERCOMM_PC_USB);
 			}//end if			
 			//Process MAIN command/data to see if it has priority or is non-conflicting (see "Command Options" below for more info)
-				//All messages are allowed from MAIN.
+				
+				/*
+				Note: Either you should get:
+				
+					-no data
+					-navi sw reset requests message(s) from MAIN
+					-generic health error messages
+					-generic system error message				
+					-Get drive setting (to get the latest drive setting status)
+					-Get drive setting (so you can switch to auto or manual drive)
+						(Note: all other set functions will be set to safety defaults when SYSTEM_ERROR begins and held at that value to prevent user from making the issue worse)
+					-Set Motor Power Status (Status Received from MAIN)
+					-Set Mid Right Encoder Status (Status Received from MAIN)
+					-Set Mid Left Encoder Status (Status Received from MAIN)	
+					-Set Heading (Status Received from AUXI)
+					-Any of the status requests (i.e. Get Longitude, Get Latitude, etc.)
+					-Any external status data (i.e. motor power status from MAIN, wheel encoder data from MAIN, heading data from AUXI)
+					-Run Motor Calibration
+					-Set Gimbal Pan/Tilt
+					-Set Motor Speed
+					-Set Motor Turn
+					-Set LED Universal Mode
+					-Set LED Underglow
+					-Set LED Fog Lights
+					-Set LED Hazard Mode
+					-Set IR Beacon Mode
+					-Set Blue Beacon Mode
+				
+				as everything else was filtered out.
+				*/
+				
 				//Note: There are no redirections for the NAVI Arduino since it is a node at the end of the network tree.
 			if (BooleanBitFlags::flagIsSet(flagSet_MessageControl1, _BTFG_DATA_WAS_FOR_NAVI_CH2_))//If there was data from MAIN (Ch2), and it was for NAVI
 			{

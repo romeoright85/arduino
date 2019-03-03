@@ -226,7 +226,7 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETMOTORTURNSTATUS_							0x80
 
 		//Command Filter Options: Set 5: Used in commandFilterOptionsSet5_PC_USB, commandFilterOptionsSet4_MAIN
-			//Reserved for LED options. Not implement for now due to time savings.
+			//Reserved for individual LED options. Not implement for now due to time savings.
 
 		//Command Filter Options: Set 6: Used in commandFilterOptionsSet6_PC_USB, commandFilterOptionsSet5_MAIN
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_							0x01
@@ -249,12 +249,20 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDERIGHTSTATUS_						0x02
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCESIDELEFTSTATUS_						0x04
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETIRDISTANCEREARCENTERSTATUS_						0x08
+
+		//Command Filter Options: Set 9: Used in commandFilterOptionsSet9_PC_USB, commandFilterOptionsSet9_MAIN
+		#define _BTFG_COMMAND_ENABLE_OPTION_SETLEDUNIVERSALMODE_						0x01
+		#define _BTFG_COMMAND_ENABLE_OPTION_SETLEDUNDERGLOW_						0x02
+		#define _BTFG_COMMAND_ENABLE_OPTION_SETLEDFOGLIGHTS_						0x04
+		#define _BTFG_COMMAND_ENABLE_OPTION_SETLEDHAZARDMODE_						0x08
+		#define _BTFG_COMMAND_ENABLE_OPTION_SETLEDIRBEACONMODE_						0x10
+		#define _BTFG_COMMAND_ENABLE_OPTION_SETLEDBLUEBEACONMODE_						0x20
+				
+		//Command Filter Options: Set 10: Used in commandFilterOptionsSet10_PC_USB, commandFilterOptionsSet10_MAIN
 		#define _BTFG_COMMAND_ENABLE_OPTION_HI_						0x10
 		#define _BTFG_COMMAND_ENABLE_OPTION_BYE_						0x20
 		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID_						0x40
-
-
-	
+			
 		//---------------------------------------------------
 	
 	
