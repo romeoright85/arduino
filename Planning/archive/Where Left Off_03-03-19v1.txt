@@ -30,18 +30,7 @@ Rover_StateMachine_AUXI (then get the leds and sensors working)
 
 
 	
-	[NEED TO DO FOR AUXI] -write comments under the "Command Data" column in Command Creator to know what format to pass in data with the command tag for commands that need data with it
-		
-			D:\Data\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes\Command Creator
-		
-		
-			Reference:
-			
-			[TO BE CREATED LATER] D:\Data\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Rover_StateMachine_NAVI\Rover_StateMachine_AUXI
-					
-			And search for "CharArray::Trim(commandData);" and/or "commandData" to see how the data is validated 
-			
-			
+	
 	[NEED TO DO FOR AUXI]Update and add to RoverMessagePackager for IMU data
 	Have a way for IMU data to get packaged and pass from AUXI to CMNC.
 	[NEED TO DO FOR AUXI] Add a command to receive Motor Power Status from MAIN's auto data
@@ -124,17 +113,31 @@ Test code as you go!!!
 PAY ATTENTION TO MEMORY SPACE LEFT, IF COMM IT OUT OF MEMORY, WILL HAVE TO WATER DOWN THE CODE A LOT (i.e. remove secured comms, etc.)
 
 
+					
+[WHERE LEFT OFF 1 --- IN PROGRESS]
+	
 			
 Rover_StateMachine_NAVI:
+
+			[IN PROGRESS] Set up the framework for Rover_StateMachine_NAVI
 				
 		
+
+------------------------------------------------------------------------------------------------------------------------
+
+	#LEFT OFF HERE *1 day*
+	[IN PROGRESS] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
+	In RoverConfig, add more to the #define _LED_SET_TYPES
+	used prev_headlightassy_setting, prev_foglight_setting, etc.
+
+		Note: Use LedController_NAVI_Tester.ino as a reference.
+
+
 	Also see "//WRITE ME LATER" and "//LEFT OFF HERE" sections of the Rover_StateMachine_NAVI.ino code
 
 
 	*LEFT OFF HERE* UPDATE:	
-	
 		
-	
 			[TO DO] See any "//WRITE ME LATER"
 				
 				i.e.
@@ -143,11 +146,26 @@ Rover_StateMachine_NAVI:
 				void setAllSystemStatusFlagsTo(boolean choice)
 				void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		
+		[TO DO]-write comments under the "Variable Data" column in Command Creator to know what format to pass in data with the command tag for commands that need data with it
+		
+			D:\Data\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes\Command Creator
 		
 		
-			[TO DO LATER when writing those states]-also stage the LEDS in OBJECT_AVOIDANCE or PLAN_ROUTE. (See "Note on staging the LEDs (logically)" in these notes below)
+			Reference:
+			
+			D:\Data\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Rover_StateMachine_NAVI\Rover_StateMachine_NAVI
+					
+			And search for "tempData" to see how the data is validated
 		
-				
+		
+		
+		[TO DO LATER when writing those states]-also stage the LEDS in OBJECT_AVOIDANCE or PLAN_ROUTE. (See "Note on staging the LEDs (logically)" in these notes below)
+		
+		
+		
+		
+		
+		
 ------------------------------------------------------------------------------------------------------------------------
 
 #LEFT OFF HERE *5 days*
@@ -2085,12 +2103,7 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 					
 						[NOT NEEDED, the universal mode should still be saved. And once the Rover Motion has gone back to LED_MOTION_STANDARD, nothing will be done and the universal mode should now execute as it's not overridden] For right turns, left turns, and braking, the code should save the current tail light, then do a turn signal, then come back to the original tail light.
 								
-				[DONE] then incorporate the LedController_NAVI class into Rover_StateMachine_NAVI.ino code
-	In RoverConfig, add more to the #define _LED_SET_TYPES
-	used prev_headlightassy_setting, prev_foglight_setting, etc.
-
-		Note: Use LedController_NAVI_Tester.ino as a reference.
-								
+												
 					
 	
 						[DONE]runLedController()
@@ -2277,16 +2290,4 @@ TEMPLATE-Shared Data Code Fix - Example shown for MAIN
 		
 		
 		update the pseudocode in NAVI State Machine_add_date_when_archive to show when the LED states are modified.
-		
-		
-		[DONE for MAIN and NAVI, need to do for AUXI]-write comments under the "Command Data" column in Command Creator to know what format to pass in data with the command tag for commands that need data with it
-		
-			D:\Data\Working Directory\DESIGN_PROJ\Design Projects\Robot\My Notes\Command Creator
-		
-		
-			Reference:
-			
-			D:\Data\Working Directory\DESIGN_PROJ\Design Projects\Robot\Workspaces\Arduino\2nd Gen Code\GitHub\arduino\Rover_StateMachine_NAVI\Rover_StateMachine_NAVI
-					
-			And search for "CharArray::Trim(commandData);" and/or "commandData" to see how the data is validated (i.e. in NAVI, MAIN, AUXI, etc.)
 		

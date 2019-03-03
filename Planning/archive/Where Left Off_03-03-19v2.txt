@@ -144,10 +144,13 @@ Rover_StateMachine_NAVI:
 				void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		
 		
-		
 			[TO DO LATER when writing those states]-also stage the LEDS in OBJECT_AVOIDANCE or PLAN_ROUTE. (See "Note on staging the LEDs (logically)" in these notes below)
 		
-				
+		
+		
+		
+		
+		
 ------------------------------------------------------------------------------------------------------------------------
 
 #LEFT OFF HERE *5 days*
