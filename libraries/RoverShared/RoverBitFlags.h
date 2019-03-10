@@ -3,12 +3,15 @@
 	//"Boolean" Bit Flags
 	#ifdef _COMM_BIT_FLAGS_
 	
+		//---------------------------------------------------	
+		//Universal
+		//---------------------------------------------------
+		#define _BTFG_NONE_													0x00
+		#define _BTFG_ALL_													0xFF
 	
 		//---------------------------------------------------	
 		//Status Flag(s)
 		//---------------------------------------------------
-		//Universal
-		#define _BTFG_NONE_													0x00
 		//Error: flagSet_Error1
 		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
 		#define _BTFG_SYNC_ERROR_										0x02
@@ -67,11 +70,17 @@
 	
 	
 	#ifdef _MAIN_BIT_FLAGS_
+	
+		//---------------------------------------------------	
+		//Universal
+		//---------------------------------------------------
+		#define _BTFG_NONE_													0x00
+		#define _BTFG_ALL_													0xFF
+
+		
 		//---------------------------------------------------	
 		//Status Flag(s)
 		//---------------------------------------------------
-		//Universal
-		#define _BTFG_NONE_													0x00
 		//Error: flagSet_Error1
 		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
 		#define _BTFG_SYNC_ERROR_										0x02
@@ -140,12 +149,17 @@
 	
 	
 	#ifdef _NAVI_BIT_FLAGS_
-				
-	//---------------------------------------------------	
+		
+		//---------------------------------------------------	
+		//Universal
+		//---------------------------------------------------
+		#define _BTFG_NONE_													0x00
+		#define _BTFG_ALL_													0xFF
+		
+		//---------------------------------------------------	
 		//Status Flag(s)
 		//---------------------------------------------------
-		//Universal
-		#define _BTFG_NONE_													0x00
+		
 		//Error: flagSet_Error1
 		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
 		#define _BTFG_SYNC_ERROR_										0x02
@@ -165,7 +179,7 @@
 		#define _BTFG_HEADING_DATA_READY_						0x10
 		#define _BTFG_ALL_GPS_DATA_GATHERED_								0x20
 		#define _BTFG_ALL_HEADING_DATA_GATHERED_								0x40
-		//DEBUG//Error: flagSet_SystemStatus2//the variable has not yet been created
+		//DEBUG//System Status: flagSet_SystemStatus2//the variable has not yet been created
 		
 		//System Control: flagSet_SystemControls1
 		#define _BTFG_MTR_POWER_IS_ON_										0x01//mtrPowerIsOn, used to store values passed in from MAIN
@@ -187,6 +201,9 @@
 		 //Command Filter Option Flag(s)
 		 //---------------------------------------------------
 		 //Note: These flags were grouped best by function, but in the commandDirector, they are ordered by priority. So it may not correlate 1 to 1.
+		 
+		 
+		 #define COMMAND_FILTER_OPTIONS_ARRAY_SIZE	9
 		 
 		//Command Filter Options: Set 1: Used in commandFilterOptionsSet1_PC_USB, commandFilterOptionsSet1_MAIN
 
@@ -227,6 +244,7 @@
 
 		//Command Filter Options: Set 5: Used in commandFilterOptionsSet5_PC_USB, commandFilterOptionsSet4_MAIN
 			//Reserved for individual LED options. Not implement for now due to time savings.
+			//Note: Remember, if you're adding more Commander Filter Options to increase the COMMAND_FILTER_OPTIONS_ARRAY_SIZE definition.
 
 		//Command Filter Options: Set 6: Used in commandFilterOptionsSet6_PC_USB, commandFilterOptionsSet5_MAIN
 		#define _BTFG_COMMAND_ENABLE_OPTION_GETLATITUDE_							0x01
@@ -263,6 +281,8 @@
 		#define _BTFG_COMMAND_ENABLE_OPTION_BYE_						0x20
 		#define _BTFG_COMMAND_ENABLE_OPTION_INVALID_						0x40
 			
+			
+		//Note: Remember, if you're adding more Commander Filter Options to increase the COMMAND_FILTER_OPTIONS_ARRAY_SIZE definition.
 		//---------------------------------------------------
 	
 	
@@ -273,11 +293,16 @@
 	
 	#ifdef _AUXI_BIT_FLAGS_
 
-	//---------------------------------------------------	
+		//---------------------------------------------------	
+		//Universal
+		//---------------------------------------------------
+		#define _BTFG_NONE_													0x00
+		#define _BTFG_ALL_													0xFF
+
+		
+		//---------------------------------------------------	
 		//Status Flag(s)
 		//---------------------------------------------------
-		//Universal
-		#define _BTFG_NONE_													0x00
 		//Error: flagSet_Error1
 //TEMPLATE//		#define _BTFG_INVALID_STATE_OR_MODE_ERROR_		0x01
 //TEMPLATE//		#define _BTFG_SYNC_ERROR_										0x02

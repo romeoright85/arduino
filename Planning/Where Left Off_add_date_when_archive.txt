@@ -138,9 +138,7 @@ Rover_StateMachine_NAVI:
 			[TO DO] See any "//WRITE ME LATER"
 				
 				i.e.
-				void setAllErrorFlagsTo(boolean choice)
-				void setAllMessageControlFlagsTo(boolean choice)
-				void setAllSystemStatusFlagsTo(boolean choice)
+				
 				void setAllCommandFiltersTo(boolean choice, byte roverComm)
 		
 		

@@ -3465,22 +3465,116 @@ void createDataFromQueueFor(byte roverCommType, byte queueSelection)
 	return;
 
 }//end of createDataFromQueueFor()
+
+void setAllBitsOfBitFlagSetTo(boolean choice, byte &bitFlagOfInterest)
+{
+	//Note: Sets all the bits of the Bit Flag Set based on choice. If choice is true, set Bit Flag Set to 0xFF, else since choice is false, set Bit Flag Set to 0x00.
+	if (choice)
+	{
+		bitFlagOfInterest = _BTFG_ALL_;//set all flags to 1
+	}//end if
+	else
+	{
+		bitFlagOfInterest = _BTFG_NONE_;//clearing all falgs to 0
+	}//end else
+}//void setAllBitsOfBitFlagSetTo()
+
+
+void setAllBitsOfBitFlagSetArrayTo(boolean choice, byte * bitFlagArray[], byte arraySize)
+{
+	//Note: Sets all the bits of each of the Bit Flag Set in the array based on choice. If choice is true, set Bit Flag Set to 0xFF, else since choice is false, set Bit Flag Set to 0x00.
+	
+	for (byte i = 0; i < arraySize; i++)
+	{
+		//Note: Using function delegation
+		setAllBitsOfBitFlagSetTo(choice, *bitFlagArray[i]);
+	}//end for
+
+}//void setAllBitsOfBitFlagSetArrayTo()
+
+
+
 void setAllErrorFlagsTo(boolean choice)
 {
-//WRITE ME LATER
+	//If choice is true, set all flags, else if choice is false, clear all flags
+	//Reference: RoverBitFlags.h at Status Flag(s)
+
+	//Note: Using function delegation
+	setAllBitsOfBitFlagSetTo(choice, flagSet_Error1);
+
 }//end of setAllErrorFlagsTo()
 void setAllMessageControlFlagsTo(boolean choice)
 {
-//WRITE ME LATER
+	//If choice is true, set all flags, else if choice is false, clear all flags
+	//Reference: RoverBitFlags.h at Status Flag(s)
+
+	//Note: Using function delegation
+	setAllBitsOfBitFlagSetTo(choice, flagSet_MessageControl1);
+	
 }//end of setAllMessageControlFlagsTo()
 void setAllSystemStatusFlagsTo(boolean choice)
 {
-//WRITE ME LATER
+	//If choice is true, set all flags, else if choice is false, clear all flags
+	//Reference: RoverBitFlags.h at Status Flag(s)
+	
+	//Note: Using function delegation
+	setAllBitsOfBitFlagSetTo(choice, flagSet_SystemStatus1);
+	
+}//end of setAllSystemStatusFlagsTo()
+void setAllSystemControlFlagsTo(boolean choice)
+{
+	//If choice is true, set all flags, else if choice is false, clear all flags
+	//Reference: RoverBitFlags.h at Status Flag(s)
+
+	//Note: Using function delegation
+	setAllBitsOfBitFlagSetTo(choice, flagSet_SystemControls1);
+
 }//end of setAllSystemStatusFlagsTo()
 void setAllCommandFiltersTo(boolean choice, byte roverComm)
 {
-	//WRITE ME LATER
+
+//If choice is true, set all flags, else if choice is false, clear all flags
+//Reference: RoverBitFlags.h at Command Filter Option Flag(s)
+		
+	byte * commandFilterOptionsArray[COMMAND_FILTER_OPTIONS_ARRAY_SIZE] = {0};	
+	//Note: Make sure COMMAND_FILTER_OPTIONS_ARRAY_SIZE is up to date and has an accurate count.
+	
+	switch (roverComm)
+	{
+		//Passing bytes (flags) to the byte pointer array by reference
+			case ROVERCOMM_PC_USB:
+				commandFilterOptionsArray[0] = &commandFilterOptionsSet1_PC_USB;
+				commandFilterOptionsArray[1] = &commandFilterOptionsSet2_PC_USB;
+				commandFilterOptionsArray[2] = &commandFilterOptionsSet3_PC_USB;
+				commandFilterOptionsArray[3] = &commandFilterOptionsSet4_PC_USB;
+				commandFilterOptionsArray[4] = &commandFilterOptionsSet6_PC_USB;
+				commandFilterOptionsArray[5] = &commandFilterOptionsSet7_PC_USB;
+				commandFilterOptionsArray[6] = &commandFilterOptionsSet8_PC_USB;
+				commandFilterOptionsArray[7] = &commandFilterOptionsSet9_PC_USB;
+				commandFilterOptionsArray[8] = &commandFilterOptionsSet10_PC_USB;
+			break;
+			case ROVERCOMM_MAIN:
+				commandFilterOptionsArray[0] = &commandFilterOptionsSet1_MAIN;
+				commandFilterOptionsArray[1] = &commandFilterOptionsSet2_MAIN;
+				commandFilterOptionsArray[2] = &commandFilterOptionsSet3_MAIN;
+				commandFilterOptionsArray[3] = &commandFilterOptionsSet4_MAIN;
+				commandFilterOptionsArray[4] = &commandFilterOptionsSet5_MAIN;
+				commandFilterOptionsArray[5] = &commandFilterOptionsSet7_MAIN;
+				commandFilterOptionsArray[6] = &commandFilterOptionsSet8_MAIN;
+				commandFilterOptionsArray[7] = &commandFilterOptionsSet9_MAIN;
+				commandFilterOptionsArray[8] = &commandFilterOptionsSet10_MAIN;
+			break;			
+			default:
+							
+				memset(commandFilterOptionsArray, 0, sizeof(commandFilterOptionsArray));//set the array to null
+							
+			break;
+	}//end switch	
+		
+	setAllBitsOfBitFlagSetArrayTo(choice, commandFilterOptionsArray, COMMAND_FILTER_OPTIONS_ARRAY_SIZE);
+	
 }//end of setAllCommands()
+
 
 //====End of: Misc Functions
 
